@@ -1,9 +1,6 @@
 <div align="center">
-  <picture>
-    <source srcset="./assets/logo_dark_mode.png" media="(prefers-color-scheme: dark)">
-    <source srcset="./assets/logo_light_mode.png" media="(prefers-color-scheme: light)">
-    <img src="./assets/logo_dark_mode.png" alt="Krea Logo" width="300px">
-  </picture>
+  <img src="./assets/logo_light_mode.png#light-mode-only" alt="Krea Logo" width="300px">
+  <img src="./assets/logo_dark_mode.png#dark-mode-only" alt="Krea Logo" width="300px">
   <h4>A Unified, Decentralized Haven for the Polymath Artist</h4>
   <br/>
 </div>
