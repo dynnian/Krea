@@ -2,9 +2,10 @@
   <picture>
     <source srcset="./assets/logo_dark_mode.png" media="(prefers-color-scheme: dark)">
     <source srcset="./assets/logo_light_mode.png" media="(prefers-color-scheme: light)">
-    <img src="./assets/logo_dark_mode.png" alt="Krea Logo" width="600px">
+    <img src="./assets/logo_dark_mode.png" alt="Krea Logo" width="300px">
   </picture>
   <h4>A Unified, Decentralized Haven for the Polymath Artist</h4>
+  <br/>
 </div>
 
 *Krea* is a next-generation social media platform and creative hub built for the **Fediverse**. It is designed to be a cohesive, warm, and artist-centric space where musicians, writers, and visual artists can thrive without the constraints of centralized silos. 
