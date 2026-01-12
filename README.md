@@ -1,6 +1,6 @@
 <div align="center">
   <picture>
-    <img src="./assets/logo.svg" alt="Krea Logo" width="350px">
+    <img src="./assets/logo.svg" alt="Krea Logo" width="250px">
   </picture>
   <h4>A Unified, Decentralized Haven for the Polymath Artist</h4>
 </div>
