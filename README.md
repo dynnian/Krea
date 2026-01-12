@@ -1,10 +1,10 @@
 <img src="./assets/icon.svg" width="48" height="48" valign="middle"> Krea
 
-### *A Unified, Decentralized Haven for the Polymath Artist.*
+### *A Unified, Decentralized Haven for the Polymath Artist*
 
-**Krea** is a next-generation social media platform and creative hub built for the **Fediverse**. It is designed to be a cohesive, warm, and artist-centric space where musicians, writers, and visual artists can thrive without the constraints of centralized silos. 
+*Krea* is a next-generation social media platform and creative hub built for the **Fediverse**. It is designed to be a cohesive, warm, and artist-centric space where musicians, writers, and visual artists can thrive without the constraints of centralized silos. 
 
-In the current digital landscape, artists are often forced to fragment their identity: a profile for music, a gallery for art, and a blog for writing. **Krea** dissolves these barriers, allowing creators to host their entire portfolio in a single, fully federated home powered by the **ActivityPub** protocol.
+In the current digital landscape, artists are often forced to fragment their identity: a profile for music, a gallery for art, and a blog for writing. *Krea* dissolves these barriers, allowing creators to host their entire portfolio in a single, fully federated home powered by the **ActivityPub** protocol.
 
 ## Three Worlds, One Profile
 
