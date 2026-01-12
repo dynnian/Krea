@@ -1,6 +1,9 @@
-<img src="./assets/icon.svg" width="48" height="48" valign="middle"> Krea
-
-### *A Unified, Decentralized Haven for the Polymath Artist*
+<div align="center">
+  <picture>
+    <img src="./assets/logo.svg" alt="Krea Logo" width="350px">
+  </picture>
+  <h4>A Unified, Decentralized Haven for the Polymath Artist</h4>
+</div>
 
 *Krea* is a next-generation social media platform and creative hub built for the **Fediverse**. It is designed to be a cohesive, warm, and artist-centric space where musicians, writers, and visual artists can thrive without the constraints of centralized silos. 
 
