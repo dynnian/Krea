@@ -26,7 +26,15 @@
           default = pkgs.mkShellNoCC {
             packages = with pkgs; [
               deno
+              
+              # Podman and its required dependencies for rootless mode
               podman
+              runc            # Container runtime
+              conmon          # Container monitoring
+              skopeo          # Image tool
+              slirp4netns     # Networking for rootless
+              fuse-overlayfs  # Filesystem for rootless
+              shadow          # <-- Provides 'newuidmap' and 'newgidmap'
 
               # Fedify CLI Wrapper
               (writeShellScriptBin "fedify" ''
@@ -40,6 +48,13 @@
 
               # Start Postgres
               (writeShellScriptBin "start-pg" ''
+                # 1. WSL Fix: Ensure cgroups/mounts work for rootless podman
+                if [ -n "$WSL_DISTRO_NAME" ]; then
+                   # This suppresses the "not a shared mount" warning
+                   export STORAGE_DRIVER=vfs
+                fi
+
+                # 2. Start Logic
                 if ! ${podman}/bin/podman container exists krea-postgres; then
                    echo "Creating and starting new krea-postgres container..."
                    ${podman}/bin/podman run \
@@ -69,6 +84,9 @@
               export DENO_INSTALL_ROOT="$HOME/.deno/bin"
               mkdir -p "$DENO_INSTALL_ROOT"
               export PATH="$DENO_INSTALL_ROOT:$PATH"
+              
+              # Config podman to find the helper tools
+              export CONTAINERS_HELPER_BINARY_DIR="${pkgs.podman}/bin"
               
               echo "Environment ready."
               echo "Commands available: 'start-pg', 'stop-pg', 'fedify'"
