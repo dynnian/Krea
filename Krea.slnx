@@ -1,8 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/Krea.API/Krea.API.csproj" />
-    <Project Path="src/Krea.Application/Krea.Application.csproj" />
-    <Project Path="src/Krea.Domain/Krea.Domain.csproj" />
-    <Project Path="src/Krea.Infrastructure/Krea.Infrastructure.csproj" />
-  </Folder>
-</Solution>
