@@ -4,23 +4,44 @@ using Krea.Domain.Validators;
 namespace Krea.Domain.Entities {
     public sealed class User {
         public Guid Id { get; private set; }
-        [UserName] public string Username { get; private set; }
-        [EmailAddress] public string Email { get; private set; }
+        
+        [UserName, Required(ErrorMessage = "Username is required.")] 
+        public string Username { get; private set; }
+        
+        [EmailAddress, Required(ErrorMessage = "Email is required.")] 
+        public string Email { get; private set; }
+        
+        [Required(ErrorMessage = "PasswordHash is required.")] 
         public string PasswordHash { get; private set; }
-        [StringLength(32)] public string DisplayName { get; private set; }
+        
+        [StringLength(32), Required(ErrorMessage = "DisplayName is required.")]
+        public string DisplayName { get; private set; }
+        
         [StringLength(256)] public string Biography { get; private set; }
+        
         [LanguageCode] public string LanguageCode { get; set; }
+        
         [TimeZone] public string TimeZoneId { get; set; }
+        
         public bool EmailConfirmed { get; private set; }
+        
         public bool IsBanned { get; private set; }
+        
         public bool IsDisabled { get; private set; }
+        
         public Media? ProfilePicture { get; private set; }
+        
         public Media? BannerPicture { get; private set; }
-        public DateTime? EmailConfirmedAt { get; private set; }
-        public DateTime? LastPasswordResetAt { get; private set; }
-        public DateTime? LastLoginAt { get; private set; }
-        public DateTime RegisteredAt { get; private set; }
-        public DateTime UpdatedAt { get; private set; }
+        
+        [Timestamp] public DateTime? EmailConfirmedAt { get; private set; }
+        
+        [Timestamp] public DateTime? LastPasswordResetAt { get; private set; }
+        
+        [Timestamp] public DateTime? LastLoginAt { get; private set; }
+        
+        [Timestamp] public DateTime RegisteredAt { get; private set; }
+        
+        [Timestamp] public DateTime UpdatedAt { get; private set; }
         
         #pragma warning disable CS8618
         private User() { }

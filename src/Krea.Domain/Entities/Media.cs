@@ -1,11 +1,21 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Krea.Domain.Entities {
     public sealed class Media {
         public Guid Id { get; private init; }
+        
+        [Required(ErrorMessage = "OriginalFileName is required.")]
         public string OriginalFileName { get; private set; }
+        
         public string FileName { get; private set; }
+        
+        [Required(ErrorMessage = "MimeType is required.")]
         public string MimeType { get; private set; }
+        
+        [Required(ErrorMessage = "Path is required.")]
         public string Path { get; private set; }
-        public DateTime UploadedAt { get; private set; }
+        
+        [Timestamp] public DateTime UploadedAt { get; private set; }
         
         #pragma warning disable CS8618
         private Media() { }
