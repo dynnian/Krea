@@ -1,0 +1,378 @@
+erDiagram
+
+%% ---------------------------------------------------------
+%% USERS & AUTH (Gray/Blue/Pink)
+%% ---------------------------------------------------------
+user {
+    bigint id PK
+    varchar username UK
+    varchar domain
+    varchar email UK
+    varchar email_confirmation_token
+    timestamp email_confirmed_at
+    varchar password_hash
+    varchar display_name
+    text biography
+    char language
+    char locale
+    varchar timezone
+    bigint profile_picture FK
+    bigint banner_picture FK
+    bool is_banned
+    bool is_disabled
+    varchar stripe_account_id
+    timestamp last_login_at
+    timestamp registered_at
+    timestamp updated_at
+}
+
+role {
+    bigint id PK
+    varchar name
+    text description
+    timestamp created_at
+}
+
+user_roles {
+    bigint user_id PK,FK
+    bigint role_id PK,FK
+    timestamp assigned_at
+    bigint assigned_by
+}
+
+permission {
+    bigint id PK
+    varchar name
+    bigint scope_id FK
+    text description
+}
+
+role_permissions {
+    bigint role_id PK,FK
+    bigint permission_id PK,FK
+}
+
+scope {
+    bigint id PK
+    varchar name
+}
+
+follow {
+    bigint source_user_id PK,FK
+    bigint target_user_id PK,FK
+    timestamp followed_at
+}
+
+%% ---------------------------------------------------------
+%% MONETARY / TRANSACTIONS (Green)
+%% ---------------------------------------------------------
+payment {
+    bigint id PK
+    bigint payer_id FK
+    bigint payee_id FK
+    decimal amount
+    enum status
+    varchar external_ref
+    timestamp payed_at
+}
+
+donation {
+    bigint id PK
+    bigint from_user_id FK
+    bigint to_artist_id FK
+    decimal amount
+    text message
+    timestamp donated_at
+}
+
+subscription {
+    bigint id PK
+    bigint subscriber_id FK
+    bigint plan_id FK
+    bool is_active
+    timestamp current_period_start
+    timestamp current_period_end
+    timestamp canceled_at
+    timestamp subscribed_at
+    timestamp updated_at
+}
+
+membership_plan {
+    bigint id PK
+    bigint artist_id FK
+    varchar name
+    text benefits
+    bigint image FK
+    decimal price_amount
+    int max_slots
+    bool is_active
+    timestamp created_at
+    timestamp updated_at
+}
+
+commission_offering {
+    bigint id PK
+    bigint artist_id FK
+    varchar title
+    text description
+    decimal base_price
+    int max_slots
+    bool is_active
+    timestamp created_at
+    timestamp updated_at
+}
+
+commission_request {
+    bigint id PK
+    bigint bidder_id FK
+    bigint offering_id FK
+    text brief
+    enum status
+    timestamp created_at
+    timestamp updated_at
+}
+
+commission_submissions {
+    bigint request_id PK,FK
+    bigint media_id PK,FK
+}
+
+%% ---------------------------------------------------------
+%% CONTENT & SOCIAL (Orange)
+%% ---------------------------------------------------------
+post {
+    bigint id PK
+    bigint user_post_id FK
+    enum type
+    varchar title
+    text content
+    bool is_work
+    bool is_deleted
+    bool is_local
+    bigint post_replied_to FK
+    bigint post_repost_of FK
+    timestamp created_at
+    timestamp updated_at
+}
+
+post_uploads {
+    bigint post_id PK,FK
+    bigint media_id PK,FK
+    bool is_work_media
+}
+
+post_favorites {
+    bigint user_id PK,FK
+    bigint post_id PK,FK
+    timestamp favorited_at
+}
+
+like {
+    bigint id PK
+    bigint user_id FK
+    bigint target_id FK
+    enum target_type
+    timestamp liked_at
+}
+
+hashtag {
+    bigint id PK
+    varchar name
+}
+
+post_hashtag {
+    bigint post_id PK,FK
+    bigint tag_id PK,FK
+}
+
+report {
+    bigint id PK
+    bigint peer_id FK
+    bigint reporter_id FK
+    bigint category_id FK
+    varchar details
+    bool is_resolved
+    timestamp reported_at
+}
+
+report_category {
+    bigint id PK
+    varchar name
+}
+
+moderation_action {
+    bigint id PK
+    bigint report_id FK
+    bigint moderator_id FK
+    enum action
+    text reason
+    timestamp created_at
+}
+
+%% ---------------------------------------------------------
+%% MEDIA & METADATA (Yellow/White)
+%% ---------------------------------------------------------
+media {
+    bigint id PK
+    varchar filename
+    varchar mime_type
+    varchar path
+    int file_size
+    timestamp uploaded_at
+}
+
+image_metadata {
+    bigint id PK
+    bigint upload_id FK
+    int file_size
+    varchar width
+    varchar height
+    bigint collection_id FK
+}
+
+music_metadata {
+    bigint id PK
+    bigint upload_id FK
+    varchar title
+    int bitrate_kbps
+    int duration_sec
+    bigint genre_id FK
+    bigint collection_album_id FK
+}
+
+text_metadata {
+    bigint id PK
+    bigint upload_id FK
+    varchar title
+    varchar sort_title
+    varchar subtitle
+    text description
+    char language
+    int word_count
+    bigint genre_id FK
+    bigint collection_series_id FK
+}
+
+genre {
+    bigint id PK
+    varchar name
+    enum type
+}
+
+collections {
+    bigint id PK
+    varchar title
+    bigint image FK
+    text description
+    int item_count
+    timestamp created_at
+    timestamp updated_at
+}
+
+%% ---------------------------------------------------------
+%% MESSAGING (Yellow/Pink)
+%% ---------------------------------------------------------
+conversation {
+    bigint id PK
+    varchar title
+    varchar description
+    bigint icon FK
+    timestamp created_at
+    timestamp updated_at
+}
+
+user_conversation {
+    bigint user_id PK,FK
+    bigint conversation_id PK,FK
+}
+
+message {
+    bigint id PK
+    bigint conversation_id FK
+    bigint sender_id FK
+    enum content
+    timestamp created_at
+    timestamp updated_at
+}
+
+message_media {
+    bigint message_id PK,FK
+    bigint media_id PK,FK
+}
+
+%% ---------------------------------------------------------
+%% NOTIFICATIONS (Purple)
+%% ---------------------------------------------------------
+notification {
+    bigint id PK
+    bigint user_id FK
+    bigint activity_id FK
+    varchar type
+    enum status
+    timestamp created_at
+}
+
+%% ---------------------------------------------------------
+%% RELATIONSHIPS
+%% ---------------------------------------------------------
+
+%% User Relationships
+user ||--o{ user_roles : "has"
+user ||--o{ follow : "follows"
+user ||--o{ follow : "followed by"
+user ||--o{ post : "creates"
+user ||--o{ like : "likes"
+user ||--o{ post_favorites : "favorites"
+user ||--o{ user_conversation : "participates"
+user ||--o{ notification : "receives"
+
+%% Role & Permissions
+role ||--o{ user_roles : "assigned to"
+role ||--o{ role_permissions : "contains"
+permission ||--o{ role_permissions : "included in"
+permission }|--|| scope : "scoped to"
+
+%% Payments & Subscriptions
+user ||--o{ payment : "pays/receives"
+user ||--o{ donation : "sends/receives"
+user ||--o{ subscription : "subscribes"
+membership_plan ||--o{ subscription : "defined by"
+user ||--o{ membership_plan : "offers"
+
+%% Commissions
+user ||--o{ commission_offering : "offers"
+commission_offering ||--o{ commission_request : "receives"
+user ||--o{ commission_request : "requests"
+commission_request ||--o{ commission_submissions : "contains"
+media ||--o{ commission_submissions : "is submission"
+
+%% Posts & Social
+post ||--o{ post_uploads : "has media"
+media ||--o{ post_uploads : "attached to"
+post ||--o{ post_hashtag : "tagged"
+hashtag ||--o{ post_hashtag : "used in"
+post ||--o{ post_favorites : "favorited"
+post ||--o{ like : "liked"
+
+%% Moderation
+user ||--o{ report : "reports/reported"
+report_category ||--o{ report : "categorized"
+report ||--o{ moderation_action : "actioned"
+user ||--o{ moderation_action : "moderates"
+
+%% Media & Metadata
+media ||--|| image_metadata : "extends"
+media ||--|| music_metadata : "extends"
+media ||--|| text_metadata : "extends"
+genre ||--o{ music_metadata : "defines"
+genre ||--o{ text_metadata : "defines"
+collections ||--o{ image_metadata : "contains"
+collections ||--o{ music_metadata : "contains"
+collections ||--o{ text_metadata : "contains"
+
+%% Messaging
+conversation ||--o{ user_conversation : "has members"
+conversation ||--o{ message : "contains"
+user ||--o{ message : "sends"
+message ||--o{ message_media : "has attachment"
+media ||--o{ message_media : "attached"
