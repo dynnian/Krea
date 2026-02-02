@@ -7,7 +7,11 @@ namespace Krea.Domain.Entities {
 
         [Required(ErrorMessage = "Title is required.")]
         public string Title { get; private set; }
+        
+        [Required(ErrorMessage = "SortTitle is required.")]
         public string SortTitle { get; private set; }
+        
+        [Required(ErrorMessage = "Subtitle is required.")]
         public string Subtitle { get; private set; }
         public string Description { get; private set; }
 
@@ -33,8 +37,10 @@ namespace Krea.Domain.Entities {
         {
             Upload = upload ?? throw new ArgumentNullException(nameof(upload));
 
-            if (string.IsNullOrWhiteSpace(title))
-                throw new ArgumentException("Title is required");
+            if (string.IsNullOrWhiteSpace(title) 
+                || string.IsNullOrWhiteSpace(sortTitle) 
+                ||  string.IsNullOrWhiteSpace(subtitle))
+                throw new ArgumentException("Required arguments are missing");
 
             Id = Guid.NewGuid();
             Title = title;

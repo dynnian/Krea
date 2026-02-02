@@ -10,11 +10,11 @@ namespace Krea.Domain.Entities {
 
         public int FileSize { get; private set; }
         
-        [Required(ErrorMessage = "Width is required.")] 
-        public int Width { get; private set; }
+        [StringLength(64), Required(ErrorMessage = "Width is required.")] 
+        public string Width { get; private set; }
         
-        [Required(ErrorMessage = "Height is required.")] 
-        public int Height { get; private set; }
+        [StringLength(64), Required(ErrorMessage = "Height is required.")] 
+        public string Height { get; private set; }
         public Guid? CollectionId { get; private set; } 
         
         #pragma warning disable CS8618
@@ -24,8 +24,8 @@ namespace Krea.Domain.Entities {
         public ImageMetadata(
             Media upload,
             int fileSize,
-            int width,
-            int height,
+            string width,
+            string height,
             Guid? collectionId = null)
         {
             Upload = upload ?? throw new ArgumentNullException(nameof(upload));
