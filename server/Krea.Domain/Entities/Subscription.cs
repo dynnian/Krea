@@ -6,20 +6,19 @@ namespace Krea.Domain.Entities {
         public Guid PlanId { get; private set; }
 
         public bool IsActive { get; private set; }
-
         public DateTime CurrentPeriodStart { get; private set; }
         public DateTime CurrentPeriodEnd { get; private set; }
 
         public DateTime? CanceledAt { get; private set; }
-
         public DateTime SubscribedAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
 
-#pragma warning disable CS8618
         private Subscription() { }
-#pragma warning restore CS8618
 
         public Subscription(Guid subscriberId, Guid planId, DateTime start, DateTime end) {
+            if (end <= start)
+                throw new ArgumentException("Invalid subscription period.");
+
             Id = Guid.NewGuid();
             SubscriberId = subscriberId;
             PlanId = planId;
@@ -30,7 +29,18 @@ namespace Krea.Domain.Entities {
             UpdatedAt = SubscribedAt;
         }
 
+        public void Renew(DateTime newStart, DateTime newEnd) {
+            if (!IsActive)
+                throw new InvalidOperationException("Cannot renew inactive subscription.");
+
+            CurrentPeriodStart = newStart;
+            CurrentPeriodEnd = newEnd;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
         public void Cancel() {
+            if (!IsActive) return;
+
             IsActive = false;
             CanceledAt = DateTime.UtcNow;
             UpdatedAt = CanceledAt.Value;
