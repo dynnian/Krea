@@ -3,63 +3,77 @@ import axiosClient from '../lib/axios.ts'
 import { storage } from '../lib/storage.ts'
 import { createContext, useContext, useEffect, useState } from 'react';
 
+export interface AuthUser {
+  sub: string;
+  email: string;
+  role?: string;
+  name?: string;
+}
+
+interface AuthContextType {
+  user: AuthUser | null;
+  login: (credentials: LoginDTO) => Promise<void>;
+  logout: () => void;
+  isAuthenticated: boolean;
+  loading: boolean;
+}
+
+export interface LoginDTO {
+  email: string;
+  password: string;
+}
+
 const AuthContext = createContext(null)
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
-  const [token, setToken] = useState(null)
-  const [loading, setLoading] = useState(true)
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('access_token')
-
-    if (storedToken) {
+    const token = storage.getToken();
+    if (token) {
       try {
-        const decoded = jwtDecode(storedToken)
-        setUser(decoded)
-        setToken(storedToken)
+        setUser(jwtDecode<AuthUser>(token));
       } catch {
-        localStorage.removeItem('access_token')
+        storage.clearToken();
       }
     }
+    setLoading(false);
+  }, []);
 
-    setLoading(false)
-  }, [])
-
-  const login = async (credentials) => {
-    const res = await axiosClient.post('/api/auth/login', credentials)
-
-    const accessToken = res.data.accessToken
-    localStorage.setItem('access_token', accessToken)
-
-    setToken(accessToken)
-    setUser(jwtDecode(accessToken))
-  }
+  const login = async (credentials: LoginDTO) => {
+    // Simulate a successful login
+    const fakeToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwibmFtZSI6IlRlc3QgVXNlciIsInJvbGUiOiJ1c2VyIn0.dummySignature";
+    storage.setToken(fakeToken);
+    setUser(jwtDecode<AuthUser>(fakeToken));
+  };
 
   const logout = () => {
-    localStorage.removeItem('access_token')
-    setUser(null)
-    setToken(null)
-  }
-
-  const isAuthenticated = !!user
+    storage.clearToken();
+    setUser(null);
+  };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        token,
         login,
         logout,
-        isAuthenticated,
+        isAuthenticated: !!user,
         loading,
       }}
     >
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
-export const useAuth = () => useContext(AuthContext)
+export function useAuth(): AuthContextType {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error("useAuth must be used within AuthProvider");
+  }
+  return ctx;
+}
 
 
