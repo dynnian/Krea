@@ -1,4 +1,4 @@
-namespace Krea.Domain.Enums {
+namespace Krea.Domain.ValueObjects {
     public enum CommissionRequestStatus {
         Pending = 0,
         Accepted = 1,

@@ -1,4 +1,4 @@
-using Krea.Domain.Enums;
+using Krea.Domain.ValueObjects;
 
 namespace Krea.Domain.Entities {
     public sealed class CommissionRequest {

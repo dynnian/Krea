@@ -1,4 +1,3 @@
-using Krea.Domain.Enums;
 using Krea.Domain.ValueObjects;
 
 namespace Krea.Domain.Entities {

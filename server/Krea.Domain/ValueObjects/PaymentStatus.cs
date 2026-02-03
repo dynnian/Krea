@@ -1,4 +1,4 @@
-namespace Krea.Domain.Enums {
+namespace Krea.Domain.ValueObjects {
     public enum PaymentStatus {
         Pending = 0,
         Completed = 1,
