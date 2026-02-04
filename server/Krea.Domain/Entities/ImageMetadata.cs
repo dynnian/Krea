@@ -6,8 +6,9 @@ namespace Krea.Domain.Entities {
         
         public Guid Id { get; private set; }
         
-        public Media Upload { get; private set; }
-
+        [Required(ErrorMessage = "UploadId is required.")]
+        public Guid UploadId { get; private set; }
+        
         public int FileSize { get; private set; }
         
         [StringLength(64), Required(ErrorMessage = "Width is required.")] 
@@ -15,6 +16,7 @@ namespace Krea.Domain.Entities {
         
         [StringLength(64), Required(ErrorMessage = "Height is required.")] 
         public string Height { get; private set; }
+        
         public Guid? CollectionId { get; private set; } 
         
         #pragma warning disable CS8618
@@ -22,19 +24,18 @@ namespace Krea.Domain.Entities {
         #pragma warning restore CS8618
 
         public ImageMetadata(
-            Media upload,
+            Guid uploadId,
             int fileSize,
             string width,
-            string height,
-            Guid? collectionId = null)
+            string height)
         {
-            Upload = upload ?? throw new ArgumentNullException(nameof(upload));
-
+            if (uploadId == Guid.Empty)
+                throw new ArgumentException("UploadId is required");
+            
             Id = Guid.NewGuid();
             FileSize = fileSize;
             Width = width;
             Height = height;
-            CollectionId = collectionId;
         }
 
         public void AssignToCollection(Guid collectionId) {

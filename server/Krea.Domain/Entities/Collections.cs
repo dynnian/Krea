@@ -34,7 +34,7 @@ namespace Krea.Domain.Entities {
             Id = Guid.NewGuid();
             Title = title;
             Description = description ?? string.Empty;
-            ItemCount = itemCount;
+            ItemCount = 0;
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
         }
@@ -62,6 +62,17 @@ namespace Krea.Domain.Entities {
                 UpdatedAt = updatedAt 
             };
             return collections;
+        }
+        
+        public void AddItem() {
+            ItemCount++;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void RemoveItem() {
+            if (ItemCount > 0)
+                ItemCount--;
+            UpdatedAt = DateTime.UtcNow;
         }
         
         public void UpdateInfo(string title, string description) {
