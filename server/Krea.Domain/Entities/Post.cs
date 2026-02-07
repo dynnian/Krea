@@ -55,13 +55,12 @@ namespace Krea.Domain.Entities
             bool isWork,
             bool isLocal
         ) {
-            if(AuthorPost == Guid.Empty)
-                throw new InvalidDataException("Author post is required");
+            Validate(authorPost, title);
 
             Id = Guid.NewGuid();
             AuthorPost = authorPost;
             Type = type;
-            Title = title ?? string.Empty;
+            Title = title;
             Content = content ?? string.Empty;
             IsWork = isWork;
             IsLocal = isLocal;
@@ -86,6 +85,8 @@ namespace Krea.Domain.Entities
             DateTime updatedAt,
             DateTime? deletedAt
         ) {
+            Validate(authorPost, title);
+
             var post = new Post {
                 Id = id,
                 AuthorPost = authorPost,
@@ -164,6 +165,13 @@ namespace Krea.Domain.Entities
 
             _uploads.Remove(upload);
             UpdatedAt = DateTime.UtcNow;
+        }
+
+        private static void Validate(Guid authorPost, string title)
+        {
+            if (authorPost == Guid.Empty
+                || string.IsNullOrWhiteSpace(title))
+                throw new ArgumentException("All arguments are required");
         }
     }
 }

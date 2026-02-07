@@ -8,13 +8,30 @@ namespace Krea.Domain.Entities {
         private PostUpload() { }
         #pragma warning restore CS8618
 
-        internal PostUpload(Guid uploadId, Guid mediaId, bool isWorkMedia) {
+        public PostUpload(
+            Guid uploadId,
+            Guid mediaId,
+            bool isWorkMedia
+        ) {
             UploadId = uploadId;
             MediaId = mediaId;
-            IsWorkMedia = isWorkMedia;
+            IsWorkMedia = isWorkMedia;   
         }
 
-        internal void MarkAsWorkMedia() {
+        public PostUpload Load(
+            Guid uploadId,
+            Guid mediaId,
+            bool isWorkMedia
+        ) {
+            var postUploads = new PostUpload {
+                UploadId = uploadId,
+                MediaId = mediaId,
+                IsWorkMedia = isWorkMedia
+            };
+            return postUploads;
+        }
+
+        public void MarkAsWorkMedia() {
             IsWorkMedia = true;
         }
     }
