@@ -1,7 +1,0 @@
-{
-  "deno.enable": true,
-  "deno.path": "/home/perlishnov/.deno/bin/deno",
-  "deno.lint": true,
-  "deno.unstable": true,
-  "typescript.validate.enable": false,
-}
