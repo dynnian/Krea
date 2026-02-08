@@ -2,8 +2,8 @@ namespace Krea.Domain.Entities {
     public sealed class Subscription {
         public Guid Id { get; private set; }
 
-        public Guid SubscriberId { get; private set; }
-        public Guid PlanId { get; private set; }
+        public User Subscriber { get; private set; }
+        public MembershipPlan Plan { get; private set; }
 
         public bool IsActive { get; private set; }
 
@@ -14,34 +14,32 @@ namespace Krea.Domain.Entities {
         public DateTime SubscribedAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
 
-#pragma warning disable CS8618
+        #pragma warning disable CS8618
         private Subscription() { }
-#pragma warning restore CS8618
-
-        // Constructor de negocio
+        #pragma warning restore CS8618
+        
         public Subscription(
-            Guid subscriberId,
-            Guid planId,
+            User subscriber,
+            MembershipPlan plan,
             DateTime start,
             DateTime end
         ) {
-            Validate(subscriberId, planId, start, end);
+            Validate(subscriber, plan, start, end);
 
             Id = Guid.NewGuid();
-            SubscriberId = subscriberId;
-            PlanId = planId;
+            Subscriber = subscriber;
+            Plan = plan;
             CurrentPeriodStart = start;
             CurrentPeriodEnd = end;
             IsActive = true;
             SubscribedAt = DateTime.UtcNow;
             UpdatedAt = SubscribedAt;
         }
-
-        // Load desde persistencia
+        
         public static Subscription Load(
             Guid id,
-            Guid subscriberId,
-            Guid planId,
+            User subscriber,
+            MembershipPlan plan,
             bool isActive,
             DateTime start,
             DateTime end,
@@ -49,12 +47,12 @@ namespace Krea.Domain.Entities {
             DateTime subscribedAt,
             DateTime updatedAt
         ) {
-            Validate(subscriberId, planId, start, end);
+            Validate(subscriber, plan, start, end);
 
             return new Subscription {
                 Id = id,
-                SubscriberId = subscriberId,
-                PlanId = planId,
+                Subscriber = subscriber,
+                Plan = plan,
                 IsActive = isActive,
                 CurrentPeriodStart = start,
                 CurrentPeriodEnd = end,
@@ -83,12 +81,12 @@ namespace Krea.Domain.Entities {
         }
 
         private static void Validate(
-            Guid subscriberId,
-            Guid planId,
+            User subscriber,
+            MembershipPlan plan,
             DateTime start,
             DateTime end
         ) {
-            if (subscriberId == Guid.Empty || planId == Guid.Empty)
+            if (subscriber is null || plan is null)
                 throw new ArgumentException("Subscriber and plan are required.");
 
             ValidatePeriod(start, end);

@@ -4,8 +4,8 @@ namespace Krea.Domain.Entities {
     public sealed class Payment {
         public Guid Id { get; private set; }
 
-        public Guid PayerId { get; private set; }
-        public Guid PayedToId { get; private set; }
+        public User Payer { get; private set; }
+        public User Payee { get; private set; }
 
         public Money Amount { get; private set; }
         public PaymentStatus Status { get; private set; }
@@ -18,17 +18,17 @@ namespace Krea.Domain.Entities {
         #pragma warning restore CS8618
         
         public Payment(
-            Guid payerId,
-            Guid payedToId,
+            User payer,
+            User payee,
             Money amount,
             ExternalPaymentRef externalRef
         ) {
-            if (payerId == payedToId)
+            if (payer == payee)
                 throw new ArgumentException("Payer and payee cannot be the same.");
 
             Id = Guid.NewGuid();
-            PayerId = payerId;
-            PayedToId = payedToId;
+            Payer = payer;
+            Payee = payee;
             Amount = amount;
             ExternalRef = externalRef;
             Status = PaymentStatus.Pending;
@@ -37,20 +37,20 @@ namespace Krea.Domain.Entities {
         
         public static Payment Load(
             Guid id,
-            Guid payerId,
-            Guid payedToId,
+            User payer,
+            User payee,
             Money amount,
             PaymentStatus status,
             ExternalPaymentRef externalRef,
             DateTime? payedAt
         ) {
-            if (payerId == payedToId)
+            if (payer == payee)
                 throw new ArgumentException("Payer and payee cannot be the same.");
 
             return new Payment {
                 Id = id,
-                PayerId = payerId,
-                PayedToId = payedToId,
+                Payer = payer,
+                Payee = payee,
                 Amount = amount,
                 Status = status,
                 ExternalRef = externalRef,

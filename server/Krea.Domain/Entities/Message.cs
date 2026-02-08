@@ -4,28 +4,28 @@ namespace Krea.Domain.Entities {
     public sealed class Message {
         public Guid Id { get; private set; }
 
-        public Guid UserId { get; private set; }
-        public Guid ConversationId { get; private set; }
+        public User User { get; private set; }
+        public Conversation Conversation { get; private set; }
 
         public MessageContentType Content { get; private set; }
 
         public DateTime SentAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
 
-#pragma warning disable CS8618
+        #pragma warning disable CS8618
         private Message() { }
-#pragma warning restore CS8618
+        #pragma warning restore CS8618
         
         public Message(
-            Guid userId,
-            Guid conversationId,
+            User user,
+            Conversation conversation,
             MessageContentType content
         ) {
-            Validate(userId, conversationId);
+            Validate(user, conversation);
 
             Id = Guid.NewGuid();
-            UserId = userId;
-            ConversationId = conversationId;
+            User = user;
+            Conversation = conversation;
             Content = content;
             SentAt = DateTime.UtcNow;
             UpdatedAt = SentAt;
@@ -33,18 +33,18 @@ namespace Krea.Domain.Entities {
         
         public static Message Load(
             Guid id,
-            Guid userId,
-            Guid conversationId,
+            User user,
+            Conversation conversation,
             MessageContentType content,
             DateTime sentAt,
             DateTime updatedAt
         ) {
-            Validate(userId, conversationId);
+            Validate(user, conversation);
 
             return new Message {
                 Id = id,
-                UserId = userId,
-                ConversationId = conversationId,
+                User = user,
+                Conversation = conversation,
                 Content = content,
                 SentAt = sentAt,
                 UpdatedAt = updatedAt
@@ -56,11 +56,11 @@ namespace Krea.Domain.Entities {
             UpdatedAt = DateTime.UtcNow;
         }
 
-        private static void Validate(Guid userId, Guid conversationId) {
-            if (userId == Guid.Empty)
+        private static void Validate(User user, Conversation conversation) {
+            if (user is null)
                 throw new ArgumentException("User is required.");
 
-            if (conversationId == Guid.Empty)
+            if (conversation is null)
                 throw new ArgumentException("Conversation is required.");
         }
     }

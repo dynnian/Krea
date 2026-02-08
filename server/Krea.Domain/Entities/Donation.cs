@@ -1,11 +1,13 @@
+using Krea.Domain.ValueObjects;
+
 namespace Krea.Domain.Entities {
     public sealed class Donation {
         public Guid Id { get; private set; }
 
-        public Guid FromUserId { get; private set; }
-        public Guid ToArtistId { get; private set; }
+        public User Donor { get; private set; }
+        public User Recipient { get; private set; }
 
-        public decimal Amount { get; private set; }
+        public Money Amount { get; private set; }
         public string Message { get; private set; }
 
         public DateTime DonatedAt { get; private set; }
@@ -15,16 +17,16 @@ namespace Krea.Domain.Entities {
         #pragma warning restore CS8618
         
         public Donation(
-            Guid fromUserId,
-            Guid toArtistId,
-            decimal amount,
+            User donor,
+            User recipient,
+            Money amount,
             string? message
         ) {
-            Validate(fromUserId, toArtistId, amount);
+            Validate(donor, recipient, amount);
 
             Id = Guid.NewGuid();
-            FromUserId = fromUserId;
-            ToArtistId = toArtistId;
+            Donor = donor;
+            Recipient = recipient;
             Amount = amount;
             Message = message ?? string.Empty;
             DonatedAt = DateTime.UtcNow;
@@ -32,29 +34,29 @@ namespace Krea.Domain.Entities {
         
         public static Donation Load(
             Guid id,
-            Guid fromUserId,
-            Guid toArtistId,
-            decimal amount,
+            User donor,
+            User recipient,
+            Money amount,
             string message,
             DateTime donatedAt
         ) {
-            Validate(fromUserId, toArtistId, amount);
+            Validate(donor, recipient, amount);
 
             return new Donation {
                 Id = id,
-                FromUserId = fromUserId,
-                ToArtistId = toArtistId,
+                Donor = donor,
+                Recipient = recipient,
                 Amount = amount,
                 Message = message,
                 DonatedAt = donatedAt
             };
         }
 
-        private static void Validate(Guid from, Guid to, decimal amount) {
-            if (from == Guid.Empty || to == Guid.Empty)
+        private static void Validate(User donor, User recipient, decimal amount) {
+            if (donor is null || recipient is null)
                 throw new ArgumentException("Users are required.");
 
-            if (from == to)
+            if (ReferenceEquals(donor, recipient))
                 throw new ArgumentException("Cannot donate to yourself.");
 
             if (amount <= 0)

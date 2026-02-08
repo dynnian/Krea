@@ -4,7 +4,7 @@ namespace Krea.Domain.Entities {
 
         public string Title { get; private set; }
         public string Description { get; private set; }
-        public Guid? IconId { get; private set; }
+        public Media? Icon { get; private set; }
 
         public DateTime CreatedAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
@@ -13,13 +13,13 @@ namespace Krea.Domain.Entities {
         private Conversation() { }
 #pragma warning restore CS8618
         
-        public Conversation(string title, string description, Guid? iconId = null) {
+        public Conversation(string title, string description, Media? icon = null) {
             Validate(title, description);
 
             Id = Guid.NewGuid();
             Title = title;
             Description = description;
-            IconId = iconId;
+            Icon = icon;
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = CreatedAt;
         }
@@ -28,7 +28,7 @@ namespace Krea.Domain.Entities {
             Guid id,
             string title,
             string description,
-            Guid? iconId,
+            Media icon,
             DateTime createdAt,
             DateTime updatedAt
         ) {
@@ -38,18 +38,18 @@ namespace Krea.Domain.Entities {
                 Id = id,
                 Title = title,
                 Description = description,
-                IconId = iconId,
+                Icon = icon,
                 CreatedAt = createdAt,
                 UpdatedAt = updatedAt
             };
         }
 
-        public void UpdateDetails(string title, string description, Guid? iconId) {
+        public void UpdateDetails(string title, string description, Media? icon) {
             Validate(title, description);
 
             Title = title;
             Description = description;
-            IconId = iconId;
+            Icon = icon;
             UpdatedAt = DateTime.UtcNow;
         }
 

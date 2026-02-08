@@ -1,13 +1,15 @@
+using Krea.Domain.ValueObjects;
+
 namespace Krea.Domain.Entities {
     public sealed class MembershipPlan {
         public Guid Id { get; private set; }
 
-        public Guid ArtistId { get; private set; }
+        public User Artist { get; private set; }
         public string Name { get; private set; }
         public string Benefits { get; private set; }
-        public Guid? ImageId { get; private set; }
+        public Media? Image { get; private set; }
 
-        public decimal PriceAmount { get; private set; }
+        public Money PriceAmount { get; private set; }
         public int MaxSlots { get; private set; }
 
         public bool IsActive { get; private set; }
@@ -20,22 +22,22 @@ namespace Krea.Domain.Entities {
         #pragma warning restore CS8618
         
         public MembershipPlan(
-            Guid artistId,
+            User artist,
             string name,
             string benefits,
-            decimal priceAmount,
+            Money priceAmount,
             int maxSlots,
-            Guid? imageId = null
+            Media? image = null
         ) {
-            Validate(artistId, name, benefits, priceAmount, maxSlots);
+            Validate(artist, name, benefits, priceAmount, maxSlots);
 
             Id = Guid.NewGuid();
-            ArtistId = artistId;
+            Artist = artist;
             Name = name;
             Benefits = benefits;
             PriceAmount = priceAmount;
             MaxSlots = maxSlots;
-            ImageId = imageId;
+            Image = image;
             IsActive = true;
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = CreatedAt;
@@ -43,26 +45,26 @@ namespace Krea.Domain.Entities {
         
         public static MembershipPlan Load(
             Guid id,
-            Guid artistId,
+            User artist,
             string name,
             string benefits,
-            decimal priceAmount,
+            Money priceAmount,
             int maxSlots,
-            Guid? imageId,
+            Media? image,
             bool isActive,
             DateTime createdAt,
             DateTime updatedAt
         ) {
-            Validate(artistId, name, benefits, priceAmount, maxSlots);
+            Validate(artist, name, benefits, priceAmount, maxSlots);
 
             return new MembershipPlan {
                 Id = id,
-                ArtistId = artistId,
+                Artist = artist,
                 Name = name,
                 Benefits = benefits,
                 PriceAmount = priceAmount,
                 MaxSlots = maxSlots,
-                ImageId = imageId,
+                Image = image,
                 IsActive = isActive,
                 CreatedAt = createdAt,
                 UpdatedAt = updatedAt
@@ -80,13 +82,13 @@ namespace Krea.Domain.Entities {
         }
 
         private static void Validate(
-            Guid artistId,
+            User artist,
             string name,
             string benefits,
             decimal price,
             int maxSlots
         ) {
-            if (artistId == Guid.Empty)
+            if (artist is null)
                 throw new ArgumentException("Artist is required.");
 
             if (string.IsNullOrWhiteSpace(name) || name.Length > 32)
