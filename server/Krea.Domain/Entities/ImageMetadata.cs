@@ -29,13 +29,41 @@ namespace Krea.Domain.Entities {
             string width,
             string height)
         {
-            if (uploadId == Guid.Empty)
-                throw new ArgumentException("UploadId is required");
+            if (uploadId == Guid.Empty
+                || string.IsNullOrWhiteSpace(width)
+                || string.IsNullOrWhiteSpace(height))
+                throw new ArgumentException("Required arguments are missing");
             
             Id = Guid.NewGuid();
             FileSize = fileSize;
             Width = width;
             Height = height;
+        }
+
+        public ImageMetadata Load(
+            Guid id,
+            Guid uploadId,
+            int fileSize,
+            string width,
+            string height,
+            Guid? collectionId 
+        )
+        {
+            if (uploadId == Guid.Empty
+                || string.IsNullOrWhiteSpace(width)
+                || string.IsNullOrWhiteSpace(height))
+                throw new ArgumentException("Required arguments are missing");
+            
+            var imageMetadata = new ImageMetadata
+            {
+                Id = id,
+                UploadId = uploadId,
+                FileSize = fileSize,
+                Width = width,
+                Height = height,
+                CollectionId = collectionId
+            };
+            return imageMetadata;
         }
 
         public void AssignToCollection(Guid collectionId) {

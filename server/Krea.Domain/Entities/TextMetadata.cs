@@ -33,18 +33,16 @@ namespace Krea.Domain.Entities {
         public TextMetadata(
             Guid uploadId,
             string title,
-            string language,
+            string languageCode,
             int wordCount,
             string sortTitle,
             string subtitle,
             string description,
             Guid? genreId = null,
-            Guid? collectionId = null)
+            Guid? serieCollectionId = null)
         {
-            if (uploadId == Guid.Empty)
-                throw new ArgumentException("UploadId is required");
-            
-            if (string.IsNullOrWhiteSpace(title) 
+            if (uploadId == Guid.Empty 
+                || string.IsNullOrWhiteSpace(title) 
                 || string.IsNullOrWhiteSpace(sortTitle) 
                 ||  string.IsNullOrWhiteSpace(subtitle))
                 throw new ArgumentException("Required arguments are missing");
@@ -54,10 +52,37 @@ namespace Krea.Domain.Entities {
             SortTitle = sortTitle;
             Subtitle = subtitle;
             Description = description;
-            LanguageCode = language;
+            LanguageCode = languageCode;
             WordCount = wordCount;
             GenreId = genreId;
-            SerieCollectionId = collectionId;
+            SerieCollectionId = serieCollectionId;
+        }
+
+        public TextMetadata Load(
+            Guid id,
+            Guid uploadId,
+            string title,
+            string languageCode,
+            int wordCount,
+            string sortTitle,
+            string subtitle,
+            string description,
+            Guid? genreId,
+            Guid? serieCollectionId
+        ) {
+            var textMetadata = new TextMetadata {
+                Id = id,
+                UploadId = uploadId,
+                Title = title,
+                LanguageCode = languageCode,
+                WordCount = wordCount,
+                SortTitle = sortTitle,
+                Subtitle = subtitle,
+                Description =  description,
+                GenreId = genreId,
+                SerieCollectionId = serieCollectionId
+            };
+            return textMetadata;
         }
 
         public void AssignToSerie(Guid collectionId) {
