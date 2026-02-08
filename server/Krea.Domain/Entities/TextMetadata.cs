@@ -5,7 +5,8 @@ namespace Krea.Domain.Entities {
     public sealed class TextMetadata {
         public Guid Id { get; private set; }
         
-        public Guid UploadId { get; private set; }
+        [Required(ErrorMessage = "UploadId is required.")]
+        public PostUpload Upload { get; private set; }
 
         [Required(ErrorMessage = "Title is required.")]
         public string Title { get; private set; }
@@ -22,26 +23,26 @@ namespace Krea.Domain.Entities {
         
         public int WordCount { get; private set; }
         
-        public Guid? GenreId { get; private set; }
+        public Genre Genre { get; private set; }
         
-        public Guid? SerieCollectionId { get; private set; }
+        public Collections? SerieCollection { get; private set; }
 
         #pragma warning disable CS8618
         private TextMetadata() { }
         #pragma warning disable CS8618
 
         public TextMetadata(
-            Guid uploadId,
+            PostUpload upload,
             string title,
             string languageCode,
             int wordCount,
             string sortTitle,
             string subtitle,
             string description,
-            Guid? genreId = null,
-            Guid? serieCollectionId = null)
+            Genre genre = null,
+            Collections? serieCollection = null)
         {
-            if (uploadId == Guid.Empty 
+            if (upload is null 
                 || string.IsNullOrWhiteSpace(title) 
                 || string.IsNullOrWhiteSpace(sortTitle) 
                 ||  string.IsNullOrWhiteSpace(subtitle))
@@ -54,39 +55,39 @@ namespace Krea.Domain.Entities {
             Description = description;
             LanguageCode = languageCode;
             WordCount = wordCount;
-            GenreId = genreId;
-            SerieCollectionId = serieCollectionId;
+            Genre = genre;
+            SerieCollection = serieCollection;
         }
 
         public TextMetadata Load(
             Guid id,
-            Guid uploadId,
+            PostUpload upload,
             string title,
             string languageCode,
             int wordCount,
             string sortTitle,
             string subtitle,
             string description,
-            Guid? genreId,
-            Guid? serieCollectionId
+            Genre genre,
+            Collections? serieCollection
         ) {
             var textMetadata = new TextMetadata {
                 Id = id,
-                UploadId = uploadId,
+                Upload = upload,
                 Title = title,
                 LanguageCode = languageCode,
                 WordCount = wordCount,
                 SortTitle = sortTitle,
                 Subtitle = subtitle,
                 Description =  description,
-                GenreId = genreId,
-                SerieCollectionId = serieCollectionId
+                Genre = genre,
+                SerieCollection = serieCollection
             };
             return textMetadata;
         }
 
-        public void AssignToSerie(Guid collectionId) {
-            SerieCollectionId = collectionId;
+        public void AssignToSerie(Collections collection) {
+            SerieCollection = collection;
         }
     }
 }

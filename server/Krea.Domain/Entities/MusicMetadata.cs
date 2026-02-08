@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.VisualBasic;
 
 namespace Krea.Domain.Entities {
     public sealed class MusicMetadata {
         public Guid Id { get; private set; }
         
-        public Guid UploadId  { get; private set; }
+        [Required(ErrorMessage = "UploadId is required.")]
+        public PostUpload Upload  { get; private set; }
         
         [Required(ErrorMessage = "Title is required.")]
         public string Title { get; private set; }
@@ -15,22 +17,22 @@ namespace Krea.Domain.Entities {
         [Required(ErrorMessage = "DurationSeconds is required.")]
         public int DurationSeconds { get; private set; }
 
-        public Guid GenreId { get; private set; }
+        public Genre Genre { get; private set; }
         
-        public Guid? AlbumCollectionId { get; private set; }
+        public Collections? AlbumCollection { get; private set; }
 
         #pragma warning disable CS8618
         private MusicMetadata() { }
         #pragma warning restore CS8618
 
         public MusicMetadata(
-            Guid uploadId,
+            PostUpload upload,
             string title,
             int bitrateKbps,
             int durationSeconds,
-            Guid genreId)
+            Genre genre)
         {
-            if (uploadId == Guid.Empty
+            if (upload is null
                 || string.IsNullOrWhiteSpace(title)
                 || int.IsNegative(BitrateKbps)
                 || int.IsNegative(durationSeconds))
@@ -40,19 +42,19 @@ namespace Krea.Domain.Entities {
             Title = title;
             BitrateKbps = bitrateKbps;
             DurationSeconds = durationSeconds;
-            GenreId = genreId;
+            Genre = genre;
         }
 
         public MusicMetadata Load(
             Guid id,
-            Guid uploadId,
+            PostUpload upload,
             string title,
             int bitrateKbps,
             int durationSeconds,
-            Guid genreId,
-            Guid? albumCollectionId
+            Genre genre,
+            Collections? albumCollection
         ) {
-            if (uploadId == Guid.Empty
+            if (upload is null
                 || string.IsNullOrWhiteSpace(title)
                 || int.IsNegative(BitrateKbps)
                 || int.IsNegative(durationSeconds))
@@ -60,18 +62,18 @@ namespace Krea.Domain.Entities {
             
             var musicMetadata = new MusicMetadata {
                 Id = id,
-                UploadId = uploadId,
+                Upload = upload,
                 Title = title,
                 BitrateKbps = bitrateKbps,
                 DurationSeconds = durationSeconds,
-                GenreId = genreId,
-                AlbumCollectionId = albumCollectionId
+                Genre = genre,
+                AlbumCollection = albumCollection
             };
             return musicMetadata;
         }
 
-        public void AssignToAlbum(Guid collectionId) {
-            AlbumCollectionId = collectionId;
+        public void AssignToAlbum(Collections collection) {
+            AlbumCollection = collection;
         }
     }
 }

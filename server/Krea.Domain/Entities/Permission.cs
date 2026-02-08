@@ -5,6 +5,9 @@ namespace Krea.Domain.Entities {
         public Guid Id { get; private set; }
         [StringLength(32)] public string Name { get; private set; }
         [StringLength(256)] public string Description { get; private set; }
+        
+        [Required(ErrorMessage = "ScopeId is required.")]
+        public Scope Scope { get; private set; }
         [Timestamp] public DateTime CreatedAt { get; private set; }
         
         #pragma warning disable CS8618
@@ -28,6 +31,7 @@ namespace Krea.Domain.Entities {
             Guid id,
             string name,
             string description,
+            Scope scope,
             DateTime createdAt
         ) {
             Validate(name, description);
@@ -36,6 +40,7 @@ namespace Krea.Domain.Entities {
                 Id = id,
                 Name = name,
                 Description = description,
+                Scope =  scope,
                 CreatedAt = createdAt
             };
             return permission;

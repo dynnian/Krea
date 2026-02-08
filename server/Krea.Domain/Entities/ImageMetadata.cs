@@ -7,7 +7,7 @@ namespace Krea.Domain.Entities {
         public Guid Id { get; private set; }
         
         [Required(ErrorMessage = "UploadId is required.")]
-        public Guid UploadId { get; private set; }
+        public PostUpload Upload { get; private set; }
         
         public int FileSize { get; private set; }
         
@@ -17,19 +17,19 @@ namespace Krea.Domain.Entities {
         [StringLength(64), Required(ErrorMessage = "Height is required.")] 
         public string Height { get; private set; }
         
-        public Guid? CollectionId { get; private set; } 
+        public Collections? Collection { get; private set; } 
         
         #pragma warning disable CS8618
         private ImageMetadata() { }
         #pragma warning restore CS8618
 
         public ImageMetadata(
-            Guid uploadId,
+            PostUpload upload,
             int fileSize,
             string width,
             string height)
         {
-            if (uploadId == Guid.Empty
+            if (upload is null
                 || string.IsNullOrWhiteSpace(width)
                 || string.IsNullOrWhiteSpace(height))
                 throw new ArgumentException("Required arguments are missing");
@@ -42,14 +42,14 @@ namespace Krea.Domain.Entities {
 
         public ImageMetadata Load(
             Guid id,
-            Guid uploadId,
+            PostUpload upload,
             int fileSize,
             string width,
             string height,
-            Guid? collectionId 
+            Collections? collection 
         )
         {
-            if (uploadId == Guid.Empty
+            if (upload is null
                 || string.IsNullOrWhiteSpace(width)
                 || string.IsNullOrWhiteSpace(height))
                 throw new ArgumentException("Required arguments are missing");
@@ -57,17 +57,17 @@ namespace Krea.Domain.Entities {
             var imageMetadata = new ImageMetadata
             {
                 Id = id,
-                UploadId = uploadId,
+                Upload = upload,
                 FileSize = fileSize,
                 Width = width,
                 Height = height,
-                CollectionId = collectionId
+                Collection = collection
             };
             return imageMetadata;
         }
 
-        public void AssignToCollection(Guid collectionId) {
-            CollectionId = collectionId;
+        public void AssignToCollection(Collections collection) {
+            Collection = collection;
         }
     }
 }
