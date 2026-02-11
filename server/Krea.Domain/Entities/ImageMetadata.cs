@@ -40,7 +40,7 @@ namespace Krea.Domain.Entities {
             Format = format;
         }
 
-        public static ImageMetadata Load(
+        public ImageMetadata Load(
             Guid id,
             Guid uploadId,
             string title,
