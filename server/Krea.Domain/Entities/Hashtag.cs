@@ -3,10 +3,13 @@ using System.ComponentModel.DataAnnotations;
 namespace Krea.Domain.Entities {
     public class Hashtag
     {
+        [Key]
         public Guid Id { get; private set; }
         
-        [StringLength(32), Required(ErrorMessage = "Name is required")]
-        public string Name { get; private set; } 
+        public string Name { get; private set; }
+        
+        private readonly List<Post> _posts = new();
+        public IReadOnlyCollection<Post> Posts => _posts.AsReadOnly();
 
         #pragma warning disable CS8618 
         private Hashtag() { } 

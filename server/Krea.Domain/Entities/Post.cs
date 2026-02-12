@@ -1,27 +1,19 @@
 using System.ComponentModel.DataAnnotations;
 using Krea.Domain.ValueObjects;
 
-namespace Krea.Domain.Entities
-{
+namespace Krea.Domain.Entities {
     public sealed class Post {
+        [Key]
         public Guid Id { get; private set; }
         
+        public Guid AuthorPostId { get; private set; }
         public User AuthorPost { get; private set; }
         
         public PostType Type { get; private set; }
         
-        [StringLength(64), Required(ErrorMessage = "Title is required")]
         public string Title { get; private set; }
         
         public string? Content { get; private set; }
-        
-        public IReadOnlyList<Media> MediaContent => _mediaContent.AsReadOnly();
-        
-        private List<Media> _mediaContent;
-        
-        public IReadOnlyList<Like> Likes => _likes.AsReadOnly();
-        
-        private List<Like> _likes;
         
         public bool IsWork {get; private set;}
         
@@ -29,8 +21,11 @@ namespace Krea.Domain.Entities
         
         public bool IsLocal {get; private set;}
         
+        public Guid? RepliedToId { get; private set; }
+        
         public Post? RepliedTo { get; private set; }
         
+        public Guid? RepostOfId { get; private set; }
         public Post? RepostOf { get; private set; }
         
         [Timestamp] public DateTime? DeletedAt { get; private set; }
@@ -40,14 +35,20 @@ namespace Krea.Domain.Entities
         [Timestamp] public DateTime UpdatedAt { get; private set; }
         
         private readonly List<PostUpload> _uploads = new();
-        
         public IReadOnlyCollection<PostUpload> Uploads => _uploads.AsReadOnly();
+        
+        private readonly List<Hashtag> _hashtags = new();
+        public IReadOnlyCollection<Hashtag> Hashtags => _hashtags.AsReadOnly();
+        
+        private readonly List<Like> _likes = new();
+        public IReadOnlyCollection<Like> Likes => _likes.AsReadOnly();
         
         #pragma warning disable CS8618
         private Post() { }
         #pragma warning restore CS8618
 
         public Post(
+            Guid authorPostId,
             PostType type,
             string title,
             string content,
@@ -57,6 +58,7 @@ namespace Krea.Domain.Entities
             Validate(title);
 
             Id = Guid.NewGuid();
+            AuthorPostId = authorPostId;
             Type = type;
             Title = title;
             Content = content ?? string.Empty;
@@ -103,7 +105,8 @@ namespace Krea.Domain.Entities
             return post;
         }
         
-        public void UpdateContent(string content) {
+        public void UpdateContent(string content)
+        {
             if (IsDeleted)
                 throw new InvalidOperationException("Cannot update deleted post");
 
@@ -115,22 +118,16 @@ namespace Krea.Domain.Entities
             IsWork = true;
             UpdatedAt = DateTime.UtcNow;
         }
-        
-        public void AddMedia(Media media) {
-            if (IsDeleted)
-                throw new InvalidOperationException("Cannot modify a deleted post");
 
-            _mediaContent.Add(media);
+        public void ReplyTo(Guid postId)
+        {
+            RepliedToId = postId;
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public void ReplyTo(Post postId) {
-            RepliedTo = postId;
-            UpdatedAt = DateTime.UtcNow;
-        }
 
-        public void Repost(Post postId) {
-            RepostOf = postId;
+        public void Repost(Guid postId) {
+            RepostOfId = postId;
             UpdatedAt = DateTime.UtcNow;
         }
 
@@ -143,25 +140,47 @@ namespace Krea.Domain.Entities
         }
         
         //Uploading work content actions
-        public void AddUpload(Guid id, Post post, Media media, bool isWorkMedia) {
+        public void AddUpload(Media media, bool isWorkMedia)
+        {
             if (IsDeleted)
                 throw new InvalidOperationException("Cannot modify deleted post");
 
-            if (_uploads.Any(u => u.Media == media))
-                throw new InvalidOperationException("Media already attached to post");
+            if (_uploads.Any(u => u.MediaId == media.Id))
+                throw new InvalidOperationException("Media already attached");
 
             if (isWorkMedia && _uploads.Any(u => u.IsWorkMedia))
                 throw new InvalidOperationException("Only one work media allowed");
 
-            _uploads.Add(new PostUpload(id, post, media, isWorkMedia));
+            var upload = new PostUpload(this, media, isWorkMedia);
+
+            _uploads.Add(upload);
+
             UpdatedAt = DateTime.UtcNow;
         }
 
         public void RemoveUpload(Media media) {
-            var upload = _uploads.FirstOrDefault(u => u.Media == media);
+            var upload = _uploads.FirstOrDefault(u => u.MediaId == media.Id);
             if (upload == null) return;
 
             _uploads.Remove(upload);
+            UpdatedAt = DateTime.UtcNow;
+        }
+        
+        public void AddHashtag(Hashtag hashtag)
+        {
+            if (_hashtags.Any(h => h.Id == hashtag.Id))
+                return;
+
+            _hashtags.Add(hashtag);
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void RemoveHashtag(Guid hashtagId)
+        {
+            var tag = _hashtags.FirstOrDefault(h => h.Id == hashtagId);
+            if (tag is null) return;
+
+            _hashtags.Remove(tag);
             UpdatedAt = DateTime.UtcNow;
         }
 
