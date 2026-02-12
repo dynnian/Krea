@@ -11,7 +11,7 @@ export interface AuthUser {
 }
 
 interface AuthContextType {
-  user: AuthUser | null;
+  user: AuthUser | undefined;
   login: (credentials: LoginDTO) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;

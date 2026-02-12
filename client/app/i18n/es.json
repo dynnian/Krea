@@ -1,5 +1,60 @@
 {
-  "login": "Iniciar sesión",
-  "logout": "Cerrar sesión",
-  "welcome": "Bienvenido {{name}}"
+  "login": {
+    "title": "Iniciar Sesión",
+    "welcome": "¡Bienvenido de vuelta!",
+    "email_placeholder": "Entra tu Correo o Dominio",
+    "password_placeholder": "Contraseña",
+    "remember_me": "Recuérdame",
+    "sign_in_button": "Iniciar Sesión",
+    "no_account": "¿No tienes cuenta?",
+    "register": "Regístrate",
+    "forgot_password": "¿Olvidaste tu contraseña?"
+  },
+  "signup": {
+    "title": "Regístrate",
+    "welcome": "¡Regístrate!",
+    "username_placeholder": "Nombre de usuario",
+    "account_name_placeholder": "Nombre de cuenta",
+    "phone_placeholder": "Número",
+    "email_placeholder": "Correo",
+    "password_placeholder": "Contraseña",
+    "confirm_password_placeholder": "Confirmar contraseña",
+    "remember_me": "Recuérdame",
+    "sign_up_button": "Regístrate",
+    "have_account": "¿Ya tienes cuenta?",
+    "login_link": "Inicia Sesión"
+  },
+  "errors": {
+    "email_required": "El email es requerido",
+    "email_invalid": "Por favor ingresa un email válido",
+    "password_required": "La contraseña es requerida",
+    "password_min_length": "La contraseña debe tener al menos 6 caracteres",
+    "auth_failed": "Email o contraseña incorrectos. Por favor intenta de nuevo.",
+    "code_required": "Por favor, ingrese los 6 dígitos del código",
+    "invalid_code": "Código inválido. Por favor, verifique e intente nuevamente"
+  },
+  "confirm": {
+    "title": "Confirmar cuenta",
+    "welcome": "Verifica tu identidad para continuar",
+    "message": "Le enviamos un código a su correo para asegurar su dirección de correo",
+    "expires": "Por favor, inserte el código enviado a su correo. Expira en 10 minutos",
+    "cancel": "Cancelar",
+    "submit": "Enviar",
+    "sending": "Enviando...",
+    "no_code": "¿No recibió el código?",
+    "resend": "Reenviar código"
+  },
+  "navbar": {
+    "home": "Inicio",
+    "explore": "Explora",
+    "messages": "Mensajes",
+    "search_placeholder": "Buscar"
+  },
+  "home": {
+    "composer_placeholder": "¿Qué piensas?",
+    "post_button": "Post",
+    "for_you": "Para ti",
+    "following": "Siguiente",
+    "post_required": "Escribe algo o adjunta contenido"
+  }
 }

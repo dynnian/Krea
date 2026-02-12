@@ -34,7 +34,8 @@
     "npm:tailwindcss@^4.1.18": "4.1.18",
     "npm:typescript@^5.9.2": "5.9.3",
     "npm:vite-tsconfig-paths@^5.1.4": "5.1.4_vite@7.3.1__@types+node@22.19.7__picomatch@4.0.3_typescript@5.9.3_@types+node@22.19.7",
-    "npm:vite@^7.1.7": "7.3.1_@types+node@22.19.7_picomatch@4.0.3"
+    "npm:vite@^7.1.7": "7.3.1_@types+node@22.19.7_picomatch@4.0.3",
+    "npm:wavesurfer.js@^7.12.1": "7.12.1"
   },
   "npm": {
     "@ant-design/colors@8.0.1": {
@@ -2888,6 +2889,9 @@
     "w3c-keyname@2.2.8": {
       "integrity": "sha512-dpojBhNsCNN7T82Tm7k26A6G9ML3NkhDsnw9n/eoxSRlVBB4CEtIQ/KTCLI2Fwf3ataSXRhYFkQi3SlnFwPvPQ=="
     },
+    "wavesurfer.js@7.12.1": {
+      "integrity": "sha512-NswPjVHxk0Q1F/VMRemCPUzSojjuHHisQrBqQiRXg7MVbe3f5vQ6r0rTTXA/a/neC/4hnOEC4YpXca4LpH0SUg=="
+    },
     "yallist@3.1.1": {
       "integrity": "sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g=="
     }
@@ -2928,7 +2932,8 @@
         "npm:tailwindcss@^4.1.18",
         "npm:typescript@^5.9.2",
         "npm:vite-tsconfig-paths@^5.1.4",
-        "npm:vite@^7.1.7"
+        "npm:vite@^7.1.7",
+        "npm:wavesurfer.js@^7.12.1"
       ]
     }
   }

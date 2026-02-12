@@ -1,4 +1,6 @@
-@tailwind utilities;
+/* app.css - VERSIÓN LIMPIA */
+
+/* 1. Import de Tailwind - SOLO UNA VEZ */
 @import "tailwindcss";
 
 @theme {
@@ -6,11 +8,18 @@
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
-html,
-body {
-  @apply bg-white dark:bg-gray-950;
-
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
-  }
+/* 2. Reset ABSOLUTO para prevenir scroll horizontal */
+* {
+  box-sizing: border-box;
+  min-width: 0; /* Esto previene elementos que se expanden más allá del contenedor */
 }
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%; /* Asegura que no haya overflow */
+  overflow-x: hidden; /* Elimina scroll horizontal */
+}
+
+/* 3. NO modifiques clases de Ant Design aquí */

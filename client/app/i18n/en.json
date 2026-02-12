@@ -1,5 +1,60 @@
 {
-  "login": "Login",
-  "logout": "Logout",
-  "welcome": "Welcome {{name}}"
+  "login": {
+    "title": "Sign In",
+    "welcome": "Welcome back!",
+    "email_placeholder": "Enter your Email or Domain",
+    "password_placeholder": "Password",
+    "remember_me": "Remember me",
+    "sign_in_button": "Sign In",
+    "no_account": "Don't have an account?",
+    "register": "Register",
+    "forgot_password": "Forgot password?"
+  },
+  "signup": {
+    "title": "Sign Up",
+    "welcome": "Register!",
+    "username_placeholder": "Username",
+    "account_name_placeholder": "Account name",
+    "phone_placeholder": "Phone number",
+    "email_placeholder": "Email",
+    "password_placeholder": "Password",
+    "confirm_password_placeholder": "Confirm password",
+    "remember_me": "Remember me",
+    "sign_up_button": "Sign Up",
+    "have_account": "Already have an account?",
+    "login_link": "Log In"
+  },
+  "errors": {
+    "email_required": "Email is required",
+    "email_invalid": "Please enter a valid email",
+    "password_required": "Password is required",
+    "password_min_length": "Password must be at least 6 characters",
+    "auth_failed": "Invalid email or password. Please try again.",
+    "invalid_code": "Invalid code. Please check and try again",
+    "code_required": "Please enter the 6-digit code"
+  },
+  "confirm": {
+    "title": "Confirm Account",
+    "welcome": "Verify your identity to continue",
+    "message": "We sent a code to your email to verify your email address",
+    "expires": "Please insert the code sent to your email. Expires in 10 minutes",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "sending": "Sending...",
+    "no_code": "Didn't receive the code?",
+    "resend": "Resend code"
+  },
+  "navbar": {
+    "home": "Home",
+    "explore": "Explore",
+    "messages": "Messages",
+    "search_placeholder": "Search"
+  },
+  "home": {
+    "composer_placeholder": "What's on your mind?",
+    "post_button": "Post",
+    "for_you": "For you",
+    "following": "Following",
+    "post_required": "Write something or attach media"
+  }
 }

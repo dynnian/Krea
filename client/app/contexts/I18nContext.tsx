@@ -1,22 +1,33 @@
-import { createContext, useContext, useState } from 'react'
-import i18n from '../i18n/index.ts'
+import { createContext, useContext, useState, type ReactNode } from 'react';
+import i18n from '../i18n/index.ts';
 
-const I18nContext = createContext(null)
-
-export const I18nProvider = ({ children }) => {
-  const [language, setLanguage] = useState(i18n.language)
-
-  const changeLanguage = (lang) => {
-    i18n.changeLanguage(lang)
-    localStorage.setItem('lang', lang)
-    setLanguage(lang)
-  }
-
-  return (
-    <I18nContext.Provider value={{ language, changeLanguage }}>
-      {children}
-    </I18nContext.Provider>
-  )
+interface I18nContextType {
+  language: string;
+  setLanguage: (lang: string) => void;
 }
 
-export const useI18n = () => useContext(I18nContext)
+const I18nContext = createContext<I18nContextType | undefined>(undefined);
+
+export const I18nProvider = ({ children }: { children: ReactNode }) => {
+  const [language, setLanguageState] = useState(i18n.language);
+
+  const setLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
+    localStorage.setItem('lang', lang);
+    setLanguageState(lang);
+  };
+
+  return (
+    <I18nContext.Provider value={{ language, setLanguage }}>
+      {children}
+    </I18nContext.Provider>
+  );
+};
+
+export const useI18n = () => {
+  const context = useContext(I18nContext);
+  if (context === undefined) {
+    throw new Error('useI18n must be used within an I18nProvider');
+  }
+  return context;
+};

@@ -1,13 +1,9 @@
-import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+// routes/home.tsx
+import { useAuth } from "../contexts/AuthContext";
+import HomeComponent from "../components/Home.tsx"; // o el código inline
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
-  ];
-}
+export default function HomeRoute() {
+  const { user } = useAuth(); // null si no autenticado
 
-export default function Home() {
-  return <Welcome />;
+  return <HomeComponent user={user} />;
 }
