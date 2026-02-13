@@ -3,7 +3,10 @@ using Krea.Domain.ValueObjects;
 
 namespace Krea.Domain.Entities {
     public sealed class Like {
+        [Key]
         public Guid Id { get; private set; }
+        
+        public Guid UserId {get; private set;}
         public User User { get; private set; }
         public LikeTargetType TargetType { get; private set; }
         public Guid TargetId { get; private set; }
@@ -26,7 +29,7 @@ namespace Krea.Domain.Entities {
             CreatedAt = DateTime.UtcNow;
         }
 
-        public static Like Load(
+        public Like Load(
             Guid id,
             User user,
             LikeTargetType targetType,

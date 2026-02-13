@@ -2,72 +2,75 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Krea.Domain.Entities {
     
-    public sealed class ImageMetadata {
-        
-        public Guid Id { get; private set; }
-        
-        [Required(ErrorMessage = "UploadId is required.")]
-        public PostUpload Upload { get; private set; }
-        
-        public int FileSize { get; private set; }
-        
-        [StringLength(64), Required(ErrorMessage = "Width is required.")] 
+    public sealed class ImageMetadata : Metadata
+    {
         public string Width { get; private set; }
         
-        [StringLength(64), Required(ErrorMessage = "Height is required.")] 
         public string Height { get; private set; }
         
-        public Collections? Collection { get; private set; } 
+        public int  FileSize { get; private set; }
         
+        public string Format { get; private set; }
+        
+        public Collections? CollageCollection { get; private set; }
+
         #pragma warning disable CS8618
         private ImageMetadata() { }
         #pragma warning restore CS8618
 
         public ImageMetadata(
-            PostUpload upload,
-            int fileSize,
+            Guid uploadId,
+            string title,
+            string? description,
             string width,
-            string height)
+            string height,
+            int fileSize,
+            string format,
+            IEnumerable<Genre>? genres = null,
+            Collections? collageCollection = null)
+            : base(uploadId, title, description, genres)
         {
-            if (upload is null
-                || string.IsNullOrWhiteSpace(width)
-                || string.IsNullOrWhiteSpace(height))
-                throw new ArgumentException("Required arguments are missing");
-            
-            Id = Guid.NewGuid();
-            FileSize = fileSize;
+
+            if (string.IsNullOrWhiteSpace(format))
+                throw new ArgumentException("Format is required.");
+
             Width = width;
             Height = height;
+            FileSize = fileSize;
+            Format = format;
         }
 
         public ImageMetadata Load(
             Guid id,
-            PostUpload upload,
-            int fileSize,
+            Guid uploadId,
+            string title,
+            string? description,
             string width,
             string height,
-            Collections? collection 
-        )
+            int fileSize,
+            string format,
+            IEnumerable<Genre> genres,
+            Collections? collageCollection)
         {
-            if (upload is null
-                || string.IsNullOrWhiteSpace(width)
-                || string.IsNullOrWhiteSpace(height))
-                throw new ArgumentException("Required arguments are missing");
-            
-            var imageMetadata = new ImageMetadata
+            var metadata = new ImageMetadata
             {
                 Id = id,
-                Upload = upload,
-                FileSize = fileSize,
+                UploadId = uploadId,
+                Title = title,
+                Description = description,
                 Width = width,
                 Height = height,
-                Collection = collection
+                FileSize =  fileSize,
+                Format = format,
+                CollageCollection = collageCollection
             };
-            return imageMetadata;
+            metadata.SetGenres(genres);
+
+            return metadata;
         }
 
         public void AssignToCollection(Collections collection) {
-            Collection = collection;
+            CollageCollection = collection;
         }
     }
 }

@@ -2,74 +2,65 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.VisualBasic;
 
 namespace Krea.Domain.Entities {
-    public sealed class MusicMetadata {
-        public Guid Id { get; private set; }
-        
-        [Required(ErrorMessage = "UploadId is required.")]
-        public PostUpload Upload  { get; private set; }
-        
-        [Required(ErrorMessage = "Title is required.")]
-        public string Title { get; private set; }
-        
-        [Required(ErrorMessage = "BitrateKbps is required.")]
+    public sealed class MusicMetadata : Metadata
+    {
         public int BitrateKbps { get; private set; }
         
-        [Required(ErrorMessage = "DurationSeconds is required.")]
-        public int DurationSeconds { get; private set; }
+        public int DurationSec { get; private set; }
 
-        public Genre Genre { get; private set; }
-        
         public Collections? AlbumCollection { get; private set; }
-
+        
         #pragma warning disable CS8618
-        private MusicMetadata() { }
+        private MusicMetadata() {}
         #pragma warning restore CS8618
 
         public MusicMetadata(
-            PostUpload upload,
+            Guid uploadId,
             string title,
+            string? description,
             int bitrateKbps,
-            int durationSeconds,
-            Genre genre)
+            int durationSec,
+            IEnumerable<Genre>? genres = null,
+            Collections? albumCollection = null)
+            : base(uploadId, title, description, genres)
         {
-            if (upload is null
-                || string.IsNullOrWhiteSpace(title)
-                || int.IsNegative(BitrateKbps)
-                || int.IsNegative(durationSeconds))
-                throw new ArgumentException("Required arguments are missing");
-
-            Id = Guid.NewGuid();
-            Title = title;
             BitrateKbps = bitrateKbps;
-            DurationSeconds = durationSeconds;
-            Genre = genre;
+            DurationSec = durationSec;
+            AlbumCollection = albumCollection;
         }
 
         public MusicMetadata Load(
             Guid id,
-            PostUpload upload,
+            Guid uploadId,
             string title,
+            string? description,
             int bitrateKbps,
-            int durationSeconds,
-            Genre genre,
-            Collections? albumCollection
-        ) {
-            if (upload is null
-                || string.IsNullOrWhiteSpace(title)
-                || int.IsNegative(BitrateKbps)
-                || int.IsNegative(durationSeconds))
-                throw new ArgumentException("Required arguments are required");
-            
-            var musicMetadata = new MusicMetadata {
+            int durationSec,
+            IEnumerable<Genre> genres,
+            Collections? albumCollection)
+        {
+            var metadata = new MusicMetadata {
                 Id = id,
-                Upload = upload,
+                UploadId = uploadId,
                 Title = title,
+                Description = description,
                 BitrateKbps = bitrateKbps,
-                DurationSeconds = durationSeconds,
-                Genre = genre,
+                DurationSec = durationSec,
                 AlbumCollection = albumCollection
             };
-            return musicMetadata;
+
+            metadata.SetGenres(genres);
+
+            return metadata;
+        }
+        
+        public void UpdateTechnicalData(int bitrateKbps, int durationSec)
+        {
+            if (bitrateKbps < 0 || durationSec < 0)
+                throw new ArgumentException("Values cannot be negative.");
+            
+            BitrateKbps = bitrateKbps;
+            DurationSec = durationSec;
         }
 
         public void AssignToAlbum(Collections collection) {
