@@ -20,10 +20,10 @@ export default [
   {
     file: "routes/protected.tsx",
     children: [
-      // {
-      //   path: "profile",
-      //   file: "routes/protected/profile.tsx",
-      // },
+      {
+        path: "profile",
+        file: "routes/profile.tsx",
+      },
       // {
       //   path: "messages",
       //   file: "routes/protected/messages.tsx",

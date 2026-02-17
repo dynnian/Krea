@@ -48,13 +48,22 @@
     "home": "Home",
     "explore": "Explore",
     "messages": "Messages",
-    "search_placeholder": "Search"
+    "search_placeholder": "Search",
+    "profile": "Profile"
   },
   "home": {
     "composer_placeholder": "What's on your mind?",
     "post_button": "Post",
     "for_you": "For you",
     "following": "Following",
-    "post_required": "Write something or attach media"
+    "post_required": "Write something or attach media",
+    "post_success": "Post created successfully",
+    "post_error": "Failed to create post"
+  },
+  "post": {
+    "auth_required": "You need to log in to perform this action",
+    "like_error": "Failed to like the post. Please try again.",
+    "repost_error": "Failed to repost. Please try again.",
+    "link_copied": "Link copied to clipboard"
   }
 }

@@ -3,12 +3,13 @@ import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router";
 import { Grid, Input, Avatar } from "antd";
 import {
-  HomeOutlined,
-  SearchOutlined,
-  MessageOutlined,
-  UserOutlined,
-  MenuOutlined,
-} from "@ant-design/icons";
+  Home,
+  Search,
+  MessageCircle,
+  User,
+  Menu,
+  Bell,
+} from "lucide-react";
 
 const { useBreakpoint } = Grid;
 
@@ -32,6 +33,7 @@ export default function UserNavbar() {
   // Determinar ruta activa
   const isHomeActive = location.pathname === "/";
   const isExploreActive = location.pathname === "/explore";
+  const isProfileActive = location.pathname === "/profile";
 
   // Evitar hidratación incorrecta (SSR)
   if (!isMounted) {
@@ -57,18 +59,18 @@ export default function UserNavbar() {
           {/* Acciones derecha */}
           <div className="flex items-center gap-4">
             <button className="text-white text-xl">
-              <SearchOutlined />
+              <Search size={20} />
             </button>
             <button className="text-white text-xl">
-              <MessageOutlined />
+              <MessageCircle size={20} />
             </button>
             <Avatar
-              icon={<UserOutlined />}
+              icon={<User size={20} />}
               className="bg-white text-gray-800 border border-gray-800"
               size={36}
             />
             <button className="text-white text-2xl">
-              <MenuOutlined />
+              <Menu size={24} />
             </button>
           </div>
         </div>
@@ -99,10 +101,9 @@ export default function UserNavbar() {
                 >
                   {t("navbar.home")}
                 </span>
-                <HomeOutlined
-                  className={`text-lg ${
-                    isHomeActive ? "text-[#8FB78E]" : "text-[#E3E2DE]"
-                  }`}
+                <Home
+                  size={20}
+                  className={isHomeActive ? "text-[#8FB78E]" : "text-[#E3E2DE]"}
                 />
               </div>
               {isHomeActive && (
@@ -111,25 +112,26 @@ export default function UserNavbar() {
             </div>
 
             {/* Explora - Inactivo por defecto */}
-            <div className="flex flex-col items-center">
+            <Link to="/explore">
+              <div className="flex flex-col items-center">
               <div className="flex items-center gap-1">
                 <span
-                  className={`text-lg font-medium ${
-                    isExploreActive ? "text-[#8FB78E]" : "text-[#E3E2DE]"
-                  }`}
+                className={`text-lg font-medium ${
+                  isExploreActive ? "text-[#8FB78E]" : "text-[#E3E2DE]"
+                }`}
                 >
-                  {t("navbar.explore")}
+                {t("navbar.explore")}
                 </span>
-                <SearchOutlined
-                  className={`text-lg ${
-                    isExploreActive ? "text-[#8FB78E]" : "text-[#E3E2DE]"
-                  }`}
+                <Search
+                size={20}
+                className={isExploreActive ? "text-[#8FB78E]" : "text-[#E3E2DE]"}
                 />
               </div>
               {isExploreActive && (
                 <div className="w-full h-0.5 bg-[#8FB78E] mt-1" />
               )}
-            </div>
+              </div>
+            </Link>
           </div>
         </div>
 
@@ -138,22 +140,43 @@ export default function UserNavbar() {
           <Input
             placeholder={t("navbar.search_placeholder")}
             className="h-10 bg-[#F3F3F1] border-2 border-[#8F8E8A] rounded-lg px-4 text-sm"
-            prefix={<SearchOutlined className="text-gray-400" />}
+            prefix={<Search size={18} className="text-gray-400" />}
             allowClear
           />
         </div>
 
         {/* SECCIÓN DERECHA: Mensajes + Avatar */}
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 text-[#E3E2DE]">
-            <span className="text-lg font-medium">{t("navbar.messages")}</span>
-            <MessageOutlined className="text-xl" />
-          </div>
-          <Avatar
-            icon={<UserOutlined />}
-            className="bg-white text-gray-800 border border-gray-800 cursor-pointer"
-            size={40}
-          />
+          {/* Link para Notificaciones */}
+          <Link
+            to="/notifications"
+            className="flex items-center gap-2 text-[#E3E2DE] hover:text-white transition-colors"
+          >
+            <Bell size={20} />
+          </Link>
+
+          {/* Link para el Perfil (Avatar) */}
+          {/* Explora - Inactivo por defecto */}
+            <Link to="/profile">
+              <div className="flex flex-col items-center">
+              <div className="flex items-center gap-1">
+                <span
+                className={`text-lg font-medium ${
+                  isProfileActive ? "text-[#8FB78E]" : "text-[#E3E2DE]"
+                }`}
+                >
+                {t("navbar.profile")}
+                </span>
+                <User
+                size={20}
+                className={isProfileActive ? "text-[#8FB78E]" : "text-[#E3E2DE]"}
+                />
+              </div>
+              {isProfileActive && (
+                <div className="w-full h-0.5 bg-[#8FB78E] mt-1" />
+              )}
+              </div>
+            </Link>
         </div>
       </div>
     </nav>

@@ -48,13 +48,22 @@
     "home": "Inicio",
     "explore": "Explora",
     "messages": "Mensajes",
-    "search_placeholder": "Buscar"
+    "search_placeholder": "Buscar",
+    "profile": "Perfil"
   },
   "home": {
     "composer_placeholder": "¿Qué piensas?",
     "post_button": "Post",
     "for_you": "Para ti",
     "following": "Siguiente",
-    "post_required": "Escribe algo o adjunta contenido"
+    "post_required": "Escribe algo o adjunta contenido",
+    "post_success": "Publicación creada",
+    "post_error": "Error al crear la publicación"
+  },
+  "post": {
+    "auth_required": "Necesitas iniciar sesión para realizar esta acción",
+    "like_error": "No se pudo dar like. Intenta de nuevo.",
+    "repost_error": "No se pudo republicar. Intenta de nuevo.",
+    "link_copied": "Enlace copiado al portapapeles"
   }
 }
