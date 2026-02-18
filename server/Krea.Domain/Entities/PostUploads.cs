@@ -11,6 +11,7 @@ namespace Krea.Domain.Entities {
         public Guid MediaId { get; private set; }
         public Media Media { get; private set; }
         public bool IsWorkMedia { get; private set; }
+        public Metadata? Metadata { get; private set; }
 
         #pragma warning disable CS8618
         private PostUpload() { }
@@ -23,7 +24,9 @@ namespace Krea.Domain.Entities {
         ) {
             Id = Guid.NewGuid(); 
             Post = post;
+            PostId = post.Id;
             Media = media;
+            MediaId = media.Id;
             IsWorkMedia = isWorkMedia;   
         }
 
