@@ -22,7 +22,17 @@ public sealed class DonationRepository
             .Include(d => d.Recipient)
             .FirstOrDefaultAsync(d => d.Id == id);
     }
-
+    
+    public async Task<Donation?> GetByIdWithPaymentsAsync(Guid id)
+    {
+        return await _context.Donations
+            .Include(d => d.Donor)
+            .Include(d => d.Recipient)
+            .Include(d => d.Payments)
+            .ThenInclude(p => p.Payer)
+            .FirstOrDefaultAsync(d => d.Id == id);
+    }
+    
     public async Task<IReadOnlyList<Donation>> GetByDonorAsync(Guid donorId)
     {
         return await _context.Donations

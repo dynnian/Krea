@@ -5,8 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Krea.Infrastructure.Repositories;
 
-public sealed class SubscriptionRepository 
-    : ISubscriptionRepository
+public sealed class SubscriptionRepository : ISubscriptionRepository
 {
     private readonly AppDbContext _context;
 
@@ -20,6 +19,16 @@ public sealed class SubscriptionRepository
         return await _context.Subscriptions
             .Include(s => s.Subscriber)
             .Include(s => s.Plan)
+            .FirstOrDefaultAsync(s => s.Id == id);
+    }
+    
+    public async Task<Subscription?> GetByIdWithPaymentsAsync(Guid id)
+    {
+        return await _context.Subscriptions
+            .Include(s => s.Subscriber)
+            .Include(s => s.Plan)
+            .Include(s => s.Payments)
+            .ThenInclude(p => p.Payer) 
             .FirstOrDefaultAsync(s => s.Id == id);
     }
 

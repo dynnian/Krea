@@ -35,5 +35,13 @@ public sealed class DonationConfiguration
             .WithMany()
             .HasForeignKey("RecipientId")
             .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.HasMany(d => d.Payments)
+            .WithOne(p => p.Donation)
+            .HasForeignKey("DonationId")
+            .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.Metadata.FindNavigation(nameof(Donation.Payments))
+            ?.SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

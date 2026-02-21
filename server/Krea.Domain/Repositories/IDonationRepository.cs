@@ -5,6 +5,8 @@ namespace Krea.Domain.Repositories;
 public interface IDonationRepository
 {
     Task<Donation?> GetByIdAsync(Guid id);
+    
+    Task<Donation?> GetByIdWithPaymentsAsync(Guid id);
 
     Task<IReadOnlyList<Donation>> GetByDonorAsync(Guid donorId);
 

@@ -22,6 +22,16 @@ public sealed class CommissionRequestRepository
             .Include(cr => cr.Offering)
             .FirstOrDefaultAsync(cr => cr.Id == id);
     }
+    
+    public async Task<CommissionRequest?> GetByIdWithPaymentsAsync(Guid id)
+    {
+        return await _context.CommissionRequests
+            .Include(cr => cr.Bidder)
+            .Include(cr => cr.Offering)
+            .Include(cr => cr.Payments)
+            .ThenInclude(p => p.Payer)
+            .FirstOrDefaultAsync(cr => cr.Id == id);
+    }
 
     public async Task<IReadOnlyList<CommissionRequest>> GetByBidderAsync(Guid bidderId)
     {

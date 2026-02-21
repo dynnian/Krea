@@ -40,5 +40,13 @@ public sealed class CommissionRequestConfiguration
             .WithMany()
             .HasForeignKey("OfferingId")
             .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.HasMany(s => s.Payments)
+            .WithOne(p => p.CommissionRequest)
+            .HasForeignKey("CommissionRequestId")
+            .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.Metadata.FindNavigation(nameof(CommissionRequest.Payments))
+            ?.SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }
