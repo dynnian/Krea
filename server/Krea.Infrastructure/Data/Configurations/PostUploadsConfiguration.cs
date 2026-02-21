@@ -18,19 +18,19 @@ public class PostUploadConfiguration : IEntityTypeConfiguration<PostUpload>
         builder.Property(pu => pu.IsWorkMedia)
             .IsRequired();
 
-        // 🔹 Relación Post (Many-to-One)
+        // Relacion Post (Many-to-One)
         builder.HasOne(pu => pu.Post)
             .WithMany(p => p.Uploads)
             .HasForeignKey(pu => pu.PostId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // 🔹 Relación Media (Many-to-One)
+        // Relacion Media (Many-to-One)
         builder.HasOne(pu => pu.Media)
             .WithMany()
             .HasForeignKey(pu => pu.MediaId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // 🔹 One-to-One con Metadata
+        // One-to-One con Metadata
         builder.HasOne(pu => pu.Metadata)
             .WithOne(m => m.Upload)
             .HasForeignKey<Metadata>(m => m.UploadId)

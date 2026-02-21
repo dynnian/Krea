@@ -43,6 +43,9 @@ namespace Krea.Domain.Entities {
         private readonly List<Like> _likes = new();
         public IReadOnlyCollection<Like> Likes => _likes.AsReadOnly();
         
+        private readonly List<Collections> _collections = new();
+        public IReadOnlyCollection<Collections> Collections => _collections.AsReadOnly();
+        
         #pragma warning disable CS8618
         private Post() { }
         #pragma warning restore CS8618

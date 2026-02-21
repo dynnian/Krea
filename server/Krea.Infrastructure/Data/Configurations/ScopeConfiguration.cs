@@ -17,9 +17,12 @@ public class ScopeConfiguration : IEntityTypeConfiguration<Scope>
 
         builder.Property(s => s.Name)
             .IsRequired()
-            .HasMaxLength(50);
+            .HasMaxLength(64);
 
         builder.HasIndex(s => s.Name)
             .IsUnique();
+        
+        builder.Navigation(s => s.Permissions)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

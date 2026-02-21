@@ -3,12 +3,12 @@ using System.ComponentModel.DataAnnotations;
 namespace Krea.Domain.Entities {
     public sealed class Permission {
         public Guid Id { get; private set; }
-        [StringLength(32)] public string Name { get; private set; }
-        [StringLength(256)] public string Description { get; private set; }
-        
-        [Required(ErrorMessage = "ScopeId is required.")]
-        public Scope Scope { get; private set; }
-        [Timestamp] public DateTime CreatedAt { get; private set; }
+        public string Name { get; private set; }
+        public string Description { get; private set; }
+
+        public Scope Scope { get; private set; } = null!;
+        public Guid ScopeId { get; private set; }
+        public DateTime CreatedAt { get; private set; }
         
         #pragma warning disable CS8618
         private Permission() { }
@@ -17,14 +17,17 @@ namespace Krea.Domain.Entities {
         public Permission(
             string name,
             string description,
-            DateTime createdAt
-        ) {
-            Validate(name, description);
-            
-            Id = Guid.NewGuid(); 
-            Name = name; 
-            Description = description;
-            CreatedAt = DateTime.UtcNow;  
+            Guid scopeId
+        )
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Permission name is required");
+
+            Id = Guid.NewGuid();
+            Name = name.Trim();
+            Description = description ?? string.Empty;
+            ScopeId = scopeId;
+            CreatedAt = DateTime.UtcNow;
         }
 
         public Permission Load(
@@ -34,8 +37,6 @@ namespace Krea.Domain.Entities {
             Scope scope,
             DateTime createdAt
         ) {
-            Validate(name, description);
-            
             var permission = new Permission {
                 Id = id,
                 Name = name,
@@ -44,12 +45,6 @@ namespace Krea.Domain.Entities {
                 CreatedAt = createdAt
             };
             return permission;
-        }
-        
-        private static void Validate(string name, string description) {
-            if (string.IsNullOrWhiteSpace(name)
-                || string.IsNullOrWhiteSpace(description))
-                throw new ArgumentException("All arguments are required");
         }
     }
 }
