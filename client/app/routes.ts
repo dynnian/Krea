@@ -30,10 +30,10 @@ export default [
         file: "routes/post.tsx",
       },
       // Exploración (búsqueda por tags/categorías)
-      // {
-      //   path: "explore",
-      //   file: "routes/explore.tsx",
-      // },
+      {
+        path: "explore",
+        file: "routes/explore.tsx",
+      },
       // Rutas protegidas (heredan el layout público y además verifican autenticación)
       {
         file: "routes/protected.tsx",
