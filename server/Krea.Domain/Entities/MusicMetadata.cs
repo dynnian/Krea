@@ -7,8 +7,6 @@ namespace Krea.Domain.Entities {
         public int BitrateKbps { get; private set; }
         
         public int DurationSec { get; private set; }
-
-        public Collections? AlbumCollection { get; private set; }
         
         #pragma warning disable CS8618
         private MusicMetadata() {}
@@ -20,13 +18,11 @@ namespace Krea.Domain.Entities {
             string? description,
             int bitrateKbps,
             int durationSec,
-            IEnumerable<Genre>? genres = null,
-            Collections? albumCollection = null)
+            IEnumerable<Genre>? genres = null)
             : base(uploadId, title, description, genres)
         {
             BitrateKbps = bitrateKbps;
             DurationSec = durationSec;
-            AlbumCollection = albumCollection;
         }
 
         public MusicMetadata Load(
@@ -36,8 +32,7 @@ namespace Krea.Domain.Entities {
             string? description,
             int bitrateKbps,
             int durationSec,
-            IEnumerable<Genre> genres,
-            Collections? albumCollection)
+            IEnumerable<Genre> genres)
         {
             var metadata = new MusicMetadata {
                 Id = id,
@@ -45,8 +40,8 @@ namespace Krea.Domain.Entities {
                 Title = title,
                 Description = description,
                 BitrateKbps = bitrateKbps,
-                DurationSec = durationSec,
-                AlbumCollection = albumCollection
+                DurationSec = durationSec
+                
             };
 
             metadata.SetGenres(genres);
@@ -61,10 +56,6 @@ namespace Krea.Domain.Entities {
             
             BitrateKbps = bitrateKbps;
             DurationSec = durationSec;
-        }
-
-        public void AssignToAlbum(Collections collection) {
-            AlbumCollection = collection;
         }
     }
 }

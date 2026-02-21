@@ -37,6 +37,15 @@ namespace Krea.Domain.Entities {
         
         [Timestamp] public DateTime? LastPasswordResetAt { get; private set; }
         
+        private readonly List<Post> _posts = new();
+        public IReadOnlyCollection<Post> Posts => _posts.AsReadOnly();
+
+        private readonly List<Like> _likes = new();
+        public IReadOnlyCollection<Like> Likes => _likes.AsReadOnly();
+        
+        private readonly List<Collections> _collections = new();
+        public IReadOnlyCollection<Collections> Collections => _collections.AsReadOnly();
+        
         [Timestamp] public DateTime? LastLoginAt { get; private set; }
         
         [Timestamp] public DateTime RegisteredAt { get; private set; }
