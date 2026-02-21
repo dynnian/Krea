@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { Grid } from "antd";
 import { ArrowLeft, Heart, Link2, MessageCircle, Repeat2, User } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import UserNavbar from "../UserNavbar";
 import TagsSidebar from "../Home/TagsSidebar";
 import PostImageDetail from "./PostImageDetail";
 import PostAudioDetail from "./PostAudioDetail";
@@ -130,6 +129,12 @@ export default function PostDetail({ post }: PostDetailProps) {
               <CommentSection postId={post.id} />
             </div>
           </div>
+          {/* Sidebar de tags (solo en desktop) */}
+          {!isMobile && (
+            <div className="w-full md:w-64 flex-shrink-0">
+              <TagsSidebar />
+            </div>
+          )}
         </div>
       </main>
     </div>

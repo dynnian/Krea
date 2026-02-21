@@ -93,7 +93,7 @@ export default function UserNavbar() {
           <div className="flex items-center gap-6">
             {/* Inicio - Activo */}
             <div className="flex flex-col items-center">
-              <div className="flex items-center gap-1">
+              <Link to='/' className="flex items-center gap-1">
                 <span
                   className={`text-lg font-medium ${
                     isHomeActive ? "text-[#8FB78E]" : "text-[#E3E2DE]"
@@ -105,7 +105,7 @@ export default function UserNavbar() {
                   size={20}
                   className={isHomeActive ? "text-[#8FB78E]" : "text-[#E3E2DE]"}
                 />
-              </div>
+              </Link>
               {isHomeActive && (
                 <div className="w-full h-0.5 bg-[#8FB78E] mt-1" />
               )}

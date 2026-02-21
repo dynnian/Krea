@@ -18,12 +18,6 @@ export default function PublicLayout() {
           <div className="w-full md:w-[740px]">
             <Outlet />
           </div>
-          {/* Sidebar de tags (solo en desktop) */}
-          {!isMobile && (
-            <div className="w-full md:w-64 flex-shrink-0 py-2">
-              <TagsSidebar />
-            </div>
-          )}
         </div>
       </main>
     </>

@@ -9,6 +9,7 @@ import PostCard from "../Posts/PostCard";
 import { PostType } from "../../types/common";
 import type { Post } from "../../types/post";
 import type { Timestamp } from "../../types/common";
+import TagsSidebar from "./TagsSidebar";
 
 const { useBreakpoint } = Grid;
 
@@ -213,23 +214,29 @@ export default function Home() {
       <main className="flex justify-center px-2 sm:px-4 gap-6">
         <div
           className={`
-            w-full max-w-[740px]
-            ${!isMobile ? "bg-[#E8F1FC] border-l-2 border-r-2 border-[#8F8E8A] px-6 py-6" : "px-2"}
+         w-full max-w-2xl lg:max-w-3xl xl:max-w-4xl
+        ${!isMobile ? "bg-[#E8F1FC] border-l-2 border-r-2 border-[#8F8E8A] px-6 py-6" : "px-2"}
           `}
         >
           {user && <Composer onPost={handleNewPost} />}
           <FeedTabs activeTab={activeTab} onTabChange={setActiveTab} isMobile={isMobile} />
           <div className="space-y-4 sm:space-y-6">
-            {posts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                onLike={handleLike}
-                onRepost={handleRepost}
-              />
-            ))}
+        {posts.map((post) => (
+          <PostCard
+            key={post.id}
+            post={post}
+            onLike={handleLike}
+            onRepost={handleRepost}
+          />
+        ))}
           </div>
         </div>
+        {/* Sidebar de tags (solo en desktop) */}
+        {!isMobile && (
+          <div className="w-64 shrink-0 py-2">
+        <TagsSidebar />
+          </div>
+        )}
       </main>
     </div>
   );
