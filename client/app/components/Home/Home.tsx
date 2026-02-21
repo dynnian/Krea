@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Grid } from "antd";
-import { useAuth } from "../contexts/AuthContext";
-import UserNavbar from "./UserNavbar";
-import Composer from "./Composer";
-import FeedTabs from "./FeedTabs";
-import PostCard from "./Posts/PostCard";
-import { PostType } from "../types/common";
-import type { Post } from "../types/post";
-import type { Timestamp } from "../types/common";
+import { useAuth } from "../../contexts/AuthContext";
+import UserNavbar from "../UserNavbar";
+import Composer from "../Composer";
+import FeedTabs from "../FeedTabs";
+import PostCard from "../Posts/PostCard";
+import { PostType } from "../../types/common";
+import type { Post } from "../../types/post";
+import type { Timestamp } from "../../types/common";
 
 const { useBreakpoint } = Grid;
 
@@ -165,6 +165,7 @@ export default function Home() {
   const screens = useBreakpoint();
 
   const [activeTab, setActiveTab] = useState<"forYou" | "following">("forYou");
+
   const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
@@ -209,8 +210,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#E3E2DE]">
-      <UserNavbar />
-      <main className="flex justify-center px-2 sm:px-4">
+      <main className="flex justify-center px-2 sm:px-4 gap-6">
         <div
           className={`
             w-full max-w-[740px]

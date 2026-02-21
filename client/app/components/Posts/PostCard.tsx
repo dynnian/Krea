@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
-import { Avatar, message } from "antd";
+import { Link, useNavigate } from "react-router";
+import { Avatar, message, Modal } from "antd";
 import { Heart, MessageCircle, Repeat2, Bookmark, Link2, MoreHorizontal, User } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import AudioWaveform from "../WaveSurfer/AudioWaveform";
@@ -13,7 +13,7 @@ interface PostCardProps {
   onLike?: (postId: number) => Promise<void>;
   onComment?: (postId: number) => void;
   onRepost?: (postId: number) => Promise<void>;
-  onBookMark?: (postId: number) => void;
+  onBookmark?: (postId: number) => void;
 }
 
 export default function PostCard({
@@ -21,17 +21,18 @@ export default function PostCard({
   onLike,
   onComment,
   onRepost,
-  onBookMark,
+  onBookmark,
 }: PostCardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [liked, setLiked] = useState( false);
+  const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(post.likesCount || 0);
-  const [reposted, setReposted] = useState( false);
+  const [reposted, setReposted] = useState(false);
   const [repostsCount, setRepostsCount] = useState(post.favoritesCount || 0);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   const requireAuth = () => {
     if (!user) {
@@ -100,11 +101,11 @@ export default function PostCard({
   };
 
   const handleBookMark = () => {
-    if (onBookMark) {
-      onBookMark(post.id);
+    if (onBookmark) {
+      onBookmark(post.id);
     } else {
-      navigator.clipboard.writeText(`${window.location.origin}/post/${post.id}`);
-      message.success(t("post.link_copied"));
+      // Por defecto, podrías guardar en favoritos o copiar enlace; aquí lo dejamos como bookmark
+      message.success(t("post.bookmarked") || "Guardado");
     }
   };
 
@@ -117,35 +118,54 @@ export default function PostCard({
     : "";
 
   return (
-    <article className="flex flex-col w-full gap-3 p-4 bg-[#E8F1FC] border-t border-gray">
+    <article className="flex flex-col w-full gap-3 p-4 bg-[#E8F1FC] border-t border-gray-300">
+      {/* Cabecera con enlace al detalle (avatar, nombre, contenido, fecha) */}
       <div className="flex gap-3">
-        <Avatar
-          src={post.author?.avatar}
-          icon={!post.author?.avatar &&  <User />}
-          size={48}
-          className="bg-white border border-gray-800"
-        />
-        <div className="flex-1">
-          <div className="flex items-center flex-wrap gap-2">
-            <span className="font-medium text-gray-900">{post.author?.name || "Usuario"}</span>
-            <span className="text-gray-500">·</span>
-            <span className="text-gray-500">@{post.author?.handle || "usuario"}</span>
-            <span className="text-gray-500">·</span>
-            <span className="text-gray-500">{formattedDate}</span>
-            <MoreHorizontal size={16} className="text-gray-500 ml-auto" />
+        <Link to={`/post/${post.id}`} className="flex gap-3 flex-1">
+          <Avatar
+            src={post.author?.avatar}
+            icon={!post.author?.avatar && <User />}
+            size={48}
+            className="bg-white border border-gray-800"
+          />
+          <div className="flex-1">
+            <div className="flex items-center flex-wrap gap-2">
+              <span className="font-medium text-gray-900">{post.author?.name || "Usuario"}</span>
+              <span className="text-gray-500">·</span>
+              <Link to={`/user/${post.author?.handle || "usuario"}`} className="text-gray-500 hover:text-[#1351AA] hover:underline">@{post.author?.handle || "usuario"}</Link>
+              <span className="text-gray-500">·</span>
+              <span className="text-gray-500">{formattedDate}</span>
+            </div>
+            <p className="text-gray-800 mt-1">{post.content}</p>
           </div>
-          <p className="text-gray-800 mt-1">{post.content}</p>
-        </div>
+        </Link>
+        <button className="p-1 hover:bg-gray-200 rounded-full self-start">
+          <MoreHorizontal size={16} className="text-gray-500" />
+        </button>
       </div>
 
+      {/* Media (imagen, audio, enlace) */}
       {firstUpload && mediaUrl && mediaType && (
         <div className="ml-0 sm:ml-[60px] mt-2">
           {mediaType === PostType.IMAGE && (
-            <img
-              src={mediaUrl}
-              alt="Image"
-              className="w-full max-h-80 object-cover rounded-lg border border-gray-200"
-            />
+            <>
+              <img
+                src={mediaUrl}
+                alt="Image"
+                className="w-full max-h-80 object-cover rounded-lg border border-gray-200 cursor-pointer"
+                onClick={() => setIsImageModalOpen(true)}
+              />
+              <Modal
+                open={isImageModalOpen}
+                footer={null}
+                onCancel={() => setIsImageModalOpen(false)}
+                centered
+                width="fit-content"
+                styles={{ body: { padding: 0 } }}
+              >
+                <img src={mediaUrl} alt="Image full" className="max-w-full max-h-screen" />
+              </Modal>
+            </>
           )}
           {mediaType === PostType.LINK && (
             <div className="bg-[#F3F3F1] p-4 rounded-lg border border-[#8F8E8A]">
@@ -163,6 +183,7 @@ export default function PostCard({
         </div>
       )}
 
+      {/* Botones de interacción */}
       <div className="flex items-center gap-6 ml-0 sm:ml-[60px] mt-2 text-gray-600">
         <button
           className={`flex items-center gap-1 hover:text-blue-600 transition ${

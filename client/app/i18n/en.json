@@ -64,6 +64,14 @@
     "auth_required": "You need to log in to perform this action",
     "like_error": "Failed to like the post. Please try again.",
     "repost_error": "Failed to repost. Please try again.",
-    "link_copied": "Link copied to clipboard"
+    "link_copied": "Link copied to clipboard",
+    "publication": "Publication",
+    "reply_placeholder": "Reply!"
+  },
+  "tags": {
+    "latest_illustration": "Latest in Illustration",
+    "latest_music": "Latest in Music",
+    "latest_literature": "Latest in Literature",
+    "see_more": "See more..."
   }
 }

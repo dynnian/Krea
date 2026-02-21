@@ -64,6 +64,14 @@
     "auth_required": "Necesitas iniciar sesión para realizar esta acción",
     "like_error": "No se pudo dar like. Intenta de nuevo.",
     "repost_error": "No se pudo republicar. Intenta de nuevo.",
-    "link_copied": "Enlace copiado al portapapeles"
+    "link_copied": "Enlace copiado al portapapeles",
+    "publication": "Publicación",
+    "reply_placeholder": "Responde!"
+  },
+  "tags": {
+    "latest_illustration": "Lo último en Ilustración",
+    "latest_music": "Lo último en Música",
+    "latest_literature": "Lo último en Literatura",
+    "see_more": "Ver más..."
   }
 }
