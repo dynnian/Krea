@@ -1,34 +1,49 @@
 using Krea.Domain.Entities;
+using Krea.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Krea.Infrastructure.Data.Configurations;
 
-public class CommissionOfferingConfiguration : IEntityTypeConfiguration<CommissionOffering>
+public sealed class CommissionOfferingConfiguration 
+    : IEntityTypeConfiguration<CommissionOffering>
 {
     public void Configure(EntityTypeBuilder<CommissionOffering> builder)
     {
         builder.ToTable("commission_offerings");
 
-        builder.HasKey(co => co.Id);
+        builder.HasKey(o => o.Id);
 
-        builder.Property(co => co.Id)
+        builder.Property(o => o.Id)
             .ValueGeneratedNever();
 
-        builder.Property(co => co.Title)
+        builder.Property(o => o.Title)
             .IsRequired()
-            .HasMaxLength(150);
+            .HasMaxLength(25);
 
-        builder.Property(co => co.Description)
-            .HasMaxLength(1000);
+        builder.Property(o => o.Description)
+            .HasMaxLength(2000);
 
-        builder.Property(co => co.Price)
-            .HasColumnType("decimal(18,2)")
+        builder.Property(o => o.MaxSlots)
             .IsRequired();
 
-        builder.HasOne(co => co.Creator)
-            .WithMany(u => u.CommissionOfferings)
-            .HasForeignKey(co => co.CreatorId)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.Property(o => o.IsActive)
+            .IsRequired();
+
+        builder.Property(o => o.CreatedAt)
+            .IsRequired();
+        
+        builder.Property(o => o.BasePrice)
+            .HasConversion(
+                m => m.Amount,
+                v => new Money(v))
+            .HasColumnName("base_price")
+            .HasColumnType("decimal(18,2)")
+            .IsRequired();
+        
+        builder.HasOne(o => o.Artist)
+            .WithMany()
+            .HasForeignKey("ArtistId")
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

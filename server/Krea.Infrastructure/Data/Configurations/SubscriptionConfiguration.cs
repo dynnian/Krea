@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Krea.Infrastructure.Data.Configurations;
 
-public class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription>
+public sealed class SubscriptionConfiguration 
+    : IEntityTypeConfiguration<Subscription>
 {
     public void Configure(EntityTypeBuilder<Subscription> builder)
     {
@@ -15,23 +16,37 @@ public class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription>
         builder.Property(s => s.Id)
             .ValueGeneratedNever();
 
-        builder.Property(s => s.StartDate)
+        builder.Property(s => s.IsActive)
             .IsRequired();
 
-        builder.Property(s => s.EndDate);
-
-        builder.Property(s => s.Status)
-            .HasConversion<int>()
+        builder.Property(s => s.CurrentPeriodStart)
             .IsRequired();
+
+        builder.Property(s => s.CurrentPeriodEnd)
+            .IsRequired();
+
+        builder.Property(s => s.SubscribedAt)
+            .IsRequired();
+
+        builder.Property(s => s.UpdatedAt)
+            .IsRequired();
+
+        builder.Property(s => s.CanceledAt);
+
+        // Subscriber
+        builder.Property<Guid>("SubscriberId");
 
         builder.HasOne(s => s.Subscriber)
-            .WithMany(u => u.Subscriptions)
-            .HasForeignKey(s => s.SubscriberId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .WithMany()
+            .HasForeignKey("SubscriberId")
+            .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(s => s.Creator)
-            .WithMany(u => u.Subscribers)
-            .HasForeignKey(s => s.CreatorId)
-            .OnDelete(DeleteBehavior.Restrict);
+        // Plan
+        builder.Property<Guid>("PlanId");
+
+        builder.HasOne(s => s.Plan)
+            .WithMany()
+            .HasForeignKey("PlanId")
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

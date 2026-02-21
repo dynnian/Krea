@@ -43,8 +43,8 @@ public class AppDbContext: DbContext
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<Donation> Donations => Set<Donation>();
     public DbSet<Payment> Payments => Set<Payment>();
-    public DbSet<CommissionOffering> ComissionOfferings => Set<CommissionOffering>();
-    public DbSet<CommissionRequest> ComissionRequests => Set<CommissionRequest>();
+    public DbSet<CommissionOffering> CommissionOfferings => Set<CommissionOffering>();
+    public DbSet<CommissionRequest> CommissionRequests => Set<CommissionRequest>();
 
     // public DbSet<Notification> Notifications => Set<Notification>();
 

@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Krea.Infrastructure.Data.Configurations;
 
-public class DonationConfiguration : IEntityTypeConfiguration<Donation>
+public sealed class DonationConfiguration 
+    : IEntityTypeConfiguration<Donation>
 {
     public void Configure(EntityTypeBuilder<Donation> builder)
     {
@@ -19,17 +20,20 @@ public class DonationConfiguration : IEntityTypeConfiguration<Donation>
             .HasColumnType("decimal(18,2)")
             .IsRequired();
 
-        builder.Property(d => d.CreatedAt)
+        builder.Property(d => d.Message)
+            .HasMaxLength(500);
+
+        builder.Property(d => d.DonatedAt)
             .IsRequired();
 
         builder.HasOne(d => d.Donor)
-            .WithMany(u => u.DonationsMade)
-            .HasForeignKey(d => d.DonorId)
+            .WithMany()
+            .HasForeignKey("DonorId")
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(d => d.Creator)
-            .WithMany(u => u.DonationsReceived)
-            .HasForeignKey(d => d.CreatorId)
+        builder.HasOne(d => d.Recipient)
+            .WithMany()
+            .HasForeignKey("RecipientId")
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

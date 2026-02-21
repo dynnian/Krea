@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Krea.Infrastructure.Data.Configurations;
 
-public class CommissionRequestConfiguration : IEntityTypeConfiguration<CommissionRequest>
+public sealed class CommissionRequestConfiguration 
+    : IEntityTypeConfiguration<CommissionRequest>
 {
     public void Configure(EntityTypeBuilder<CommissionRequest> builder)
     {
@@ -20,17 +21,24 @@ public class CommissionRequestConfiguration : IEntityTypeConfiguration<Commissio
             .HasMaxLength(1000);
 
         builder.Property(cr => cr.Status)
-            .HasConversion<int>()
+            .HasConversion<string>()
+            .HasMaxLength(20)
             .IsRequired();
 
-        builder.HasOne(cr => cr.Requester)
-            .WithMany(u => u.CommissionRequests)
-            .HasForeignKey(cr => cr.RequesterId)
+        builder.Property(cr => cr.CreatedAt)
+            .IsRequired();
+
+        builder.Property(cr => cr.UpdatedAt)
+            .IsRequired();
+
+        builder.HasOne(cr => cr.Bidder)
+            .WithMany()
+            .HasForeignKey("BidderId")
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(cr => cr.Offering)
-            .WithMany(o => o.Requests)
-            .HasForeignKey(cr => cr.OfferingId)
+            .WithMany()
+            .HasForeignKey("OfferingId")
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
