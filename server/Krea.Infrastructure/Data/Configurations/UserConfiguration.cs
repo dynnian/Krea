@@ -56,13 +56,20 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.UpdatedAt)
             .IsRequired();
 
-        builder.HasIndex(u => u.Username)
-            .IsUnique();
+        builder.Property(u => u.EmailConfirmedAt);
 
-        builder.HasIndex(u => u.Email)
-            .IsUnique();
+        builder.Property(u => u.LastPasswordResetAt);
 
-        // Relacion con Posts
+        builder.Property(u => u.LastLoginAt);
+
+        // Indices unicos
+        builder.HasIndex(u => u.Username).IsUnique();
+        builder.HasIndex(u => u.Email).IsUnique();
+        builder.HasIndex(u => u.RegisteredAt);
+        builder.HasIndex(u => u.IsBanned);
+        builder.HasIndex(u => u.IsDisabled);
+
+        // Relacion Posts
         builder.HasMany(u => u.Posts)
             .WithOne(p => p.AuthorPost)
             .HasForeignKey(p => p.AuthorPostId)
@@ -71,7 +78,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Navigation(u => u.Posts)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
-        // Relacion con Likes
+        // Relacion Likes
         builder.HasMany(u => u.Likes)
             .WithOne(l => l.User)
             .HasForeignKey(l => l.UserId)
@@ -79,7 +86,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Navigation(u => u.Likes)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
-        
+
+        // Relacion Collections (Owner)
         builder.HasMany(u => u.Collections)
             .WithOne(c => c.Owner)
             .HasForeignKey(c => c.OwnerId)
@@ -87,5 +95,17 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Navigation(u => u.Collections)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        // Relacion ProfilePicture
+        builder.HasOne(u => u.ProfilePicture)
+            .WithMany()
+            .HasForeignKey("ProfilePictureId")
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Relacion BannerPicture
+        builder.HasOne(u => u.BannerPicture)
+            .WithMany()
+            .HasForeignKey("BannerPictureId")
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

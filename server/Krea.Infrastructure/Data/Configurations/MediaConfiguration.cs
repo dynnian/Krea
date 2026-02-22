@@ -15,15 +15,26 @@ public class MediaConfiguration : IEntityTypeConfiguration<Media>
         builder.Property(m => m.Id)
             .ValueGeneratedNever();
 
+        builder.Property(m => m.OriginalFileName)
+            .IsRequired()
+            .HasMaxLength(255);
+
+        builder.Property(m => m.FileName)
+            .IsRequired()
+            .HasMaxLength(255);
+
+        builder.Property(m => m.MimeType)
+            .IsRequired()
+            .HasMaxLength(100);
+
         builder.Property(m => m.Path)
             .IsRequired()
             .HasMaxLength(254);
 
-        builder.Property(m => m.MimeType)
-            .IsRequired()
-            .HasConversion<int>();
-
-        builder.Property(m => m.FileName)
+        builder.Property(m => m.UploadedAt)
             .IsRequired();
+
+        builder.HasIndex(m => m.FileName)
+            .IsUnique();
     }
 }
