@@ -1,14 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using Krea.Domain.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Krea.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 
 namespace Krea.Infrastructure.Data;
 
-public class AppDbContext: DbContext
+public class AppDbContext: IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
     }
+    
 
     #region DbSets
 
@@ -53,6 +57,23 @@ public class AppDbContext: DbContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        
+        builder.Entity<AppUser>(entity =>
+        {
+            entity.Property(u => u.Id).ValueGeneratedNever();
+            
+            entity.HasOne<AppUser>()
+                .WithOne()
+                .HasForeignKey<User>(u => u.Id)
+                .HasPrincipalKey<AppUser>(au => au.Id)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // User a AppUser
+        // builder.Entity<User>()
+        //     .HasOne<AppUser>()
+        //     .WithOne()
+        //     .HasForeignKey<User>(u => u.Id);
 
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
