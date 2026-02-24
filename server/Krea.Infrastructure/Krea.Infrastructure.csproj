@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Krea.Domain\Krea.Domain.csproj" />
+    <ProjectReference Include="..\Krea.Application\Krea.Application.csproj" />
   </ItemGroup>
 
 </Project>
