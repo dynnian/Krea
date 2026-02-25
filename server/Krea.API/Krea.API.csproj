@@ -10,4 +10,9 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Krea.Application\Krea.Application.csproj" />
+    <ProjectReference Include="..\Krea.Infrastructure\Krea.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

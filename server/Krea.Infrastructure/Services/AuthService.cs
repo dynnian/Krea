@@ -43,9 +43,6 @@ public class AuthService : IAuthService
 
         // Crear domain user
         var domainUser = new User(
-            request.Username,
-            request.Email,
-            "", // Identity lo maneja, posible cambio a db
             request.DisplayName,
             request.LanguageCode,
             request.TimeZoneId,
@@ -58,18 +55,17 @@ public class AuthService : IAuthService
             UserName = request.Username,
             Email = request.Email
         };
-        
+
         var result = await _userManager.CreateAsync(appUser, request.Password);
         if (!result.Succeeded)
             throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
 
-
         await _userRepository.AddAsync(domainUser);
 
-        // Generar Token
         var token = await GenerateJwtToken(appUser, domainUser);
+        var userDto = await MapToDto(domainUser, appUser);
 
-        return new AuthResponse(token.Token, token.Expiration, MapToDto(domainUser));
+        return new AuthResponse(token.Token, token.Expiration, userDto);
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
@@ -80,25 +76,23 @@ public class AuthService : IAuthService
         if (appUser == null)
             throw new Exception("Invalid credentials.");
 
-        // Verificar contraseña
         var signInResult = await _signInManager.CheckPasswordSignInAsync(appUser, request.Password, false);
         if (!signInResult.Succeeded)
             throw new Exception("Invalid credentials.");
 
-        // Cargar domain user
         var domainUser = await _userRepository.GetByIdAsync(appUser.Id);
         if (domainUser == null)
             throw new Exception("User not found in domain.");
 
-
         domainUser.SetLastLogin();
         await _userRepository.UpdateAsync(domainUser);
 
-        // Generar token
         var token = await GenerateJwtToken(appUser, domainUser);
+        var userDto = await MapToDto(domainUser, appUser);
 
-        return new AuthResponse(token.Token, token.Expiration, MapToDto(domainUser));
+        return new AuthResponse(token.Token, token.Expiration, userDto);
     }
+
 
     private async Task<(string Token, DateTime Expiration)> GenerateJwtToken(AppUser appUser, User domainUser)
     {
@@ -128,13 +122,16 @@ public class AuthService : IAuthService
         return (new JwtSecurityTokenHandler().WriteToken(token), expiration);
     }
 
-    private UserDto MapToDto(User user) => new(
-        user.Id,
-        user.Username,
-        user.Email,
-        user.DisplayName,
-        user.Biography,
-        user.LanguageCode,
-        user.TimeZoneId
-    );
+    private Task<UserDto> MapToDto(User domainUser, AppUser appUser)
+    {
+        return Task.FromResult(new UserDto(
+            domainUser.Id,
+            appUser.UserName ?? string.Empty,
+            appUser.Email ?? string.Empty,
+            domainUser.DisplayName,
+            domainUser.Biography,
+            domainUser.LanguageCode,
+            domainUser.TimeZoneId
+        ));
+    }
 }
