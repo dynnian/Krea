@@ -2,8 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Krea.Domain.Entities {
     public sealed class Media {
-        
-        [Key]
         public Guid Id { get; private init; }
         
         [Required(ErrorMessage = "OriginalFileName is required.")]

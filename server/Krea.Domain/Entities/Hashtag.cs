@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Krea.Domain.Entities {
-    public sealed class Hashtag
+    public class Hashtag
     {
         [Key]
         public Guid Id { get; private set; }

@@ -1,34 +1,30 @@
+namespace Krea.API {
+    using Infrastructure;
+    using Application;
 
-namespace Krea.API;
+    internal class Program {
+        private static void Main(string[] args) {
+            WebApplicationBuilder builder = WebApplication.CreateBuilder(args).AddInfrastructure();
+            
+            builder.Services.AddApplication();
+            builder.Services.AddControllers();
+            builder.Services.AddOpenApi();
 
-public class Program
-{
-    public static void Main(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args);
+            WebApplication app = builder.Build();
 
-        // Add services to the container.
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment()) {
+                app.MapOpenApi();
+            }
 
-        builder.Services.AddControllers();
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-        builder.Services.AddOpenApi();
-        //builder.Services.AddPersistence(builder.Configuration);
+            app.UseHttpsRedirection();
 
-        var app = builder.Build();
+            app.UseAuthorization();
 
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapOpenApi();
+
+            app.MapControllers();
+
+            app.Run();
         }
-
-        app.UseHttpsRedirection();
-
-        app.UseAuthorization();
-
-
-        app.MapControllers();
-
-        app.Run();
     }
 }

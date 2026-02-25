@@ -10,7 +10,9 @@ namespace Krea.Domain.Entities {
         [LanguageCode] public string LanguageCode { get; set; }
         
         public int WordCount { get; private set; }
-        
+
+        public Collections? SerieCollection { get; private set; }
+
         #pragma warning disable CS8618
         private TextMetadata() { }
         #pragma warning restore CS8618
@@ -23,13 +25,15 @@ namespace Krea.Domain.Entities {
             string? subtitle,
             string languageCode,
             int wordCount,
-            IEnumerable<Genre>? genres = null)
+            IEnumerable<Genre>? genres = null,
+            Collections? serieCollection = null)
             : base(uploadId, title, description, genres)
         {
             SortTitle = sortTitle;
             Subtitle = subtitle;
             LanguageCode = languageCode;
             WordCount = wordCount;
+            SerieCollection = serieCollection;
         }
 
         public void UpdateTextInfo(string? subtitle, string language)
@@ -45,7 +49,8 @@ namespace Krea.Domain.Entities {
             string? description,
             int wordCount,
             string languageCode,
-            IEnumerable<Genre> genres)
+            IEnumerable<Genre> genres,
+            Collections? serieCollection)
         {
             var metadata = new TextMetadata {
                 Id = id,
@@ -53,11 +58,16 @@ namespace Krea.Domain.Entities {
                 Title = title,
                 Description = description,
                 WordCount = wordCount,
-                LanguageCode = languageCode
+                LanguageCode = languageCode,
+                SerieCollection = serieCollection
             }; 
             metadata.SetGenres(genres);
 
             return metadata;
+        }
+
+        public void AssignToSerie(Collections collection) {
+            SerieCollection = collection;
         }
     }
 }

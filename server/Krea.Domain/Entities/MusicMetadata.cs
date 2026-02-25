@@ -7,6 +7,8 @@ namespace Krea.Domain.Entities {
         public int BitrateKbps { get; private set; }
         
         public int DurationSec { get; private set; }
+
+        public Collections? AlbumCollection { get; private set; }
         
         #pragma warning disable CS8618
         private MusicMetadata() {}
@@ -18,32 +20,35 @@ namespace Krea.Domain.Entities {
             string? description,
             int bitrateKbps,
             int durationSec,
-            IEnumerable<Genre>? genres = null)
+            IEnumerable<Genre>? genres = null,
+            Collections? albumCollection = null)
             : base(uploadId, title, description, genres)
         {
             BitrateKbps = bitrateKbps;
             DurationSec = durationSec;
+            AlbumCollection = albumCollection;
         }
 
-        public static MusicMetadata Load(
+        public MusicMetadata Load(
             Guid id,
             Guid uploadId,
             string title,
             string? description,
             int bitrateKbps,
             int durationSec,
-            IEnumerable<Genre> genres)
+            IEnumerable<Genre> genres,
+            Collections? albumCollection)
         {
-            var metadata = new MusicMetadata(
-                uploadId,
-                title,
-                description,
-                bitrateKbps,
-                durationSec,
-                genres
-            );
+            var metadata = new MusicMetadata {
+                Id = id,
+                UploadId = uploadId,
+                Title = title,
+                Description = description,
+                BitrateKbps = bitrateKbps,
+                DurationSec = durationSec,
+                AlbumCollection = albumCollection
+            };
 
-            metadata.Id = id;
             metadata.SetGenres(genres);
 
             return metadata;
@@ -56,6 +61,10 @@ namespace Krea.Domain.Entities {
             
             BitrateKbps = bitrateKbps;
             DurationSec = durationSec;
+        }
+
+        public void AssignToAlbum(Collections collection) {
+            AlbumCollection = collection;
         }
     }
 }

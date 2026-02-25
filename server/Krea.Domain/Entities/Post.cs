@@ -43,9 +43,6 @@ namespace Krea.Domain.Entities {
         private readonly List<Like> _likes = new();
         public IReadOnlyCollection<Like> Likes => _likes.AsReadOnly();
         
-        private readonly List<Collections> _collections = new();
-        public IReadOnlyCollection<Collections> Collections => _collections.AsReadOnly();
-        
         #pragma warning disable CS8618
         private Post() { }
         #pragma warning restore CS8618
@@ -73,39 +70,38 @@ namespace Krea.Domain.Entities {
             DeletedAt = null;
         }
         
-        public static Post Load(
+        public Post Load(
             Guid id,
-            Guid authorPostId,
+            User authorPost,
             PostType type,
             string title,
             string content,
             bool isWork,
             bool isDeleted,
             bool isLocal,
-            Guid? repliedToId,
-            Guid? repostOfId,
+            Post? repliedTo,
+            Post? repostOf,
             DateTime uploadedAt,
             DateTime updatedAt,
             DateTime? deletedAt
-        )
-        {
-            var post = new Post(
-                authorPostId,
-                type,
-                title,
-                content,
-                isWork,
-                isLocal
-            );
+        ) {
+            Validate(title);
 
-            post.Id = id;
-            post.IsDeleted = isDeleted;
-            post.RepliedToId = repliedToId;
-            post.RepostOfId = repostOfId;
-            post.UploadedAt = uploadedAt;
-            post.UpdatedAt = updatedAt;
-            post.DeletedAt = deletedAt;
-
+            var post = new Post {
+                Id = id,
+                AuthorPost = authorPost,
+                Type = type,
+                Title = title,
+                Content = content,
+                IsWork = isWork,
+                IsDeleted = isDeleted,
+                IsLocal = isLocal,
+                RepliedTo = repliedTo,
+                RepostOf = repostOf,
+                UploadedAt = uploadedAt,
+                UpdatedAt = updatedAt,
+                DeletedAt = deletedAt
+            };
             return post;
         }
         
@@ -144,7 +140,7 @@ namespace Krea.Domain.Entities {
         }
         
         //Uploading work content actions
-        public PostUpload AddUpload(Media media, bool isWorkMedia)
+        public void AddUpload(Media media, bool isWorkMedia)
         {
             if (IsDeleted)
                 throw new InvalidOperationException("Cannot modify deleted post");
@@ -155,12 +151,11 @@ namespace Krea.Domain.Entities {
             if (isWorkMedia && _uploads.Any(u => u.IsWorkMedia))
                 throw new InvalidOperationException("Only one work media allowed");
 
-            var upload = new PostUpload(Id, media.Id, isWorkMedia);
+            var upload = new PostUpload(this, media, isWorkMedia);
 
             _uploads.Add(upload);
-            UpdatedAt = DateTime.UtcNow;
 
-            return upload;
+            UpdatedAt = DateTime.UtcNow;
         }
 
         public void RemoveUpload(Media media) {

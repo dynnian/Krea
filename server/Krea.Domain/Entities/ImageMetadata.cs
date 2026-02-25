@@ -12,6 +12,8 @@ namespace Krea.Domain.Entities {
         
         public string Format { get; private set; }
         
+        public Collections? CollageCollection { get; private set; }
+
         #pragma warning disable CS8618
         private ImageMetadata() { }
         #pragma warning restore CS8618
@@ -24,7 +26,8 @@ namespace Krea.Domain.Entities {
             string height,
             int fileSize,
             string format,
-            IEnumerable<Genre>? genres = null)
+            IEnumerable<Genre>? genres = null,
+            Collections? collageCollection = null)
             : base(uploadId, title, description, genres)
         {
 
@@ -46,7 +49,8 @@ namespace Krea.Domain.Entities {
             string height,
             int fileSize,
             string format,
-            IEnumerable<Genre> genres)
+            IEnumerable<Genre> genres,
+            Collections? collageCollection)
         {
             var metadata = new ImageMetadata
             {
@@ -57,12 +61,16 @@ namespace Krea.Domain.Entities {
                 Width = width,
                 Height = height,
                 FileSize =  fileSize,
-                Format = format
-                
+                Format = format,
+                CollageCollection = collageCollection
             };
             metadata.SetGenres(genres);
 
             return metadata;
+        }
+
+        public void AssignToCollection(Collections collection) {
+            CollageCollection = collection;
         }
     }
 }

@@ -1,5 +1,3 @@
-using Krea.Domain.ValueObjects;
-
 namespace Krea.Domain.Entities {
     public sealed class Conversation {
         public Guid Id { get; private set; }
@@ -7,15 +5,13 @@ namespace Krea.Domain.Entities {
         public string Title { get; private set; }
         public string Description { get; private set; }
         public Media? Icon { get; private set; }
-        private readonly List<Message> _messages = new();
-        public IReadOnlyCollection<Message> Messages => _messages;
 
         public DateTime CreatedAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private Conversation() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
         
         public Conversation(string title, string description, Media? icon = null) {
             Validate(title, description);
@@ -55,34 +51,6 @@ namespace Krea.Domain.Entities {
             Description = description;
             Icon = icon;
             UpdatedAt = DateTime.UtcNow;
-        }
-        
-        public Message AddMessage(User user, MessageContentType contentType, string? text = null, IEnumerable<Media>? media = null)
-        {
-            Message message;
-            if (contentType == MessageContentType.Text)
-            {
-                if (string.IsNullOrWhiteSpace(text))
-                    throw new ArgumentException("Text message cannot be empty.");
-                message = Message.CreateTextMessage(user, this, text);
-            }
-            else if (contentType == MessageContentType.Media)
-            {
-                if (media == null)
-                    throw new ArgumentException("Media message must have attachments.");
-
-                var mediaList = media.ToList();
-                if (mediaList.Count == 0)
-                    throw new ArgumentException("Media message must have attachments.");
-
-                message = Message.CreateMediaMessage(user, this, mediaList);
-            }
-            else 
-            {
-                message = Message.CreateSystemMessage(user, this, text);
-            }
-            _messages.Add(message);
-            return message;
         }
 
         private static void Validate(string title, string description) {
