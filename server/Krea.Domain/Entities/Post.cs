@@ -28,11 +28,11 @@ namespace Krea.Domain.Entities {
         public Guid? RepostOfId { get; private set; }
         public Post? RepostOf { get; private set; }
         
-        [Timestamp] public DateTime? DeletedAt { get; private set; }
+        public DateTime? DeletedAt { get; private set; }
         
-        [Timestamp] public DateTime UploadedAt { get; private set; }
+        public DateTime UploadedAt { get; private set; }
         
-        [Timestamp] public DateTime UpdatedAt { get; private set; }
+        public DateTime UpdatedAt { get; private set; }
         
         private readonly List<PostUpload> _uploads = new();
         public IReadOnlyCollection<PostUpload> Uploads => _uploads.AsReadOnly();
@@ -149,8 +149,14 @@ namespace Krea.Domain.Entities {
             if (IsDeleted)
                 throw new InvalidOperationException("Cannot modify deleted post");
 
+            if (Type == PostType.Plain)
+                throw new InvalidOperationException("Standard posts cannot have uploads");
+
             if (_uploads.Any(u => u.MediaId == media.Id))
                 throw new InvalidOperationException("Media already attached");
+
+            if (Type == PostType.Image && _uploads.Count >= 1)
+                throw new InvalidOperationException("Image posts allow only one upload");
 
             if (isWorkMedia && _uploads.Any(u => u.IsWorkMedia))
                 throw new InvalidOperationException("Only one work media allowed");
