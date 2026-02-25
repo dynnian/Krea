@@ -64,6 +64,54 @@
     "auth_required": "You need to log in to perform this action",
     "like_error": "Failed to like the post. Please try again.",
     "repost_error": "Failed to repost. Please try again.",
-    "link_copied": "Link copied to clipboard"
+    "link_copied": "Link copied to clipboard",
+    "publication": "Publication",
+    "reply_placeholder": "Reply!"
+  },
+  "tags": {
+    "latest_illustration": "Latest in Illustration",
+    "latest_music": "Latest in Music",
+    "latest_literature": "Latest in Literature",
+    "see_more": "See more..."
+  },
+  "explore": {
+    "tabs": {
+      "images": "Images",
+      "music": "Music",
+      "literature": "Literature"
+    },
+    "music": {
+      "featured": "Featured",
+      "featured_artist": "Artist",
+      "featured_song": "Song",
+      "new_albums": "New albums!",
+      "album_title": "Album title",
+      "album_artist": "Artist",
+      "latest_songs": "Latest songs!",
+      "song_title": "Song",
+      "song_artist": "Artist",
+      "song_genres": "Jazz, Rock, etc...",
+      "trending_genres": "Trending genres",
+      "trending_artists": "Trending artists"
+    },
+    "literature": {
+      "featured": "Featured",
+      "featured_title": "Book title",
+      "featured_author": "Author",
+      "synopsis": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis.",
+      "synopsis_label": "Synopsis",
+      "read_now": "Read now",
+      "trending": "Trending",
+      "book_title": "Book title",
+      "book_author": "Author",
+      "recent": "Recently published",
+      "recent_title": "Work title",
+      "recent_author": "Author",
+      "recent_synopsis": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis.",
+      "chapters": "X Chapters",
+      "read": "Read",
+      "trending_genres": "Trending genres",
+      "trending_authors": "Trending authors"
+    }
   }
 }
