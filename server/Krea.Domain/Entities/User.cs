@@ -3,6 +3,7 @@ using Krea.Domain.Validators;
 
 namespace Krea.Domain.Entities {
     public sealed class User {
+        [Key]
         public Guid Id { get; private set; }
         
         [UserName, Required(ErrorMessage = "Username is required.")] 
@@ -30,18 +31,29 @@ namespace Krea.Domain.Entities {
         public bool IsDisabled { get; private set; }
         
         public Media? ProfilePicture { get; private set; }
+        public Guid? ProfilePictureId { get; private set; }
         
         public Media? BannerPicture { get; private set; }
+        public Guid? BannerPictureId { get; private set; }
         
-        [Timestamp] public DateTime? EmailConfirmedAt { get; private set; }
+        public DateTime? EmailConfirmedAt { get; private set; }
         
-        [Timestamp] public DateTime? LastPasswordResetAt { get; private set; }
+        public DateTime? LastPasswordResetAt { get; private set; }
         
-        [Timestamp] public DateTime? LastLoginAt { get; private set; }
+        private readonly List<Post> _posts = new();
+        public IReadOnlyCollection<Post> Posts => _posts.AsReadOnly();
+
+        private readonly List<Like> _likes = new();
+        public IReadOnlyCollection<Like> Likes => _likes.AsReadOnly();
         
-        [Timestamp] public DateTime RegisteredAt { get; private set; }
+        private readonly List<Collections> _collections = new();
+        public IReadOnlyCollection<Collections> Collections => _collections.AsReadOnly();
         
-        [Timestamp] public DateTime UpdatedAt { get; private set; }
+        public DateTime? LastLoginAt { get; private set; }
+        
+        public DateTime RegisteredAt { get; private set; }
+        
+        public DateTime UpdatedAt { get; private set; }
         
         #pragma warning disable CS8618
         private User() { }
@@ -65,7 +77,7 @@ namespace Krea.Domain.Entities {
                 throw new ArgumentException("Required arguments are missing");
             Id = Guid.NewGuid();
             Username = username;
-            Email = email;
+            Email = email.Trim().ToLowerInvariant();
             PasswordHash = passwordHash;
             DisplayName = displayName;
             LanguageCode = languageCode;

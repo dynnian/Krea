@@ -28,11 +28,11 @@ namespace Krea.Domain.Entities {
         public Guid? RepostOfId { get; private set; }
         public Post? RepostOf { get; private set; }
         
-        [Timestamp] public DateTime? DeletedAt { get; private set; }
+        public DateTime? DeletedAt { get; private set; }
         
-        [Timestamp] public DateTime UploadedAt { get; private set; }
+        public DateTime UploadedAt { get; private set; }
         
-        [Timestamp] public DateTime UpdatedAt { get; private set; }
+        public DateTime UpdatedAt { get; private set; }
         
         private readonly List<PostUpload> _uploads = new();
         public IReadOnlyCollection<PostUpload> Uploads => _uploads.AsReadOnly();
@@ -42,6 +42,9 @@ namespace Krea.Domain.Entities {
         
         private readonly List<Like> _likes = new();
         public IReadOnlyCollection<Like> Likes => _likes.AsReadOnly();
+        
+        private readonly List<Collections> _collections = new();
+        public IReadOnlyCollection<Collections> Collections => _collections.AsReadOnly();
         
         #pragma warning disable CS8618
         private Post() { }
@@ -70,38 +73,39 @@ namespace Krea.Domain.Entities {
             DeletedAt = null;
         }
         
-        public Post Load(
+        public static Post Load(
             Guid id,
-            User authorPost,
+            Guid authorPostId,
             PostType type,
             string title,
             string content,
             bool isWork,
             bool isDeleted,
             bool isLocal,
-            Post? repliedTo,
-            Post? repostOf,
+            Guid? repliedToId,
+            Guid? repostOfId,
             DateTime uploadedAt,
             DateTime updatedAt,
             DateTime? deletedAt
-        ) {
-            Validate(title);
+        )
+        {
+            var post = new Post(
+                authorPostId,
+                type,
+                title,
+                content,
+                isWork,
+                isLocal
+            );
 
-            var post = new Post {
-                Id = id,
-                AuthorPost = authorPost,
-                Type = type,
-                Title = title,
-                Content = content,
-                IsWork = isWork,
-                IsDeleted = isDeleted,
-                IsLocal = isLocal,
-                RepliedTo = repliedTo,
-                RepostOf = repostOf,
-                UploadedAt = uploadedAt,
-                UpdatedAt = updatedAt,
-                DeletedAt = deletedAt
-            };
+            post.Id = id;
+            post.IsDeleted = isDeleted;
+            post.RepliedToId = repliedToId;
+            post.RepostOfId = repostOfId;
+            post.UploadedAt = uploadedAt;
+            post.UpdatedAt = updatedAt;
+            post.DeletedAt = deletedAt;
+
             return post;
         }
         
@@ -140,22 +144,29 @@ namespace Krea.Domain.Entities {
         }
         
         //Uploading work content actions
-        public void AddUpload(Media media, bool isWorkMedia)
+        public PostUpload AddUpload(Media media, bool isWorkMedia)
         {
             if (IsDeleted)
                 throw new InvalidOperationException("Cannot modify deleted post");
 
+            if (Type == PostType.Plain)
+                throw new InvalidOperationException("Standard posts cannot have uploads");
+
             if (_uploads.Any(u => u.MediaId == media.Id))
                 throw new InvalidOperationException("Media already attached");
+
+            if (Type == PostType.Image && _uploads.Count >= 1)
+                throw new InvalidOperationException("Image posts allow only one upload");
 
             if (isWorkMedia && _uploads.Any(u => u.IsWorkMedia))
                 throw new InvalidOperationException("Only one work media allowed");
 
-            var upload = new PostUpload(this, media, isWorkMedia);
+            var upload = new PostUpload(Id, media.Id, isWorkMedia);
 
             _uploads.Add(upload);
-
             UpdatedAt = DateTime.UtcNow;
+
+            return upload;
         }
 
         public void RemoveUpload(Media media) {
