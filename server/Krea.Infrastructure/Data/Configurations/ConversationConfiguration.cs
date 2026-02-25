@@ -1,8 +1,8 @@
-using Krea.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Krea.Infrastructure.Data.Configurations {
+    using Domain.Entities;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+    
     public sealed class ConversationConfiguration : IEntityTypeConfiguration<Conversation> {
         public void Configure(EntityTypeBuilder<Conversation> builder) {
             builder.ToTable("conversations");

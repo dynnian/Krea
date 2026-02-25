@@ -1,8 +1,8 @@
-using Krea.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Krea.Infrastructure.Data.Configurations {
+    using Domain.Entities;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+    
     public class MetadataConfiguration : IEntityTypeConfiguration<Metadata> {
         public void Configure(EntityTypeBuilder<Metadata> builder) {
             builder.ToTable("metadata");

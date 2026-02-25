@@ -1,9 +1,9 @@
-using Krea.Domain.Entities;
-using Krea.Domain.ValueObjects;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Krea.Infrastructure.Data.Configurations {
+    using Domain.Entities;
+    using Domain.ValueObjects;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+    
     public sealed class MembershipPlanConfiguration
         : IEntityTypeConfiguration<MembershipPlan> {
         public void Configure(EntityTypeBuilder<MembershipPlan> builder) {

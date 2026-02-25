@@ -1,8 +1,8 @@
-using Krea.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Krea.Infrastructure.Data.Configurations {
+    using Domain.Entities;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+    
     public class PostUploadConfiguration : IEntityTypeConfiguration<PostUpload> {
         public void Configure(EntityTypeBuilder<PostUpload> builder) {
             builder.ToTable("post_uploads");

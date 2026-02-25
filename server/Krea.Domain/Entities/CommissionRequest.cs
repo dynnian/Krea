@@ -3,13 +3,14 @@ using Krea.Domain.ValueObjects;
 namespace Krea.Domain.Entities {
     public sealed class CommissionRequest {
         public Guid Id { get; private set; }
-
         public User Bidder { get; private set; }
         public CommissionOffering Offering { get; private set; }
 
+        private readonly List<Payment> _payments = new();
+        public IReadOnlyCollection<Payment> Payments => _payments;
+
         public string Brief { get; private set; }
         public CommissionRequestStatus Status { get; private set; }
-
         public DateTime CreatedAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
 
@@ -17,11 +18,7 @@ namespace Krea.Domain.Entities {
         private CommissionRequest() { }
         #pragma warning restore CS8618
 
-        public CommissionRequest(
-            User bidder,
-            CommissionOffering offering,
-            string brief
-        ) {
+        public CommissionRequest(User bidder, CommissionOffering offering, string brief) {
             Validate(bidder, offering, brief);
 
             Id = Guid.NewGuid();
@@ -40,8 +37,7 @@ namespace Krea.Domain.Entities {
             string brief,
             CommissionRequestStatus status,
             DateTime createdAt,
-            DateTime updatedAt
-        ) {
+            DateTime updatedAt) {
             Validate(bidder, offering, brief);
 
             return new CommissionRequest {
@@ -55,6 +51,23 @@ namespace Krea.Domain.Entities {
             };
         }
 
+        // Crear un pago asociado a esta comisión
+        public Payment CreatePayment(User payer, Money amount, ExternalPaymentRef externalRef) {
+            if (!ReferenceEquals(payer, Bidder))
+                throw new ArgumentException("Payer must be the bidder.");
+
+            if (Status != CommissionRequestStatus.Accepted && Status != CommissionRequestStatus.InProgress)
+                throw new InvalidOperationException(
+                    "Payments can only be created for accepted or in-progress commissions.");
+
+            if (amount <= Offering.BasePrice)
+                throw new ArgumentException("Paid amount cannot be lower than base price.");
+
+            var payment = new Payment(payer, amount, externalRef, this);
+            _payments.Add(payment);
+            return payment;
+        }
+
         public void Accept() => SetStatus(CommissionRequestStatus.Accepted);
         public void Start() => SetStatus(CommissionRequestStatus.InProgress);
         public void Deliver() => SetStatus(CommissionRequestStatus.Delivered);
@@ -65,19 +78,10 @@ namespace Krea.Domain.Entities {
             UpdatedAt = DateTime.UtcNow;
         }
 
-        private static void Validate(
-            User bidder,
-            CommissionOffering offering,
-            string brief
-        ) {
-            if (bidder is null)
-                throw new ArgumentNullException(nameof(bidder));
-
-            if (offering is null)
-                throw new ArgumentNullException(nameof(offering));
-
-            if (string.IsNullOrWhiteSpace(brief))
-                throw new ArgumentException("Brief is required.");
+        private static void Validate(User bidder, CommissionOffering offering, string brief) {
+            if (bidder is null) throw new ArgumentNullException(nameof(bidder));
+            if (offering is null) throw new ArgumentNullException(nameof(offering));
+            if (string.IsNullOrWhiteSpace(brief)) throw new ArgumentException("Brief is required.");
         }
     }
 }

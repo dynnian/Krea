@@ -1,7 +1,7 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Krea.Infrastructure.Data.Configurations {
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+    
     public class FollowConfiguration : IEntityTypeConfiguration<Follow> {
         public void Configure(EntityTypeBuilder<Follow> builder) {
             builder.ToTable("follows");

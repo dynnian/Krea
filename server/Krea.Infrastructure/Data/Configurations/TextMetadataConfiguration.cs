@@ -1,9 +1,8 @@
-using Krea.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Krea.Infrastructure.Data.Configurations {
+    using Domain.Entities;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+    
     public class TextMetadataConfiguration : IEntityTypeConfiguration<TextMetadata> {
         public void Configure(EntityTypeBuilder<TextMetadata> builder) {
             builder.Property(t => t.SortTitle);

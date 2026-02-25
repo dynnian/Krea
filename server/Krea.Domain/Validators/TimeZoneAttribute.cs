@@ -2,7 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Krea.Domain.Validators {
     public class TimeZoneAttribute : ValidationAttribute {
-        public TimeZoneAttribute() => ErrorMessage = "Invalid timezone. Timezone must be a valid IANA timezone identifier.";
+        public TimeZoneAttribute() =>
+            ErrorMessage = "Invalid timezone. Timezone must be a valid IANA timezone identifier.";
 
         public override bool IsValid(object? value) {
             if (value is not string timeZoneId) {
@@ -16,9 +17,11 @@ namespace Krea.Domain.Validators {
             try {
                 _ = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
                 return true;
-            } catch (TimeZoneNotFoundException) {
+            }
+            catch (TimeZoneNotFoundException) {
                 return false;
-            } catch (InvalidTimeZoneException) {
+            }
+            catch (InvalidTimeZoneException) {
                 return false;
             }
         }

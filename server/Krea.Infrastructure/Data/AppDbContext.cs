@@ -30,7 +30,7 @@ namespace Krea.Infrastructure.Data {
         public DbSet<MusicMetadata> MusicMetadata => Set<MusicMetadata>();
         public DbSet<TextMetadata> TextMetadata => Set<TextMetadata>();
         public DbSet<Genre> Genres => Set<Genre>();
-        public DbSet<Collections> Collections => Set<Collections>();
+        public DbSet<Collection> Collections => Set<Collection>();
 
         public DbSet<Conversation> Conversations => Set<Conversation>();
         public DbSet<Message> Messages => Set<Message>();

@@ -8,12 +8,12 @@ namespace Krea.Domain.Entities {
         public IReadOnlyList<Permission> Permissions => _permissions.AsReadOnly();
         private readonly List<Permission> _permissions = new();
         [Timestamp] public DateTime CreatedAt { get; private set; }
-        
+
         #pragma warning disable CS8618
         private Role() { }
         #pragma warning restore CS8618
 
-        public Role (
+        public Role(
             string name,
             string description,
             DateTime createdAt
@@ -30,13 +30,7 @@ namespace Krea.Domain.Entities {
             string description,
             DateTime createdAt
         ) {
-            var role = new Role
-            {
-                Id = id,
-                Name = name,
-                Description = description,
-                CreatedAt = createdAt
-            };
+            var role = new Role { Id = id, Name = name, Description = description, CreatedAt = createdAt };
             return role;
         }
     }

@@ -1,10 +1,10 @@
-using Krea.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Krea.Infrastructure.Data.Configurations {
-    public class CollectionConfiguration : IEntityTypeConfiguration<Collections> {
-        public void Configure(EntityTypeBuilder<Collections> builder) {
+    using Domain.Entities;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+    using Microsoft.EntityFrameworkCore;
+
+    public class CollectionConfiguration : IEntityTypeConfiguration<Collection> {
+        public void Configure(EntityTypeBuilder<Collection> builder) {
             builder.ToTable("collections");
 
             builder.HasKey(c => c.Id);
@@ -46,7 +46,7 @@ namespace Krea.Infrastructure.Data.Configurations {
                              .WithMany()
                              .HasForeignKey("post_id")
                              .OnDelete(DeleteBehavior.Cascade),
-                       j => j.HasOne<Collections>()
+                       j => j.HasOne<Collection>()
                              .WithMany()
                              .HasForeignKey("collection_id")
                              .OnDelete(DeleteBehavior.Cascade),
@@ -56,7 +56,7 @@ namespace Krea.Infrastructure.Data.Configurations {
                        });
 
             builder.Metadata
-                   .FindNavigation(nameof(Collections.Posts))!
+                   .FindNavigation(nameof(Collection.Posts))!
                    .SetPropertyAccessMode(PropertyAccessMode.Field);
 
             builder.HasIndex(c => c.OwnerId);

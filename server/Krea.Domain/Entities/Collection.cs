@@ -1,0 +1,98 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace Krea.Domain.Entities {
+    public sealed class Collection {
+        [Key] public Guid Id { get; private set; }
+
+        public string Title { get; private set; }
+
+        public Media? Image { get; private set; }
+        public Guid? MediaId { get; private set; }
+
+        public string Description { get; private set; }
+
+        public int ItemCount { get; private set; }
+
+        public User Owner { get; private set; }
+        public Guid OwnerId { get; private set; }
+
+        private readonly List<Post> _posts = new();
+        public IReadOnlyCollection<Post> Posts => _posts.AsReadOnly();
+
+        public DateTime CreatedAt { get; private set; }
+
+        public DateTime UpdatedAt { get; private set; }
+
+        #pragma warning disable CS8618
+        private Collection() { }
+        #pragma warning restore CS8618
+
+        public Collection(
+            Guid ownerId,
+            string title,
+            string? description,
+            int itemCount
+        ) {
+            Id = Guid.NewGuid();
+            OwnerId = ownerId;
+            Title = title;
+            Description = description ?? string.Empty;
+            ItemCount = itemCount;
+            CreatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public static Collection Load(
+            Guid id,
+            Guid ownerId,
+            string title,
+            string description,
+            Guid? mediaId,
+            int itemCount,
+            DateTime createdAt,
+            DateTime updatedAt
+        ) {
+            var collection = new Collection(
+                ownerId,
+                title,
+                description,
+                itemCount);
+
+            collection.Id = id;
+            collection.MediaId = mediaId;
+            collection.CreatedAt = createdAt;
+            collection.UpdatedAt = updatedAt;
+
+            return collection;
+        }
+
+        public void AddPost(Post post) {
+            if (_posts.Any(p => p.Id == post.Id))
+                return;
+
+            _posts.Add(post);
+            ItemCount = _posts.Count;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void RemovePost(Guid postId) {
+            Post? post = _posts.FirstOrDefault(p => p.Id == postId);
+            if (post is null) return;
+
+            _posts.Remove(post);
+            ItemCount = _posts.Count;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void UpdateInfo(string title, string description) {
+            Title = title;
+            Description = description;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void UpdateImage(Media image) {
+            Image = image;
+            UpdatedAt = DateTime.UtcNow;
+        }
+    }
+}

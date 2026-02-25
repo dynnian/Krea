@@ -4,14 +4,12 @@ using Krea.Domain.Validators;
 namespace Krea.Domain.Entities {
     public sealed class TextMetadata : Metadata {
         public string? SortTitle { get; private set; }
-        
-        public string? Subtitle { get; private set; }
-        
-        [LanguageCode] public string LanguageCode { get; set; }
-        
-        public int WordCount { get; private set; }
 
-        public Collections? SerieCollection { get; private set; }
+        public string? Subtitle { get; private set; }
+
+        [LanguageCode] public string LanguageCode { get; set; }
+
+        public int WordCount { get; private set; }
 
         #pragma warning disable CS8618
         private TextMetadata() { }
@@ -25,19 +23,15 @@ namespace Krea.Domain.Entities {
             string? subtitle,
             string languageCode,
             int wordCount,
-            IEnumerable<Genre>? genres = null,
-            Collections? serieCollection = null)
-            : base(uploadId, title, description, genres)
-        {
+            IEnumerable<Genre>? genres = null)
+            : base(uploadId, title, description, genres) {
             SortTitle = sortTitle;
             Subtitle = subtitle;
             LanguageCode = languageCode;
             WordCount = wordCount;
-            SerieCollection = serieCollection;
         }
 
-        public void UpdateTextInfo(string? subtitle, string language)
-        {
+        public void UpdateTextInfo(string? subtitle, string language) {
             Subtitle = subtitle;
             LanguageCode = language;
         }
@@ -49,25 +43,18 @@ namespace Krea.Domain.Entities {
             string? description,
             int wordCount,
             string languageCode,
-            IEnumerable<Genre> genres,
-            Collections? serieCollection)
-        {
+            IEnumerable<Genre> genres) {
             var metadata = new TextMetadata {
                 Id = id,
                 UploadId = uploadId,
                 Title = title,
                 Description = description,
                 WordCount = wordCount,
-                LanguageCode = languageCode,
-                SerieCollection = serieCollection
-            }; 
+                LanguageCode = languageCode
+            };
             metadata.SetGenres(genres);
 
             return metadata;
-        }
-
-        public void AssignToSerie(Collections collection) {
-            SerieCollection = collection;
         }
     }
 }
