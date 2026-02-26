@@ -25,7 +25,7 @@ namespace Krea.Domain.Entities {
             DurationSec = durationSec;
         }
 
-        public MusicMetadata Load(
+        public static MusicMetadata Load(
             Guid id,
             Guid uploadId,
             string title,
@@ -34,16 +34,16 @@ namespace Krea.Domain.Entities {
             int durationSec,
             IEnumerable<Genre> genres)
         {
-            var metadata = new MusicMetadata {
-                Id = id,
-                UploadId = uploadId,
-                Title = title,
-                Description = description,
-                BitrateKbps = bitrateKbps,
-                DurationSec = durationSec
-                
-            };
+            var metadata = new MusicMetadata(
+                uploadId,
+                title,
+                description,
+                bitrateKbps,
+                durationSec,
+                genres
+            );
 
+            metadata.Id = id;
             metadata.SetGenres(genres);
 
             return metadata;

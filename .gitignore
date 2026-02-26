@@ -736,3 +736,9 @@ FodyWeavers.xsd
 # React Router
 /**/.react-router/
 /**/build/
+
+# Windows metadata when downloading files
+*Zone.Identifier
+*:
+Thumbs.db
+Desktop.ini

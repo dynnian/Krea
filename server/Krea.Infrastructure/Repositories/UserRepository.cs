@@ -40,4 +40,9 @@ public sealed class UserRepository : IUserRepository
         _context.Users.Update(user);
         return Task.CompletedTask;
     }
+
+    public void Remove(User user)
+    {
+        _context.Users.Remove(user);
+    }
 }

@@ -8,7 +8,7 @@ namespace Krea.Domain.Entities {
         public string Title { get; private set; }
         
         public Media? Image { get; private set; }
-        public Guid MediaId { get; private set; }
+        public Guid? MediaId { get; private set; }
         
         public string Description { get; private set; }
         
@@ -44,42 +44,48 @@ namespace Krea.Domain.Entities {
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public Collections Load(
+        public static Collections Load(
             Guid id,
+            Guid ownerId,
             string title,
             string description,
-            Media? image,
-            Guid mediaId,
-            User owner,
-            Guid ownerId,
+            Guid? mediaId,
             int itemCount,
             DateTime createdAt,
             DateTime updatedAt
-            )
+        )
         {
-            var collections = new Collections { 
-                Id = id, 
-                Title = title, 
-                Description = description, 
-                Image = image, 
-                MediaId = mediaId,
-                Owner =  owner,
-                OwnerId =  ownerId,
-                ItemCount = itemCount, 
-                CreatedAt = createdAt, 
-                UpdatedAt = updatedAt 
-            };
-            return collections;
+            var collection = new Collections(
+                ownerId, 
+                title, 
+                description, 
+                itemCount);
+
+            collection.Id = id;
+            collection.MediaId = mediaId;
+            collection.CreatedAt = createdAt;
+            collection.UpdatedAt = updatedAt;
+
+            return collection;
         }
         
-        public void AddItem() {
-            ItemCount++;
+        public void AddPost(Post post)
+        {
+            if (_posts.Any(p => p.Id == post.Id))
+                return;
+
+            _posts.Add(post);
+            ItemCount = _posts.Count;
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public void RemoveItem() {
-            if (ItemCount > 0)
-                ItemCount--;
+        public void RemovePost(Guid postId)
+        {
+            var post = _posts.FirstOrDefault(p => p.Id == postId);
+            if (post is null) return;
+
+            _posts.Remove(post);
+            ItemCount = _posts.Count;
             UpdatedAt = DateTime.UtcNow;
         }
         

@@ -35,6 +35,7 @@ public class AppDbContext: IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
     public DbSet<MusicMetadata> MusicMetadata => Set<MusicMetadata>();
     public DbSet<TextMetadata> TextMetadata => Set<TextMetadata>();
     public DbSet<Genre> Genres => Set<Genre>();
+    public DbSet<Collections> Collections => Set<Collections>();
 
     public DbSet<Conversation> Conversations => Set<Conversation>();
     public DbSet<Message> Messages => Set<Message>();

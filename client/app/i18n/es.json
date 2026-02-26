@@ -64,6 +64,55 @@
     "auth_required": "Necesitas iniciar sesión para realizar esta acción",
     "like_error": "No se pudo dar like. Intenta de nuevo.",
     "repost_error": "No se pudo republicar. Intenta de nuevo.",
-    "link_copied": "Enlace copiado al portapapeles"
+    "link_copied": "Enlace copiado al portapapeles",
+    "publication": "Publicación",
+    "reply_placeholder": "Responde!"
+  },
+  "tags": {
+    "latest_illustration": "Lo último en Ilustración",
+    "latest_music": "Lo último en Música",
+    "latest_literature": "Lo último en Literatura",
+    "see_more": "Ver más..."
+  },
+  "explore": {
+    "tabs": {
+      "images": "Imágenes",
+      "music": "Música",
+      "literature": "Literatura"
+    },
+    "music": {
+      "featured": "Destacado",
+      "featured_artist": "Artista",
+      "featured_song": "Canción",
+      "new_albums": "¡Álbumes nuevos!",
+      "album_title": "Título del álbum",
+      "album_artist": "Artista",
+      "latest_songs": "¡Últimas canciones!",
+      "song_title": "Canción",
+      "song_artist": "Artista",
+      "song_genres": "Jazz, Rock, etc...",
+      "trending_genres": "Géneros en tendencia",
+      "trending_artists": "Artistas en tendencia"
+    },
+    "literature": {
+      "featured": "Destacado",
+      "featured_title": "Título del libro",
+      "featured_author": "Autor",
+      "synopsis": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis.",
+      "synopsis_label": "Sinopsis",
+      "read_now": "Leer ahora",
+      "trending": "En tendencia",
+      "book_title": "Título del libro",
+      "book_author": "Autor",
+      "recent": "Recientemente publicado",
+      "recent_title": "Título de la obra",
+      "recent_author": "Autor",
+      "recent_synopsis": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis.",
+      "chapters": "X Capítulos",
+      "read": "Leer",
+      "trending_genres": "Géneros en tendencia",
+      "trending_authors": "Autores en tendencia"
+    }
   }
 }
+

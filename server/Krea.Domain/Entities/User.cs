@@ -1,35 +1,50 @@
 using System.ComponentModel.DataAnnotations;
 using Krea.Domain.Validators;
 
-namespace Krea.Domain.Entities
-{
-    public sealed class User
-    {
+namespace Krea.Domain.Entities {
+    public sealed class User {
+        [Key]
         public Guid Id { get; private set; }
         
-        [StringLength(32), Required]
+        [UserName, Required(ErrorMessage = "Username is required.")] 
+        public string Username { get; private set; }
+        
+        [EmailAddress, Required(ErrorMessage = "Email is required.")] 
+        public string Email { get; private set; }
+        
+        [Required(ErrorMessage = "PasswordHash is required.")] 
+        public string PasswordHash { get; private set; }
+        
+        [StringLength(32), Required(ErrorMessage = "DisplayName is required.")]
         public string DisplayName { get; private set; }
-
-        [StringLength(256)]
-        public string Biography { get; private set; }
-
-        [LanguageCode]
-        public string LanguageCode { get; set; }
-
-        [TimeZone]
-        public string TimeZoneId { get; set; }
-
+        
+        [StringLength(256)] public string Biography { get; private set; }
+        
+        [LanguageCode] public string LanguageCode { get; set; }
+        
+        [TimeZone] public string TimeZoneId { get; set; }
+        
+        public bool EmailConfirmed { get; private set; }
+        
         public bool IsBanned { get; private set; }
+        
         public bool IsDisabled { get; private set; }
-
+        
         public Media? ProfilePicture { get; private set; }
+        public Guid? ProfilePictureId { get; private set; }
+        
         public Media? BannerPicture { get; private set; }
-
+        public Guid? BannerPictureId { get; private set; }
+        
         public DateTime? LastLoginAt { get; private set; }
         public DateTime RegisteredAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
 
         // Colecciones
+        public DateTime? EmailConfirmedAt { get; private set; }
+        
+        public DateTime? LastPasswordResetAt { get; private set; }
+        
         private readonly List<Post> _posts = new();
         public IReadOnlyCollection<Post> Posts => _posts;
 
@@ -67,49 +82,49 @@ namespace Krea.Domain.Entities
             IsDisabled = false;
         }
         
-        public void Ban()
+        public void Ban() 
         {
             IsBanned = true;
             UpdatedAt = DateTime.UtcNow;
         }
-
-        public void Unban()
+        
+        public void Unban() 
         {
             IsBanned = false;
             UpdatedAt = DateTime.UtcNow;
         }
-
-        public void Disable()
+        
+        public void Disable() 
         {
             IsDisabled = true;
             UpdatedAt = DateTime.UtcNow;
         }
-
-        public void Enable()
+        
+        public void Enable() 
         {
             IsDisabled = false;
             UpdatedAt = DateTime.UtcNow;
         }
-
-        public void UpdateProfilePicture(Media profilePicture)
+        
+        public void UpdateProfilePicture(Media profilePicture) 
         {
-            ProfilePicture = profilePicture ?? throw new ArgumentNullException(nameof(profilePicture));
+            ProfilePicture = profilePicture;
             UpdatedAt = DateTime.UtcNow;
         }
-
-        public void UpdateBannerPicture(Media bannerPicture)
+        
+        public void UpdateBannerPicture(Media bannerPicture) 
         {
-            BannerPicture = bannerPicture ?? throw new ArgumentNullException(nameof(bannerPicture));
+            BannerPicture = bannerPicture;
             UpdatedAt = DateTime.UtcNow;
         }
-
-        public void UpdateBiography(string biography)
+        
+        public void UpdateBiography(string biography) 
         {
-            Biography = biography ?? string.Empty;
+            Biography = biography;
             UpdatedAt = DateTime.UtcNow;
         }
-
-        public void UpdateDisplayName(string displayName)
+        
+        public void UpdateDisplayName(string displayName) 
         {
             if (string.IsNullOrWhiteSpace(displayName))
                 throw new ArgumentException("Display name is required");
