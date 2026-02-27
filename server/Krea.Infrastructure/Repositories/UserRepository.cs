@@ -41,8 +41,9 @@ public sealed class UserRepository : IUserRepository
         return Task.CompletedTask;
     }
 
-    public void Remove(User user)
+    public Task RemoveAsync(User user, CancellationToken cancellationToken = default)
     {
         _context.Users.Remove(user);
+        return Task.CompletedTask;
     }
 }
