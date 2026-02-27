@@ -31,6 +31,7 @@ public static class DependencyInjection
                 options.SignIn.RequireConfirmedEmail = false;
                 //options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
             })
+            .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
