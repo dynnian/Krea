@@ -2,12 +2,18 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Krea.Domain.Entities {
     public sealed class Role {
+        
+        [Key]
         public Guid Id { get; private set; }
-        [StringLength(32)] public string Name { get; private set; }
-        [StringLength(256)] public string Description { get; private set; }
+        [StringLength(32)] 
+        public string Name { get; private set; }
+        [StringLength(256)] 
+        public string Description { get; private set; }
         public IReadOnlyList<Permission> Permissions => _permissions.AsReadOnly();
         private readonly List<Permission> _permissions = new();
-        [Timestamp] public DateTime CreatedAt { get; private set; }
+        
+        public ICollection<UserRole> UserRoles { get; private set; } = new List<UserRole>();
+        public DateTime CreatedAt { get; private set; }
         
         #pragma warning disable CS8618
         private Role() { }

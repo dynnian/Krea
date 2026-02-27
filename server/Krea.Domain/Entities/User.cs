@@ -53,6 +53,9 @@ namespace Krea.Domain.Entities {
 
         private readonly List<Collections> _collections = new();
         public IReadOnlyCollection<Collections> Collections => _collections;
+        
+        private readonly List<UserRole> _userRoles = new();
+        public IReadOnlyCollection<UserRole> UserRoles => _userRoles.AsReadOnly();
 
         #pragma warning disable CS8618
         private User() { }
@@ -136,6 +139,40 @@ namespace Krea.Domain.Entities {
         {
             LastLoginAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
+        }
+        
+        public void AssignRole(Role role, Guid? assignedBy)
+        {
+            if (role is null)
+                throw new ArgumentNullException(nameof(role));
+
+            if (_userRoles.Any(r => r.RoleId == role.Id))
+                throw new InvalidOperationException("El usuario ya posee este rol.");
+
+            var userRole = new UserRole(this.Id, role.Id, assignedBy);
+
+            _userRoles.Add(userRole);
+        }
+
+        public void RemoveRole(Guid roleId)
+        {
+            var existing = _userRoles.FirstOrDefault(r => r.RoleId == roleId);
+
+            if (existing is null)
+                throw new InvalidOperationException("El usuario no posee este rol.");
+
+            _userRoles.Remove(existing);
+        }
+
+        public bool HasRole(string roleName)
+        {
+            return _userRoles.Any(r => 
+                r.Role.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public bool HasRole(Guid roleId)
+        {
+            return _userRoles.Any(r => r.RoleId == roleId);
         }
     }
 }
