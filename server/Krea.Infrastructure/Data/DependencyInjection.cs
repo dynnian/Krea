@@ -1,6 +1,6 @@
 using Krea.Application.Features.Auth;
+using Krea.Domain.Abstractions;
 using Krea.Domain.Repositories;
-using Krea.Infrastructure.Data;
 using Krea.Infrastructure.Identity;
 using Krea.Infrastructure.Repositories;
 using Krea.Infrastructure.Services;
@@ -18,7 +18,10 @@ public static class DependencyInjection
         // DbContext
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
-
+        
+        //Unit Of Work
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        
         // Identity
         services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
             {

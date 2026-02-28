@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Krea.Domain.Abstractions;
 
 namespace Krea.Infrastructure.Services;
 
@@ -18,17 +19,20 @@ public class AuthService : IAuthService
     private readonly SignInManager<AppUser> _signInManager;
     private readonly IConfiguration _configuration;
     private readonly IUserRepository _userRepository;
-
+    private readonly IUnitOfWork _unitOfWork;
+    
     public AuthService(
         UserManager<AppUser> userManager,
         SignInManager<AppUser> signInManager,
         IConfiguration configuration,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IUnitOfWork unitOfWork)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
         _userRepository = userRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -61,6 +65,7 @@ public class AuthService : IAuthService
             throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
 
         await _userRepository.AddAsync(domainUser);
+        await _unitOfWork.SaveChangesAsync();
 
         var token = await GenerateJwtToken(appUser, domainUser);
         var userDto = await MapToDto(domainUser, appUser);
@@ -86,6 +91,7 @@ public class AuthService : IAuthService
 
         domainUser.SetLastLogin();
         await _userRepository.UpdateAsync(domainUser);
+        await _unitOfWork.SaveChangesAsync();
 
         var token = await GenerateJwtToken(appUser, domainUser);
         var userDto = await MapToDto(domainUser, appUser);
