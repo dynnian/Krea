@@ -9,10 +9,12 @@ public sealed class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
 {
     public void Configure(EntityTypeBuilder<AppUser> builder)
     {
-
+        builder.ToTable("AspNetUsers");
+        builder.HasKey(u => u.Id);
         builder.Property(u => u.Id).ValueGeneratedNever();
-        
-        builder.HasOne<AppUser>()
+
+        // Relación uno a uno con User
+        builder.HasOne<User>()
             .WithOne()
             .HasForeignKey<User>(u => u.Id)
             .HasPrincipalKey<AppUser>(au => au.Id)

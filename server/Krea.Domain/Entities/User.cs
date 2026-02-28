@@ -6,15 +6,6 @@ namespace Krea.Domain.Entities {
         [Key]
         public Guid Id { get; private set; }
         
-        [UserName, Required(ErrorMessage = "Username is required.")] 
-        public string Username { get; private set; }
-        
-        [EmailAddress, Required(ErrorMessage = "Email is required.")] 
-        public string Email { get; private set; }
-        
-        [Required(ErrorMessage = "PasswordHash is required.")] 
-        public string PasswordHash { get; private set; }
-        
         [StringLength(32), Required(ErrorMessage = "DisplayName is required.")]
         public string DisplayName { get; private set; }
         
@@ -39,12 +30,10 @@ namespace Krea.Domain.Entities {
         public DateTime? LastLoginAt { get; private set; }
         public DateTime RegisteredAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
+        public DateTime? EmailConfirmedAt { get; private set; }
+        public DateTime? LastPasswordResetAt { get; private set; }
 
         // Colecciones
-        public DateTime? EmailConfirmedAt { get; private set; }
-        
-        public DateTime? LastPasswordResetAt { get; private set; }
-        
         private readonly List<Post> _posts = new();
         public IReadOnlyCollection<Post> Posts => _posts;
 

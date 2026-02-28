@@ -16,8 +16,8 @@ public class AppDbContext: IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
 
     #region DbSets
 
-    public DbSet<User> Users => Set<User>();
-    public DbSet<Role> Roles => Set<Role>();
+    public DbSet<User> DomainUsers => Set<User>();
+    public DbSet<Role> DomainRoles => Set<Role>();
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<Scope> Scopes => Set<Scope>();
     // public DbSet<UserRole> UserRoles => Set<UserRole>();

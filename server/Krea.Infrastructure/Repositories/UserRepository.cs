@@ -16,7 +16,7 @@ public sealed class UserRepository : IUserRepository
 
     public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.Users
+        return await _context.DomainUsers
             .Include(u => u.ProfilePicture)
             .Include(u => u.BannerPicture)
             .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
@@ -24,7 +24,7 @@ public sealed class UserRepository : IUserRepository
 
     public async Task<IReadOnlyList<User>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.Users
+        return await _context.DomainUsers
             .Include(u => u.ProfilePicture)
             .Include(u => u.BannerPicture)
             .ToListAsync(cancellationToken);
@@ -32,18 +32,18 @@ public sealed class UserRepository : IUserRepository
 
     public async Task AddAsync(User user, CancellationToken cancellationToken = default)
     {
-        await _context.Users.AddAsync(user, cancellationToken);
+        await _context.DomainUsers.AddAsync(user, cancellationToken);
     }
 
     public Task UpdateAsync(User user, CancellationToken cancellationToken = default)
     {
-        _context.Users.Update(user);
+        _context.DomainUsers.Update(user);
         return Task.CompletedTask;
     }
 
     public Task RemoveAsync(User user, CancellationToken cancellationToken = default)
     {
-        _context.Users.Remove(user);
+        _context.DomainUsers.Remove(user);
         return Task.CompletedTask;
     }
 }
