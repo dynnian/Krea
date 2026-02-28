@@ -4,6 +4,7 @@
 .idea/
 .direnv/
 .vscode/
+.env
 
 ### DotnetCore ###
 # .NET Core build folders
