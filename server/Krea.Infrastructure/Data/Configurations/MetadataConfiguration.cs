@@ -51,8 +51,7 @@ public class MetadataConfiguration : IEntityTypeConfiguration<Metadata>
                     j.ToTable("metadata_genre");
                 });
 
-        builder.Metadata
-            .FindNavigation(nameof(Metadata.Genres))!
-            .SetPropertyAccessMode(PropertyAccessMode.Field);
+        var navigation = builder.Metadata.FindNavigation(nameof(Metadata.Genres));
+        navigation?.SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

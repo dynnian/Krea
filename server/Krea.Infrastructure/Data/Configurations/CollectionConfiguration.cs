@@ -59,9 +59,8 @@ public class CollectionConfiguration : IEntityTypeConfiguration<Collections>
                     j.ToTable("collection_post");
                 });
 
-        builder.Metadata
-            .FindNavigation(nameof(Collections.Posts))!
-            .SetPropertyAccessMode(PropertyAccessMode.Field);
+        var navigation = builder.Metadata.FindNavigation(nameof(Collections.Posts));
+        navigation?.SetPropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasIndex(c => c.OwnerId);
         builder.HasIndex(c => c.CreatedAt);
