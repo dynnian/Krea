@@ -1,4 +1,5 @@
 using Krea.Domain.Entities;
+using Krea.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,6 +18,9 @@ public sealed class DonationConfiguration
             .ValueGeneratedNever();
 
         builder.Property(d => d.Amount)
+            .HasConversion(
+                money => money.Amount,
+                value => new Money(value))
             .HasColumnType("decimal(18,2)")
             .IsRequired();
 
