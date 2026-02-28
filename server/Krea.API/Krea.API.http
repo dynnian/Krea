@@ -1,6 +1,25 @@
 @Krea.API_HostAddress = http://localhost:5101
 
-GET {{Krea.API_HostAddress}}/weatherforecast/
-Accept: application/json
+### Register
+POST http://localhost:5101/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test3@krea.com",
+  "username": "testuser3",
+  "password": "Test123!",
+  "TimezoneId": "1",
+  "DisplayName": "testUser3",
+  "LanguageCode": "1"
+}
 
 ###
+
+### Login
+POST http://localhost:5101/api/auth/login
+Content-Type: application/json
+
+{
+  "EmailOrUserName": "testUser3",
+  "password": "Test123!"
+}
