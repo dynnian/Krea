@@ -51,6 +51,10 @@ public static class DependencyInjection
         services.AddScoped<IConversationRepository, ConversationRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         
+        services.AddScoped<IPostRepository, PostRepository>();
+        services.AddScoped<ICollectionRepository, CollectionRepository>();
+        services.AddScoped<IMediaRepository, MediaRepository>();
+        
         
         // Servicios de aplicación
         services.AddScoped<IAuthService, AuthService>();
