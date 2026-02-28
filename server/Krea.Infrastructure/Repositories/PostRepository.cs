@@ -25,7 +25,7 @@ public class PostRepository : IPostRepository
         return await _context.Posts
             .Include(p => p.Uploads)
             .ThenInclude(u => u.Metadata)
-            .ThenInclude(m => m.Genres)
+            .ThenInclude(m => m!.Genres)
             .Include(p => p.Hashtags)
             .Include(p => p.Likes)
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
