@@ -25,7 +25,7 @@ public class PostRepository : IPostRepository
         return await _context.Posts
             .Include(p => p.Uploads)
             .ThenInclude(u => u.Metadata)
-            .ThenInclude(m => m!.Genres)
+            .ThenInclude(m => m.Genres)
             .Include(p => p.Hashtags)
             .Include(p => p.Likes)
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
@@ -41,10 +41,37 @@ public class PostRepository : IPostRepository
         _context.Posts.Update(post);
         return Task.CompletedTask;
     }
-
-    public Task DeleteAsync(Post post, CancellationToken cancellationToken = default)
+    
+    public async Task<IReadOnlyList<Post>> GetAllAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
     {
-        _context.Posts.Remove(post);
-        return Task.CompletedTask;
+        return await _context.Posts
+            .AsNoTracking()
+            .Where(p => !p.IsDeleted)
+            .OrderByDescending(p => p.UploadedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Include(p => p.Uploads)
+            .Include(p => p.Hashtags)
+            .ToListAsync(cancellationToken);
+    }
+    
+    public async Task<IReadOnlyList<Post>> GetByUserAsync(
+        Guid authorPostId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.Posts
+            .AsNoTracking()
+            .Where(p => p.AuthorPostId == authorPostId && !p.IsDeleted)
+            .OrderByDescending(p => p.UploadedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Include(p => p.Uploads)
+            .Include(p => p.Hashtags)
+            .ToListAsync(cancellationToken);
     }
 }

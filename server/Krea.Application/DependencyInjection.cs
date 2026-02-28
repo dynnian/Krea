@@ -1,4 +1,9 @@
 namespace Krea.Application {
+    using Abstractions;
+    using Domain.Abstractions;
+    using Features.Posts;
+    using Features.Posts.Dto;
+    using Features.Posts.GetAllPosts;
     using Microsoft.Extensions.DependencyInjection;
 
     public static class DependencyInjection {
@@ -15,6 +20,11 @@ namespace Krea.Application {
             //   // give them a scoped lifetime
             //   .WithScopedLifetime()
             // );
+            
+            services.AddScoped< IRequestHandler<GetAllPostsQuery, IReadOnlyList<PostDto>>, GetAllPostsHandler>();
+            services.AddScoped< IRequestHandler<CreatePost.Request, CreatePost.Response>, CreatePost>();
+            services.AddScoped< IRequestHandler<AddUpload.Request, AddUpload.Response>, AddUpload>();
+            services.AddScoped<ISender, Sender>();
             return services;
         }
     }
