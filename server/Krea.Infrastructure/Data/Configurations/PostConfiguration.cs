@@ -88,10 +88,9 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
                     j.HasKey("post_id", "hashtag_id");
                     j.ToTable("post_hashtag");
                 });
-
-        builder.Metadata
-            .FindNavigation(nameof(Post.Hashtags))!
-            .SetPropertyAccessMode(PropertyAccessMode.Field);
+        
+        var navigation = builder.Metadata.FindNavigation(nameof(Post.Hashtags));
+        navigation?.SetPropertyAccessMode(PropertyAccessMode.Field);
 
         // One-to-Many Post → Likes
         builder.HasMany(p => p.Likes)

@@ -63,7 +63,7 @@ public sealed class Subscription
         };
     }
 
-    // Crear un pago asociado a esta suscripción
+    // Crear un pago asociado a esta suscripción    
     public Payment CreatePayment(User payer, Money amount, ExternalPaymentRef externalRef)
     {
         if (!IsActive)

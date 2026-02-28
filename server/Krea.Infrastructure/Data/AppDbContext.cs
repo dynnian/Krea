@@ -1,19 +1,21 @@
 using Microsoft.EntityFrameworkCore;
 using Krea.Domain.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Krea.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 
 namespace Krea.Infrastructure.Data;
 
-public class AppDbContext: DbContext
+public class AppDbContext: IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
-        : base(options)
-    {
-    }
+        : base(options) { }
+    
 
     #region DbSets
 
-    public DbSet<User> Users => Set<User>();
-    public DbSet<Role> Roles => Set<Role>();
+    public DbSet<User> DomainUsers => Set<User>();
+    public DbSet<Role> DomainRoles => Set<Role>();
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<Scope> Scopes => Set<Scope>();
     // public DbSet<UserRole> UserRoles => Set<UserRole>();
@@ -31,7 +33,7 @@ public class AppDbContext: DbContext
     public DbSet<MusicMetadata> MusicMetadata => Set<MusicMetadata>();
     public DbSet<TextMetadata> TextMetadata => Set<TextMetadata>();
     public DbSet<Genre> Genres => Set<Genre>();
-    public DbSet<Collections> Collections => Set<Collections>();
+    public DbSet<Collection> Collections => Set<Collection>();
 
     public DbSet<Conversation> Conversations => Set<Conversation>();
     public DbSet<Message> Messages => Set<Message>();
@@ -51,8 +53,7 @@ public class AppDbContext: DbContext
 
     #endregion
 
-    protected override void OnModelCreating(ModelBuilder builder)
-    {
+    protected override void OnModelCreating(ModelBuilder builder) {
         base.OnModelCreating(builder);
 
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

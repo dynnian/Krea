@@ -6,15 +6,6 @@ namespace Krea.Domain.Entities {
         [Key]
         public Guid Id { get; private set; }
         
-        [UserName, Required(ErrorMessage = "Username is required.")] 
-        public string Username { get; private set; }
-        
-        [EmailAddress, Required(ErrorMessage = "Email is required.")] 
-        public string Email { get; private set; }
-        
-        [Required(ErrorMessage = "PasswordHash is required.")] 
-        public string PasswordHash { get; private set; }
-        
         [StringLength(32), Required(ErrorMessage = "DisplayName is required.")]
         public string DisplayName { get; private set; }
         
@@ -36,140 +27,51 @@ namespace Krea.Domain.Entities {
         public Media? BannerPicture { get; private set; }
         public Guid? BannerPictureId { get; private set; }
         
+        public DateTime? LastLoginAt { get; private set; }
+        public DateTime RegisteredAt { get; private set; }
+        public DateTime UpdatedAt { get; private set; }
         public DateTime? EmailConfirmedAt { get; private set; }
-        
         public DateTime? LastPasswordResetAt { get; private set; }
-        
+
+        // Colecciones
         private readonly List<Post> _posts = new();
-        public IReadOnlyCollection<Post> Posts => _posts.AsReadOnly();
+        public IReadOnlyCollection<Post> Posts => _posts;
 
         private readonly List<Like> _likes = new();
-        public IReadOnlyCollection<Like> Likes => _likes.AsReadOnly();
+        public IReadOnlyCollection<Like> Likes => _likes;
+
+        private readonly List<Collection> _collections = new();
+        public IReadOnlyCollection<Collection> Collections => _collections;
         
-        private readonly List<Collections> _collections = new();
-        public IReadOnlyCollection<Collections> Collections => _collections.AsReadOnly();
-        
-        public DateTime? LastLoginAt { get; private set; }
-        
-        public DateTime RegisteredAt { get; private set; }
-        
-        public DateTime UpdatedAt { get; private set; }
-        
+        private readonly List<UserRole> _userRoles = new();
+        public IReadOnlyCollection<UserRole> UserRoles => _userRoles.AsReadOnly();
+
         #pragma warning disable CS8618
         private User() { }
         #pragma warning restore CS8618
-        
+
         public User(
-            string username,
-            string email,
-            string passwordHash,
             string displayName,
             string languageCode,
             string timeZoneId,
-            string? biography) 
+            string? biography = null)
         {
-            if (string.IsNullOrWhiteSpace(username)
-                || string.IsNullOrWhiteSpace(email)
-                || string.IsNullOrWhiteSpace(passwordHash)
-                || string.IsNullOrWhiteSpace(displayName)
-                || string.IsNullOrWhiteSpace(languageCode)
-                || string.IsNullOrWhiteSpace(timeZoneId))
-                throw new ArgumentException("Required arguments are missing");
+            if (string.IsNullOrWhiteSpace(displayName))
+                throw new ArgumentException("Display name is required");
+            if (string.IsNullOrWhiteSpace(languageCode))
+                throw new ArgumentException("Language code is required");
+            if (string.IsNullOrWhiteSpace(timeZoneId))
+                throw new ArgumentException("Time zone is required");
+
             Id = Guid.NewGuid();
-            Username = username;
-            Email = email.Trim().ToLowerInvariant();
-            PasswordHash = passwordHash;
             DisplayName = displayName;
             LanguageCode = languageCode;
             TimeZoneId = timeZoneId;
-            EmailConfirmed = false;
-            IsBanned = false;
-            IsDisabled = false;
             Biography = biography ?? string.Empty;
             RegisteredAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
-        }
-        
-        public User Load(
-            Guid id,
-            string username,
-            string email,
-            string passwordHash,
-            string displayName,
-            string biography,
-            string languageCode,
-            string timeZoneId,
-            bool emailConfirmed,
-            bool isBanned,
-            bool isDisabled,
-            Media? profilePicture,
-            Media? bannerPicture,
-            DateTime? emailConfirmedAt,
-            DateTime? lastPasswordResetAt,
-            DateTime? lastLoginAt,
-            DateTime registeredAt,
-            DateTime updatedAt) 
-        {
-            if (string.IsNullOrWhiteSpace(username)
-                || string.IsNullOrWhiteSpace(email)
-                || string.IsNullOrWhiteSpace(passwordHash)
-                || string.IsNullOrWhiteSpace(displayName)
-                || string.IsNullOrWhiteSpace(languageCode)
-                || string.IsNullOrWhiteSpace(timeZoneId))
-                throw new ArgumentException("Required arguments are missing");
-            var user = new User {
-                Id = id,
-                Username = username,
-                Email = email,
-                PasswordHash = passwordHash,
-                DisplayName = displayName,
-                Biography = biography,
-                LanguageCode = languageCode,
-                TimeZoneId = timeZoneId,
-                EmailConfirmed = emailConfirmed,
-                IsBanned = isBanned,
-                IsDisabled = isDisabled,
-                ProfilePicture = profilePicture,
-                BannerPicture = bannerPicture,
-                EmailConfirmedAt = emailConfirmedAt,
-                LastPasswordResetAt = lastPasswordResetAt,
-                LastLoginAt = lastLoginAt,
-                RegisteredAt = registeredAt,
-                UpdatedAt = updatedAt
-            };
-            return user;
-        }
-        
-        public void ConfirmEmail() 
-        {
-            EmailConfirmed = true;
-            EmailConfirmedAt = DateTime.UtcNow;
-            UpdatedAt = DateTime.UtcNow;
-        }
-        
-        public void UpdateEmail(string newEmail) 
-        {
-            if (string.IsNullOrWhiteSpace(newEmail))
-                throw new ArgumentException("New email is required");
-            Email = newEmail;
-            EmailConfirmed = false;
-            EmailConfirmedAt = null;
-            UpdatedAt = DateTime.UtcNow;
-        }
-        
-        public void ResetPassword(string newPasswordHash) 
-        {
-            if (string.IsNullOrWhiteSpace(newPasswordHash))
-                throw new ArgumentException("New password hash is required");
-            PasswordHash = newPasswordHash;
-            LastPasswordResetAt = DateTime.UtcNow;
-            UpdatedAt = DateTime.UtcNow;
-        }
-        
-        public void SetLastLogin() 
-        {
-            LastLoginAt = DateTime.UtcNow;
-            UpdatedAt = DateTime.UtcNow;
+            IsBanned = false;
+            IsDisabled = false;
         }
         
         public void Ban() 
@@ -220,6 +122,46 @@ namespace Krea.Domain.Entities {
                 throw new ArgumentException("Display name is required");
             DisplayName = displayName;
             UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void SetLastLogin()
+        {
+            LastLoginAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
+        }
+        
+        public void AssignRole(Role role, Guid? assignedBy)
+        {
+            if (role is null)
+                throw new ArgumentNullException(nameof(role));
+
+            if (_userRoles.Any(r => r.RoleId == role.Id))
+                throw new InvalidOperationException("El usuario ya posee este rol.");
+
+            var userRole = new UserRole(this.Id, role.Id, assignedBy);
+
+            _userRoles.Add(userRole);
+        }
+
+        public void RemoveRole(Guid roleId)
+        {
+            var existing = _userRoles.FirstOrDefault(r => r.RoleId == roleId);
+
+            if (existing is null)
+                throw new InvalidOperationException("El usuario no posee este rol.");
+
+            _userRoles.Remove(existing);
+        }
+
+        public bool HasRole(string roleName)
+        {
+            return _userRoles.Any(r => 
+                r.Role.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public bool HasRole(Guid roleId)
+        {
+            return _userRoles.Any(r => r.RoleId == roleId);
         }
     }
 }

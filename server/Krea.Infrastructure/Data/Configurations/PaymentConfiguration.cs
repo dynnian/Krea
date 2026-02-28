@@ -68,10 +68,10 @@ public sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.HasIndex("PayerId");
 
         // Constraint
-        builder.HasCheckConstraint("CK_Payment_SingleTarget", @"
+        builder.ToTable(tb => tb.HasCheckConstraint("CK_Payment_SingleTarget", @"
             (CASE WHEN ""SubscriptionId"" IS NOT NULL THEN 1 ELSE 0 END +
              CASE WHEN ""DonationId"" IS NOT NULL THEN 1 ELSE 0 END +
              CASE WHEN ""CommissionRequestId"" IS NOT NULL THEN 1 ELSE 0 END) = 1
-        ");
+        "));
     }
 }

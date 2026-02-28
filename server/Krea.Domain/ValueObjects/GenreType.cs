@@ -1,7 +1,7 @@
-namespace Krea.Domain.ValueObjects;
-
-public enum GenreType {
-    Literature,
-    Music,
-    Picture
+namespace Krea.Domain.ValueObjects {
+    public enum GenreType {
+        Literature,
+        Music,
+        Picture
+    }
 }

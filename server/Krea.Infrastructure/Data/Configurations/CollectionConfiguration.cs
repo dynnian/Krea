@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Krea.Infrastructure.Data.Configurations;
 
-public class CollectionConfiguration : IEntityTypeConfiguration<Collections>
+public class CollectionConfiguration : IEntityTypeConfiguration<Collection>
 {
-    public void Configure(EntityTypeBuilder<Collections> builder)
+    public void Configure(EntityTypeBuilder<Collection> builder)
     {
         builder.ToTable("collections");
 
@@ -49,7 +49,7 @@ public class CollectionConfiguration : IEntityTypeConfiguration<Collections>
                     .WithMany()
                     .HasForeignKey("post_id")
                     .OnDelete(DeleteBehavior.Cascade),
-                j => j.HasOne<Collections>()
+                j => j.HasOne<Collection>()
                     .WithMany()
                     .HasForeignKey("collection_id")
                     .OnDelete(DeleteBehavior.Cascade),
@@ -59,9 +59,8 @@ public class CollectionConfiguration : IEntityTypeConfiguration<Collections>
                     j.ToTable("collection_post");
                 });
 
-        builder.Metadata
-            .FindNavigation(nameof(Collections.Posts))!
-            .SetPropertyAccessMode(PropertyAccessMode.Field);
+        var navigation = builder.Metadata.FindNavigation(nameof(Collection.Posts));
+        navigation?.SetPropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasIndex(c => c.OwnerId);
         builder.HasIndex(c => c.CreatedAt);

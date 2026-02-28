@@ -11,20 +11,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.ToTable("users");
 
         builder.HasKey(u => u.Id);
-
-        builder.Property(u => u.Id)
-            .ValueGeneratedNever();
-
-        builder.Property(u => u.Username)
-            .IsRequired()
-            .HasMaxLength(50);
-
-        builder.Property(u => u.Email)
-            .IsRequired()
-            .HasMaxLength(256);
-
-        builder.Property(u => u.PasswordHash)
-            .IsRequired();
+        builder.Property(u => u.Id).ValueGeneratedNever();
 
         builder.Property(u => u.DisplayName)
             .IsRequired()
@@ -55,16 +42,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.UpdatedAt)
             .IsRequired();
-
-        builder.Property(u => u.EmailConfirmedAt);
-
-        builder.Property(u => u.LastPasswordResetAt);
-
+        
         builder.Property(u => u.LastLoginAt);
 
         // Indices unicos
-        builder.HasIndex(u => u.Username).IsUnique();
-        builder.HasIndex(u => u.Email).IsUnique();
         builder.HasIndex(u => u.RegisteredAt);
         builder.HasIndex(u => u.IsBanned);
         builder.HasIndex(u => u.IsDisabled);

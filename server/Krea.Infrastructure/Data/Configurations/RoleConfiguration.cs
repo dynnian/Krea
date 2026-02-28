@@ -1,25 +1,23 @@
-using Krea.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+namespace Krea.Infrastructure.Data.Configurations {
+    using Domain.Entities;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+    
+    public class RoleConfiguration : IEntityTypeConfiguration<Role> {
+        public void Configure(EntityTypeBuilder<Role> builder) {
+            builder.ToTable("roles");
 
-namespace Krea.Infrastructure.Data.Configurations;
+            builder.HasKey(r => r.Id);
 
-public class RoleConfiguration : IEntityTypeConfiguration<Role>
-{
-    public void Configure(EntityTypeBuilder<Role> builder)
-    {
-        builder.ToTable("roles");
+            builder.Property(r => r.Id)
+                   .ValueGeneratedNever();
 
-        builder.HasKey(r => r.Id);
+            builder.Property(r => r.Name)
+                   .IsRequired()
+                   .HasMaxLength(50);
 
-        builder.Property(r => r.Id)
-            .ValueGeneratedNever();
-
-        builder.Property(r => r.Name)
-            .IsRequired()
-            .HasMaxLength(50);
-
-        builder.HasIndex(r => r.Name)
-            .IsUnique();
+            builder.HasIndex(r => r.Name)
+                   .IsUnique();
+        }
     }
 }

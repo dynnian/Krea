@@ -2,10 +2,8 @@ using System.ComponentModel.DataAnnotations;
 using Krea.Domain.ValueObjects;
 
 namespace Krea.Domain.Entities {
-    public sealed class Like
-    {
-        [Key]
-        public Guid Id { get; private set; }
+    public sealed class Like {
+        [Key] public Guid Id { get; private set; }
         public Guid UserId { get; private set; }
         public User User { get; private set; } = null!;
         public Guid PostId { get; private set; }
@@ -16,8 +14,7 @@ namespace Krea.Domain.Entities {
         private Like() { }
         #pragma warning restore CS8618
 
-        public Like(User user, Post post)
-        {
+        public Like(User user, Post post) {
             Id = Guid.NewGuid();
             User = user;
             UserId = user.Id;
@@ -31,13 +28,7 @@ namespace Krea.Domain.Entities {
         public Like Load(
             Guid id,
             User user,
-            DateTime createdAt) {
-            return new Like
-            {
-                Id = id,
-                User = user,
-                CreatedAt = createdAt
-            };
-        }
+            DateTime createdAt) =>
+            new() { Id = id, User = user, CreatedAt = createdAt };
     }
 }

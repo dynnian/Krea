@@ -3,52 +3,37 @@ using Krea.Domain.Repositories;
 using Krea.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Krea.Infrastructure.Repositories;
+namespace Krea.Infrastructure.Repositories {
+    public sealed class DonationRepository
+        : IDonationRepository {
+        private readonly AppDbContext _context;
 
-public sealed class DonationRepository 
-    : IDonationRepository
-{
-    private readonly AppDbContext _context;
+        public DonationRepository(AppDbContext context) => _context = context;
 
-    public DonationRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+        public async Task<Donation?> GetByIdAsync(Guid id) =>
+            await _context.Donations
+                          .Include(d => d.Donor)
+                          .Include(d => d.Recipient)
+                          .FirstOrDefaultAsync(d => d.Id == id);
 
-    public async Task<Donation?> GetByIdAsync(Guid id)
-    {
-        return await _context.Donations
-            .Include(d => d.Donor)
-            .Include(d => d.Recipient)
-            .FirstOrDefaultAsync(d => d.Id == id);
-    }
-    
-    public async Task<Donation?> GetByIdWithPaymentsAsync(Guid id)
-    {
-        return await _context.Donations
-            .Include(d => d.Donor)
-            .Include(d => d.Recipient)
-            .Include(d => d.Payments)
-            .ThenInclude(p => p.Payer)
-            .FirstOrDefaultAsync(d => d.Id == id);
-    }
-    
-    public async Task<IReadOnlyList<Donation>> GetByDonorAsync(Guid donorId)
-    {
-        return await _context.Donations
-            .Where(d => EF.Property<Guid>(d, "DonorId") == donorId)
-            .ToListAsync();
-    }
+        public async Task<Donation?> GetByIdWithPaymentsAsync(Guid id) =>
+            await _context.Donations
+                          .Include(d => d.Donor)
+                          .Include(d => d.Recipient)
+                          .Include(d => d.Payments)
+                          .ThenInclude(p => p.Payer)
+                          .FirstOrDefaultAsync(d => d.Id == id);
 
-    public async Task<IReadOnlyList<Donation>> GetByRecipientAsync(Guid recipientId)
-    {
-        return await _context.Donations
-            .Where(d => EF.Property<Guid>(d, "RecipientId") == recipientId)
-            .ToListAsync();
-    }
+        public async Task<IReadOnlyList<Donation>> GetByDonorAsync(Guid donorId) =>
+            await _context.Donations
+                          .Where(d => EF.Property<Guid>(d, "DonorId") == donorId)
+                          .ToListAsync();
 
-    public async Task AddAsync(Donation donation)
-    {
-        await _context.Donations.AddAsync(donation);
+        public async Task<IReadOnlyList<Donation>> GetByRecipientAsync(Guid recipientId) =>
+            await _context.Donations
+                          .Where(d => EF.Property<Guid>(d, "RecipientId") == recipientId)
+                          .ToListAsync();
+
+        public async Task AddAsync(Donation donation) => await _context.Donations.AddAsync(donation);
     }
 }
