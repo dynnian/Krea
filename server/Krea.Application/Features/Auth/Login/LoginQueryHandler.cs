@@ -39,6 +39,8 @@ internal class LoginQueryHandler : IRequestHandler<LoginQuery, AuthResponse>
         var domainUser = await _userRepository.GetByIdAsync(identityUser.Id, cancellationToken);
         if (domainUser == null)
             throw new Exception("User not found in domain.");
+        if (!domainUser.EmailConfirmed)
+            throw new Exception("Email not confirmed. Please check your inbox.");
 
         domainUser.SetLastLogin();
         await _userRepository.UpdateAsync(domainUser, cancellationToken);

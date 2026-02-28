@@ -14,7 +14,13 @@ public class IdentityService : IIdentityService
         _userManager = userManager;
         _signInManager = signInManager;
     }
-
+    
+    public async Task<UserIdentity?> FindByIdAsync(Guid userId)
+    {
+        var appUser = await _userManager.FindByIdAsync(userId.ToString());
+        return appUser == null ? null : await ToUserIdentity(appUser);
+    }
+    
     public async Task<UserIdentity?> FindByUsernameAsync(string username)
     {
         var appUser = await _userManager.FindByNameAsync(username);
@@ -81,5 +87,19 @@ public class IdentityService : IIdentityService
             appUser.Email!,
             roles
         );
+    }
+    public async Task<string> GenerateEmailConfirmationTokenAsync(UserIdentity user)
+    {
+        var appUser = await _userManager.FindByIdAsync(user.Id.ToString());
+        if (appUser == null) throw new Exception("User not found");
+        return await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
+    }
+
+    public async Task<bool> ConfirmEmailAsync(UserIdentity user, string token)
+    {
+        var appUser = await _userManager.FindByIdAsync(user.Id.ToString());
+        if (appUser == null) return false;
+        var result = await _userManager.ConfirmEmailAsync(appUser, token);
+        return result.Succeeded;
     }
 }

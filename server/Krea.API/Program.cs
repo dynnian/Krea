@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Krea.API;
 
+using Application.Abstractions.Url;
+using Services;
+
 internal class Program {
     public static async Task Main(string[] args)
     {
@@ -42,6 +45,9 @@ internal class Program {
         });
 
         builder.Services.AddAuthorization();
+        
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddScoped<IConfirmationUrlBuilder, ConfirmationUrlBuilder>();
 
         var app = builder.Build();
         

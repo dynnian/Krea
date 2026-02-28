@@ -73,6 +73,12 @@ namespace Krea.Domain.Entities {
             IsBanned = false;
             IsDisabled = false;
         }
+
+        public void ConfirmEmail() 
+        {
+            EmailConfirmed = true;
+            UpdatedAt = DateTime.UtcNow;
+        }
         
         public void Ban() 
         {

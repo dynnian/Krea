@@ -63,6 +63,7 @@ public static class DependencyInjection
         // Servicios de aplicación
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ISender, Sender>(); 
 
         return services;

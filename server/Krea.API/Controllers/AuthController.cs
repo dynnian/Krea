@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Krea.API.Controllers;
 
+using Application.Features.Auth.ConfirmEmail;
+
 [Route("api/[controller]")]
 [ApiController]
 public class AuthController : ControllerBase
@@ -42,6 +44,24 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             return Unauthorized(new { error = ex.Message });
+        }
+    }
+    
+    // Krea.API/Controllers/AuthController.cs
+    [HttpGet("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail([FromQuery] Guid userId, [FromQuery] string token)
+    {
+        try
+        {
+            var command = new ConfirmEmailCommand(userId, token);
+            var result = await _sender.Send(command);
+            if (result)
+                return Ok("Email confirmed successfully.");
+            return BadRequest("Email confirmation failed.");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
         }
     }
 }

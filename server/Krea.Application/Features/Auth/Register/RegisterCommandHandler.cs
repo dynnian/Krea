@@ -2,10 +2,11 @@ using Krea.Application.Abstractions.Identity;
 using Krea.Application.Abstractions.Auth;
 using Krea.Application.Features.User;
 using Krea.Domain.Abstractions;
-using Krea.Domain.Entities;
 using Krea.Domain.Repositories;
 
 namespace Krea.Application.Features.Auth.Register;
+
+using Abstractions.Url;
 
 internal class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResponse>
 {
@@ -13,17 +14,23 @@ internal class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRes
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITokenService _tokenService;
+    private readonly IEmailService _emailService;
+    private readonly IConfirmationUrlBuilder _urlBuilder;
 
     public RegisterCommandHandler(
         IIdentityService identityService,
         IUserRepository userRepository,
         IUnitOfWork unitOfWork,
-        ITokenService tokenService)
+        ITokenService tokenService,
+        IEmailService emailService,
+        IConfirmationUrlBuilder urlBuilder)
     {
         _identityService = identityService;
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
         _tokenService = tokenService;
+        _emailService = emailService;
+        _urlBuilder = urlBuilder;
     }
 
     public async Task<AuthResponse> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -53,13 +60,20 @@ internal class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRes
         if (!createResult.Succeeded)
             throw new Exception(string.Join(", ", createResult.Errors));
         
-        await _userRepository.AddAsync(domainUser);
+        await _userRepository.AddAsync(domainUser, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         
         var createdIdentity = await _identityService.FindByUsernameAsync(request.Username);
         if (createdIdentity == null)
             throw new Exception("User creation succeeded but could not retrieve identity.");
 
+        // Generate email confirmation token
+        var confirmationToken = await _identityService.GenerateEmailConfirmationTokenAsync(createdIdentity);
+        var confirmationLink = _urlBuilder.BuildEmailConfirmationLink(createdIdentity.Id, confirmationToken);
+
+        // Send confirmation email
+        await _emailService.SendConfirmationEmailAsync(createdIdentity.Email, createdIdentity.UserName, confirmationLink);
+        
         // Generate token
         var token = await _tokenService.GenerateTokenAsync(createdIdentity, domainUser);
         var userDto = MapToDto(domainUser, createdIdentity);
