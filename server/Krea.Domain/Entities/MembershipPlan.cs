@@ -85,7 +85,7 @@ namespace Krea.Domain.Entities {
             User artist,
             string name,
             string benefits,
-            decimal price,
+            Money price,
             int maxSlots
         ) {
             if (artist is null)

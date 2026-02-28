@@ -52,26 +52,10 @@ public sealed class MembershipPlanConfiguration
             .HasForeignKey("ArtistId")
             .OnDelete(DeleteBehavior.Cascade);
         
-        // Media as owned
-        builder.OwnsOne(p => p.Image, media =>
-        {
-            media.Property(m => m.Id)
-                .HasColumnName("image_id");
-
-            media.Property(m => m.OriginalFileName)
-                .HasColumnName("image_original_name");
-
-            media.Property(m => m.FileName)
-                .HasColumnName("image_file_name");
-
-            media.Property(m => m.MimeType)
-                .HasColumnName("image_mime_type");
-
-            media.Property(m => m.Path)
-                .HasColumnName("image_path");
-
-            media.Property(m => m.UploadedAt)
-                .HasColumnName("image_uploaded_at");
-        });
+        // Media
+        builder.HasOne(p => p.Image)
+            .WithOne()
+            .HasForeignKey<MembershipPlan>("ImageId")
+            .OnDelete(DeleteBehavior.SetNull);;
     }
 }
