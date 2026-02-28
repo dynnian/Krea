@@ -11,6 +11,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Krea.Infrastructure.Data;
 
+using Application.Abstractions;
+using Application.Abstractions.Auth;
+using Application.Abstractions.Identity;
+
 public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
@@ -57,7 +61,9 @@ public static class DependencyInjection
         
         
         // Servicios de aplicación
-        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<ISender, Sender>(); 
 
         return services;
     }

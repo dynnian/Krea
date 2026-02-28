@@ -1,4 +1,7 @@
 using Krea.Application.Features.Auth;
+using Krea.Application.Features.Auth.Login;
+using Krea.Application.Features.Auth.Register;
+using Krea.Domain.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Krea.API.Controllers;
@@ -7,19 +10,19 @@ namespace Krea.API.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly IAuthService _authService;
+    private readonly ISender _sender;
 
-    public AuthController(IAuthService authService)
+    public AuthController(ISender sender)
     {
-        _authService = authService;
+        _sender = sender;
     }
 
     [HttpPost("register")]
-    public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
+    public async Task<ActionResult<AuthResponse>> Register(RegisterCommand command)
     {
         try
         {
-            var response = await _authService.RegisterAsync(request);
+            var response = await _sender.Send(command);
             return Ok(response);
         }
         catch (Exception ex)
@@ -29,11 +32,11 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
+    public async Task<ActionResult<AuthResponse>> Login(LoginQuery query)
     {
         try
         {
-            var response = await _authService.LoginAsync(request);
+            var response = await _sender.Send(query);
             return Ok(response);
         }
         catch (Exception ex)
