@@ -9,9 +9,7 @@ namespace Krea.Infrastructure.Data;
 public class AppDbContext: IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
-        : base(options)
-    {
-    }
+        : base(options) { }
     
 
     #region DbSets
@@ -35,7 +33,7 @@ public class AppDbContext: IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
     public DbSet<MusicMetadata> MusicMetadata => Set<MusicMetadata>();
     public DbSet<TextMetadata> TextMetadata => Set<TextMetadata>();
     public DbSet<Genre> Genres => Set<Genre>();
-    public DbSet<Collections> Collections => Set<Collections>();
+    public DbSet<Collection> Collections => Set<Collection>();
 
     public DbSet<Conversation> Conversations => Set<Conversation>();
     public DbSet<Message> Messages => Set<Message>();
@@ -55,8 +53,7 @@ public class AppDbContext: IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
 
     #endregion
 
-    protected override void OnModelCreating(ModelBuilder builder)
-    {
+    protected override void OnModelCreating(ModelBuilder builder) {
         base.OnModelCreating(builder);
 
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

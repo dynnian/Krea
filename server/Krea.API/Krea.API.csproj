@@ -19,4 +19,10 @@
     <ProjectReference Include="..\Krea.Infrastructure\Krea.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Krea.Application\Krea.Application.csproj" />
+    <ProjectReference Include="..\Krea.Domain\Krea.Domain.csproj" />
+    <ProjectReference Include="..\Krea.Infrastructure\Krea.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

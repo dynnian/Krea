@@ -1,40 +1,38 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Krea.Domain.Entities {
-    public sealed class Collections {
-        [Key]
-        public Guid Id { get; private set; }
-        
+    public sealed class Collection {
+        [Key] public Guid Id { get; private set; }
+
         public string Title { get; private set; }
-        
+
         public Media? Image { get; private set; }
         public Guid? MediaId { get; private set; }
-        
+
         public string Description { get; private set; }
-        
+
         public int ItemCount { get; private set; }
-        
+
         public User Owner { get; private set; }
         public Guid OwnerId { get; private set; }
-        
+
         private readonly List<Post> _posts = new();
         public IReadOnlyCollection<Post> Posts => _posts.AsReadOnly();
-        
+
         public DateTime CreatedAt { get; private set; }
-        
-        public DateTime UpdatedAt { get; private set; } 
-        
+
+        public DateTime UpdatedAt { get; private set; }
+
         #pragma warning disable CS8618
-        private Collections() { }
+        private Collection() { }
         #pragma warning restore CS8618
 
-        public Collections(
+        public Collection(
             Guid ownerId,
             string title,
             string? description,
             int itemCount
-        )
-        {
+        ) {
             Id = Guid.NewGuid();
             OwnerId = ownerId;
             Title = title;
@@ -44,7 +42,7 @@ namespace Krea.Domain.Entities {
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public static Collections Load(
+        public static Collection Load(
             Guid id,
             Guid ownerId,
             string title,
@@ -53,12 +51,11 @@ namespace Krea.Domain.Entities {
             int itemCount,
             DateTime createdAt,
             DateTime updatedAt
-        )
-        {
-            var collection = new Collections(
-                ownerId, 
-                title, 
-                description, 
+        ) {
+            var collection = new Collection(
+                ownerId,
+                title,
+                description,
                 itemCount);
 
             collection.Id = id;
@@ -68,9 +65,8 @@ namespace Krea.Domain.Entities {
 
             return collection;
         }
-        
-        public void AddPost(Post post)
-        {
+
+        public void AddPost(Post post) {
             if (_posts.Any(p => p.Id == post.Id))
                 return;
 
@@ -79,18 +75,16 @@ namespace Krea.Domain.Entities {
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public void RemovePost(Guid postId)
-        {
-            var post = _posts.FirstOrDefault(p => p.Id == postId);
+        public void RemovePost(Guid postId) {
+            Post? post = _posts.FirstOrDefault(p => p.Id == postId);
             if (post is null) return;
 
             _posts.Remove(post);
             ItemCount = _posts.Count;
             UpdatedAt = DateTime.UtcNow;
         }
-        
-        public void UpdateInfo(string title, string description) {
 
+        public void UpdateInfo(string title, string description) {
             Title = title;
             Description = description;
             UpdatedAt = DateTime.UtcNow;

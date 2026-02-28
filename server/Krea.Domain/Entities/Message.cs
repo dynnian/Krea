@@ -1,116 +1,108 @@
 using Krea.Domain.ValueObjects;
 
-namespace Krea.Domain.Entities;
+namespace Krea.Domain.Entities {
+    public sealed class Message {
+        public Guid Id { get; private set; }
+        public User User { get; private set; }
+        public Conversation Conversation { get; private set; }
+        public MessageContentType ContentType { get; private set; }
+        public string? TextContent { get; private set; }
+        private readonly List<Media> _mediaAttachments = new();
+        public IReadOnlyCollection<Media> MediaAttachments => _mediaAttachments;
 
-public sealed class Message
-{
-    public Guid Id { get; private set; }
-    public User User { get; private set; }
-    public Conversation Conversation { get; private set; }
-    public MessageContentType ContentType { get; private set; }
-    public string? TextContent { get; private set; }
-    private readonly List<Media> _mediaAttachments = new();
-    public IReadOnlyCollection<Media> MediaAttachments => _mediaAttachments;
+        public DateTime SentAt { get; private set; }
+        public DateTime UpdatedAt { get; private set; }
 
-    public DateTime SentAt { get; private set; }
-    public DateTime UpdatedAt { get; private set; }
+        #pragma warning disable CS8618
+        private Message() { }
+        #pragma warning restore CS8618
 
-    #pragma warning disable CS8618
-    private Message() { }
-    #pragma warning restore CS8618
-    
-    private Message(User user, Conversation conversation, MessageContentType contentType)
-    {
-        Id = Guid.NewGuid();
-        User = user ?? throw new ArgumentNullException(nameof(user));
-        Conversation = conversation ?? throw new ArgumentNullException(nameof(conversation));
-        ContentType = contentType;
-        SentAt = DateTime.UtcNow;
-        UpdatedAt = SentAt;
-    }
-    
-    public static Message CreateTextMessage(User user, Conversation conversation, string text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-            throw new ArgumentException("Text message cannot be empty.");
-
-        var message = new Message(user, conversation, MessageContentType.Text);
-        message.TextContent = text;
-        return message;
-    }
-    
-    public static Message CreateMediaMessage(User user, Conversation conversation, IEnumerable<Media> mediaAttachments)
-    {
-        if (mediaAttachments == null)
-            throw new ArgumentNullException(nameof(mediaAttachments));
-
-        var mediaList = mediaAttachments.ToList();
-        if (mediaList.Count == 0)
-            throw new ArgumentException("Media message must have at least one attachment.");
-
-        var message = new Message(user, conversation, MessageContentType.Media);
-        foreach (var media in mediaList)
-        {
-            message._mediaAttachments.Add(media);
+        private Message(User user, Conversation conversation, MessageContentType contentType) {
+            Id = Guid.NewGuid();
+            User = user ?? throw new ArgumentNullException(nameof(user));
+            Conversation = conversation ?? throw new ArgumentNullException(nameof(conversation));
+            ContentType = contentType;
+            SentAt = DateTime.UtcNow;
+            UpdatedAt = SentAt;
         }
-        return message;
-    }
-    
-    public static Message CreateSystemMessage(User user, Conversation conversation, string? text = null)
-    {
-        var message = new Message(user, conversation, MessageContentType.System);
-        if (!string.IsNullOrWhiteSpace(text))
+
+        public static Message CreateTextMessage(User user, Conversation conversation, string text) {
+            if (string.IsNullOrWhiteSpace(text))
+                throw new ArgumentException("Text message cannot be empty.");
+
+            var message = new Message(user, conversation, MessageContentType.Text);
             message.TextContent = text;
-        return message;
-    }
-    
-    public static Message Load(
-        Guid id,
-        User user,
-        Conversation conversation,
-        MessageContentType contentType,
-        string? textContent,
-        DateTime sentAt,
-        DateTime updatedAt,
-        IEnumerable<Media>? mediaAttachments = null)
-    {
-        var message = new Message
-        {
-            Id = id,
-            User = user,
-            Conversation = conversation,
-            ContentType = contentType,
-            TextContent = textContent,
-            SentAt = sentAt,
-            UpdatedAt = updatedAt
-        };
-        if (mediaAttachments != null)
-        {
-            foreach (var media in mediaAttachments)
-                message._mediaAttachments.Add(media);
+            return message;
         }
-        return message;
-    }
 
-    // Editar mensaje (solo texto por ahora, podrías extender para multimedia)
-    public void EditText(string newText)
-    {
-        if (ContentType != MessageContentType.Text && ContentType != MessageContentType.System)
-            throw new InvalidOperationException("Only text or system messages can be edited.");
+        public static Message CreateMediaMessage(User user, Conversation conversation,
+                                                 IEnumerable<Media> mediaAttachments) {
+            if (mediaAttachments == null)
+                throw new ArgumentNullException(nameof(mediaAttachments));
 
-        if (string.IsNullOrWhiteSpace(newText))
-            throw new ArgumentException("Text cannot be empty.");
+            List<Media> mediaList = mediaAttachments.ToList();
+            if (mediaList.Count == 0)
+                throw new ArgumentException("Media message must have at least one attachment.");
 
-        TextContent = newText;
-        UpdatedAt = DateTime.UtcNow;
-    }
-    
-    public void AddMedia(Media media)
-    {
-        if (ContentType != MessageContentType.Media)
-            throw new InvalidOperationException("Cannot add media to a non-media message.");
+            var message = new Message(user, conversation, MessageContentType.Media);
+            foreach (Media media in mediaList) {
+                message._mediaAttachments.Add(media);
+            }
 
-        _mediaAttachments.Add(media);
-        UpdatedAt = DateTime.UtcNow;
+            return message;
+        }
+
+        public static Message CreateSystemMessage(User user, Conversation conversation, string? text = null) {
+            var message = new Message(user, conversation, MessageContentType.System);
+            if (!string.IsNullOrWhiteSpace(text))
+                message.TextContent = text;
+            return message;
+        }
+
+        public static Message Load(
+            Guid id,
+            User user,
+            Conversation conversation,
+            MessageContentType contentType,
+            string? textContent,
+            DateTime sentAt,
+            DateTime updatedAt,
+            IEnumerable<Media>? mediaAttachments = null) {
+            var message = new Message {
+                Id = id,
+                User = user,
+                Conversation = conversation,
+                ContentType = contentType,
+                TextContent = textContent,
+                SentAt = sentAt,
+                UpdatedAt = updatedAt
+            };
+            if (mediaAttachments != null) {
+                foreach (Media media in mediaAttachments)
+                    message._mediaAttachments.Add(media);
+            }
+
+            return message;
+        }
+
+        // Editar mensaje (solo texto por ahora, podrías extender para multimedia)
+        public void EditText(string newText) {
+            if (ContentType != MessageContentType.Text && ContentType != MessageContentType.System)
+                throw new InvalidOperationException("Only text or system messages can be edited.");
+
+            if (string.IsNullOrWhiteSpace(newText))
+                throw new ArgumentException("Text cannot be empty.");
+
+            TextContent = newText;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void AddMedia(Media media) {
+            if (ContentType != MessageContentType.Media)
+                throw new InvalidOperationException("Cannot add media to a non-media message.");
+
+            _mediaAttachments.Add(media);
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 }

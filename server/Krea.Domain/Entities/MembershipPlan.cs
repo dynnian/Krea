@@ -20,7 +20,7 @@ namespace Krea.Domain.Entities {
         #pragma warning disable CS8618
         private MembershipPlan() { }
         #pragma warning restore CS8618
-        
+
         public MembershipPlan(
             User artist,
             string name,
@@ -42,7 +42,7 @@ namespace Krea.Domain.Entities {
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = CreatedAt;
         }
-        
+
         public static MembershipPlan Load(
             Guid id,
             User artist,

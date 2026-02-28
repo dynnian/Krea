@@ -16,7 +16,7 @@ namespace Krea.Domain.Entities {
         #pragma warning disable CS8618
         private Conversation() { }
         #pragma warning restore CS8618
-        
+
         public Conversation(string title, string description, Media? icon = null) {
             Validate(title, description);
 
@@ -27,7 +27,7 @@ namespace Krea.Domain.Entities {
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = CreatedAt;
         }
-        
+
         public static Conversation Load(
             Guid id,
             string title,
@@ -56,31 +56,29 @@ namespace Krea.Domain.Entities {
             Icon = icon;
             UpdatedAt = DateTime.UtcNow;
         }
-        
-        public Message AddMessage(User user, MessageContentType contentType, string? text = null, IEnumerable<Media>? media = null)
-        {
+
+        public Message AddMessage(User user, MessageContentType contentType, string? text = null,
+                                  IEnumerable<Media>? media = null) {
             Message message;
-            if (contentType == MessageContentType.Text)
-            {
+            if (contentType == MessageContentType.Text) {
                 if (string.IsNullOrWhiteSpace(text))
                     throw new ArgumentException("Text message cannot be empty.");
                 message = Message.CreateTextMessage(user, this, text);
             }
-            else if (contentType == MessageContentType.Media)
-            {
+            else if (contentType == MessageContentType.Media) {
                 if (media == null)
                     throw new ArgumentException("Media message must have attachments.");
 
-                var mediaList = media.ToList();
+                List<Media> mediaList = media.ToList();
                 if (mediaList.Count == 0)
                     throw new ArgumentException("Media message must have attachments.");
 
                 message = Message.CreateMediaMessage(user, this, mediaList);
             }
-            else 
-            {
+            else {
                 message = Message.CreateSystemMessage(user, this, text);
             }
+
             _messages.Add(message);
             return message;
         }

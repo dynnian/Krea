@@ -1,16 +1,15 @@
 using Krea.Domain.Entities;
 
-namespace Krea.Domain.Repositories;
+namespace Krea.Domain.Repositories {
+    public interface ICommissionOfferingRepository {
+        Task<CommissionOffering?> GetByIdAsync(Guid id);
 
-public interface ICommissionOfferingRepository
-{
-    Task<CommissionOffering?> GetByIdAsync(Guid id);
+        Task<IReadOnlyList<CommissionOffering>> GetByArtistAsync(Guid artistId);
 
-    Task<IReadOnlyList<CommissionOffering>> GetByArtistAsync(Guid artistId);
+        Task<IReadOnlyList<CommissionOffering>> GetActiveAsync();
 
-    Task<IReadOnlyList<CommissionOffering>> GetActiveAsync();
+        Task AddAsync(CommissionOffering offering);
 
-    Task AddAsync(CommissionOffering offering);
-
-    Task UpdateAsync(CommissionOffering offering);
+        Task UpdateAsync(CommissionOffering offering);
+    }
 }

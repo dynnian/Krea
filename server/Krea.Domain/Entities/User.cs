@@ -40,8 +40,8 @@ namespace Krea.Domain.Entities {
         private readonly List<Like> _likes = new();
         public IReadOnlyCollection<Like> Likes => _likes;
 
-        private readonly List<Collections> _collections = new();
-        public IReadOnlyCollection<Collections> Collections => _collections;
+        private readonly List<Collection> _collections = new();
+        public IReadOnlyCollection<Collection> Collections => _collections;
         
         private readonly List<UserRole> _userRoles = new();
         public IReadOnlyCollection<UserRole> UserRoles => _userRoles.AsReadOnly();

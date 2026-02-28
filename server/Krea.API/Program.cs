@@ -1,4 +1,5 @@
-using Krea.Infrastructure.Data;
+using Krea.Infrastructure;
+using Krea.Application;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -6,17 +7,15 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Krea.API;
 
-public class Program
-{
+internal class Program {
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-
-        // Add services to the container.
+        
+        builder.Services.AddApplication();
         builder.Services.AddControllers();
-
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-        builder.Services.AddOpenApi(); //Maybe Swagger
+        builder.Services.AddOpenApi();
+        
 
         // Agregar infraestructura (DbContext, Identity, repositorios, servicios)
         builder.Services.AddInfrastructure(builder.Configuration);
@@ -71,9 +70,9 @@ public class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
-
+        
         app.MapControllers();
 
-        app.Run();
+        await app.RunAsync();
     }
 }

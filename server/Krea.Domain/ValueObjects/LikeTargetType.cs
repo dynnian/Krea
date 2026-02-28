@@ -1,6 +1,6 @@
-namespace Krea.Domain.ValueObjects;
-
-public enum LikeTargetType {
-    Post,
-    Message
+namespace Krea.Domain.ValueObjects {
+    public enum LikeTargetType {
+        Post,
+        Message
+    }
 }

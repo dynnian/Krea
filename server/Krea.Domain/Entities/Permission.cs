@@ -9,7 +9,7 @@ namespace Krea.Domain.Entities {
         public Scope Scope { get; private set; } = null!;
         public Guid ScopeId { get; private set; }
         public DateTime CreatedAt { get; private set; }
-        
+
         #pragma warning disable CS8618
         private Permission() { }
         #pragma warning restore CS8618
@@ -18,8 +18,7 @@ namespace Krea.Domain.Entities {
             string name,
             string description,
             Guid scopeId
-        )
-        {
+        ) {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Permission name is required");
 
@@ -41,7 +40,7 @@ namespace Krea.Domain.Entities {
                 Id = id,
                 Name = name,
                 Description = description,
-                Scope =  scope,
+                Scope = scope,
                 CreatedAt = createdAt
             };
             return permission;

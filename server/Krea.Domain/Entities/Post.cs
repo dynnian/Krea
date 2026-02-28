@@ -12,7 +12,7 @@ namespace Krea.Domain.Entities {
         public PostType Type { get; private set; }
         
         public string Title { get; private set; }
-        
+
         public string? Content { get; private set; }
         
         public bool IsWork {get; private set;}
@@ -43,8 +43,8 @@ namespace Krea.Domain.Entities {
         private readonly List<Like> _likes = new();
         public IReadOnlyCollection<Like> Likes => _likes.AsReadOnly();
         
-        private readonly List<Collections> _collections = new();
-        public IReadOnlyCollection<Collections> Collections => _collections.AsReadOnly();
+        private readonly List<Collection> _collections = new();
+        public IReadOnlyCollection<Collection> Collections => _collections.AsReadOnly();
         
         #pragma warning disable CS8618
         private Post() { }
@@ -186,9 +186,8 @@ namespace Krea.Domain.Entities {
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public void RemoveHashtag(Guid hashtagId)
-        {
-            var tag = _hashtags.FirstOrDefault(h => h.Id == hashtagId);
+        public void RemoveHashtag(Guid hashtagId) {
+            Hashtag? tag = _hashtags.FirstOrDefault(h => h.Id == hashtagId);
             if (tag is null) return;
 
             _hashtags.Remove(tag);

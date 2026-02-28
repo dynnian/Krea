@@ -2,12 +2,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Krea.Domain.Entities {
     public sealed class PostUpload {
-        [Key]
-        public Guid Id { get; private set; }
-        
+        [Key] public Guid Id { get; private set; }
+
         public Guid PostId { get; private set; }
         public Post Post { get; private set; }
-        
+
         public Guid MediaId { get; private set; }
         public Media Media { get; private set; }
         public bool IsWorkMedia { get; private set; }
@@ -18,10 +17,9 @@ namespace Krea.Domain.Entities {
         #pragma warning restore CS8618
 
         internal PostUpload(
-            Guid postId, 
-            Guid mediaId, 
-            bool isWorkMedia)
-        {
+            Guid postId,
+            Guid mediaId,
+            bool isWorkMedia) {
             Id = Guid.NewGuid();
             PostId = postId;
             MediaId = mediaId;
@@ -33,19 +31,15 @@ namespace Krea.Domain.Entities {
             Guid postId,
             Guid mediaId,
             bool isWorkMedia
-        )
-        {
+        ) {
             var upload = new PostUpload(postId, mediaId, isWorkMedia);
             upload.Id = id;
             return upload;
         }
 
-        public void MarkAsWorkMedia() {
-            IsWorkMedia = true;
-        }
-        
-        public void SetMetadata(Metadata metadata)
-        {
+        public void MarkAsWorkMedia() => IsWorkMedia = true;
+
+        public void SetMetadata(Metadata metadata) {
             if (Metadata is not null)
                 throw new InvalidOperationException("Metadata already assigned.");
 
