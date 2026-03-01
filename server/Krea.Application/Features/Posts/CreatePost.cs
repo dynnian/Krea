@@ -4,16 +4,14 @@ namespace Krea.Application.Features.Posts {
     using Domain.Repositories;
     using Domain.ValueObjects;
 
-    public sealed class CreatePost 
-        : IRequestHandler<CreatePost.Request, CreatePost.Response>
-    {
+    public sealed class CreatePost
+        : IRequestHandler<CreatePost.Request, CreatePost.Response> {
         private readonly IPostRepository _postRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public CreatePost(
             IPostRepository postRepository,
-            IUnitOfWork unitOfWork)
-        {
+            IUnitOfWork unitOfWork) {
             _postRepository = postRepository;
             _unitOfWork = unitOfWork;
         }
@@ -31,8 +29,7 @@ namespace Krea.Application.Features.Posts {
 
         public async Task<Response> Handle(
             Request request,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             var post = new Post(
                 request.AuthorPostId,
                 request.Type,

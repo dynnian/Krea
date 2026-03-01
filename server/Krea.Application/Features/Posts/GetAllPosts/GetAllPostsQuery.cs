@@ -5,4 +5,5 @@ namespace Krea.Application.Features.Posts.GetAllPosts {
     public sealed record GetAllPostsQuery(
         int Page,
         int PageSize
-    ) : IRequest<IReadOnlyList<PostDto>>;}
+    ) : IRequest<IReadOnlyList<PostDto>>;
+}

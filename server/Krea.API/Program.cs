@@ -1,92 +1,96 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.AspNetCore.Identity;
+namespace Krea.API {
+    using Microsoft.AspNetCore.Authentication.JwtBearer;
+    using Microsoft.IdentityModel.Tokens;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.AspNetCore.Identity;
+    using Scalar.AspNetCore;
+    using System.Text;
+    using Infrastructure;
+    using Infrastructure.Data;
+    using Application;
+    using Application.Abstractions.Url;
+    using Services;
 
-namespace Krea.API;
-
-using Infrastructure;
-using Infrastructure.Data;
-using Application;
-using Application.Abstractions.Url;
-using Microsoft.EntityFrameworkCore;
-using Services;
-
-internal class Program {
-    public static async Task Main(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args);
-        
-        builder.Services.AddApplication();
-        builder.Services.AddControllers();
-        builder.Services.AddOpenApi();
-        
-
-        // Agregar infraestructura (DbContext, Identity, repositorios, servicios)
-        builder.Services.AddInfrastructure(builder.Configuration);
-
-        // Configurar autenticación JWT
-        builder.Services.AddAuthentication(options =>
+    internal class Program {
+        public static async Task Main(string[] args)
         {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddJwtBearer(options =>
-        {
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                ValidAudience = builder.Configuration["Jwt:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
-            };
-        });
-
-        builder.Services.AddAuthorization();
+            var builder = WebApplication.CreateBuilder(args);
         
-        builder.Services.AddHttpContextAccessor();
-        builder.Services.AddScoped<IConfirmationUrlBuilder, ConfirmationUrlBuilder>();
-
-        var app = builder.Build();
+            builder.Services.AddApplication();
+            builder.Services.AddControllers();
+            builder.Services.AddOpenApi();
         
-        using (var scope = app.Services.CreateScope())
-        {
-            var services = scope.ServiceProvider;
 
-            // Automatic migration
-            var context = services.GetRequiredService<AppDbContext>();
-            await context.Database.MigrateAsync();
+            // Agregar infraestructura (DbContext, Identity, repositorios, servicios)
+            builder.Services.AddInfrastructure(builder.Configuration);
 
-            // Identity Roles
-            var roleManager = services.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
-            var roles = new[] { "Admin", "Artist" };
-
-            foreach (var role in roles)
-            {
-                if (!await roleManager.RoleExistsAsync(role))
+            // Configurar autenticación JWT
+            builder.Services.AddAuthentication(options =>
                 {
-                    await roleManager.CreateAsync(new IdentityRole<Guid>(role));
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+                    };
+                });
+
+            builder.Services.AddAuthorization();
+        
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<IConfirmationUrlBuilder, ConfirmationUrlBuilder>();
+
+            WebApplication app = builder.Build();
+        
+            // Identity Roles
+            using (IServiceScope scope = app.Services.CreateScope()) {
+                IServiceProvider services = scope.ServiceProvider;
+
+                // Automatic migration
+                var context = services.GetRequiredService<AppDbContext>();
+                await context.Database.MigrateAsync();
+
+                // Identity Roles
+                var roleManager = services.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+                string[] roles = ["Admin", "Artist"];
+
+                foreach (string role in roles) {
+                    if (!await roleManager.RoleExistsAsync(role)) {
+                        await roleManager.CreateAsync(new IdentityRole<Guid>(role));
+                    }
                 }
             }
-        }
         
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapOpenApi();
-        }
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.MapOpenApi();
+                app.MapScalarApiReference(options => {
+                    options
+                        .WithTitle("Krea API")
+                        .WithTheme(ScalarTheme.Purple)
+                        .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+                });
+            }
 
-        app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
 
-        app.UseAuthentication();
-        app.UseAuthorization();
+            app.UseAuthentication();
+            app.UseAuthorization();
         
-        app.MapControllers();
+            app.MapControllers();
 
-        await app.RunAsync();
+            await app.RunAsync();
+        }
     }
 }

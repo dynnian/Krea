@@ -4,4 +4,5 @@ namespace Krea.Application.Features.Posts.Dto {
         Guid ReplyToPostId,
         string Title,
         string Content
-    );}
+    );
+}

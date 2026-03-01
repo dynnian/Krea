@@ -56,9 +56,10 @@ namespace Krea.Domain.Entities {
             if (!ReferenceEquals(payer, Bidder))
                 throw new ArgumentException("Payer must be the bidder.");
 
-            if (Status != CommissionRequestStatus.Accepted && Status != CommissionRequestStatus.InProgress)
+            if (Status != CommissionRequestStatus.Accepted && Status != CommissionRequestStatus.InProgress) {
                 throw new InvalidOperationException(
                     "Payments can only be created for accepted or in-progress commissions.");
+            }
 
             if (amount <= Offering.BasePrice)
                 throw new ArgumentException("Paid amount cannot be lower than base price.");

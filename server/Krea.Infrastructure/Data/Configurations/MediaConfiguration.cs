@@ -2,7 +2,7 @@ namespace Krea.Infrastructure.Data.Configurations {
     using Domain.Entities;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Metadata.Builders;
-    
+
     public class MediaConfiguration : IEntityTypeConfiguration<Media> {
         public void Configure(EntityTypeBuilder<Media> builder) {
             builder.ToTable("media");

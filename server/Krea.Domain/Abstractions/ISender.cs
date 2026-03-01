@@ -1,6 +1,5 @@
 namespace Krea.Domain.Abstractions {
-    public interface ISender
-    {
+    public interface ISender {
         Task<TResponse> Send<TResponse>(
             IRequest<TResponse> request,
             CancellationToken cancellationToken = default);

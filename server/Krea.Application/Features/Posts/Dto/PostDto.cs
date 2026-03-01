@@ -1,5 +1,5 @@
 namespace Krea.Application.Features.Posts.Dto {
-    using Krea.Domain.Entities;
+    using Domain.Entities;
 
     public sealed class PostDto {
         public Guid Id { get; init; }
@@ -7,10 +7,7 @@ namespace Krea.Application.Features.Posts.Dto {
         public string? Content { get; init; }
         public DateTime CreatedAt { get; init; }
 
-        public static PostDto FromDomain(Post post) {
-            return new PostDto {
-                Id = post.Id, UserId = post.AuthorPostId, Content = post.Content, CreatedAt = post.UploadedAt,
-            };
-        }
+        public static PostDto FromDomain(Post post) =>
+            new() { Id = post.Id, UserId = post.AuthorPostId, Content = post.Content, CreatedAt = post.UploadedAt };
     }
 }

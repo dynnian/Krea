@@ -2,7 +2,7 @@ namespace Krea.Infrastructure.Data.Configurations {
     using Domain.Entities;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Metadata.Builders;
-    
+
     public class LikeConfiguration : IEntityTypeConfiguration<Like> {
         public void Configure(EntityTypeBuilder<Like> builder) {
             builder.ToTable("likes");

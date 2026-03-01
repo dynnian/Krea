@@ -4,24 +4,21 @@ namespace Krea.Application.Features.Posts {
     using Domain.Repositories;
     using Dto;
 
-    public sealed class RepostHandler
-    {
+    public sealed class RepostHandler {
         private readonly IPostRepository _postRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public RepostHandler(
             IPostRepository postRepository,
-            IUnitOfWork unitOfWork)
-        {
+            IUnitOfWork unitOfWork) {
             _postRepository = postRepository;
             _unitOfWork = unitOfWork;
         }
 
         public async Task<Guid> Handle(
             RepostPostCommand command,
-            CancellationToken cancellationToken)
-        {
-            var original = await _postRepository
+            CancellationToken cancellationToken) {
+            Post? original = await _postRepository
                 .GetByIdAsync(command.OriginalPostId, cancellationToken);
 
             if (original is null)
@@ -43,5 +40,5 @@ namespace Krea.Application.Features.Posts {
 
             return repost.Id;
         }
-    } 
+    }
 }
