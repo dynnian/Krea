@@ -9,6 +9,7 @@ using Domain.Repositories;
 using Application.Abstractions;
 using Application.Abstractions.Auth;
 using Application.Abstractions.Email;
+using Application.Abstractions.Feed;
 using Application.Abstractions.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -68,6 +69,8 @@ public static class DependencyInjection
         {
             services.AddScoped<IEmailService, EmailService>();
         }
+
+        services.AddScoped<IFeedQueryService, FeedQueryService>();
         services.AddScoped<ISender, Sender>();
         
         return services;
