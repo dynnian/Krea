@@ -20,10 +20,10 @@ namespace Krea.Application {
             //   // give them a scoped lifetime
             //   .WithScopedLifetime()
             // );
-            
-            services.AddScoped< IRequestHandler<GetAllPostsQuery, IReadOnlyList<PostDto>>, GetAllPostsHandler>();
-            services.AddScoped< IRequestHandler<CreatePost.Request, CreatePost.Response>, CreatePost>();
-            services.AddScoped< IRequestHandler<AddUpload.Request, AddUpload.Response>, AddUpload>();
+
+            services.AddScoped<IRequestHandler<GetAllPostsQuery, IReadOnlyList<PostDto>>, GetAllPostsHandler>();
+            services.AddScoped<IRequestHandler<CreatePost.Request, CreatePost.Response>, CreatePost>();
+            services.AddScoped<IRequestHandler<AddUpload.Request, AddUpload.Response>, AddUpload>();
             services.AddScoped<ISender, Sender>();
             return services;
         }

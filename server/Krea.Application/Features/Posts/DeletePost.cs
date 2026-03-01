@@ -1,17 +1,16 @@
 namespace Krea.Application.Features.Posts {
     using Domain.Abstractions;
+    using Domain.Entities;
     using Domain.Repositories;
 
     public sealed class DeletePost
-        : IRequestHandler<DeletePost.Request, DeletePost.Response>
-    {
+        : IRequestHandler<DeletePost.Request, DeletePost.Response> {
         private readonly IPostRepository _postRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public DeletePost(
             IPostRepository postRepository,
-            IUnitOfWork unitOfWork)
-        {
+            IUnitOfWork unitOfWork) {
             _postRepository = postRepository;
             _unitOfWork = unitOfWork;
         }
@@ -23,11 +22,10 @@ namespace Krea.Application.Features.Posts {
 
         public async Task<Response> Handle(
             Request request,
-            CancellationToken cancellationToken)
-        {
-            var post = await _postRepository
-                           .GetByIdAsync(request.PostId, cancellationToken)
-                       ?? throw new Exception("Post not found");
+            CancellationToken cancellationToken) {
+            Post post = await _postRepository
+                            .GetByIdAsync(request.PostId, cancellationToken)
+                        ?? throw new Exception("Post not found");
 
             post.Delete();
 

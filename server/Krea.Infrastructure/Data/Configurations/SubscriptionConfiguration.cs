@@ -2,7 +2,7 @@ namespace Krea.Infrastructure.Data.Configurations {
     using Domain.Entities;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Metadata.Builders;
-    
+
     public sealed class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription> {
         public void Configure(EntityTypeBuilder<Subscription> builder) {
             builder.ToTable("subscriptions");

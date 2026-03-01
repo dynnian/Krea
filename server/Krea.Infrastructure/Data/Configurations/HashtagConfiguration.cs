@@ -2,7 +2,7 @@ namespace Krea.Infrastructure.Data.Configurations {
     using Domain.Entities;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Metadata.Builders;
-    
+
     public class HashtagConfiguration : IEntityTypeConfiguration<Hashtag> {
         public void Configure(EntityTypeBuilder<Hashtag> builder) {
             builder.ToTable("hashtags");

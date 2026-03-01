@@ -7,41 +7,36 @@ using Krea.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Krea.Infrastructure.Services;
+namespace Krea.Infrastructure.Services {
+    public class TokenService : ITokenService {
+        private readonly IConfiguration _configuration;
 
-public class TokenService : ITokenService
-{
-    private readonly IConfiguration _configuration;
+        public TokenService(IConfiguration configuration) => _configuration = configuration;
 
-    public TokenService(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
+        public Task<(string Token, DateTime Expiration)>
+            GenerateTokenAsync(UserIdentity userIdentity, User domainUser) {
+            var claims = new List<Claim> {
+                new(JwtRegisteredClaimNames.Sub, userIdentity.Id.ToString()),
+                new(JwtRegisteredClaimNames.UniqueName, userIdentity.UserName),
+                new(JwtRegisteredClaimNames.Email, userIdentity.Email),
+                new("displayName", domainUser.DisplayName)
+            };
 
-    public Task<(string Token, DateTime Expiration)> GenerateTokenAsync(UserIdentity userIdentity, User domainUser)
-    {
-        var claims = new List<Claim>
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, userIdentity.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.UniqueName, userIdentity.UserName),
-            new Claim(JwtRegisteredClaimNames.Email, userIdentity.Email),
-            new Claim("displayName", domainUser.DisplayName)
-        };
+            // Add roles
+            claims.AddRange(userIdentity.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-        // Add roles
-        claims.AddRange(userIdentity.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            DateTime expiration = DateTime.UtcNow.AddHours(2);
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expiration = DateTime.UtcNow.AddHours(2);
+            var token = new JwtSecurityToken(
+                _configuration["Jwt:Issuer"],
+                _configuration["Jwt:Audience"],
+                claims,
+                expires: expiration,
+                signingCredentials: creds);
 
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
-            claims: claims,
-            expires: expiration,
-            signingCredentials: creds);
-
-        return Task.FromResult((new JwtSecurityTokenHandler().WriteToken(token), expiration));
+            return Task.FromResult((new JwtSecurityTokenHandler().WriteToken(token), expiration));
+        }
     }
 }

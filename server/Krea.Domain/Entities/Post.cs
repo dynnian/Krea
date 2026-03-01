@@ -3,49 +3,48 @@ using Krea.Domain.ValueObjects;
 
 namespace Krea.Domain.Entities {
     public sealed class Post {
-        [Key]
-        public Guid Id { get; private set; }
-        
+        [Key] public Guid Id { get; private set; }
+
         public Guid AuthorPostId { get; private set; }
         public User AuthorPost { get; private set; }
-        
+
         public PostType Type { get; private set; }
-        
+
         public string Title { get; private set; }
 
         public string? Content { get; private set; }
-        
-        public bool IsWork {get; private set;}
-        
-        public bool IsDeleted {get; private set;}
-        
-        public bool IsLocal {get; private set;}
-        
+
+        public bool IsWork { get; private set; }
+
+        public bool IsDeleted { get; private set; }
+
+        public bool IsLocal { get; private set; }
+
         public Guid? RepliedToId { get; private set; }
-        
+
         public Post? RepliedTo { get; private set; }
-        
+
         public Guid? RepostOfId { get; private set; }
         public Post? RepostOf { get; private set; }
-        
+
         public DateTime? DeletedAt { get; private set; }
-        
+
         public DateTime UploadedAt { get; private set; }
-        
+
         public DateTime UpdatedAt { get; private set; }
-        
+
         private readonly List<PostUpload> _uploads = new();
         public IReadOnlyCollection<PostUpload> Uploads => _uploads.AsReadOnly();
-        
+
         private readonly List<Hashtag> _hashtags = new();
         public IReadOnlyCollection<Hashtag> Hashtags => _hashtags.AsReadOnly();
-        
+
         private readonly List<Like> _likes = new();
         public IReadOnlyCollection<Like> Likes => _likes.AsReadOnly();
-        
+
         private readonly List<Collection> _collections = new();
         public IReadOnlyCollection<Collection> Collections => _collections.AsReadOnly();
-        
+
         #pragma warning disable CS8618
         private Post() { }
         #pragma warning restore CS8618
@@ -72,7 +71,7 @@ namespace Krea.Domain.Entities {
             UpdatedAt = DateTime.UtcNow;
             DeletedAt = null;
         }
-        
+
         public static Post Load(
             Guid id,
             Guid authorPostId,
@@ -87,8 +86,7 @@ namespace Krea.Domain.Entities {
             DateTime uploadedAt,
             DateTime updatedAt,
             DateTime? deletedAt
-        )
-        {
+        ) {
             var post = new Post(
                 authorPostId,
                 type,
@@ -108,23 +106,21 @@ namespace Krea.Domain.Entities {
 
             return post;
         }
-        
-        public void UpdateContent(string content)
-        {
+
+        public void UpdateContent(string content) {
             if (IsDeleted)
                 throw new InvalidOperationException("Cannot update deleted post");
 
             Content = content ?? string.Empty;
             UpdatedAt = DateTime.UtcNow;
         }
-        
+
         public void MarkAsWork() {
             IsWork = true;
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public void ReplyTo(Guid postId)
-        {
+        public void ReplyTo(Guid postId) {
             RepliedToId = postId;
             UpdatedAt = DateTime.UtcNow;
         }
@@ -142,10 +138,9 @@ namespace Krea.Domain.Entities {
             DeletedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
         }
-        
+
         //Uploading work content actions
-        public PostUpload AddUpload(Media media, bool isWorkMedia)
-        {
+        public PostUpload AddUpload(Media media, bool isWorkMedia) {
             if (IsDeleted)
                 throw new InvalidOperationException("Cannot modify deleted post");
 
@@ -170,15 +165,14 @@ namespace Krea.Domain.Entities {
         }
 
         public void RemoveUpload(Media media) {
-            var upload = _uploads.FirstOrDefault(u => u.MediaId == media.Id);
+            PostUpload? upload = _uploads.FirstOrDefault(u => u.MediaId == media.Id);
             if (upload == null) return;
 
             _uploads.Remove(upload);
             UpdatedAt = DateTime.UtcNow;
         }
-        
-        public void AddHashtag(Hashtag hashtag)
-        {
+
+        public void AddHashtag(Hashtag hashtag) {
             if (_hashtags.Any(h => h.Id == hashtag.Id))
                 return;
 
@@ -194,8 +188,7 @@ namespace Krea.Domain.Entities {
             UpdatedAt = DateTime.UtcNow;
         }
 
-        private static void Validate(string title)
-        {
+        private static void Validate(string title) {
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("All arguments are required");
         }

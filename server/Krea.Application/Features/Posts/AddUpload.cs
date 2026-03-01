@@ -1,10 +1,10 @@
 namespace Krea.Application.Features.Posts {
     using Domain.Abstractions;
+    using Domain.Entities;
     using Domain.Repositories;
 
-    public sealed class AddUpload 
-        : IRequestHandler<AddUpload.Request, AddUpload.Response>
-    {
+    public sealed class AddUpload
+        : IRequestHandler<AddUpload.Request, AddUpload.Response> {
         private readonly IPostRepository _postRepository;
         private readonly IMediaRepository _mediaRepository;
         private readonly IUnitOfWork _unitOfWork;
@@ -12,8 +12,7 @@ namespace Krea.Application.Features.Posts {
         public AddUpload(
             IPostRepository postRepository,
             IMediaRepository mediaRepository,
-            IUnitOfWork unitOfWork)
-        {
+            IUnitOfWork unitOfWork) {
             _postRepository = postRepository;
             _mediaRepository = mediaRepository;
             _unitOfWork = unitOfWork;
@@ -29,17 +28,16 @@ namespace Krea.Application.Features.Posts {
 
         public async Task<Response> Handle(
             Request request,
-            CancellationToken cancellationToken)
-        {
-            var post = await _postRepository
-                           .GetByIdAsync(request.PostId, cancellationToken)
-                       ?? throw new Exception("Post not found");
+            CancellationToken cancellationToken) {
+            Post post = await _postRepository
+                            .GetByIdAsync(request.PostId, cancellationToken)
+                        ?? throw new Exception("Post not found");
 
-            var media = await _mediaRepository
-                            .GetByIdAsync(request.MediaId, cancellationToken)
-                        ?? throw new Exception("Media not found");
+            Media media = await _mediaRepository
+                              .GetByIdAsync(request.MediaId, cancellationToken)
+                          ?? throw new Exception("Media not found");
 
-            var upload = post.AddUpload(media, request.IsWorkMedia);
+            PostUpload upload = post.AddUpload(media, request.IsWorkMedia);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
