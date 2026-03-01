@@ -1,4 +1,3 @@
-// Krea.Application/Features/Auth/ConfirmEmail/ConfirmEmailCommandHandler.cs
 using Krea.Application.Abstractions.Identity;
 using Krea.Domain.Abstractions;
 using Krea.Domain.Entities;

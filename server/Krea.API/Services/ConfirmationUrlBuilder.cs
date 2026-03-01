@@ -17,12 +17,11 @@ public class ConfirmationUrlBuilder : IConfirmationUrlBuilder
     public string BuildEmailConfirmationLink(Guid userId, string token)
     {
         var httpContext = _httpContextAccessor.HttpContext;
-        var encodedToken = Uri.EscapeDataString(token);
         var link = _linkGenerator.GetUriByAction(
             httpContext,
             action: "ConfirmEmail",
             controller: "Auth",
-            values: new { userId, token = encodedToken }
+            values: new { userId, token }
         );
         return link!;
     }

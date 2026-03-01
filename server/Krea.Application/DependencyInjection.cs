@@ -1,6 +1,10 @@
 namespace Krea.Application {
     using Abstractions;
     using Domain.Abstractions;
+    using Features.Auth;
+    using Features.Auth.Register;
+    using Features.Auth.Login;
+    using Features.Auth.ConfirmEmail;
     using Features.Posts;
     using Features.Posts.Dto;
     using Features.Posts.GetAllPosts;
@@ -21,6 +25,12 @@ namespace Krea.Application {
             //   .WithScopedLifetime()
             // );
             
+            // Auth
+            services.AddScoped<IRequestHandler<RegisterCommand, AuthResponse>, RegisterCommandHandler>();
+            services.AddScoped<IRequestHandler<LoginQuery, AuthResponse>, LoginQueryHandler>();
+            services.AddScoped<IRequestHandler<ConfirmEmailCommand, bool>, ConfirmEmailCommandHandler>();
+            
+            // Posts
             services.AddScoped< IRequestHandler<GetAllPostsQuery, IReadOnlyList<PostDto>>, GetAllPostsHandler>();
             services.AddScoped< IRequestHandler<CreatePost.Request, CreatePost.Response>, CreatePost>();
             services.AddScoped< IRequestHandler<AddUpload.Request, AddUpload.Response>, AddUpload>();

@@ -6,6 +6,7 @@ using Krea.Domain.Repositories;
 
 namespace Krea.Application.Features.Auth.Register;
 
+using Abstractions.Email;
 using Abstractions.Url;
 
 internal class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResponse>

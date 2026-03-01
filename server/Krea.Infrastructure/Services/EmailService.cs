@@ -1,9 +1,10 @@
-using Krea.Application.Abstractions.Auth;
 using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Mail;
 
 namespace Krea.Infrastructure.Services;
+
+using Application.Abstractions.Email;
 
 public class EmailService : IEmailService
 {
