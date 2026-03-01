@@ -1,11 +1,11 @@
-using Krea.Application.Abstractions.Identity;
-using Krea.Application.Abstractions.Auth;
-using Krea.Application.Features.User;
-using Krea.Domain.Entities;
-using Krea.Domain.Abstractions;
-using Krea.Domain.Repositories;
-
 namespace Krea.Application.Features.Auth.Login {
+    using Abstractions.Identity;
+    using Application.Abstractions.Auth;
+    using Common;
+    using static Common.RoleHelper;
+    using User;
+    using Domain.Abstractions;
+    using Domain.Repositories;
     using User = Domain.Entities.User;
 
     internal class LoginQueryHandler : IRequestHandler<LoginQuery, AuthResponse> {
@@ -59,7 +59,8 @@ namespace Krea.Application.Features.Auth.Login {
                 domainUser.DisplayName,
                 domainUser.Biography,
                 domainUser.LanguageCode,
-                domainUser.TimeZoneId
+                domainUser.TimeZoneId,
+                GetRoleInt(identity.Roles)
             );
     }
 }
