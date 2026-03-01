@@ -1,5 +1,3 @@
-using Krea.Infrastructure;
-using Krea.Application;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -7,7 +5,11 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Krea.API;
 
+using Infrastructure;
+using Infrastructure.Data;
+using Application;
 using Application.Abstractions.Url;
+using Microsoft.EntityFrameworkCore;
 using Services;
 
 internal class Program {
@@ -51,10 +53,16 @@ internal class Program {
 
         var app = builder.Build();
         
-        // Identity Roles
         using (var scope = app.Services.CreateScope())
         {
-            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+            var services = scope.ServiceProvider;
+
+            // Automatic migration
+            var context = services.GetRequiredService<AppDbContext>();
+            await context.Database.MigrateAsync();
+
+            // Identity Roles
+            var roleManager = services.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
             var roles = new[] { "Admin", "Artist" };
 
             foreach (var role in roles)

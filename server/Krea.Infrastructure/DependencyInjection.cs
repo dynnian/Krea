@@ -1,20 +1,19 @@
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Krea.Infrastructure;
-using Application.Abstractions;
-using Application.Abstractions.Auth;
-using Application.Abstractions.Identity;
-using Domain.Abstractions;
-using Domain.Repositories;
+
 using Data;
 using Identity;
 using Repositories;
 using Services;
-
+using Domain.Abstractions;
+using Domain.Repositories;
+using Application.Abstractions;
+using Application.Abstractions.Auth;
 using Application.Abstractions.Email;
+using Application.Abstractions.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 public static class DependencyInjection
 {
