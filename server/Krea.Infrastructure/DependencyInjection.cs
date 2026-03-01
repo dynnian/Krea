@@ -1,18 +1,20 @@
-using Krea.Application.Abstractions;
-using Krea.Application.Abstractions.Auth;
-using Krea.Application.Abstractions.Identity;
-using Krea.Domain.Abstractions;
-using Krea.Domain.Repositories;
-using Krea.Infrastructure.Data;
-using Krea.Infrastructure.Identity;
-using Krea.Infrastructure.Repositories;
-using Krea.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Krea.Infrastructure;
+using Application.Abstractions;
+using Application.Abstractions.Auth;
+using Application.Abstractions.Identity;
+using Domain.Abstractions;
+using Domain.Repositories;
+using Data;
+using Identity;
+using Repositories;
+using Services;
+
+using Application.Abstractions.Email;
 
 public static class DependencyInjection
 {
@@ -57,7 +59,15 @@ public static class DependencyInjection
         // Servicios de aplicación (infraestructura)
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ITokenService, TokenService>();
-        services.AddScoped<IEmailService, EmailService>();
+        var useFakeEmail = configuration.GetValue<bool>("UseFakeEmail");
+        if (useFakeEmail)
+        {
+            services.AddScoped<IEmailService, FakeEmailService>();
+        }
+        else
+        {
+            services.AddScoped<IEmailService, EmailService>();
+        }
         services.AddScoped<ISender, Sender>();
         
         return services;

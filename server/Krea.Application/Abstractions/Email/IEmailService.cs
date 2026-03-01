@@ -1,4 +1,4 @@
-namespace Krea.Application.Abstractions.Auth;
+namespace Krea.Application.Abstractions.Email;
 
 public interface IEmailService 
 {
