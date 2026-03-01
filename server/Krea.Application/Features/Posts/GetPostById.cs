@@ -1,16 +1,13 @@
 namespace Krea.Application.Features.Posts {
     using Domain.Abstractions;
+    using Domain.Entities;
     using Domain.Repositories;
 
-    public sealed class GetPostById 
-        : IRequestHandler<GetPostById.Request, GetPostById.Response?>
-    {
+    public sealed class GetPostById
+        : IRequestHandler<GetPostById.Request, GetPostById.Response?> {
         private readonly IPostRepository _postRepository;
 
-        public GetPostById(IPostRepository postRepository)
-        {
-            _postRepository = postRepository;
-        }
+        public GetPostById(IPostRepository postRepository) => _postRepository = postRepository;
 
         public sealed record Request(Guid PostId)
             : IRequest<Response?>;
@@ -29,9 +26,8 @@ namespace Krea.Application.Features.Posts {
 
         public async Task<Response?> Handle(
             Request request,
-            CancellationToken cancellationToken)
-        {
-            var post = await _postRepository
+            CancellationToken cancellationToken) {
+            Post? post = await _postRepository
                 .GetFullPostAsync(request.PostId, cancellationToken);
 
             if (post is null)

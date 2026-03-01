@@ -5,4 +5,5 @@ namespace Krea.Application.Features.Posts.Dto {
         Guid AuthorPostId,
         int Page,
         int PageSize
-    ) : IRequest<IReadOnlyList<PostDto>>;}
+    ) : IRequest<IReadOnlyList<PostDto>>;
+}

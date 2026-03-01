@@ -9,7 +9,7 @@ namespace Krea.Domain.Repositories {
         Task AddAsync(Post post, CancellationToken cancellationToken = default);
 
         Task UpdateAsync(Post post, CancellationToken cancellationToken = default);
-    
+
         Task<IReadOnlyList<Post>> GetAllAsync(
             int page,
             int pageSize,

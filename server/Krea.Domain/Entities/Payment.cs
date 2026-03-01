@@ -77,9 +77,10 @@ namespace Krea.Domain.Entities {
 
         private static void ValidateTarget(Subscription? s, Donation? d, CommissionRequest? c) {
             int count = (s != null ? 1 : 0) + (d != null ? 1 : 0) + (c != null ? 1 : 0);
-            if (count != 1)
+            if (count != 1) {
                 throw new ArgumentException(
                     "A payment must be associated with exactly one of: Subscription, CommissionRequest, or Donation.");
+            }
         }
     }
 }

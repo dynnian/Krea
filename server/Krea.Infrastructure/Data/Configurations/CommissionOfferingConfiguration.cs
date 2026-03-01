@@ -1,10 +1,9 @@
-
 namespace Krea.Infrastructure.Data.Configurations {
     using Domain.Entities;
     using Domain.ValueObjects;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Metadata.Builders;
-    
+
     public sealed class CommissionOfferingConfiguration
         : IEntityTypeConfiguration<CommissionOffering> {
         public void Configure(EntityTypeBuilder<CommissionOffering> builder) {

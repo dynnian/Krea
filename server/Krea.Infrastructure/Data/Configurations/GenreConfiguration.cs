@@ -2,7 +2,7 @@ namespace Krea.Infrastructure.Data.Configurations {
     using Domain.Entities;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Metadata.Builders;
-    
+
     public class GenreConfiguration : IEntityTypeConfiguration<Genre> {
         public void Configure(EntityTypeBuilder<Genre> builder) {
             builder.ToTable("genres");

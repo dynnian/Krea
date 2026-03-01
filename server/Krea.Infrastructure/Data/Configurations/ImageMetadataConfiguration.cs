@@ -2,7 +2,7 @@ namespace Krea.Infrastructure.Data.Configurations {
     using Domain.Entities;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Metadata.Builders;
-    
+
     public class ImageMetadataConfiguration : IEntityTypeConfiguration<ImageMetadata> {
         public void Configure(EntityTypeBuilder<ImageMetadata> builder) {
             builder.Property(i => i.Width)
