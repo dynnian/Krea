@@ -20,9 +20,6 @@ namespace Krea.Infrastructure.Data.Configurations {
             builder.HasIndex(h => h.Name)
                    .IsUnique();
 
-            // Backing field
-            builder.Navigation(h => h.Posts)
-                   .UsePropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }
