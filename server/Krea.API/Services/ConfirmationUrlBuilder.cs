@@ -1,25 +1,28 @@
-namespace Krea.API.Services {
-    using Application.Abstractions.Url;
+using Krea.Application.Abstractions.Url;
+using Microsoft.AspNetCore.Mvc;
 
-    public class ConfirmationUrlBuilder : IConfirmationUrlBuilder {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly LinkGenerator _linkGenerator;
+namespace Krea.API.Services;
 
-        public ConfirmationUrlBuilder(IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator) {
-            _httpContextAccessor = httpContextAccessor;
-            _linkGenerator = linkGenerator;
-        }
+public class ConfirmationUrlBuilder : IConfirmationUrlBuilder
+{
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly LinkGenerator _linkGenerator;
 
-        public string BuildEmailConfirmationLink(Guid userId, string token) {
-            HttpContext? httpContext = _httpContextAccessor.HttpContext;
-            string encodedToken = Uri.EscapeDataString(token);
-            string? link = _linkGenerator.GetUriByAction(
-                httpContext,
-                "ConfirmEmail",
-                "Auth",
-                new { userId, token = encodedToken }
-            );
-            return link!;
-        }
+    public ConfirmationUrlBuilder(IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator)
+    {
+        _httpContextAccessor = httpContextAccessor;
+        _linkGenerator = linkGenerator;
+    }
+
+    public string BuildEmailConfirmationLink(Guid userId, string token)
+    {
+        var httpContext = _httpContextAccessor.HttpContext;
+        var link = _linkGenerator.GetUriByAction(
+            httpContext,
+            action: "ConfirmEmail",
+            controller: "Auth",
+            values: new { userId, token }
+        );
+        return link!;
     }
 }

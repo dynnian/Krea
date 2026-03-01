@@ -13,8 +13,6 @@ Content-Type: application/json
   "LanguageCode": "1"
 }
 
-###
-
 ### Login
 POST http://localhost:5101/api/auth/login
 Content-Type: application/json
