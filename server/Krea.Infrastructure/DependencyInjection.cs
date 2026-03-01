@@ -50,6 +50,7 @@ namespace Krea.Infrastructure {
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<ICollectionRepository, CollectionRepository>();
             services.AddScoped<IMediaRepository, MediaRepository>();
+            services.AddScoped<IHashtagRepository, HashtagRepository>();
 
             // Servicios de aplicación (infraestructura)
             services.AddScoped<IIdentityService, IdentityService>();

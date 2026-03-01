@@ -71,7 +71,7 @@ namespace Krea.Infrastructure.Data.Configurations {
 
             // Many-to-Many Post ↔ Hashtag
             builder.HasMany(p => p.Hashtags)
-                   .WithMany(h => h.Posts)
+                   .WithMany()
                    .UsingEntity<Dictionary<string, object>>(
                        "post_hashtag",
                        j => j.HasOne<Hashtag>()
