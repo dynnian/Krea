@@ -10,6 +10,7 @@ namespace Krea.API {
     using Application;
     using Application.Abstractions.Url;
     using Services;
+    using Microsoft.AspNetCore.Cors;
 
     internal class Program {
         public static async Task Main(string[] args)
@@ -19,6 +20,15 @@ namespace Krea.API {
             builder.Services.AddApplication();
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()   // For development only – restrict in production
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                });
+            });
         
 
             // Agregar infraestructura (DbContext, Identity, repositorios, servicios)
@@ -87,7 +97,7 @@ namespace Krea.API {
 
             app.UseAuthentication();
             app.UseAuthorization();
-        
+            app.UseCors("AllowAll");
             app.MapControllers();
 
             await app.RunAsync();

@@ -6,5 +6,6 @@ namespace Krea.Application.Features.User {
         string DisplayName,
         string? Biography,
         string LanguageCode,
-        string TimeZoneId);
+        string TimeZoneId,
+        int RoleId);
 }

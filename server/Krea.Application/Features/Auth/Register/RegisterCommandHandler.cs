@@ -1,13 +1,14 @@
-using Krea.Application.Abstractions.Identity;
-using Krea.Application.Abstractions.Auth;
-using Krea.Application.Features.User;
-using Krea.Domain.Abstractions;
-using Krea.Domain.Repositories;
-
 namespace Krea.Application.Features.Auth.Register;
-
 using Abstractions.Email;
 using Abstractions.Url;
+using Abstractions.Identity;
+using Abstractions.Auth;
+using static Common.RoleHelper;
+using User;
+using Krea.Domain.Abstractions;
+using Domain.Repositories;
+
+
 
 internal class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResponse>
 {
@@ -54,7 +55,7 @@ internal class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRes
             domainUser.Id,
             request.Username,
             request.Email,
-            new List<string>()
+            new List<string> { "Artist" }
         );
 
         var createResult = await _identityService.CreateUserAsync(newUserIdentity, request.Password);
@@ -91,7 +92,9 @@ internal class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRes
             domainUser.DisplayName,
             domainUser.Biography,
             domainUser.LanguageCode,
-            domainUser.TimeZoneId
+            domainUser.TimeZoneId,
+            GetRoleInt(identity.Roles)
         );
     }
+    
 }
