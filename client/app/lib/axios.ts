@@ -1,6 +1,8 @@
 import axios from "axios";
 import { storage } from "./storage.ts";
 
+console.log("VITE_API_BASE_URL:", import.meta.env.VITE_API_BASE_URL);
+
 const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   timeout: 10000,
@@ -24,15 +26,14 @@ axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      storage.clearToken();
-
-      // Redirección segura
-      // Investigar Deno no soporta esto
-      globalThis.location.href = "/login";
+      const isLoginRequest = error.config.url?.includes("/Auth/login");
+      if (!isLoginRequest) {
+        storage.clearAll();
+        // Use a custom event to navigate without full reload
+        window.dispatchEvent(new Event("unauthorized"));
+      }
     }
-
     return Promise.reject(error);
   },
 );
-
 export default axiosClient;

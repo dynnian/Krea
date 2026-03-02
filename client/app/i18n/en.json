@@ -74,6 +74,9 @@
     "latest_literature": "Latest in Literature",
     "see_more": "See more..."
   },
+  "common": {
+    "follow": "Follow"
+  },
   "explore": {
     "tabs": {
       "images": "Images",
@@ -114,4 +117,5 @@
       "trending_authors": "Trending authors"
     }
   }
+
 }

@@ -34,6 +34,10 @@ export default [
         path: "explore",
         file: "routes/explore.tsx",
       },
+      // {
+      //   path: 'user/:username',
+      //   file: 'routes/profile.tsx',
+      // },
       // Rutas protegidas (heredan el layout público y además verifican autenticación)
       {
         file: "routes/protected.tsx",

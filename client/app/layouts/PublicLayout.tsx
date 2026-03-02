@@ -13,11 +13,8 @@ export default function PublicLayout() {
     <>
       <UserNavbar />
       <main className="flex justify-center px-2 sm:px-4">
-        <div className="flex flex-col md:flex-row gap-6 max-w-7xl w-full place-content-center">
-          {/* Columna principal (feed o contenido) */}
-          <div className="w-full md:w-[740px]">
-            <Outlet />
-          </div>
+        <div className="w-full max-w-7xl flex place-content-center">
+          <Outlet />
         </div>
       </main>
     </>

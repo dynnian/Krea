@@ -74,6 +74,9 @@
     "latest_literature": "Lo último en Literatura",
     "see_more": "Ver más..."
   },
+  "common": {
+    "follow": "Seguir"
+  },
   "explore": {
     "tabs": {
       "images": "Imágenes",
