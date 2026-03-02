@@ -26,19 +26,19 @@ namespace Krea.API.Controllers {
         }
 
         // GET: api/posts/user/{authorId}
-        // [HttpGet("user/{authorId:guid}")]
-        // public async Task<IActionResult> GetByUser(
-        //     Guid authorId,
-        //     [FromQuery] int page = 1,
-        //     [FromQuery] int pageSize = 10,
-        //     CancellationToken cancellationToken = default)
-        // {
-        //     var result = await _sender.Send(
-        //         new GetPostsByUserQuery(authorId, page, pageSize),
-        //         cancellationToken);
-        //
-        //     return Ok(result);
-        // }
+        [HttpGet("user/{authorId:guid}")]
+        public async Task<IActionResult> GetByUser(
+            Guid authorId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            CancellationToken cancellationToken = default)
+        {
+            var result = await _sender.Send(
+                new GetPostsByUserQuery(authorId, page, pageSize),
+                cancellationToken);
+        
+            return Ok(result);
+        }
 
         // GET: api/posts/{id}
         [HttpGet("{id:guid}")]
@@ -90,6 +90,66 @@ namespace Krea.API.Controllers {
             CancellationToken cancellationToken = default) {
             await _sender.Send(
                 new DeletePost.Request(id),
+                cancellationToken);
+
+            return NoContent();
+        }
+        
+        [HttpPost("{postId:guid}/reply")]
+        public async Task<IActionResult> Reply(
+            Guid postId,
+            [FromBody] ReplyPostCommand command,
+            CancellationToken cancellationToken)
+        {
+            Guid replyId = await _sender.Send(
+                command with { ReplyToPostId = postId },
+                cancellationToken);
+
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = replyId },
+                new { ReplyPostId = replyId });
+        }
+        
+        [HttpPost("{postId:guid}/repost")]
+        public async Task<IActionResult> Repost(
+            Guid postId,
+            [FromBody] RepostPostCommand command,
+            CancellationToken cancellationToken)
+        {
+            Guid repostId = await _sender.Send(
+                command with { OriginalPostId = postId },
+                cancellationToken);
+
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = repostId },
+                new { RepostId = repostId });
+        }
+        
+        // POST   /posts/{id}/like
+        [HttpPost("{postId:guid}/like")]
+        public async Task<IActionResult> Like(
+            Guid postId,
+            [FromBody] LikePostCommand command,
+            CancellationToken cancellationToken)
+        {
+            await _sender.Send(
+                command with { PostId = postId },
+                cancellationToken);
+
+            return NoContent();
+        }
+        
+        //DELETE /posts/{id}/unlike
+        [HttpDelete("{postId:guid}/unlike")]
+        public async Task<IActionResult> Unlike(
+            Guid postId,
+            [FromBody] UnlikePostCommand command,
+            CancellationToken cancellationToken)
+        {
+            await _sender.Send(
+                command with { PostId = postId },
                 cancellationToken);
 
             return NoContent();

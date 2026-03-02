@@ -4,6 +4,7 @@ namespace Krea.Application.Features.Posts {
     using Dto;
 
     public sealed class LikePostHandler
+        : IRequestHandler<LikePostCommand, Unit>
     {
         private readonly IPostRepository _postRepository;
         private readonly IUnitOfWork _unitOfWork;
@@ -16,17 +17,21 @@ namespace Krea.Application.Features.Posts {
             _unitOfWork = unitOfWork;
         }
 
-        public async Task Handle(LikePostCommand command, CancellationToken ct)
+        public async Task<Unit> Handle(
+            LikePostCommand command,
+            CancellationToken ct)
         {
             var post = await _postRepository
                 .GetFullPostAsync(command.PostId, ct);
 
             if (post is null)
-                throw new InvalidOperationException("Post not found");
+                throw new Exception("Post not found");
 
             post.AddLike(command.UserId);
 
             await _unitOfWork.SaveChangesAsync(ct);
+
+            return Unit.Value;
         }
     }
 }
