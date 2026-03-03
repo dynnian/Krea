@@ -49,7 +49,9 @@
     "explore": "Explore",
     "messages": "Messages",
     "search_placeholder": "Search",
-    "profile": "Profile"
+    "profile": "Profile",
+    "logout": "Logout",
+    "menu": "Menu"
   },
   "home": {
     "composer_placeholder": "What's on your mind?",
@@ -116,6 +118,10 @@
       "trending_genres": "Trending genres",
       "trending_authors": "Trending authors"
     }
+  },
+  "notifications": {
+    "title": "Notification Center",
+    "empty": "No notifications",
+    "mark_all_read": "Mark all as read"
   }
-
 }

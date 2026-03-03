@@ -49,7 +49,9 @@
     "explore": "Explora",
     "messages": "Mensajes",
     "search_placeholder": "Buscar",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "logout": "Cerrar sesión",
+    "menu": "Menú"
   },
   "home": {
     "composer_placeholder": "¿Qué piensas?",
@@ -116,6 +118,11 @@
       "trending_genres": "Géneros en tendencia",
       "trending_authors": "Autores en tendencia"
     }
+  },
+  "notifications": {
+    "title": "Centro de notificaciones",
+    "empty": "No hay notificaciones",
+    "mark_all_read": "Marcar todas como leídas"
   }
 }
 
