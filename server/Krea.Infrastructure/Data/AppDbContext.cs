@@ -30,9 +30,6 @@ namespace Krea.Infrastructure.Data {
 
         public DbSet<Media> Media => Set<Media>();
         public DbSet<Metadata> Metadata => Set<Metadata>();
-        public DbSet<ImageMetadata> ImageMetadata => Set<ImageMetadata>();
-        public DbSet<MusicMetadata> MusicMetadata => Set<MusicMetadata>();
-        public DbSet<TextMetadata> TextMetadata => Set<TextMetadata>();
         public DbSet<Genre> Genres => Set<Genre>();
         public DbSet<Collection> Collections => Set<Collection>();
 

@@ -9,6 +9,7 @@ namespace Krea.Application {
     using Features.Posts.Dto;
     using Features.Posts.GetAllPosts;
     using Features.Posts.GetPostsByUser;
+    using Features.PostUploads.CreatePostUpload;
     using Microsoft.Extensions.DependencyInjection;
 
     public static class DependencyInjection {
@@ -41,6 +42,7 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<RepostPostCommand, Guid>, RepostHandler>();
             services.AddScoped<IRequestHandler<LikePostCommand, Unit>, LikePostHandler>();
             services.AddScoped<IRequestHandler<UnlikePostCommand, Unit>, UnlikePostHandler>();
+            services.AddScoped<IRequestHandler<CreatePostUploadCommand, CreatePostUploadResponse>, CreatePostUploadHandler>();
             
             services.AddScoped<ISender, Sender>();
             return services;

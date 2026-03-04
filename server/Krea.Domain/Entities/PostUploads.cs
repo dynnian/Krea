@@ -16,7 +16,7 @@ namespace Krea.Domain.Entities {
         private PostUpload() { }
         #pragma warning restore CS8618
 
-        internal PostUpload(
+        public PostUpload(
             Guid postId,
             Guid mediaId,
             bool isWorkMedia) {

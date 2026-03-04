@@ -2,6 +2,8 @@ namespace Krea.API.Controllers {
     using Application.Features.Posts;
     using Application.Features.Posts.Dto;
     using Application.Features.Posts.GetAllPosts;
+    using Application.Features.PostUploads.CreatePostUpload;
+    using Contracts;
     using Domain.Abstractions;
     using Microsoft.AspNetCore.Mvc;
 
@@ -68,20 +70,20 @@ namespace Krea.API.Controllers {
         }
 
         // POST: api/posts/{postId}/upload
-        [HttpPost("{postId:guid}/upload")]
-        public async Task<IActionResult> AddUpload(
-            Guid postId,
-            [FromBody] AddUploadRequest request,
-            CancellationToken cancellationToken) {
-            AddUpload.Response response = await _sender.Send(
-                new AddUpload.Request(
-                    postId,
-                    request.MediaId,
-                    request.IsWorkMedia),
-                cancellationToken);
-
-            return Ok(response);
-        }
+        // [HttpPost("{postId:guid}/upload")]
+        // public async Task<IActionResult> AddUpload(
+        //     Guid postId,
+        //     [FromBody] AddUploadRequest request,
+        //     CancellationToken cancellationToken) {
+        //     AddUpload.Response response = await _sender.Send(
+        //         new AddUpload.Request(
+        //             postId,
+        //             request.MediaId,
+        //             request.IsWorkMedia),
+        //         cancellationToken);
+        //
+        //     return Ok(response);
+        // }
 
         // DELETE: api/posts/{id}
         [HttpDelete("{id:guid}")]
@@ -153,6 +155,43 @@ namespace Krea.API.Controllers {
                 cancellationToken);
 
             return NoContent();
+        }
+        
+        // POST /posts/{id}/uploads
+        [HttpPost("{postId:guid}/uploads")]
+        public async Task<IActionResult> CreateUpload(
+            Guid postId,
+            [FromForm] CreatePostUploadRequest request,
+            CancellationToken cancellationToken)
+        {
+            await using var stream = request.File.OpenReadStream();
+
+            var command = new CreatePostUploadCommand(
+                postId,
+                stream,
+                request.File.FileName,
+                request.File.ContentType,
+                request.File.Length,
+                request.Type,
+                request.Title,
+                request.Description,
+                request.GenreIds,
+                request.Width,
+                request.Height,
+                request.FileSize,
+                request.Format,
+                request.BitrateKbps,
+                request.DurationSec,
+                request.WordCount,
+                request.LanguageCode,
+                request.SortTitle,
+                request.Subtitle,
+                request.IsWorkMedia
+            );
+
+            var result = await _sender.Send(command, cancellationToken);
+
+            return Ok(result);
         }
     }
 }
