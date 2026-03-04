@@ -1,0 +1,9 @@
+.notification-popover .ant-popover-inner {
+  padding: 0;
+  background-color: transparent;
+  border-radius: 13px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.notification-popover .ant-popover-arrow {
+  display: none;
+}

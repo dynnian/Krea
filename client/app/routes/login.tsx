@@ -15,25 +15,22 @@ import { Link, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useI18n } from "../contexts/I18nContext";
+import axios from 'axios';
 
 const { useToken } = theme;
 const { useBreakpoint } = Grid;
-const { Title, Text } = Typography;
 const { Content } = Layout;
 
-// Usar import para imágenes locales (Vite lo maneja)
-// O si están en public, usar rutas relativas
 const logoImage = "/assets/Logotipo 1.png";
 const backgroundImage = "/assets/landscape.jpg";
 
 export default function LoginRoute() {
-  const { token } = useToken();
   const { login } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { setLanguage } = useI18n();
   
-  // Control de mounting
   const [isMounted, setIsMounted] = useState(false);
   const screens = useBreakpoint();
   
@@ -41,10 +38,13 @@ export default function LoginRoute() {
     setIsMounted(true);
   }, []);
 
-  // Breakpoints seguros
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, loading, navigate]);
+
   const isMobile = isMounted && !screens.sm;
-  const isTablet = isMounted && screens.sm && !screens.lg;
-  const isDesktop = isMounted && screens.lg;
 
   const [authError, setAuthError] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
@@ -53,25 +53,36 @@ export default function LoginRoute() {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginDTO>({
+  } = useForm<{ emailOrUsername: string; password: string }>({
     mode: "onBlur",
     defaultValues: {
-      email: "",
+      emailOrUsername: "",
       password: "",
     },
   });
 
-  const onSubmit = async (data: LoginDTO) => {
+  const onSubmit = async (data: { emailOrUsername: string; password: string }) => {
     setAuthError(null);
     try {
-      await login(data);
+      // Map form data to the expected LoginDTO (email field)
+      await login({ email: data.emailOrUsername, password: data.password }, rememberMe);
       navigate("/", { replace: true });
-    } catch {
-      setAuthError(t("errors.auth_failed"));
+    } catch (error) {
+      // Set error message in local state, do NOT rethrow
+      if (axios.isAxiosError(error) && error.response) {
+        const responseData = error.response.data;
+        const message =
+          responseData?.message ||
+          responseData?.title ||
+          (responseData?.errors ? Object.values(responseData.errors).flat().join(' ') : null) ||
+          t('errors.auth_failed');
+        setAuthError(message);
+      } else {
+        setAuthError(t('errors.network_error'));
+      }
     }
   };
 
-  // Skeleton durante SSR
   if (!isMounted) {
     return (
       <Layout style={{ minHeight: "100vh" }}>
@@ -90,7 +101,6 @@ export default function LoginRoute() {
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Content>
-        {/* Contenedor principal */}
         <div className={`
           relative min-h-screen w-full
           ${isMobile 
@@ -98,46 +108,30 @@ export default function LoginRoute() {
             : "bg-gradient-to-br from-gray-900 to-gray-800"
           }
         `}>
-          {/* Background image para desktop/tablet */}
           {!isMobile && (
-            <div 
-              className="absolute inset-0 bg-cover bg-center opacity-20"
-              style={{ backgroundImage: `url(${backgroundImage})` }}
-            />
+            <>
+              <div 
+                className="absolute inset-0 bg-cover bg-center opacity-20"
+                style={{ backgroundImage: `url(${backgroundImage})` }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/40 to-black/70" />
+            </>
           )}
 
-          {/* Overlay para desktop/tablet */}
-          {!isMobile && (
-            <div className="absolute inset-0 bg-gradient-to-br from-black/40 to-black/70" />
-          )}
-
-          {/* Contenido principal */}
           <div className="relative z-10 flex items-center justify-center min-h-screen">
             {isMobile ? (
-              // 📱 MOBILE: Card simple centrada
+              // Mobile view
               <div className="w-full max-w-md">
                 <div className="bg-white rounded-2xl shadow-xl p-8">
-                  {/* Logo */}
                   <div className="text-center mb-8">
-                    <img 
-                      src={logoImage} 
-                      alt="Logo" 
-                      className="w-48 h-auto mx-auto mb-6"
-                    />
+                    <img src={logoImage} alt="Logo" className="w-48 h-auto mx-auto mb-6" />
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">
                       {t("login.title")}
                     </h1>
-                    <p className="text-gray-600">
-                      {t("login.welcome")}
-                    </p>
+                    <p className="text-gray-600">{t("login.welcome")}</p>
                   </div>
-                  
-                  <Form
-                    layout="vertical"
-                    onFinish={handleSubmit(onSubmit)}
-                    autoComplete="off"
-                    size="large"
-                  >
+
+                  <Form layout="vertical" onFinish={handleSubmit(onSubmit)} autoComplete="off" size="large">
                     {authError && (
                       <Alert
                         type="error"
@@ -149,23 +143,19 @@ export default function LoginRoute() {
                       />
                     )}
 
-                    {/* Email */}
                     <Form.Item
                       label={t("login.email_placeholder")}
-                      validateStatus={errors.email ? "error" : ""}
-                      help={errors.email?.message}
+                      validateStatus={errors.emailOrUsername ? "error" : ""}
+                      help={errors.emailOrUsername?.message}
                       required
                       className="mb-6"
                     >
                       <Controller
-                        name="email"
+                        name="emailOrUsername"
                         control={control}
                         rules={{
                           required: t("errors.email_required"),
-                          pattern: {
-                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                            message: t("errors.email_invalid"),
-                          },
+                          // Removed pattern validation to allow username
                         }}
                         render={({ field }) => (
                           <Input
@@ -178,7 +168,6 @@ export default function LoginRoute() {
                       />
                     </Form.Item>
 
-                    {/* Password */}
                     <Form.Item
                       label={t("login.password_placeholder")}
                       validateStatus={errors.password ? "error" : ""}
@@ -207,23 +196,18 @@ export default function LoginRoute() {
                       />
                     </Form.Item>
 
-                    {/* Remember me */}
                     <div className="flex items-center justify-between mb-8">
                       <Checkbox
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
                       >
-                        <span className="text-white">{t("login.remember_me")}</span>
+                        <span className="text-gray-700">{t("login.remember_me")}</span> {/* Changed to dark text */}
                       </Checkbox>
-                      <a 
-                        href="#" 
-                        className="text-sm text-blue-600 hover:text-blue-800"
-                      >
+                      <a href="#" className="text-sm text-blue-600 hover:text-blue-800">
                         {t("login.forgot_password")}
                       </a>
                     </div>
 
-                    {/* Sign In Button */}
                     <Button
                       type="primary"
                       htmlType="submit"
@@ -235,48 +219,27 @@ export default function LoginRoute() {
                       {isSubmitting ? t("login.sign_in_button") + "..." : t("login.sign_in_button")}
                     </Button>
 
-                    {/* Register link */}
                     <div className="text-center mt-8 pt-6 border-t">
-                      <span className="text-gray-600">
-                        {t("login.no_account")}{" "}
-                      </span>
-                      <a 
-                        href="#" 
-                        className="text-blue-600 font-medium hover:text-blue-800"
-                      >
+                      <span className="text-gray-600">{t("login.no_account")} </span>
+                      <Link to="/signup" className="text-blue-600 font-medium hover:text-blue-800">
                         {t("login.register")}
-                      </a>
+                      </Link>
                     </div>
                   </Form>
                 </div>
               </div>
             ) : (
-              // 💻 DESKTOP/TABLET: Layout de Figma pero responsivo
+              // Desktop/Tablet view (unchanged except for error handling and mapping)
               <div className="w-full max-w-6xl mx-auto p-4">
                 <div className="grid lg:grid-cols-2 gap-8 items-center">
-                  {/* Columna izquierda - Logo y título */}
                   <div className="text-center lg:text-left">
-                    <img 
-                      src={logoImage} 
-                      alt="Logo" 
-                      className="w-full max-w-md mx-auto lg:mx-0 mb-8"
-                    />
-                    <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4">
-                      {t("login.title")}
-                    </h1>
-                    <p className="text-xl text-gray-300">
-                      {t("login.welcome")}
-                    </p>
+                    <img src={logoImage} alt="Logo" className="w-full max-w-md mx-auto lg:mx-0 mb-8" />
+                    <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4">{t("login.title")}</h1>
+                    <p className="text-xl text-gray-300">{t("login.welcome")}</p>
                   </div>
 
-                  {/* Columna derecha - Formulario */}
                   <div className="bg-black/40 backdrop-blur-sm rounded-3xl p-8 lg:p-12">
-                    <Form
-                      layout="vertical"
-                      onFinish={handleSubmit(onSubmit)}
-                      autoComplete="off"
-                      size="large"
-                    >
+                    <Form layout="vertical" onFinish={handleSubmit(onSubmit)} autoComplete="off" size="large">
                       {authError && (
                         <Alert
                           type="error"
@@ -288,33 +251,23 @@ export default function LoginRoute() {
                         />
                       )}
 
-                      {/* Email */}
                       <Form.Item
-                        label={
-                          <span className="text-white text-lg">
-                            {t("login.email_placeholder")}
-                          </span>
-                        }
-                        validateStatus={errors.email ? "error" : ""}
+                        label={<span className="text-white text-lg">{t("login.email_placeholder")}</span>}
+                        validateStatus={errors.emailOrUsername ? "error" : ""}
                         help={
-                          errors.email && (
-                            <span className="text-red-300">
-                              {errors.email.message}
-                            </span>
+                          errors.emailOrUsername && (
+                            <span className="text-red-300">{errors.emailOrUsername.message}</span>
                           )
                         }
                         required
                         className="mb-8"
                       >
                         <Controller
-                          name="email"
+                          name="emailOrUsername"
                           control={control}
                           rules={{
                             required: t("errors.email_required"),
-                            pattern: {
-                              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                              message: t("errors.email_invalid"),
-                            },
+                            // No pattern
                           }}
                           render={({ field }) => (
                             <Input
@@ -327,19 +280,12 @@ export default function LoginRoute() {
                         />
                       </Form.Item>
 
-                      {/* Password */}
                       <Form.Item
-                        label={
-                          <span className="text-white text-lg">
-                            {t("login.password_placeholder")}
-                          </span>
-                        }
+                        label={<span className="text-white text-lg">{t("login.password_placeholder")}</span>}
                         validateStatus={errors.password ? "error" : ""}
                         help={
                           errors.password && (
-                            <span className="text-red-300">
-                              {errors.password.message}
-                            </span>
+                            <span className="text-red-300">{errors.password.message}</span>
                           )
                         }
                         required
@@ -366,7 +312,6 @@ export default function LoginRoute() {
                         />
                       </Form.Item>
 
-                      {/* Remember me */}
                       <div className="flex items-center mb-10">
                         <Checkbox
                           checked={rememberMe}
@@ -377,7 +322,6 @@ export default function LoginRoute() {
                         </Checkbox>
                       </div>
 
-                      {/* Sign In Button */}
                       <Button
                         type="primary"
                         htmlType="submit"
@@ -389,15 +333,9 @@ export default function LoginRoute() {
                         {isSubmitting ? t("login.sign_in_button") + "..." : t("login.sign_in_button")}
                       </Button>
 
-                      {/* Register link */}
                       <div className="text-center mt-10 pt-8 border-t border-white/20">
-                        <span className="text-white text-lg">
-                          {t("login.no_account")}{" "}
-                        </span>
-                        <Link 
-                          to="/signup" 
-                          className="text-blue-300 font-medium hover:text-blue-200 text-lg"
-                        >
+                        <span className="text-white text-lg">{t("login.no_account")} </span>
+                        <Link to="/signup" className="text-blue-300 font-medium hover:text-blue-200 text-lg">
                           {t("login.register")}
                         </Link>
                       </div>
@@ -405,18 +343,11 @@ export default function LoginRoute() {
                   </div>
                 </div>
 
-                {/* Language selector */}
                 <div className="flex justify-center gap-6 mt-12">
-                  <button
-                    onClick={() => setLanguage("en")}
-                    className="text-white hover:text-blue-300 text-lg transition-colors"
-                  >
+                  <button onClick={() => setLanguage("en")} className="text-white hover:text-blue-300 text-lg transition-colors">
                     English
                   </button>
-                  <button
-                    onClick={() => setLanguage("es")}
-                    className="text-white hover:text-blue-300 text-lg transition-colors"
-                  >
+                  <button onClick={() => setLanguage("es")} className="text-white hover:text-blue-300 text-lg transition-colors">
                     Español
                   </button>
                 </div>

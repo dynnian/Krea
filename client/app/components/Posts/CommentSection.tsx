@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router";
@@ -43,41 +43,65 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   const [comments, setComments] = useState<Comment[]>(mockComments);
   const [newComment, setNewComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadComments = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchComments(postId);
+        setComments(data);
+      } catch (err) {
+        setError(err.message);
+        message.error(t("post.comments_load_error"));
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadComments();
+  }, [postId, t]);
 
   const handleSubmit = async () => {
-    if (!user) {
-      message.warning(t("post.auth_required"));
-      navigate("/login");
-      return;
-    }
-    if (!newComment.trim()) return;
+  if (!user) {
+    message.warning(t("post.auth_required"));
+    navigate("/login");
+    return;
+  }
+  if (!newComment.trim()) return;
 
-    setSubmitting(true);
-    try {
-      // Simular envío
-      const comment: Comment = {
-        id: Date.now(),
-        author: {
-          name: user.name || "Usuario",
-          handle: user.email?.split("@")[0] || "usuario",
-          avatar: user.avatar,
-        },
-        content: newComment,
-        createdAt: new Date().toLocaleDateString("es-ES", {
-          day: "numeric",
-          month: "short",
-        }),
-        likes: 0,
-      };
-      setComments([comment, ...comments]);
-      setNewComment("");
-      message.success(t("home.post_success"));
-    } catch {
-      message.error(t("home.post_error"));
-    } finally {
-      setSubmitting(false);
-    }
+  // Optimistic update
+  const tempComment: Comment = {
+    id: Date.now(), // temporal
+    author: {
+      name: user.name || "Usuario",
+      handle: user.email?.split("@")[0] || "usuario",
+      avatar: user.avatar,
+    },
+    content: newComment,
+    createdAt: new Date().toLocaleDateString("es-ES", {
+      day: "numeric",
+      month: "short",
+    }),
+    likes: 0,
   };
+  setComments(prev => [tempComment, ...prev]);
+  setNewComment("");
+  setSubmitting(true);
+
+  try {
+    const created = await createComment(postId, newComment);
+    // Reemplazar temporal por el real
+    setComments(prev => prev.map(c => c.id === tempComment.id ? created : c));
+    message.success(t("post.comment_success"));
+  } catch (err) {
+    // Revertir
+    setComments(prev => prev.filter(c => c.id !== tempComment.id));
+    message.error(t("post.comment_error"));
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   return (
     <div>

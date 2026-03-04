@@ -34,6 +34,10 @@ export default [
         path: "explore",
         file: "routes/explore.tsx",
       },
+      // {
+      //   path: 'user/:username',
+      //   file: 'routes/profile.tsx',
+      // },
       // Rutas protegidas (heredan el layout público y además verifican autenticación)
       {
         file: "routes/protected.tsx",
@@ -54,4 +58,26 @@ export default [
       },
     ],
   },
+   // Layout para administradores (bajo /admin)
+  {
+    path: "admin",
+    file: "layouts/AdminLayout.tsx",
+    children: [
+      {
+        // Dentro de /admin, usamos el guardian para verificar rol
+        file: "routes/admin-protected.tsx",
+        children: [
+          {
+            index: true,
+            file: "routes/admin/dashboard.tsx", // crea este archivo
+          },
+          // {
+          //   path: "users",
+          //   file: "routes/admin/users.tsx", // ejemplo
+          // },
+          // más rutas de admin...
+        ],
+      },
+    ],
+  }
 ] satisfies RouteConfig;

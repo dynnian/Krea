@@ -1,17 +1,16 @@
 import { Outlet } from "react-router";
 import { Grid } from "antd";
-import UserNavbar from "../components/UserNavbar";
+
 const { useBreakpoint } = Grid;
 
-export default function PublicLayout() {
+export default function AdminLayout() {
   const screens = useBreakpoint();
   const isMobile = !screens.md;
 
   return (
     <>
-      <UserNavbar />
       <main className="flex justify-center px-2 sm:px-4">
-        <div className="w-full max-w-7xl flex place-content-center">
+        <div className="w-full max-w-7xl">
           <Outlet />
         </div>
       </main>
