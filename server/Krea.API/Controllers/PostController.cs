@@ -2,6 +2,8 @@ namespace Krea.API.Controllers {
     using Application.Features.Posts;
     using Application.Features.Posts.Dto;
     using Application.Features.Posts.GetAllPosts;
+    using Application.Features.PostUploads.CreatePostUpload;
+    using Contracts;
     using Domain.Abstractions;
     using Microsoft.AspNetCore.Mvc;
 
@@ -26,19 +28,19 @@ namespace Krea.API.Controllers {
         }
 
         // GET: api/posts/user/{authorId}
-        // [HttpGet("user/{authorId:guid}")]
-        // public async Task<IActionResult> GetByUser(
-        //     Guid authorId,
-        //     [FromQuery] int page = 1,
-        //     [FromQuery] int pageSize = 10,
-        //     CancellationToken cancellationToken = default)
-        // {
-        //     var result = await _sender.Send(
-        //         new GetPostsByUserQuery(authorId, page, pageSize),
-        //         cancellationToken);
-        //
-        //     return Ok(result);
-        // }
+        [HttpGet("user/{authorId:guid}")]
+        public async Task<IActionResult> GetByUser(
+            Guid authorId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            CancellationToken cancellationToken = default)
+        {
+            var result = await _sender.Send(
+                new GetPostsByUserQuery(authorId, page, pageSize),
+                cancellationToken);
+        
+            return Ok(result);
+        }
 
         // GET: api/posts/{id}
         [HttpGet("{id:guid}")]
@@ -68,20 +70,20 @@ namespace Krea.API.Controllers {
         }
 
         // POST: api/posts/{postId}/upload
-        [HttpPost("{postId:guid}/upload")]
-        public async Task<IActionResult> AddUpload(
-            Guid postId,
-            [FromBody] AddUploadRequest request,
-            CancellationToken cancellationToken) {
-            AddUpload.Response response = await _sender.Send(
-                new AddUpload.Request(
-                    postId,
-                    request.MediaId,
-                    request.IsWorkMedia),
-                cancellationToken);
-
-            return Ok(response);
-        }
+        // [HttpPost("{postId:guid}/upload")]
+        // public async Task<IActionResult> AddUpload(
+        //     Guid postId,
+        //     [FromBody] AddUploadRequest request,
+        //     CancellationToken cancellationToken) {
+        //     AddUpload.Response response = await _sender.Send(
+        //         new AddUpload.Request(
+        //             postId,
+        //             request.MediaId,
+        //             request.IsWorkMedia),
+        //         cancellationToken);
+        //
+        //     return Ok(response);
+        // }
 
         // DELETE: api/posts/{id}
         [HttpDelete("{id:guid}")]
@@ -93,6 +95,103 @@ namespace Krea.API.Controllers {
                 cancellationToken);
 
             return NoContent();
+        }
+        
+        [HttpPost("{postId:guid}/reply")]
+        public async Task<IActionResult> Reply(
+            Guid postId,
+            [FromBody] ReplyPostCommand command,
+            CancellationToken cancellationToken)
+        {
+            Guid replyId = await _sender.Send(
+                command with { ReplyToPostId = postId },
+                cancellationToken);
+
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = replyId },
+                new { ReplyPostId = replyId });
+        }
+        
+        [HttpPost("{postId:guid}/repost")]
+        public async Task<IActionResult> Repost(
+            Guid postId,
+            [FromBody] RepostPostCommand command,
+            CancellationToken cancellationToken)
+        {
+            Guid repostId = await _sender.Send(
+                command with { OriginalPostId = postId },
+                cancellationToken);
+
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = repostId },
+                new { RepostId = repostId });
+        }
+        
+        // POST   /posts/{id}/like
+        [HttpPost("{postId:guid}/like")]
+        public async Task<IActionResult> Like(
+            Guid postId,
+            [FromBody] LikePostCommand command,
+            CancellationToken cancellationToken)
+        {
+            await _sender.Send(
+                command with { PostId = postId },
+                cancellationToken);
+
+            return NoContent();
+        }
+        
+        //DELETE /posts/{id}/unlike
+        [HttpDelete("{postId:guid}/unlike")]
+        public async Task<IActionResult> Unlike(
+            Guid postId,
+            [FromBody] UnlikePostCommand command,
+            CancellationToken cancellationToken)
+        {
+            await _sender.Send(
+                command with { PostId = postId },
+                cancellationToken);
+
+            return NoContent();
+        }
+        
+        // POST /posts/{id}/uploads
+        [HttpPost("{postId:guid}/uploads")]
+        public async Task<IActionResult> CreateUpload(
+            Guid postId,
+            [FromForm] CreatePostUploadRequest request,
+            CancellationToken cancellationToken)
+        {
+            await using var stream = request.File.OpenReadStream();
+
+            var command = new CreatePostUploadCommand(
+                postId,
+                stream,
+                request.File.FileName,
+                request.File.ContentType,
+                request.File.Length,
+                request.Type,
+                request.Title,
+                request.Description,
+                request.GenreIds,
+                request.Width,
+                request.Height,
+                request.FileSize,
+                request.Format,
+                request.BitrateKbps,
+                request.DurationSec,
+                request.WordCount,
+                request.LanguageCode,
+                request.SortTitle,
+                request.Subtitle,
+                request.IsWorkMedia
+            );
+
+            var result = await _sender.Send(command, cancellationToken);
+
+            return Ok(result);
         }
     }
 }

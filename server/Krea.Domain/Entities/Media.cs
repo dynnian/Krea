@@ -3,19 +3,11 @@ using System.ComponentModel.DataAnnotations;
 namespace Krea.Domain.Entities {
     public sealed class Media {
         [Key] public Guid Id { get; private init; }
-
-        [Required(ErrorMessage = "OriginalFileName is required.")]
         public string OriginalFileName { get; private set; }
-
         public string FileName { get; private set; }
-
-        [Required(ErrorMessage = "MimeType is required.")]
         public string MimeType { get; private set; }
-
-        [Required(ErrorMessage = "Path is required.")]
-        public string Path { get; private set; }
-
-        [Timestamp] public DateTime UploadedAt { get; private set; }
+        public string Path { get; private set; } = null!;
+        public DateTime UploadedAt { get; private set; }
 
         #pragma warning disable CS8618
         private Media() { }
@@ -23,14 +15,12 @@ namespace Krea.Domain.Entities {
 
         public Media(
             string originalFileName,
-            string mimeType,
-            string path) {
-            Validate(originalFileName, mimeType, path);
+            string mimeType) {
+            Validate(originalFileName, mimeType);
             Id = Guid.NewGuid();
             OriginalFileName = originalFileName;
             FileName = $"{Id}{System.IO.Path.GetExtension(originalFileName)}";
             MimeType = mimeType;
-            Path = path;
             UploadedAt = DateTime.UtcNow;
         }
 
@@ -41,7 +31,7 @@ namespace Krea.Domain.Entities {
             string mimeType,
             string path,
             DateTime uploadedAt) {
-            Validate(originalFileName, mimeType, path);
+            Validate(originalFileName, mimeType);
             var media = new Media {
                 Id = id,
                 OriginalFileName = originalFileName,
@@ -52,11 +42,18 @@ namespace Krea.Domain.Entities {
             };
             return media;
         }
+        
+        public void SetPath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentException("Invalid path");
 
-        private static void Validate(string fileName, string mimeType, string path) {
+            Path = path;
+        }
+
+        private static void Validate(string fileName, string mimeType) {
             if (string.IsNullOrWhiteSpace(fileName)
-                || string.IsNullOrWhiteSpace(mimeType)
-                || string.IsNullOrWhiteSpace(path))
+                || string.IsNullOrWhiteSpace(mimeType))
                 throw new ArgumentException("All arguments are required");
         }
     }

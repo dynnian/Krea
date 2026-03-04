@@ -2,11 +2,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Krea.Domain.Entities {
     public sealed class ImageMetadata : Metadata {
-        public string Width { get; private set; }
+        public int Width { get; private set; }
 
-        public string Height { get; private set; }
+        public int Height { get; private set; }
 
-        public int FileSize { get; private set; }
+        public long FileSize { get; private set; }
 
         public string Format { get; private set; }
 
@@ -18,9 +18,9 @@ namespace Krea.Domain.Entities {
             Guid uploadId,
             string title,
             string? description,
-            string width,
-            string height,
-            int fileSize,
+            int width,
+            int height,
+            long fileSize,
             string format,
             IEnumerable<Genre>? genres = null)
             : base(uploadId, title, description, genres) {
@@ -38,9 +38,9 @@ namespace Krea.Domain.Entities {
             Guid uploadId,
             string title,
             string? description,
-            string width,
-            string height,
-            int fileSize,
+            int width,
+            int height,
+            long fileSize,
             string format,
             IEnumerable<Genre> genres) {
             var metadata = new ImageMetadata {

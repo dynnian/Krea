@@ -97,6 +97,7 @@ namespace Krea.API {
 
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseStaticFiles();
             app.UseCors("AllowAll");
             app.MapControllers();
 

@@ -1,0 +1,25 @@
+namespace Krea.Application.Features.Posts {
+    using Abstractions.Feed;
+    using Dto;
+
+    public sealed class GetRecentFeedHandler
+    {
+        private readonly IFeedQueryService _feedQueryService;
+
+        public GetRecentFeedHandler(IFeedQueryService feedQueryService)
+        {
+            _feedQueryService = feedQueryService;
+        }
+
+        public async Task<IReadOnlyList<PostFeedResponse>> Handle(
+            GetRecentFeedQuery query,
+            CancellationToken ct)
+        {
+            return await _feedQueryService.GetRecentAsync(
+                query.CurrentUserId,
+                query.Page,
+                query.PageSize,
+                ct);
+        }
+    }
+}
