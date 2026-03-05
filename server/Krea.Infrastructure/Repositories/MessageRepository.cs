@@ -9,35 +9,35 @@ namespace Krea.Infrastructure.Repositories {
 
         public MessageRepository(AppDbContext context) => _context = context;
 
-        public async Task<Message?> GetByIdAsync(Guid id)
+        public async Task<Message?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => await _context.Messages
                              .Include(m => m.User)
                              .Include(m => m.Conversation)
-                             .FirstOrDefaultAsync(m => m.Id == id);
+                             .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
 
-        public async Task<IReadOnlyList<Message>> GetByConversationAsync(Guid conversationId)
+        public async Task<IReadOnlyList<Message>> GetByConversationAsync(Guid conversationId, CancellationToken cancellationToken = default)
             => await _context.Messages
                              .Include(m => m.User)
                              .Where(m => EF.Property<Guid>(m, "ConversationId") == conversationId)
                              .OrderBy(m => m.SentAt)
-                             .ToListAsync();
+                             .ToListAsync(cancellationToken);
 
-        public async Task<IReadOnlyList<Message>> GetByUserAsync(Guid userId)
+        public async Task<IReadOnlyList<Message>> GetByUserAsync(Guid userId, CancellationToken  cancellationToken = default)
             => await _context.Messages
                              .Include(m => m.Conversation)
                              .Where(m => EF.Property<Guid>(m, "UserId") == userId)
                              .OrderByDescending(m => m.SentAt)
-                             .ToListAsync();
+                             .ToListAsync(cancellationToken);
 
-        public async Task AddAsync(Message message)
+        public async Task Add(Message message)
             => await _context.Messages.AddAsync(message);
 
-        public Task UpdateAsync(Message message) {
+        public Task Update(Message message) {
             _context.Messages.Update(message);
             return Task.CompletedTask;
         }
 
-        public Task DeleteAsync(Message message) {
+        public Task Delete(Message message) {
             _context.Messages.Remove(message);
             return Task.CompletedTask;
         }
