@@ -14,14 +14,11 @@ namespace Krea.Domain.Entities {
         private Like() { }
         #pragma warning restore CS8618
 
-        public Like(User user, Post post) {
+        public Like(Guid postId, Guid userId)
+        {
             Id = Guid.NewGuid();
-            User = user;
-            UserId = user.Id;
-
-            Post = post;
-            PostId = post.Id;
-
+            PostId = postId;
+            UserId = userId;
             CreatedAt = DateTime.UtcNow;
         }
 

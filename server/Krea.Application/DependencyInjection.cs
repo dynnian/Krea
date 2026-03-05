@@ -12,6 +12,8 @@ namespace Krea.Application {
     using Features.Posts;
     using Features.Posts.Dto;
     using Features.Posts.GetAllPosts;
+    using Features.Posts.GetPostsByUser;
+    using Features.PostUploads.CreatePostUpload;
     using Microsoft.Extensions.DependencyInjection;
     using Features.DirectMessages.Mappings;
 
@@ -26,9 +28,17 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<ConfirmEmailCommand, bool>, ConfirmEmailCommandHandler>();
             
             // Posts
-            services.AddScoped< IRequestHandler<GetAllPostsQuery, IReadOnlyList<PostDto>>, GetAllPostsHandler>();
-            services.AddScoped< IRequestHandler<CreatePost.Request, CreatePost.Response>, CreatePost>();
-            services.AddScoped< IRequestHandler<AddUpload.Request, AddUpload.Response>, AddUpload>();
+            services.AddScoped<IRequestHandler<GetAllPostsQuery, IReadOnlyList<PostDto>>, GetAllPostsHandler>();
+            services.AddScoped<IRequestHandler<GetPostsByUserQuery, IReadOnlyList<PostDto>>, GetPostsByUserHandler>();
+            services.AddScoped<IRequestHandler<GetPostById.Request, GetPostById.Response?>, GetPostById>();
+            services.AddScoped<IRequestHandler<CreatePost.Request, CreatePost.Response>, CreatePost>();
+            services.AddScoped<IRequestHandler<DeletePost.Request, DeletePost.Response>, DeletePost>();
+            services.AddScoped<IRequestHandler<ReplyPostCommand, Guid>, ReplyPostHandler>();
+            services.AddScoped<IRequestHandler<RepostPostCommand, Guid>, RepostHandler>();
+            services.AddScoped<IRequestHandler<LikePostCommand, Unit>, LikePostHandler>();
+            services.AddScoped<IRequestHandler<UnlikePostCommand, Unit>, UnlikePostHandler>();
+            services.AddScoped<IRequestHandler<CreatePostUploadCommand, CreatePostUploadResponse>, CreatePostUploadHandler>();
+            
             services.AddScoped<ISender, Sender>();
             
             // Messaging

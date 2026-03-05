@@ -22,7 +22,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Krea.Domain.Entities.Collections", b =>
+            modelBuilder.Entity("Krea.Domain.Entities.Collection", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -289,8 +289,6 @@ namespace Krea.Infrastructure.Data.Migrations
                         .HasColumnType("character varying(254)");
 
                     b.Property<DateTime>("UploadedAt")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -1016,21 +1014,19 @@ namespace Krea.Infrastructure.Data.Migrations
                 {
                     b.HasBaseType("Krea.Domain.Entities.Metadata");
 
-                    b.Property<int>("FileSize")
-                        .HasColumnType("integer");
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Format")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<string>("Height")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Height")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("Width")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Width")
+                        .HasColumnType("integer");
 
                     b.HasDiscriminator().HasValue("image");
                 });
@@ -1069,7 +1065,7 @@ namespace Krea.Infrastructure.Data.Migrations
                     b.HasDiscriminator().HasValue("text");
                 });
 
-            modelBuilder.Entity("Krea.Domain.Entities.Collections", b =>
+            modelBuilder.Entity("Krea.Domain.Entities.Collection", b =>
                 {
                     b.HasOne("Krea.Domain.Entities.Media", "Image")
                         .WithMany()
@@ -1440,7 +1436,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("collection_post", b =>
                 {
-                    b.HasOne("Krea.Domain.Entities.Collections", null)
+                    b.HasOne("Krea.Domain.Entities.Collection", null)
                         .WithMany()
                         .HasForeignKey("collection_id")
                         .OnDelete(DeleteBehavior.Cascade)

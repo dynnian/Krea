@@ -17,6 +17,7 @@ const { useBreakpoint } = Grid;
 
 import "antd/dist/reset.css";
 import "./app.css";
+import { NotificationProvider } from "./contexts/NotificationContext.tsx";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -51,7 +52,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <ConfigProvider theme={antdTheme}>
           <I18nProvider>
             <AuthProvider>
-              {children}
+              <NotificationProvider>
+                {children}
+              </NotificationProvider>
             </AuthProvider>
           </I18nProvider>
         </ConfigProvider>

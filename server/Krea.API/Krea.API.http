@@ -1,4 +1,6 @@
 @Krea.API_HostAddress = http://localhost:5101
+@userId = GUID_DEL_USUARIO
+@postId = GUID_DEL_POST
 
 ### Register
 POST http://localhost:5101/api/auth/register
@@ -20,4 +22,64 @@ Content-Type: application/json
 {
   "EmailOrUserName": "testUser3",
   "password": "Test123!"
+}
+
+### Create Post
+POST http://localhost:5101/api/posts
+Content-Type: application/json
+
+{
+  "authorId": "GUID_DEL_USUARIO",
+  "title": "Mi primer post",
+  "content": "Contenido del post",
+  "isWork": false
+}
+
+### Get All Posts
+GET http://localhost:5101/api/posts?page=1&pageSize=10
+
+### Get Post By Id
+GET http://localhost:5101/api/posts/{{postId}}
+
+### Reply to Post
+POST http://localhost:5101/api/posts/{{postId}}/reply
+Content-Type: application/json
+
+{
+  "authorId": "GUID_DEL_USUARIO",
+  "title": "Respuesta",
+  "content": "Contenido de la respuesta"
+}
+
+### Repost
+POST http://localhost:5101/api/posts/{{postId}}/repost
+Content-Type: application/json
+
+{
+  "authorId": "GUID_DEL_USUARIO"
+}
+
+### Like
+POST http://localhost:5101/api/posts/{{postId}}/like
+Content-Type: application/json
+
+{
+  "userId": "GUID_DEL_USUARIO"
+}
+
+### Unlike
+DELETE http://localhost:5101/api/posts/{{postId}}/unlike
+Content-Type: application/json
+
+{
+  "userId": "GUID_DEL_USUARIO"
+}
+
+### Add Upload
+POST http://localhost:5101/api/posts/{{postId}}/upload
+Content-Type: application/json
+
+{
+  "mediaId": "GUID_MEDIA",
+  "isWorkMedia": false
 }

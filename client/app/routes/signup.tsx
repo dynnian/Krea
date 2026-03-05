@@ -12,6 +12,8 @@ import { Link, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useI18n } from "../contexts/I18nContext";
+import { useAuth, type RegisterDTO } from "~/contexts/AuthContext";
+import { Navigate } from "react-router-dom";
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
@@ -28,6 +30,7 @@ const logoImage = "/assets/Logotipo 1.png";
 const backgroundImage = "/assets/landscapeB.jpg";
 
 export default function SignUpRoute() {
+  const { isAuthenticated, loading, register, loading: authLoading} = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { setLanguage } = useI18n();
@@ -65,14 +68,24 @@ export default function SignUpRoute() {
   const onSubmit = async (data: SignUpDTO) => {
     setAuthError(null);
     try {
-      // Simulación de registro
-      navigate("/confirmAccount", { replace: true });
-    } catch {
-      setAuthError("Registration failed. Please try again.");
+      const registerData: RegisterDTO = {
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        displayName: data.username, // puedes ajustar si tienes campo displayName
+        languageCode: "1",
+        timeZoneId: "1",
+        biography: null,
+      };
+      await register(registerData, rememberMe);
+      // Redirigir a confirmación (puedes pasar el email en state)
+      navigate("/confirmAccount", { replace: true, state: { email: data.email } });
+    } catch (error: any) {
+      setAuthError(error.message || "Registration failed. Please try again.");
     }
   };
 
-  if (!isMounted) {
+  if (authLoading || !isMounted) {
     return (
       <Layout style={{ minHeight: "100vh" }}>
         <Content style={{ 
@@ -112,6 +125,11 @@ export default function SignUpRoute() {
         </Content>
       </Layout>
     );
+  }
+
+  // Si ya está autenticado, redirigir a home inmediatamente
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
   }
 
   // Campos del formulario en orden

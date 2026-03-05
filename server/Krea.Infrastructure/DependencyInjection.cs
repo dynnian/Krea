@@ -9,7 +9,10 @@ using Domain.Repositories;
 using Application.Abstractions;
 using Application.Abstractions.Auth;
 using Application.Abstractions.Email;
+using Application.Abstractions.Feed;
+using Application.Abstractions.FileStorage;
 using Application.Abstractions.Identity;
+using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -52,8 +55,11 @@ public static class DependencyInjection
         services.AddScoped<IConversationRepository, ConversationRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IPostRepository, PostRepository>();
+        services.AddScoped<IPostUploadRepository, PostUploadRepository>();
+        services.AddScoped<IGenreRepository, GenreRepository>();
         services.AddScoped<ICollectionRepository, CollectionRepository>();
         services.AddScoped<IMediaRepository, MediaRepository>();
+        services.AddScoped<IHashtagRepository, HashtagRepository>();
 
         // Servicios de aplicación (infraestructura)
         services.AddScoped<IIdentityService, IdentityService>();
@@ -67,6 +73,9 @@ public static class DependencyInjection
         {
             services.AddScoped<IEmailService, EmailService>();
         }
+
+        services.AddScoped<IFeedQueryService, FeedQueryService>();
+        services.AddScoped<IFileStorage, LocalFileStorage>();
         services.AddScoped<ISender, Sender>();
         
         return services;

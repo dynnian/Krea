@@ -6,9 +6,6 @@ namespace Krea.Domain.Entities {
 
         public string Name { get; private set; }
 
-        private readonly List<Post> _posts = new();
-        public IReadOnlyCollection<Post> Posts => _posts.AsReadOnly();
-
         #pragma warning disable CS8618
         private Hashtag() { }
         #pragma warning restore CS8618
@@ -18,7 +15,7 @@ namespace Krea.Domain.Entities {
                 throw new ArgumentException("Name argument is missing");
 
             Id = Guid.NewGuid();
-            Name = name;
+            Name = name.Trim().ToLower();;
         }
 
         public Hashtag Load(

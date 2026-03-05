@@ -164,9 +164,11 @@ namespace Krea.Domain.Entities {
             return upload;
         }
 
-        public void RemoveUpload(Media media) {
-            PostUpload? upload = _uploads.FirstOrDefault(u => u.MediaId == media.Id);
-            if (upload == null) return;
+        public void RemoveUpload(Guid mediaId)
+        {
+            var upload = _uploads.FirstOrDefault(u => u.MediaId == mediaId);
+            if (upload is null)
+                return;
 
             _uploads.Remove(upload);
             UpdatedAt = DateTime.UtcNow;
@@ -191,6 +193,26 @@ namespace Krea.Domain.Entities {
         private static void Validate(string title) {
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("All arguments are required");
+        }
+        
+        public void AddLike(Guid userId)
+        {
+            if (_likes.Any(l => l.UserId == userId))
+                return;
+
+            var like = new Like(Id, userId);
+            _likes.Add(like);
+            UpdatedAt = DateTime.UtcNow;
+        }
+        
+        public void RemoveLike(Guid userId)
+        {
+            var like = _likes.FirstOrDefault(l => l.UserId == userId);
+            if (like is null)
+                return;
+
+            _likes.Remove(like);
+            UpdatedAt = DateTime.UtcNow;
         }
     }
 }
