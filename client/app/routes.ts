@@ -58,13 +58,17 @@ export default [
             path: "commissions/:commissionId",
             file: "routes/commission-detail.tsx",
           },
+          {
+            path: "payments/commissions/:commissionId",
+            file: "routes/payment-commission.tsx",
+          },
+          {
+            path: "payments/subscriptions/:subscriptionId",
+            file: "routes/payment-subscription.tsx",
+          },
           // {
           //   path: "messages",
           //   file: "routes/protected/messages.tsx",
-          // },
-          // {
-          //   path: "settings",
-          //   file: "routes/protected/settings.tsx",
           // },
         ],
       },

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Images } from "lucide-react";
+import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { subscriptionsRepository } from "../services/subscriptionsRepository";
 import type { SubscriptionCard, SubscriptionsPageState } from "../types/subscriptions";
@@ -70,6 +71,7 @@ function SubscriptionCardView({
   onBlurCapture,
 }: SubscriptionCardViewProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   return (
     <article
@@ -99,6 +101,7 @@ function SubscriptionCardView({
           type="button"
           className="w-full h-[26px] flex items-center justify-center border-0 rounded-[999px] bg-[#0f640f] !text-white [color:#fff] text-[12px] cursor-pointer hover:bg-[#0b530b]"
           style={{ color: "#fff", WebkitTextFillColor: "#fff" }}
+          onClick={() => navigate(`/payments/subscriptions/${item.id}`)}
         >
           {t("subscriptions.cta_join")}
         </button>

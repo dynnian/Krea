@@ -11,7 +11,7 @@ import {
   theme,
 } from "antd";
 import { useAuth, type LoginDTO } from "../contexts/AuthContext";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useI18n } from "../contexts/I18nContext";
@@ -28,6 +28,7 @@ export default function LoginRoute() {
   const { login } = useAuth();
   const { isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { setLanguage } = useI18n();
   
@@ -38,11 +39,18 @@ export default function LoginRoute() {
     setIsMounted(true);
   }, []);
 
+  const fromPath = (() => {
+    const state = location.state as { from?: { pathname?: string; search?: string } } | null;
+    const pathname = state?.from?.pathname;
+    if (!pathname || pathname === "/login") return "/";
+    return `${pathname}${state?.from?.search ?? ""}`;
+  })();
+
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      navigate("/", { replace: true });
+      navigate(fromPath, { replace: true });
     }
-  }, [isAuthenticated, loading, navigate]);
+  }, [fromPath, isAuthenticated, loading, navigate]);
 
   const isMobile = isMounted && !screens.sm;
 
@@ -66,7 +74,7 @@ export default function LoginRoute() {
     try {
       // Map form data to the expected LoginDTO (email field)
       await login({ email: data.emailOrUsername, password: data.password }, rememberMe);
-      navigate("/", { replace: true });
+      navigate(fromPath, { replace: true });
     } catch (error) {
       // Set error message in local state, do NOT rethrow
       if (axios.isAxiosError(error) && error.response) {

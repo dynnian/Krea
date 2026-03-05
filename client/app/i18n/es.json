@@ -143,6 +143,38 @@
     "cta_join": "Unirse",
     "includes": "Incluye"
   },
+  "payments": {
+    "common": {
+      "method": "Método de pago",
+      "card": "Tarjeta",
+      "cardholder_name": "Nombre en la tarjeta",
+      "name_placeholder": "Nombre",
+      "card_data": "Datos de la tarjeta",
+      "card_number_placeholder": "Número de la tarjeta",
+      "country": "País",
+      "default_country": "República Dominicana",
+      "pay": "Pagar",
+      "paypal_processing_cta": "Procesando...",
+      "paypal_processing": "Conectando con PayPal...",
+      "paypal_success": "Pago aprobado (mock). Listo para conectar con backend/PayPal real.",
+      "paypal_error": "No se pudo procesar el pago con PayPal.",
+      "paypal_missing_client_id": "Falta configurar VITE_PAYPAL_CLIENT_ID en el frontend.",
+      "card_pending_integration": "Pago con tarjeta pendiente de integración.",
+      "creator_name": "Usuario",
+      "creator_handle": "@Dominio"
+    },
+    "commission": {
+      "loading": "Cargando pago de comisión...",
+      "title": "Comisión de usuario",
+      "single_payment": "Pago único"
+    },
+    "subscription": {
+      "loading": "Cargando pago de suscripción...",
+      "title": "Suscripción a usuario",
+      "level_title": "Nivel de suscripción",
+      "monthly_payment": "Pago mensual"
+    }
+  },
   "notifications": {
     "title": "Centro de notificaciones",
     "empty": "No hay notificaciones",

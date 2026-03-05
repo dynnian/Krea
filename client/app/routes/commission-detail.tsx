@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, ChevronLeft, CircleUserRound, Ellipsis, UserRound } from "lucide-react";
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { commissionsRepository } from "../services/commissionsRepository";
 import type { CommissionDetail } from "../types/commissions";
@@ -9,6 +9,7 @@ export default function CommissionDetailRoute() {
   const { commissionId } = useParams();
   const [detail, setDetail] = useState<CommissionDetail | null>(null);
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!commissionId) return;
@@ -160,6 +161,7 @@ export default function CommissionDetailRoute() {
                 type="button"
                 className="w-full h-[30px] rounded-[999px] text-[12px] font-medium border-0 bg-[#0d650d] !text-white [color:#fff] [text-shadow:0_1px_0_rgba(0,0,0,0.18)]"
                 style={{ color: "#fff", WebkitTextFillColor: "#fff" }}
+                onClick={() => navigate(`/payments/commissions/${detail.id}`)}
               >
                 {/* TODO(frontend-integration): enlazar con "Pagos - Comisiones" en el siguiente feature/PR. */}
                 {t("commissions.detail.pay_cta")}

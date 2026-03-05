@@ -143,6 +143,38 @@
     "cta_join": "Join",
     "includes": "Includes"
   },
+  "payments": {
+    "common": {
+      "method": "Payment method",
+      "card": "Card",
+      "cardholder_name": "Cardholder name",
+      "name_placeholder": "Name",
+      "card_data": "Card data",
+      "card_number_placeholder": "Card number",
+      "country": "Country",
+      "default_country": "Dominican Republic",
+      "pay": "Pay",
+      "paypal_processing_cta": "Processing...",
+      "paypal_processing": "Connecting to PayPal...",
+      "paypal_success": "Payment approved (mock). Ready to connect with real backend/PayPal.",
+      "paypal_error": "Could not process payment with PayPal.",
+      "paypal_missing_client_id": "Missing VITE_PAYPAL_CLIENT_ID in frontend configuration.",
+      "card_pending_integration": "Card payment integration is pending.",
+      "creator_name": "User",
+      "creator_handle": "@Domain"
+    },
+    "commission": {
+      "loading": "Loading commission payment...",
+      "title": "User commission",
+      "single_payment": "One-time payment"
+    },
+    "subscription": {
+      "loading": "Loading subscription payment...",
+      "title": "Subscription to user",
+      "level_title": "Subscription level",
+      "monthly_payment": "Monthly payment"
+    }
+  },
   "notifications": {
     "title": "Notification Center",
     "empty": "No notifications",
