@@ -46,6 +46,10 @@ export default [
             path: "profile",
             file: "routes/profile.tsx",
           },
+          {
+            path: "settings",
+            file: "routes/settings.tsx",
+          },
           // {
           //   path: "messages",
           //   file: "routes/protected/messages.tsx",
