@@ -1,7 +1,6 @@
 namespace Krea.Application.Features.Auth.Login {
     using Abstractions.Identity;
     using Application.Abstractions.Auth;
-    using Common;
     using static Common.RoleHelper;
     using User;
     using Domain.Abstractions;
@@ -51,7 +50,7 @@ namespace Krea.Application.Features.Auth.Login {
             return new AuthResponse(token.Token, token.Expiration, userDto);
         }
 
-        private UserDto MapToDto(Domain.Entities.User domainUser, UserIdentity identity) =>
+        private static UserDto MapToDto(User domainUser, UserIdentity identity) =>
             new(
                 domainUser.Id,
                 identity.UserName,
