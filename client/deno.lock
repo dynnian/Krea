@@ -2912,6 +2912,7 @@
         "npm:@react-router/dev@7.12.0",
         "npm:@react-router/node@7.12.0",
         "npm:@react-router/serve@7.12.0",
+        "npm:@rollup/rollup-linux-x64-gnu@^4.59.0",
         "npm:@tailwindcss/vite@^4.1.13",
         "npm:@tiptap/extension-image@^3.18.0",
         "npm:@tiptap/extension-link@^3.18.0",
