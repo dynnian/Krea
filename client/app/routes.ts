@@ -46,6 +46,22 @@ export default [
             path: "profile",
             file: "routes/profile.tsx",
           },
+          {
+            path: "commissions",
+            file: "routes/commissions.tsx",
+          },
+          {
+            path: "subscriptions",
+            file: "routes/subscriptions.tsx",
+          },
+          {
+            path: "commissions/:commissionId",
+            file: "routes/commission-detail.tsx",
+          },
+          {
+            path: "settings",
+            file: "routes/settings.tsx",
+          },
           // {
           //   path: "messages",
           //   file: "routes/protected/messages.tsx",

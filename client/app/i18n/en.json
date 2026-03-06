@@ -119,6 +119,30 @@
       "trending_authors": "Trending authors"
     }
   },
+  "commissions": {
+    "loading": "Loading commissions...",
+    "list_title": "User commissions",
+    "cta_more": "Learn more",
+    "detail": {
+      "loading": "Loading details...",
+      "breadcrumb": "Commission",
+      "back_to_commissions": "Back to commissions",
+      "about_title": "About the commission",
+      "tags_title": "Tags",
+      "comments_title": "Comments",
+      "comment_placeholder": "Comment",
+      "comment_post": "Post",
+      "price_title": "Price",
+      "pay_cta": "Go to pay",
+      "message_creator_cta": "Message the creator"
+    }
+  },
+  "subscriptions": {
+    "loading": "Loading subscriptions...",
+    "list_title": "User subscriptions",
+    "cta_join": "Join",
+    "includes": "Includes"
+  },
   "notifications": {
     "title": "Notification Center",
     "empty": "No notifications",

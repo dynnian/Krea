@@ -12,6 +12,7 @@ using Application.Abstractions.Email;
 using Application.Abstractions.Feed;
 using Application.Abstractions.FileStorage;
 using Application.Abstractions.Identity;
+using Configuration;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,11 @@ public static class DependencyInjection
         // DbContext
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+        
+        // Seeding
+        services.Configure<SeedingOptions>(
+            configuration.GetSection("Seeding")
+        );
 
         // Unit Of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -64,7 +70,7 @@ public static class DependencyInjection
         // Servicios de aplicación (infraestructura)
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ITokenService, TokenService>();
-        var useFakeEmail = configuration.GetValue<bool>("UseFakeEmail");
+        bool useFakeEmail = configuration.GetValue<bool>("UseFakeEmail");
         if (useFakeEmail)
         {
             services.AddScoped<IEmailService, FakeEmailService>();

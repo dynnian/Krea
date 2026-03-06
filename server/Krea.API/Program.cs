@@ -1,18 +1,15 @@
 namespace Krea.API {
     using Microsoft.AspNetCore.Authentication.JwtBearer;
     using Microsoft.IdentityModel.Tokens;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.AspNetCore.Identity;
     using Scalar.AspNetCore;
     using System.Text;
     using Infrastructure;
-    using Infrastructure.Data;
     using Application;
     using Application.Abstractions.Url;
+    using Infrastructure.Setup;
     using Services;
-    using Microsoft.AspNetCore.Cors;
 
-    internal class Program {
+    internal static class Program {
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -61,24 +58,10 @@ namespace Krea.API {
             builder.Services.AddScoped<IConfirmationUrlBuilder, ConfirmationUrlBuilder>();
 
             WebApplication app = builder.Build();
-        
-            // Identity Roles
-            using (IServiceScope scope = app.Services.CreateScope()) {
-                IServiceProvider services = scope.ServiceProvider;
 
-                // Automatic migration
-                var context = services.GetRequiredService<AppDbContext>();
-                await context.Database.MigrateAsync();
-
-                // Identity Roles
-                var roleManager = services.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
-                string[] roles = ["Admin", "Artist"];
-
-                foreach (string role in roles) {
-                    if (!await roleManager.RoleExistsAsync(role)) {
-                        await roleManager.CreateAsync(new IdentityRole<Guid>(role));
-                    }
-                }
+            using (IServiceScope scope = app.Services.CreateScope())
+            {
+                await DatabaseInitializer.InitializeAsync(scope.ServiceProvider);
             }
         
             // Configure the HTTP request pipeline.
