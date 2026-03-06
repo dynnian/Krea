@@ -125,6 +125,11 @@ namespace Krea.Domain.Entities {
             UpdatedAt = DateTime.UtcNow;
         }
 
+        public void SetPasswordReset() {
+            LastPasswordResetAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
         public void AssignRole(Role role, Guid? assignedBy) {
             if (role is null)
                 throw new ArgumentNullException(nameof(role));
