@@ -5,6 +5,7 @@ namespace Krea.API.Controllers {
     using Application.Features.Auth.Register;
     using Application.Features.Auth.ConfirmEmail;
     using Application.Features.Auth.ChangePassword;
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using System.Security.Claims;
 
@@ -48,6 +49,7 @@ namespace Krea.API.Controllers {
             }
         }
         
+        [Authorize]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword(ChangePasswordCommand command)
         {
