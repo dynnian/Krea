@@ -119,6 +119,30 @@
       "trending_authors": "Autores en tendencia"
     }
   },
+  "commissions": {
+    "loading": "Cargando comisiones...",
+    "list_title": "Comisiones de usuario",
+    "cta_more": "Saber más",
+    "detail": {
+      "loading": "Cargando detalle...",
+      "breadcrumb": "Comisión",
+      "back_to_commissions": "Volver a comisiones",
+      "about_title": "Acerca de la comisión",
+      "tags_title": "Tags",
+      "comments_title": "Comentarios",
+      "comment_placeholder": "Comentar",
+      "comment_post": "Post",
+      "price_title": "Precio",
+      "pay_cta": "Ir a pagar",
+      "message_creator_cta": "Mensaje al creador"
+    }
+  },
+  "subscriptions": {
+    "loading": "Cargando suscripciones...",
+    "list_title": "Suscripciones de usuario",
+    "cta_join": "Unirse",
+    "includes": "Incluye"
+  },
   "notifications": {
     "title": "Centro de notificaciones",
     "empty": "No hay notificaciones",
