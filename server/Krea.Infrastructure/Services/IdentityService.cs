@@ -40,6 +40,14 @@ namespace Krea.Infrastructure.Services {
             SignInResult result = await _signInManager.CheckPasswordSignInAsync(appUser, password, false);
             return result.Succeeded;
         }
+        
+        public async Task<bool> ChangePasswordAsync(UserIdentity user, string currentPassword, string newPassword)
+        {
+            var appUser = await _userManager.FindByIdAsync(user.Id.ToString());
+            if (appUser == null) return false;
+            var result = await _userManager.ChangePasswordAsync(appUser, currentPassword, newPassword);
+            return result.Succeeded;
+        }
 
         public async Task<(bool Succeeded, string[] Errors)> CreateUserAsync(UserIdentity user, string password) {
             var appUser = new AppUser { Id = user.Id, UserName = user.UserName, Email = user.Email };
