@@ -27,11 +27,12 @@ Content-Type: application/json
 ### ChangePassword
 POST http://localhost:5101/api/auth/change-password
 Content-Type: application/json
+Authorization: Bearer <auth_token>
 
 {
   "userId": "GUID",
-  "currentPassword": "contraseña actual",
-  "newPassword": "nueva contraseña"
+  "currentPassword": "Test123!",
+  "newPassword": "Test124!"
 }
 
 ### Create Post
