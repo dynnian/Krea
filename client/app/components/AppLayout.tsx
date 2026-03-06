@@ -14,7 +14,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           width={240}
           breakpoint="md"
           collapsedWidth={0}
-          className="bg-white"
+          className="blanco 50"
         >
           Sidebar
         </Sider>

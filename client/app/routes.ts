@@ -58,6 +58,10 @@ export default [
             path: "commissions/:commissionId",
             file: "routes/commission-detail.tsx",
           },
+          {
+            path: "settings",
+            file: "routes/settings.tsx",
+          },
           // {
           //   path: "messages",
           //   file: "routes/protected/messages.tsx",

@@ -648,7 +648,8 @@ const Profile: React.FC = () => {
   const { t } = useTranslation();
   const screens = useBreakpoint();
   const isMobile = !screens.md;
-  const { username } = useParams<{ username: string }>();
+  // const { username } = useParams<{ username: string }>();
+  const { username: usernameParam } = useParams<{ username: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -662,8 +663,10 @@ const Profile: React.FC = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
 
   // Determinar si es el perfil propio (ruta /profile/me)
-  const isOwnProfile = username === 'me';
+  // const isOwnProfile = username === 'me';
 
+const username = usernameParam ?? "me";
+const isOwnProfile = username === "me";
   useEffect(() => {
     const loadProfile = async () => {
       if (!username) {
@@ -757,11 +760,12 @@ const Profile: React.FC = () => {
     );
   }
 
-  const mainTabItems = [
+  const mainTabItems  = [
     { key: 'portfolio', label: t('profile.tabs.portfolio') },
     { key: 'publications', label: t('profile.tabs.publications') },
     { key: 'members', label: t('profile.tabs.members') },
   ];
+
 
   const portfolioSubTabs = [
     { key: 'all', label: t('profile.portfolio.all') },
@@ -794,9 +798,10 @@ const Profile: React.FC = () => {
 
   const filteredPosts = getFilteredPosts();
 
-  return (
-    <div className="w-full bg-[#E3E2DE] min-h-screen">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+ return (
+  <div className="w-full max-w-[870px] bg-[#E3E2DE] h-screen ">
+    <div className="w-full bg-[#E8F1FC] border-l-2 border-r-2 border-[#8F8E8A] ">
+      <div className="px-[80px] pt-6 ">
         {/* Perfil header */}
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex justify-center md:justify-start">
@@ -812,7 +817,9 @@ const Profile: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <Title level={3} className="!mb-0">{profile.user.name}</Title>
+                  <Title level={3} className="!mb-0">
+                    {profile.user.name}
+                  </Title>
                   {profile.user.isVerified && (
                     <div className="w-5 h-5 bg-[#0B5107] rounded-full flex items-center justify-center border border-gray-800">
                       <Check size={12} className="text-white" />
@@ -828,8 +835,14 @@ const Profile: React.FC = () => {
                 ) : (
                   <>
                     <CommissionButton />
-                    <SubscribeButton isSubscribed={isSubscribed} onClick={handleSubscribe} />
-                    <FollowButton isFollowing={isFollowing} onClick={handleFollow} />
+                    <SubscribeButton
+                      isSubscribed={isSubscribed}
+                      onClick={handleSubscribe}
+                    />
+                    <FollowButton
+                      isFollowing={isFollowing}
+                      onClick={handleFollow}
+                    />
                     <MoreButton />
                   </>
                 )}
@@ -853,40 +866,43 @@ const Profile: React.FC = () => {
             onChange={setActiveMainTab}
             items={mainTabItems}
             centered={!isMobile}
-            tabBarStyle={{ background: '#E3E2DE', borderBottom: 'none' }}
+            tabBarStyle={{ borderBottom: "none" }}
             tabBarGutter={46}
           />
         </div>
 
-        {activeMainTab === 'portfolio' && (
+        {activeMainTab === "portfolio" && (
           <div className="mt-4">
             <Tabs
               activeKey={activePortfolioSubTab}
               onChange={setActivePortfolioSubTab}
               items={portfolioSubTabs}
               centered={!isMobile}
-              tabBarStyle={{ background: '#E3E2DE', borderBottom: 'none' }}
+              tabBarStyle={{ borderBottom: "none" }}
               tabBarGutter={46}
               size="small"
             />
           </div>
         )}
+      </div>
+        
+        <div className="w-[868px] h-px bg-[#8F8E8A] my-4 self-center"/>
 
-        <div className="w-full h-px bg-[#8F8E8A] my-4" />
-
+      <div className="px-[80px] pb-6">
         <div className="space-y-8">
           {filteredPosts.map((post) => (
             <PostCard key={post.id} post={post} />
           ))}
           {filteredPosts.length === 0 && (
             <div className="text-center text-gray-500 py-8">
-              {t('profile.no_posts')}
+              {t("profile.no_posts")}
             </div>
           )}
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default Profile;
