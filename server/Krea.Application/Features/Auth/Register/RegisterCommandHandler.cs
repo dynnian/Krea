@@ -65,25 +65,26 @@ internal class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRes
         await _userRepository.AddAsync(domainUser, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         
-        var createdIdentity = await _identityService.FindByUsernameAsync(request.Username);
+        UserIdentity? createdIdentity = await _identityService.FindByUsernameAsync(request.Username);
         if (createdIdentity == null)
             throw new Exception("User creation succeeded but could not retrieve identity.");
 
         // Generate email confirmation token
-        var confirmationToken = await _identityService.GenerateEmailConfirmationTokenAsync(createdIdentity);
-        var confirmationLink = _urlBuilder.BuildEmailConfirmationLink(createdIdentity.Id, confirmationToken);
+        string confirmationToken = await _identityService.GenerateEmailConfirmationTokenAsync(createdIdentity);
+        string confirmationLink = _urlBuilder.BuildEmailConfirmationLink(createdIdentity.Id, confirmationToken);
 
         // Send confirmation email
         await _emailService.SendConfirmationEmailAsync(createdIdentity.Email, createdIdentity.UserName, confirmationLink);
         
-        // Generate token
-        var token = await _tokenService.GenerateTokenAsync(createdIdentity, domainUser);
-        var userDto = MapToDto(domainUser, createdIdentity);
+        // Generate tokens
+        TokenGenerationResult tokens = await _tokenService.GenerateAuthTokensAsync(createdIdentity, domainUser);
 
-        return new AuthResponse(token.Token, token.Expiration, userDto);
+        UserDto userDto = MapToDto(domainUser, createdIdentity);
+
+        return new AuthResponse(tokens.AccessToken, tokens.AccessTokenExpiration, tokens.RefreshToken, userDto);
     }
 
-    private UserDto MapToDto(Domain.Entities.User domainUser, UserIdentity identity)
+    private static UserDto MapToDto(Domain.Entities.User domainUser, UserIdentity identity)
     {
         return new UserDto(
             domainUser.Id,
