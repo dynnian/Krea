@@ -16,11 +16,10 @@ export enum CommissionRequestStatus {
 }
 
 export enum PostType {
-  TEXT = "text",
-  IMAGE = "image",
-  VIDEO = "video",
-  AUDIO = "audio",
-  LINK = "link",
+  PLAIN = "plain",   // 0
+  TEXT = "text",     // 1
+  IMAGE = "image",   // 2
+  MUSIC = "music",   // 3
 }
 
 export enum LikeTargetType {

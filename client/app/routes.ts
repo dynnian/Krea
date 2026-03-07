@@ -62,10 +62,10 @@ export default [
             path: "settings",
             file: "routes/settings.tsx",
           },
-          // {
-          //   path: "messages",
-          //   file: "routes/protected/messages.tsx",
-          // },
+          {
+            path: "messages",
+            file: "routes/messages.tsx",
+          }
           // {
           //   path: "settings",
           //   file: "routes/protected/settings.tsx",

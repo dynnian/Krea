@@ -147,5 +147,39 @@
     "title": "Notification Center",
     "empty": "No notifications",
     "mark_all_read": "Mark all as read"
+  },
+  "profile": {
+    "auth_required": "You must log in to perform this action",
+    "tabs": {
+      "portfolio": "Portfolio",
+      "publications": "Publications",
+      "members": "Members"
+    },
+    "portfolio": {
+      "all": "All",
+      "images": "Images",
+      "music": "Music",
+      "literature": "Literature"
+    },
+    "no_posts": "No posts",
+    "not_found": "Profile not found",
+    "following": "Following",
+    "followers": "Followers",
+    "follow_button": {
+      "following": "Following",
+      "follow": "Follow"
+    },
+    "subscribe_button": {
+      "subscribed": "Subscribed",
+      "subscribe": "Subscribe"
+    },
+    "commission_button": "Commission",
+    "edit_profile_button": "Edit profile"
+  },
+  "chat": {
+    "placeholder": "Send message...",
+    "online": "Online",
+    "offline": "Offline",
+    "select_conversation": "Select a conversation to start chatting"
   }
 }

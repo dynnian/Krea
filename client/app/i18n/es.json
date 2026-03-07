@@ -147,6 +147,40 @@
     "title": "Centro de notificaciones",
     "empty": "No hay notificaciones",
     "mark_all_read": "Marcar todas como leídas"
+  },
+  "profile": {
+    "auth_required": "Debes iniciar sesión para realizar esta acción",
+    "tabs": {
+      "portfolio": "Portafolio",
+      "publications": "Publicaciones",
+      "members": "Miembros"
+    },
+    "portfolio": {
+      "all": "Todo",
+      "images": "Imágenes",
+      "music": "Música",
+      "literature": "Literatura"
+    },
+    "no_posts": "No hay publicaciones",
+    "not_found": "Perfil no encontrado",
+    "following": "Seguidos",
+    "followers": "Seguidores",
+    "follow_button": {
+      "following": "Siguiendo",
+      "follow": "Seguir"
+    },
+    "subscribe_button": {
+      "subscribed": "Suscrito",
+      "subscribe": "Suscribirse"
+    },
+    "commission_button": "Comisión",
+    "edit_profile_button": "Editar perfil"
+  },
+   "chat": {
+    "placeholder": "Enviar mensaje...",
+    "online": "En línea",
+    "offline": "Desconectado",
+    "select_conversation": "Selecciona una conversación para empezar a chatear"
   }
 }
 
