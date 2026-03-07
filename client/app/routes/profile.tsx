@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Avatar, Tabs, Typography, Grid, message, Spin } from 'antd';
 import { useAuth } from '../contexts/AuthContext';
 import DigitalPortfolio from "../components/Profile/DigitalPortfolio";
+import MusicPortfolio from "../components/Profile/MusicPortfolio";
 import { digitalPortfolioMock } from "../data/digitalPortfolioMock";
 import { settingsRepository } from "../services/settingsRepository";
 import {
@@ -661,15 +662,14 @@ const Profile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [portfolioSettings, setPortfolioSettings] = useState<{
-  imagesEnabled: boolean;
-  musicEnabled: boolean;
-  literatureEnabled: boolean;
-  } | null>(null);
+ // const [portfolioSettings, setPortfolioSettings] = useState <{
+ // imagesEnabled: boolean;
+ // musicEnabled: boolean;
+ // literatureEnabled: boolean;
+ // } | null>(null);
 
 
   const [activeMainTab, setActiveMainTab] = useState('portfolio');
-  // const [activePortfolioSubTab, setActivePortfolioSubTab] = useState("all");
   const [activePortfolioSubTab, setActivePortfolioSubTab] = useState("images");
   const [isFollowing, setIsFollowing] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -776,7 +776,7 @@ const isOwnProfile = username === "me";
   if (error || !profile) {
     return (
       <div className="w-full min-h-screen bg-[#E3E2DE] flex items-center justify-center">
-        <Text type="danger">{error || 'Perfil no encontrado'}</Text>es
+        <Text type="danger">{error || 'Perfil no encontrado'}</Text>
       </div>
     );
   }
@@ -950,16 +950,16 @@ const getFilteredPosts = () => {
           )}
 
           {activeMainTab === "portfolio" && effectivePortfolioTab === "music" && (
-            <div className="text-center text-gray-500 py-8">
-              Portafolio de música pendiente.
+            <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
+              <MusicPortfolio />
             </div>
-            
           )}
-{activeMainTab === "portfolio" && effectivePortfolioTab === "literature" && (
-  <div className="text-center text-gray-500 py-8">
-    Portafolio de literatura pendiente.
-  </div>
-)}
+          
+          {activeMainTab === "portfolio" && effectivePortfolioTab === "literature" && (
+            <div className="text-center text-gray-500 py-8">
+              Portafolio de literatura pendiente.
+            </div>
+          )}
 
             {activeMainTab !== "portfolio" && (
               <div className="space-y-8 px-[70px]">
