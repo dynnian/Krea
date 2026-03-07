@@ -1,10 +1,13 @@
 namespace Krea.Application {
     using Abstractions;
     using Domain.Abstractions;
+    using Domain.Entities;
     using Features.Auth;
     using Features.Auth.Register;
     using Features.Auth.Login;
     using Features.Auth.ConfirmEmail;
+    using Features.Auth.Refresh;
+    using Features.Auth.RevokeToken;
     using Features.DirectMessages.Dto;
     using Features.DirectMessages.GetConversation;
     using Features.DirectMessages.MarkMessageAsRead;
@@ -26,6 +29,8 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<RegisterCommand, AuthResponse>, RegisterCommandHandler>();
             services.AddScoped<IRequestHandler<LoginQuery, AuthResponse>, LoginQueryHandler>();
             services.AddScoped<IRequestHandler<ConfirmEmailCommand, bool>, ConfirmEmailCommandHandler>();
+            services.AddScoped<IRequestHandler<RefreshTokenCommand, AuthResponse?>, RefreshTokenCommandHandler>();
+            services.AddScoped<IRequestHandler<RevokeTokenCommand, bool>, RevokeTokenCommandHandler>();
             
             // Posts
             services.AddScoped<IRequestHandler<GetAllPostsQuery, IReadOnlyList<PostDto>>, GetAllPostsHandler>();
