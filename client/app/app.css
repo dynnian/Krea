@@ -1,5 +1,4 @@
 /* app.css - VERSIÓN LIMPIA */
-
 /* 1. Import de Tailwind - SOLO UNA VEZ */
 @import "tailwindcss";
 
@@ -22,5 +21,24 @@ html, body, #root {
   overflow-x: hidden;
   background-color: #E3E2DE;
 }
+
+.krea-tabs .ant-tabs-nav {
+  margin-bottom: 0 !important;
+  color: #ffffff !important;
+}
+
+.krea-tabs .ant-tabs-nav::before {
+  border-bottom: 0 !important;
+}
+
+.krea-tabs .ant-tabs-ink-bar {
+  height: 2px;
+}
+
+.krea-tabs .ant-tabs-content-holder {
+  border-top: 0 !important;
+}
+
+
 
 /* 3. NO modifiques clases de Ant Design aquí */

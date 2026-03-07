@@ -4,6 +4,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Avatar, Tabs, Typography, Grid, message, Spin } from 'antd';
 import { useAuth } from '../contexts/AuthContext';
+import DigitalPortfolio from "../components/Profile/DigitalPortfolio";
+import { digitalPortfolioMock } from "../data/digitalPortfolioMock";
+import { settingsRepository } from "../services/settingsRepository";
 import {
   Heart,
   MessageCircle,
@@ -403,7 +406,6 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({ audioUrl, coverUrl }) =
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurfer = useRef<WaveSurfer | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-
   useEffect(() => {
     if (waveformRef.current && !wavesurfer.current) {
       wavesurfer.current = WaveSurfer.create({
@@ -449,6 +451,8 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({ audioUrl, coverUrl }) =
     </div>
   );
 };
+
+
 
 // ---------- PostCard ----------
 interface PostCardProps {
@@ -657,8 +661,16 @@ const Profile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [portfolioSettings, setPortfolioSettings] = useState<{
+  imagesEnabled: boolean;
+  musicEnabled: boolean;
+  literatureEnabled: boolean;
+  } | null>(null);
+
+
   const [activeMainTab, setActiveMainTab] = useState('portfolio');
-  const [activePortfolioSubTab, setActivePortfolioSubTab] = useState('all');
+  // const [activePortfolioSubTab, setActivePortfolioSubTab] = useState("all");
+  const [activePortfolioSubTab, setActivePortfolioSubTab] = useState("images");
   const [isFollowing, setIsFollowing] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
 
@@ -705,6 +717,15 @@ const isOwnProfile = username === "me";
 
     loadProfile();
   }, [username, user, navigate, isOwnProfile]);
+
+    useEffect(() => {
+    const loadPortfolioSettings = async () => {
+      const settings = await settingsRepository.getSettings();
+      setPortfolioSettings(settings.portfolio);
+    };
+
+  void loadPortfolioSettings();
+}, []);
 
   const handleFollow = async () => {
     if (!user) {
@@ -755,25 +776,28 @@ const isOwnProfile = username === "me";
   if (error || !profile) {
     return (
       <div className="w-full min-h-screen bg-[#E3E2DE] flex items-center justify-center">
-        <Text type="danger">{error || 'Perfil no encontrado'}</Text>
+        <Text type="danger">{error || 'Perfil no encontrado'}</Text>es
       </div>
     );
   }
 
   const mainTabItems  = [
-    { key: 'portfolio', label: t('profile.tabs.portfolio') },
-    { key: 'publications', label: t('profile.tabs.publications') },
-    { key: 'members', label: t('profile.tabs.members') },
+    { key: 'portfolio', label: t('Portafolio') },
+    { key: 'publications', label: t('Publicatciones') },
+    { key: 'members', label: t('Miembros') },
   ];
 
+const portfolioSubTabs = [
+  { key: "images", label: "Imágenes" },
+  { key: "music", label: "Música" },
+  { key: "literature", label: "Literatura" },
+];
 
-  const portfolioSubTabs = [
-    { key: 'all', label: t('profile.portfolio.all') },
-    { key: 'images', label: t('profile.portfolio.images') },
-    { key: 'music', label: t('profile.portfolio.music') },
-    { key: 'literature', label: t('profile.portfolio.literature') },
-  ];
-
+const effectivePortfolioTab =
+  portfolioSubTabs.find((tab) => tab.key === activePortfolioSubTab)?.key ??
+  portfolioSubTabs[0]?.key ??
+  "";
+/*
   const getFilteredPosts = () => {
     let posts = profile.posts;
 
@@ -795,15 +819,36 @@ const isOwnProfile = username === "me";
 
     return posts;
   };
+*/
 
+const getFilteredPosts = () => {
+  let posts = profile.posts;
+
+  if (activeMainTab === "publications") {
+    posts = posts.filter((p) => p.isWork === false);
+  } else if (activeMainTab === "members") {
+    posts = [];
+  } else if (activeMainTab === "portfolio") {
+    posts = [];
+  }
+
+  return posts;
+};
   const filteredPosts = getFilteredPosts();
+  const isPortfolioView = activeMainTab === "portfolio";
 
  return (
-  <div className="w-full max-w-[870px] bg-[#E3E2DE] h-screen ">
-    <div className="w-full bg-[#E8F1FC] border-l-2 border-r-2 border-[#8F8E8A] ">
-      <div className="px-[80px] pt-6 ">
+  <div className="w-full max-w-[870px] h-full">
+    <div
+    className={`w-full h-full ${
+      isPortfolioView
+        ? "bg-transparent border-none"
+        : "bg-[#E8F1FC] border-l-2 border-r-2 border-[#8F8E8A]"
+    }`}
+  >
+      <div className=" pt-6 ">
         {/* Perfil header */}
-        <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex flex-col md:flex-row gap-6 px-[70px]" >
           <div className="flex justify-center md:justify-start">
             <Avatar
               src={profile.user.avatar}
@@ -860,7 +905,7 @@ const isOwnProfile = username === "me";
           </div>
         </div>
 
-        <div className="mt-8">
+        <div className=" krea-tabs">
           <Tabs
             activeKey={activeMainTab}
             onChange={setActiveMainTab}
@@ -872,9 +917,9 @@ const isOwnProfile = username === "me";
         </div>
 
         {activeMainTab === "portfolio" && (
-          <div className="mt-4">
+          <div className=" krea-tabs">
             <Tabs
-              activeKey={activePortfolioSubTab}
+              activeKey={effectivePortfolioTab}
               onChange={setActivePortfolioSubTab}
               items={portfolioSubTabs}
               centered={!isMobile}
@@ -886,21 +931,50 @@ const isOwnProfile = username === "me";
         )}
       </div>
         
-        <div className="w-[868px] h-px bg-[#8F8E8A] my-4 self-center"/>
+         {/* LINEA DEL DIABLO*/}
+        {!isPortfolioView && (
+          <div className="w-[868px] h-px bg-[#8F8E8A] my-4 self-center" />
+        )}
 
-      <div className="px-[80px] pb-6">
-        <div className="space-y-8">
-          {filteredPosts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-          {filteredPosts.length === 0 && (
-            <div className="text-center text-gray-500 py-8">
-              {t("profile.no_posts")}
-            </div>
+        <div className={` ${
+            isPortfolioView
+              ? "pt-[20px]"
+              : ""
+          }`}
+        >
+
+          {activeMainTab === "portfolio" && effectivePortfolioTab === "images" && (
+           <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+          <DigitalPortfolio items={digitalPortfolioMock} />
+           </div>
           )}
+
+          {activeMainTab === "portfolio" && effectivePortfolioTab === "music" && (
+            <div className="text-center text-gray-500 py-8">
+              Portafolio de música pendiente.
+            </div>
+            
+          )}
+{activeMainTab === "portfolio" && effectivePortfolioTab === "literature" && (
+  <div className="text-center text-gray-500 py-8">
+    Portafolio de literatura pendiente.
+  </div>
+)}
+
+            {activeMainTab !== "portfolio" && (
+              <div className="space-y-8 px-[70px]">
+                {filteredPosts.map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))}
+                {filteredPosts.length === 0 && (
+                  <div className="text-center text-gray-500 py-8 ">
+                    {t("profile.no_posts")}
+                  </div>
+                )}
+              </div>
+            )}
+            </div>
         </div>
-      </div>
-    </div>
   </div>
 );
 };
