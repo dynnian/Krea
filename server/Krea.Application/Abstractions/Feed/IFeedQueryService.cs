@@ -9,12 +9,12 @@ namespace Krea.Application.Abstractions.Feed {
             int pageSize,
             CancellationToken ct);
 
-        // Task<IReadOnlyList<PostFeedResponse>> GetFollowingAsync(
-        //     Guid currentUserId,
-        //     int page,
-        //     int pageSize,
-        //     CancellationToken ct);
-        //
+        Task<IReadOnlyList<PostFeedResponse>> GetFollowingFeedAsync(
+            Guid currentUserId,
+            int page,
+            int pageSize,
+            CancellationToken ct);
+        
         Task<IReadOnlyList<PostFeedResponse>> GetTrendingAsync(
             Guid currentUserId,
             int page,

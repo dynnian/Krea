@@ -1,7 +1,7 @@
 namespace Krea.Application {
     using Abstractions;
+    using Abstractions.Feed;
     using Domain.Abstractions;
-    using Domain.Entities;
     using Features.Auth;
     using Features.Auth.Register;
     using Features.Auth.Login;
@@ -19,6 +19,8 @@ namespace Krea.Application {
     using Features.PostUploads.CreatePostUpload;
     using Microsoft.Extensions.DependencyInjection;
     using Features.DirectMessages.Mappings;
+    using Features.Feed;
+    using Features.Follows;
 
     public static class DependencyInjection {
         public static IServiceCollection AddApplication(this IServiceCollection services) {
@@ -31,6 +33,15 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<ConfirmEmailCommand, bool>, ConfirmEmailCommandHandler>();
             services.AddScoped<IRequestHandler<RefreshTokenCommand, AuthResponse?>, RefreshTokenCommandHandler>();
             services.AddScoped<IRequestHandler<RevokeTokenCommand, bool>, RevokeTokenCommandHandler>();
+            
+            //User
+            services.AddScoped<IRequestHandler<FollowUserCommand, Unit>, FollowUserHandler>();
+            services.AddScoped<IRequestHandler<UnfollowUserCommand, Unit>, UnfollowUserHandler>();
+            
+            //Feed
+            services.AddScoped<GetRecentFeedHandler>();
+            services.AddScoped<GetTrendingFeedHandler>();
+            services.AddScoped<GetFollowingFeedHandler>();
             
             // Posts
             services.AddScoped<IRequestHandler<GetAllPostsQuery, IReadOnlyList<PostDto>>, GetAllPostsHandler>();
@@ -50,6 +61,7 @@ namespace Krea.Application {
             services.AddScoped< IRequestHandler<GetConversationQuery, ConversationDto>, GetConversationQueryHandler>();
             services.AddScoped< IRequestHandler<MarkMessageAsReadCommand, bool>, MarkMessageAsReadCommandHandler>();
             services.AddScoped< IRequestHandler<SendDirectMessageCommand, DirectMessageDto>, SendDirectMessageCommandHandler>();
+            
             return services;
         }
     }

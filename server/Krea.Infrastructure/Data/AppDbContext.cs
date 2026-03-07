@@ -18,7 +18,7 @@ namespace Krea.Infrastructure.Data {
 
         public DbSet<Scope> Scopes => Set<Scope>();
         // public DbSet<UserRole> UserRoles => Set<UserRole>();
-        // public DbSet<Follow> Follows => Set<Follow>();
+        public DbSet<Follow> Follows => Set<Follow>();
 
         public DbSet<Post> Posts => Set<Post>();
 
