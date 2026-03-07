@@ -33,7 +33,7 @@ namespace Krea.Domain.Entities {
         public DateTime? EmailConfirmedAt { get; private set; }
         public DateTime? LastPasswordResetAt { get; private set; }
 
-        // Colecciones
+        // Collections
         private readonly List<Post> _posts = new();
         public IReadOnlyCollection<Post> Posts => _posts;
 
@@ -45,6 +45,9 @@ namespace Krea.Domain.Entities {
 
         private readonly List<UserRole> _userRoles = new();
         public IReadOnlyCollection<UserRole> UserRoles => _userRoles.AsReadOnly();
+        
+        private readonly List<ConversationParticipant> _conversations = new();
+        public IReadOnlyCollection<ConversationParticipant> Conversations => _conversations;
 
         #pragma warning disable CS8618
         private User() { }
