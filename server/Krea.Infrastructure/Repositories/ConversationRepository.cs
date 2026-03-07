@@ -1,35 +1,62 @@
-using Krea.Domain.Entities;
-using Krea.Domain.Repositories;
-using Krea.Infrastructure.Data;
+namespace Krea.Infrastructure.Repositories;
+
+using Domain.ValueObjects;
+using Domain.Entities;
+using Domain.Repositories;
+using Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Krea.Infrastructure.Repositories {
-    public sealed class ConversationRepository : IConversationRepository {
-        private readonly AppDbContext _context;
+public class ConversationRepository(AppDbContext context) : IConversationRepository {
+    public async Task<Conversation?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await context.Conversations
+            .Include(c => c.Participants)
+                .ThenInclude(p => p.User)
+            .Include(c => c.Messages)
+                .ThenInclude(m => m.User)
+            .Include(c => c.Messages)
+                .ThenInclude(m => m.MediaAttachments)
+            .Include(c => c.Icon)
+            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+    }
 
-        public ConversationRepository(AppDbContext context) => _context = context;
+    public async Task<IEnumerable<Conversation>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await context.Conversations
+            .Include(c => c.Participants.Where(p => p.UserId == userId))
+                .ThenInclude(p => p.User)
+            .Include(c => c.Messages.OrderByDescending(m => m.SentAt).Take(20)) // Últimos 20 mensajes
+            .Include(c => c.Icon)
+            .Where(c => c.Participants.Any(p => p.UserId == userId && p.IsActive))
+            .ToListAsync(cancellationToken);
+    }
 
-        public async Task<Conversation?> GetByIdAsync(Guid id)
-            => await _context.Conversations
-                             .Include(c => c.Icon)
-                             .FirstOrDefaultAsync(c => c.Id == id);
+    public async Task<Conversation?> GetDirectMessageBetweenAsync(Guid user1Id, Guid user2Id, CancellationToken cancellationToken = default)
+    {
+        return await context.Conversations
+            .Include(c => c.Participants)
+                .ThenInclude(p => p.User)
+            .Include(c => c.Messages)
+            .Include(c => c.Icon)
+            .Where(c => c.Type == ConversationType.DirectMessage)
+            .Where(c => c.Participants.Any(p => p.UserId == user1Id && p.IsActive))
+            .Where(c => c.Participants.Any(p => p.UserId == user2Id && p.IsActive))
+            .Where(c => c.Participants.Count(p => p.IsActive) == 2)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 
-        public async Task<IReadOnlyList<Conversation>> GetAllAsync()
-            => await _context.Conversations
-                             .Include(c => c.Icon)
-                             .ToListAsync();
+    public void Add(Conversation conversation)
+    {
+        context.Conversations.Add(conversation);
+    }
 
-        public async Task AddAsync(Conversation conversation)
-            => await _context.Conversations.AddAsync(conversation);
+    public void Update(Conversation conversation)
+    {
+        context.Conversations.Update(conversation);
+    }
 
-        public Task UpdateAsync(Conversation conversation) {
-            _context.Conversations.Update(conversation);
-            return Task.CompletedTask;
-        }
-
-        public Task DeleteAsync(Conversation conversation) {
-            _context.Conversations.Remove(conversation);
-            return Task.CompletedTask;
-        }
+    public void Delete(Conversation conversation)
+    {
+        context.Conversations.Remove(conversation);
     }
 }

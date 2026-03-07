@@ -3,10 +3,16 @@ using Krea.Domain.ValueObjects;
 namespace Krea.Domain.Entities {
     public sealed class Message {
         public Guid Id { get; private set; }
+        
+        public Guid UserId { get; private set; }
         public User User { get; private set; }
+        
+        public Guid ConversationId { get; private set; }
         public Conversation Conversation { get; private set; }
+        
         public MessageContentType ContentType { get; private set; }
         public string? TextContent { get; private set; }
+        
         private readonly List<Media> _mediaAttachments = new();
         public IReadOnlyCollection<Media> MediaAttachments => _mediaAttachments;
 
@@ -20,7 +26,9 @@ namespace Krea.Domain.Entities {
         private Message(User user, Conversation conversation, MessageContentType contentType) {
             Id = Guid.NewGuid();
             User = user ?? throw new ArgumentNullException(nameof(user));
+            UserId = user.Id;
             Conversation = conversation ?? throw new ArgumentNullException(nameof(conversation));
+            ConversationId = conversation.Id;
             ContentType = contentType;
             SentAt = DateTime.UtcNow;
             UpdatedAt = SentAt;
@@ -30,8 +38,7 @@ namespace Krea.Domain.Entities {
             if (string.IsNullOrWhiteSpace(text))
                 throw new ArgumentException("Text message cannot be empty.");
 
-            var message = new Message(user, conversation, MessageContentType.Text);
-            message.TextContent = text;
+            var message = new Message(user, conversation, MessageContentType.Text) { TextContent = text };
             return message;
         }
 
@@ -84,8 +91,7 @@ namespace Krea.Domain.Entities {
 
             return message;
         }
-
-        // Editar mensaje (solo texto por ahora, podrías extender para multimedia)
+        
         public void EditText(string newText) {
             if (ContentType != MessageContentType.Text && ContentType != MessageContentType.System)
                 throw new InvalidOperationException("Only text or system messages can be edited.");
