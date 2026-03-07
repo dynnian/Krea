@@ -60,7 +60,10 @@
     "following": "Following",
     "post_required": "Write something or attach media",
     "post_success": "Post created successfully",
-    "post_error": "Failed to create post"
+    "post_error": "Failed to create post",
+    "errorLoadingFeed": "Error loading feed",
+    "loginToSeeFollowing": "Log in to see who you follow",
+    "noPosts": "No posts to show"
   },
   "post": {
     "auth_required": "You need to log in to perform this action",

@@ -88,3 +88,18 @@ export interface UploadMediaData {
   FileSize?: number;
   GenreIds?: string[];
 }
+
+export interface FeedPost {
+  id: string;
+  title: string;
+  content: string;
+  authorId: string;
+  authorUsername: string;
+  uploadedAt: string; // fecha ISO
+  mediaPreviewUrl: string | null;
+  mediaMimeType: string | null;
+  likeCount: number;
+  isLikedByCurrentUser: boolean;
+  replyCount: number;
+  repostCount: number;
+}

@@ -60,7 +60,10 @@
     "following": "Siguiente",
     "post_required": "Escribe algo o adjunta contenido",
     "post_success": "Publicación creada",
-    "post_error": "Error al crear la publicación"
+    "post_error": "Error al crear la publicación",
+    "errorLoadingFeed": "Error al cargar el feed",
+    "loginToSeeFollowing": "Inicia sesión para ver a quienes sigues",
+    "noPosts": "No hay publicaciones para mostrar"
   },
   "post": {
     "auth_required": "Necesitas iniciar sesión para realizar esta acción",

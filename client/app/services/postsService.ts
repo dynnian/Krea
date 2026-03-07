@@ -7,6 +7,7 @@ import {
   type RepostData,
   type LikeData,
   type UploadMediaData,
+  type FeedPost,
 } from "../types/api.ts";
 
 export interface PostsQuery {
@@ -81,38 +82,72 @@ export const postsApi = {
 
   // POST /api/Posts/{postId} (subida de medios)
   uploadMedia: async (postId: string, data: UploadMediaData) => {
-  const formData = new FormData();
-  formData.append("File", data.File);
-  formData.append("Type", data.Type);
-  formData.append("Title", data.Title);
-  
-  if (data.Description) formData.append("Description", data.Description);
-  if (data.IsWorkMedia !== undefined) formData.append("IsWorkMedia", data.IsWorkMedia.toString());
-  
-  // Imagen
-  if (data.Width !== undefined) formData.append("Width", data.Width.toString());
-  if (data.Height !== undefined) formData.append("Height", data.Height.toString());
-  if (data.Format) formData.append("Format", data.Format);
-  
-  // Música
-  if (data.BitrateKbps !== undefined) formData.append("BitrateKbps", data.BitrateKbps.toString());
-  if (data.DurationSec !== undefined) formData.append("DurationSec", data.DurationSec.toString());
-  
-  // Texto
-  if (data.WordCount !== undefined) formData.append("WordCount", data.WordCount.toString());
-  if (data.SortTitle) formData.append("SortTitle", data.SortTitle);
-  if (data.Subtitle) formData.append("Subtitle", data.Subtitle);
-  if (data.LanguageCode) formData.append("LanguageCode", data.LanguageCode); // seguro porque verificamos
-  
-  // Comunes
-  if (data.FileSize !== undefined) formData.append("FileSize", data.FileSize.toString());
-  if (data.GenreIds?.length) {
-    data.GenreIds.forEach(id => formData.append("GenreIds", id));
-  }
+    const formData = new FormData();
+    formData.append("File", data.File);
+    formData.append("Type", data.Type);
+    formData.append("Title", data.Title);
 
-  const res = await axiosClient.post(`/Posts/${postId}/uploads`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-  return res.data;
-},
+    if (data.Description) formData.append("Description", data.Description);
+    if (data.IsWorkMedia !== undefined)
+      formData.append("IsWorkMedia", data.IsWorkMedia.toString());
+
+    // Imagen
+    if (data.Width !== undefined)
+      formData.append("Width", data.Width.toString());
+    if (data.Height !== undefined)
+      formData.append("Height", data.Height.toString());
+    if (data.Format) formData.append("Format", data.Format);
+
+    // Música
+    if (data.BitrateKbps !== undefined)
+      formData.append("BitrateKbps", data.BitrateKbps.toString());
+    if (data.DurationSec !== undefined)
+      formData.append("DurationSec", data.DurationSec.toString());
+
+    // Texto
+    if (data.WordCount !== undefined)
+      formData.append("WordCount", data.WordCount.toString());
+    if (data.SortTitle) formData.append("SortTitle", data.SortTitle);
+    if (data.Subtitle) formData.append("Subtitle", data.Subtitle);
+    if (data.LanguageCode) formData.append("LanguageCode", data.LanguageCode); // seguro porque verificamos
+
+    // Comunes
+    if (data.FileSize !== undefined)
+      formData.append("FileSize", data.FileSize.toString());
+    if (data.GenreIds?.length) {
+      data.GenreIds.forEach((id) => formData.append("GenreIds", id));
+    }
+
+    const res = await axiosClient.post(`/Posts/${postId}/uploads`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res.data;
+  },
+};
+
+export const feedApi = {
+  // GET /api/feed/recent?currentUserId&page&pageSize
+  getRecent: async (
+    currentUserId?: string,
+    page: number = 1,
+    pageSize: number = 20,
+  ) => {
+    const params: any = { page, pageSize };
+    if (currentUserId) params.currentUserId = currentUserId;
+    const res = await axiosClient.get<FeedPost[]>("/feed/recent", { params });
+    return res.data;
+  },
+
+  // GET /api/feed/following?currentUserId&page&pageSize
+  getFollowing: async (
+    currentUserId: string,
+    page: number = 1,
+    pageSize: number = 20,
+  ) => {
+    const params = { currentUserId, page, pageSize };
+    const res = await axiosClient.get<FeedPost[]>("/feed/following", {
+      params,
+    });
+    return res.data;
+  },
 };
