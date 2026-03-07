@@ -32,7 +32,14 @@ namespace Krea.Infrastructure.Services {
                     Title = p.Title,
                     Content = p.Content!,
                     AuthorId = p.AuthorPostId,
+                    AuthorUsername = p.AuthorPost.DisplayName,
                     UploadedAt = p.UploadedAt,
+                    MediaPreviewUrl = p.Uploads
+                        .Select(u => u.Media.Path)
+                        .FirstOrDefault(),
+                    MediaMimeType = p.Uploads
+                        .Select(u => u.Media.MimeType)
+                        .FirstOrDefault(),
                     LikeCount = p.Likes.Count(),
                     IsLikedByCurrentUser =
                         p.Likes.Any(l => l.UserId == currentUserId),
@@ -68,8 +75,14 @@ namespace Krea.Infrastructure.Services {
                     Title = p.Title,
                     Content = p.Content!,
                     AuthorId = p.AuthorPostId,
+                    AuthorUsername = p.AuthorPost.DisplayName,
                     UploadedAt = p.UploadedAt,
-
+                    MediaPreviewUrl = p.Uploads
+                        .Select(u => u.Media.Path)
+                        .FirstOrDefault(),
+                    MediaMimeType = p.Uploads
+                        .Select(u => u.Media.MimeType)
+                        .FirstOrDefault(),
                     LikeCount = p.Likes.Count(),
 
                     IsLikedByCurrentUser =
@@ -106,8 +119,14 @@ namespace Krea.Infrastructure.Services {
                     Title = p.Title,
                     Content = p.Content!,
                     AuthorId = p.AuthorPostId,
+                    AuthorUsername = p.AuthorPost.DisplayName,
                     UploadedAt = p.UploadedAt,
-
+                    MediaPreviewUrl = p.Uploads
+                        .Select(u => u.Media.Path)
+                        .FirstOrDefault(),
+                    MediaMimeType = p.Uploads
+                        .Select(u => u.Media.MimeType)
+                        .FirstOrDefault(),
                     LikeCount = p.Likes.Count(),
 
                     IsLikedByCurrentUser =

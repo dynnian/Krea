@@ -1,6 +1,6 @@
-namespace Krea.Application.Features.Posts {
+namespace Krea.Application.Features.Feed {
     using Abstractions.Feed;
-    using Dto;
+    using Posts.Dto;
 
     public sealed class GetRecentFeedHandler
     {
