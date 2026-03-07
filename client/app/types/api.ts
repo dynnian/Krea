@@ -1,5 +1,7 @@
 // app/types/api.ts
 
+import type { PostType } from "./common";
+
 // Respuesta de login/register (ya existente)
 export interface AuthResponse {
   token: string;
@@ -30,7 +32,7 @@ export interface CreatePostData {
 }
 
 export interface ApiPost {
-  id: string;
+  postId: string;
   authorPostId: string;
   type: number;
   title: string | null;
@@ -62,19 +64,27 @@ export interface LikeData {
   userId: string;
 }
 
-// --- Subida de medios ---
+export type UploadMediaType = Exclude<PostType, PostType.PLAIN>; // "image" | "music" | "text"
+
 export interface UploadMediaData {
   File: File;
+  Type: UploadMediaType; // ahora solo "image" | "music" | "text"
+  Title: string;
+  Description?: string;
+  IsWorkMedia?: boolean;
+  // Para imagen
+  Width?: number;
+  Height?: number;
+  Format?: string;
+  // Para música
   BitrateKbps?: number;
   DurationSec?: number;
-  Description?: string;
-  FileSize?: number;
-  Format?: string;
-  GenreIds?: string[];
-  Height?: number;
-  IsWorkMedia?: boolean;
-  LanguageCode?: string;
+  // Para texto
+  WordCount?: number;
   SortTitle?: string;
   Subtitle?: string;
-  // ... otros campos según el tipo de medio
+  LanguageCode?: string;
+  // Comunes
+  FileSize?: number;
+  GenreIds?: string[];
 }

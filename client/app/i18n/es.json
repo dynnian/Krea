@@ -77,7 +77,10 @@
     "see_more": "Ver más..."
   },
   "common": {
-    "follow": "Seguir"
+    "follow": "Seguir",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "saving": "Guardando..."
   },
   "explore": {
     "tabs": {
@@ -176,11 +179,32 @@
     "commission_button": "Comisión",
     "edit_profile_button": "Editar perfil"
   },
-   "chat": {
+  "chat": {
     "placeholder": "Enviar mensaje...",
     "online": "En línea",
     "offline": "Desconectado",
     "select_conversation": "Selecciona una conversación para empezar a chatear"
+  },
+
+  "createPost": {
+    "authRequired": "Debes iniciar sesión",
+    "titleRequired": "El título es obligatorio",
+    "fileRequired": "Debes adjuntar al menos un archivo",
+    "success": "Post creado exitosamente",
+    "error": "Error al crear el post",
+    "music": "canción",
+    "image": "imagen",
+    "literature": "literatura",
+    "content": "contenido",
+    "title": "Añadir {{type}} al portafolio",
+    "contentType": "Tipo de contenido",
+    "uploadLabel": "Inserte 1 o varios elementos",
+    "uploadText": "Adjuntar archivo/s",
+    "belongsToAlbum": "Volver selección a un álbum",
+    "titleField": "Título",
+    "titlePlaceholder": "Título de la {{type}}",
+    "description": "Descripción (opcional)",
+    "descriptionPlaceholder": "Añade una descripción"
   }
 }
 

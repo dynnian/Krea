@@ -81,29 +81,38 @@ export const postsApi = {
 
   // POST /api/Posts/{postId} (subida de medios)
   uploadMedia: async (postId: string, data: UploadMediaData) => {
-    const formData = new FormData();
-    formData.append("File", data.File);
-    if (data.BitrateKbps !== undefined)
-      formData.append("BitrateKbps", data.BitrateKbps.toString());
-    if (data.DurationSec !== undefined)
-      formData.append("DurationSec", data.DurationSec.toString());
-    if (data.Description) formData.append("Description", data.Description);
-    if (data.FileSize !== undefined)
-      formData.append("FileSize", data.FileSize.toString());
-    if (data.Format) formData.append("Format", data.Format);
-    if (data.GenreIds?.length)
-      formData.append("GenreIds", data.GenreIds.join(","));
-    if (data.Height !== undefined)
-      formData.append("Height", data.Height.toString());
-    if (data.IsWorkMedia !== undefined)
-      formData.append("IsWorkMedia", data.IsWorkMedia.toString());
-    if (data.LanguageCode) formData.append("LanguageCode", data.LanguageCode);
-    if (data.SortTitle) formData.append("SortTitle", data.SortTitle);
-    if (data.Subtitle) formData.append("Subtitle", data.Subtitle);
+  const formData = new FormData();
+  formData.append("File", data.File);
+  formData.append("Type", data.Type);
+  formData.append("Title", data.Title);
+  
+  if (data.Description) formData.append("Description", data.Description);
+  if (data.IsWorkMedia !== undefined) formData.append("IsWorkMedia", data.IsWorkMedia.toString());
+  
+  // Imagen
+  if (data.Width !== undefined) formData.append("Width", data.Width.toString());
+  if (data.Height !== undefined) formData.append("Height", data.Height.toString());
+  if (data.Format) formData.append("Format", data.Format);
+  
+  // Música
+  if (data.BitrateKbps !== undefined) formData.append("BitrateKbps", data.BitrateKbps.toString());
+  if (data.DurationSec !== undefined) formData.append("DurationSec", data.DurationSec.toString());
+  
+  // Texto
+  if (data.WordCount !== undefined) formData.append("WordCount", data.WordCount.toString());
+  if (data.SortTitle) formData.append("SortTitle", data.SortTitle);
+  if (data.Subtitle) formData.append("Subtitle", data.Subtitle);
+  if (data.LanguageCode) formData.append("LanguageCode", data.LanguageCode); // seguro porque verificamos
+  
+  // Comunes
+  if (data.FileSize !== undefined) formData.append("FileSize", data.FileSize.toString());
+  if (data.GenreIds?.length) {
+    data.GenreIds.forEach(id => formData.append("GenreIds", id));
+  }
 
-    const res = await axiosClient.post(`/Posts/${postId}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return res.data;
-  },
+  const res = await axiosClient.post(`/Posts/${postId}/uploads`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+},
 };

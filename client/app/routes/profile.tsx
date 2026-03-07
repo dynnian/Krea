@@ -16,6 +16,7 @@ import {
   Pause,
 } from 'lucide-react';
 import WaveSurfer from 'wavesurfer.js';
+import CreatePortfolioPostModal from '~/components/Posts/CreatePortfolioPostModal';
 
 const { useBreakpoint } = Grid;
 const { Title, Text } = Typography;
@@ -685,6 +686,11 @@ const Profile: React.FC = () => {
   const [activePortfolioSubTab, setActivePortfolioSubTab] = useState('all');
   const [isFollowing, setIsFollowing] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const handleUpdatePortfolio = () => {
+    setModalVisible(true);
+  };
 
   const username = usernameParam ?? "me";
   const isOwnProfile = username === "me";
@@ -773,10 +779,6 @@ const Profile: React.FC = () => {
     console.log('Navegando a guardados');
   };
 
-  const handleUpdatePortfolio = () => {
-    // Aquí puedes abrir un modal o redirigir a una página de creación
-    message.info('Funcionalidad de actualizar portafolio próximamente');
-  };
 
   if (loading) {
     return (
@@ -936,6 +938,14 @@ const Profile: React.FC = () => {
           {isOwnProfile && (
             <div className="mb-4">
               <UpdatePortfolioButton onClick={handleUpdatePortfolio} />
+              <CreatePortfolioPostModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                onSuccess={() => {
+                  // Opcional: recargar los posts del perfil
+                  // Por ejemplo, volver a llamar a fetchProfile(username)
+                }}
+              />
             </div>
           )}
 

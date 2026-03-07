@@ -77,7 +77,10 @@
     "see_more": "See more..."
   },
   "common": {
-    "follow": "Follow"
+    "follow": "Follow",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving..."
   },
   "explore": {
     "tabs": {
@@ -181,5 +184,25 @@
     "online": "Online",
     "offline": "Offline",
     "select_conversation": "Select a conversation to start chatting"
+  },
+  "createPost": {
+    "authRequired": "You must be logged in",
+    "titleRequired": "Title is required",
+    "fileRequired": "Please attach at least one file",
+    "success": "Post created successfully",
+    "error": "Error creating post",
+    "music": "song",
+    "image": "image",
+    "literature": "literature",
+    "content": "content",
+    "title": "Add {{type}} to portfolio",
+    "contentType": "Content type",
+    "uploadLabel": "Insert one or several items",
+    "uploadText": "Attach file(s)",
+    "belongsToAlbum": "Add selection to an album",
+    "titleField": "Title",
+    "titlePlaceholder": "Title of the {{type}}",
+    "description": "Description (optional)",
+    "descriptionPlaceholder": "Add a description"
   }
 }
