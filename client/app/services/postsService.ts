@@ -1,17 +1,109 @@
 // app/services/postsService.ts
-import axiosClient from "../lib/axiosClient"; // ajusta el path al tuyo
+import axiosClient from "../lib/axios";
+import {
+  type ApiPost,
+  type CreatePostData,
+  type ReplyData,
+  type RepostData,
+  type LikeData,
+  type UploadMediaData,
+} from "../types/api.ts";
 
 export interface PostsQuery {
   page?: number;
   pageSize?: number;
 }
 
-export async function getPosts(query: PostsQuery = {}) {
-  const params = {
-    page: query.page ?? 1,
-    pageSize: query.pageSize ?? 20,
-  };
+export const postsApi = {
+  // GET /api/Posts?page&pageSize
+  getPosts: async (query: PostsQuery = {}) => {
+    const params = {
+      page: query.page ?? 1,
+      pageSize: query.pageSize ?? 20,
+    };
+    const res = await axiosClient.get<ApiPost[]>("/Posts", { params });
+    return res.data;
+  },
 
-  const res = await axiosClient.get("/api/Posts", { params });
-  return res.data; // aquí luego tipas el array con tu Post[]
-}
+  // GET /api/Posts/{id}
+  getPost: async (id: string) => {
+    const res = await axiosClient.get<ApiPost>(`/Posts/${id}`);
+    return res.data;
+  },
+
+  // POST /api/Posts
+  createPost: async (data: CreatePostData) => {
+    const res = await axiosClient.post<ApiPost>("/Posts", data);
+    return res.data;
+  },
+
+  // DELETE /api/Posts/{id}
+  deletePost: async (id: string) => {
+    await axiosClient.delete(`/Posts/${id}`);
+  },
+
+  // GET /api/Posts/user/{authorId}
+  getUserPosts: async (authorId: string, query: PostsQuery = {}) => {
+    const params = {
+      page: query.page ?? 1,
+      pageSize: query.pageSize ?? 20,
+    };
+    const res = await axiosClient.get<ApiPost[]>(`/Posts/user/${authorId}`, {
+      params,
+    });
+    return res.data;
+  },
+
+  // POST /api/Posts/{postId}/reply
+  replyToPost: async (postId: string, data: ReplyData) => {
+    const res = await axiosClient.post(`/Posts/${postId}/reply`, data);
+    return res.data; // probablemente devuelve el nuevo post (reply)
+  },
+
+  // POST /api/Posts/{postId}/repost
+  repost: async (postId: string, data: RepostData) => {
+    const res = await axiosClient.post(`/Posts/${postId}/repost`, data);
+    return res.data;
+  },
+
+  // POST /api/Posts/{postId}/like
+  like: async (postId: string, data: LikeData) => {
+    const res = await axiosClient.post(`/Posts/${postId}/like`, data);
+    return res.data;
+  },
+
+  // DELETE /api/Posts/{postId}/like
+  unlike: async (postId: string, data: LikeData) => {
+    // Nota: DELETE con body no es estándar, pero lo implementamos como pide la API
+    const res = await axiosClient.delete(`/Posts/${postId}/like`, { data });
+    return res.data;
+  },
+
+  // POST /api/Posts/{postId} (subida de medios)
+  uploadMedia: async (postId: string, data: UploadMediaData) => {
+    const formData = new FormData();
+    formData.append("File", data.File);
+    if (data.BitrateKbps !== undefined)
+      formData.append("BitrateKbps", data.BitrateKbps.toString());
+    if (data.DurationSec !== undefined)
+      formData.append("DurationSec", data.DurationSec.toString());
+    if (data.Description) formData.append("Description", data.Description);
+    if (data.FileSize !== undefined)
+      formData.append("FileSize", data.FileSize.toString());
+    if (data.Format) formData.append("Format", data.Format);
+    if (data.GenreIds?.length)
+      formData.append("GenreIds", data.GenreIds.join(","));
+    if (data.Height !== undefined)
+      formData.append("Height", data.Height.toString());
+    if (data.IsWorkMedia !== undefined)
+      formData.append("IsWorkMedia", data.IsWorkMedia.toString());
+    if (data.LanguageCode) formData.append("LanguageCode", data.LanguageCode);
+    if (data.SortTitle) formData.append("SortTitle", data.SortTitle);
+    if (data.Subtitle) formData.append("Subtitle", data.Subtitle);
+
+    const res = await axiosClient.post(`/Posts/${postId}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res.data;
+  },
+};

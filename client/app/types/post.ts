@@ -5,36 +5,36 @@ import { type Media } from "./media.ts";
 import type { AuthUser } from "~/contexts/AuthContext.tsx";
 
 export interface Post {
-  id: number;
-  user_post_id: number; // FK a user
+  id: string; // UUID
+  user_post_id: string; // UUID del autor
   type: PostType | null;
   title: string | null;
   content: string | null;
   is_work: boolean;
   is_deleted: boolean;
   is_local: boolean;
-  post_replied_to: number | null; // FK a post
-  post_repost_of: number | null; // FK a post
+  post_replied_to: string | null; // UUID del post padre (si es reply)
+  post_repost_of: string | null; // UUID del post original (si es repost)
   created_at: Timestamp;
   updated_at: Timestamp;
 
-  // Relaciones (opcional, según expanda la API)
+  // Relaciones (opcional, según lo que devuelva la API)
   author?: AuthUser;
   replies?: Post[];
   repost?: Post;
   media?: PostUpload[];
   hashtags?: Hashtag[];
   likesCount?: number;
-  favoritesCount?: number;
+  repostsCount?: number; // o favoritesCount, según corresponda
 }
 
 export interface PostUpload {
-  post_id: number;
-  media_id: number;
+  post_id: string;
+  media_id: number; // media_id puede seguir siendo número (auto-incremental)
   is_work_media: boolean;
-
   media?: Media;
 }
+
 
 export interface PostFavorite {
   user_id: number;
@@ -45,15 +45,13 @@ export interface PostFavorite {
   post?: Post;
 }
 
+
 export interface Like {
-  id: number;
-  user_id: number;
-  target_id: number; // ID de la entidad likeable
+  id: string; // UUID
+  user_id: string;
+  target_id: string; // ID del post (UUID)
   target_type: LikeTargetType;
   liked_at: Timestamp;
-
-  user?: User;
-  // target puede ser Post, etc.
 }
 
 export interface Hashtag {
@@ -69,5 +67,14 @@ export interface PostHashtag {
   post?: Post;
 }
 export interface ComposerForm {
+  title: string;
   content: string;
+}
+interface LikeData {
+  postId: string;   // UUID del post
+  userId: string;   // UUID del usuario que da like
+}
+interface RepostData {
+  authorId: string; // UUID del usuario que repostea
+  originalPostId: string; // UUID del post original
 }
