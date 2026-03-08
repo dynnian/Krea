@@ -60,7 +60,10 @@
     "following": "Siguiente",
     "post_required": "Escribe algo o adjunta contenido",
     "post_success": "Publicación creada",
-    "post_error": "Error al crear la publicación"
+    "post_error": "Error al crear la publicación",
+    "errorLoadingFeed": "Error al cargar el feed",
+    "loginToSeeFollowing": "Inicia sesión para ver a quienes sigues",
+    "noPosts": "No hay publicaciones para mostrar"
   },
   "post": {
     "auth_required": "Necesitas iniciar sesión para realizar esta acción",
@@ -77,7 +80,10 @@
     "see_more": "Ver más..."
   },
   "common": {
-    "follow": "Seguir"
+    "follow": "Seguir",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "saving": "Guardando..."
   },
   "explore": {
     "tabs": {
@@ -119,10 +125,89 @@
       "trending_authors": "Autores en tendencia"
     }
   },
+  "commissions": {
+    "loading": "Cargando comisiones...",
+    "list_title": "Comisiones de usuario",
+    "cta_more": "Saber más",
+    "detail": {
+      "loading": "Cargando detalle...",
+      "breadcrumb": "Comisión",
+      "back_to_commissions": "Volver a comisiones",
+      "about_title": "Acerca de la comisión",
+      "tags_title": "Tags",
+      "comments_title": "Comentarios",
+      "comment_placeholder": "Comentar",
+      "comment_post": "Post",
+      "price_title": "Precio",
+      "pay_cta": "Ir a pagar",
+      "message_creator_cta": "Mensaje al creador"
+    }
+  },
+  "subscriptions": {
+    "loading": "Cargando suscripciones...",
+    "list_title": "Suscripciones de usuario",
+    "cta_join": "Unirse",
+    "includes": "Incluye"
+  },
   "notifications": {
     "title": "Centro de notificaciones",
     "empty": "No hay notificaciones",
     "mark_all_read": "Marcar todas como leídas"
+  },
+  "profile": {
+    "auth_required": "Debes iniciar sesión para realizar esta acción",
+    "tabs": {
+      "portfolio": "Portafolio",
+      "publications": "Publicaciones",
+      "members": "Miembros"
+    },
+    "portfolio": {
+      "all": "Todo",
+      "images": "Imágenes",
+      "music": "Música",
+      "literature": "Literatura"
+    },
+    "no_posts": "No hay publicaciones",
+    "not_found": "Perfil no encontrado",
+    "following": "Seguidos",
+    "followers": "Seguidores",
+    "follow_button": {
+      "following": "Siguiendo",
+      "follow": "Seguir"
+    },
+    "subscribe_button": {
+      "subscribed": "Suscrito",
+      "subscribe": "Suscribirse"
+    },
+    "commission_button": "Comisión",
+    "edit_profile_button": "Editar perfil"
+  },
+  "chat": {
+    "placeholder": "Enviar mensaje...",
+    "online": "En línea",
+    "offline": "Desconectado",
+    "select_conversation": "Selecciona una conversación para empezar a chatear"
+  },
+
+  "createPost": {
+    "authRequired": "Debes iniciar sesión",
+    "titleRequired": "El título es obligatorio",
+    "fileRequired": "Debes adjuntar al menos un archivo",
+    "success": "Post creado exitosamente",
+    "error": "Error al crear el post",
+    "music": "canción",
+    "image": "imagen",
+    "literature": "literatura",
+    "content": "contenido",
+    "title": "Añadir {{type}} al portafolio",
+    "contentType": "Tipo de contenido",
+    "uploadLabel": "Inserte 1 o varios elementos",
+    "uploadText": "Adjuntar archivo/s",
+    "belongsToAlbum": "Volver selección a un álbum",
+    "titleField": "Título",
+    "titlePlaceholder": "Título de la {{type}}",
+    "description": "Descripción (opcional)",
+    "descriptionPlaceholder": "Añade una descripción"
   }
 }
 

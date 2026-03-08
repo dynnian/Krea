@@ -1,6 +1,6 @@
 // profile.tsx
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Avatar, Tabs, Typography, Grid, message, Spin } from 'antd';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,9 +14,9 @@ import {
   Check,
   Play,
   Pause,
-  Edit,
 } from 'lucide-react';
 import WaveSurfer from 'wavesurfer.js';
+import CreatePortfolioPostModal from '~/components/Posts/CreatePortfolioPostModal';
 
 const { useBreakpoint } = Grid;
 const { Title, Text } = Typography;
@@ -260,7 +260,6 @@ async function fetchProfile(username: string): Promise<ProfileData> {
 }
 
 async function followUser(username: string) {
-  // Implementar llamada real
   console.log('Follow', username);
 }
 
@@ -367,20 +366,6 @@ const CommissionButton: React.FC<CommissionButtonProps> = ({ onClick }) => (
   </button>
 );
 
-interface EditProfileButtonProps {
-  onClick?: () => void;
-}
-
-const EditProfileButton: React.FC<EditProfileButtonProps> = ({ onClick }) => (
-  <button
-    onClick={onClick}
-    className="px-5 py-1 rounded-full text-xs font-medium bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] flex items-center gap-1"
-  >
-    <Edit size={14} />
-    Editar perfil
-  </button>
-);
-
 interface MoreButtonProps {
   onClick?: () => void;
 }
@@ -391,6 +376,48 @@ const MoreButton: React.FC<MoreButtonProps> = ({ onClick }) => (
     className="w-7 h-7 rounded-full bg-[#F3F3F1] border border-[#1B1C1E] flex items-center justify-center"
   >
     <MoreHorizontal size={16} />
+  </button>
+);
+
+// ---------- Nuevos botones para perfil propio ----------
+interface SettingsButtonProps {
+  onClick?: () => void;
+}
+
+const SettingsButton: React.FC<SettingsButtonProps> = ({ onClick }) => (
+  <Link
+    to="/settings"
+    className="px-5 py-1 rounded-full text-xs font-medium bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] hover:bg-gray-200 transition"
+    onClick={onClick}
+  >
+    Configuración
+  </Link>
+);
+
+interface SavedButtonProps {
+  onClick?: () => void;
+}
+
+const SavedButton: React.FC<SavedButtonProps> = ({ onClick }) => (
+  <Link
+    to="/bookmarks" // Ruta aún no definida, puedes cambiarla cuando exista
+    className="px-5 py-1 rounded-full text-xs font-medium bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] hover:bg-gray-200 transition"
+    onClick={onClick}
+  >
+    Guardados
+  </Link>
+);
+
+interface UpdatePortfolioButtonProps {
+  onClick?: () => void;
+}
+
+const UpdatePortfolioButton: React.FC<UpdatePortfolioButtonProps> = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    className="w-full py-2 px-4 bg-[#0B5107] text-[#E3E2DE] text-xs font-medium rounded-full border border-[#1B1C1E] hover:bg-green-700 transition"
+  >
+    Actualizar Portafolio
   </button>
 );
 
@@ -414,8 +441,7 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({ audioUrl, coverUrl }) =
         barWidth: 2,
         barGap: 1,
         height: 40,
-        responsive: true,
-        url: audioUrl,
+        url: audioUrl
       });
 
       wavesurfer.current.on('play', () => setIsPlaying(true));
@@ -648,7 +674,7 @@ const Profile: React.FC = () => {
   const { t } = useTranslation();
   const screens = useBreakpoint();
   const isMobile = !screens.md;
-  const { username } = useParams<{ username: string }>();
+  const { username: usernameParam } = useParams<{ username: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -660,9 +686,14 @@ const Profile: React.FC = () => {
   const [activePortfolioSubTab, setActivePortfolioSubTab] = useState('all');
   const [isFollowing, setIsFollowing] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
-  // Determinar si es el perfil propio (ruta /profile/me)
-  const isOwnProfile = username === 'me';
+  const handleUpdatePortfolio = () => {
+    setModalVisible(true);
+  };
+
+  const username = usernameParam ?? "me";
+  const isOwnProfile = username === "me";
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -678,14 +709,11 @@ const Profile: React.FC = () => {
 
         if (isOwnProfile) {
           if (!user) {
-            // Si no hay usuario autenticado, redirigir al login
             navigate('/login');
             return;
           }
-          // Aquí llamarías a una API que devuelva el perfil del usuario autenticado
           profileData = await fetchProfile('me');
         } else {
-          // Perfil de otro usuario
           profileData = await fetchProfile(username);
         }
 
@@ -741,6 +769,17 @@ const Profile: React.FC = () => {
     }
   };
 
+  // Handlers para nuevos botones
+  const handleSettingsClick = () => {
+    // Opcional: lógica adicional antes de navegar
+    console.log('Navegando a configuración');
+  };
+
+  const handleSavedClick = () => {
+    console.log('Navegando a guardados');
+  };
+
+
   if (loading) {
     return (
       <div className="w-full min-h-screen bg-[#E3E2DE] flex items-center justify-center">
@@ -795,94 +834,132 @@ const Profile: React.FC = () => {
   const filteredPosts = getFilteredPosts();
 
   return (
-    <div className="w-full bg-[#E3E2DE] min-h-screen">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-        {/* Perfil header */}
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="flex justify-center md:justify-start">
-            <Avatar
-              src={profile.user.avatar}
-              icon={!profile.user.avatar && <User size={60} />}
-              size={141}
-              className="bg-white border-2 border-gray-800"
-            />
-          </div>
+    <div className="w-full max-w-[870px] bg-[#E3E2DE] h-screen">
+      <div className="w-full bg-[#E8F1FC] border-l-2 border-r-2 border-[#8F8E8A]">
+        <div className="px-[80px] pt-6">
+          {/* Header del perfil */}
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex justify-center md:justify-start">
+              <Avatar
+                src={profile.user.avatar}
+                icon={!profile.user.avatar && <User size={60} />}
+                size={141}
+                className="bg-white border-2 border-gray-800"
+              />
+            </div>
 
-          <div className="flex-1">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <Title level={3} className="!mb-0">{profile.user.name}</Title>
-                  {profile.user.isVerified && (
-                    <div className="w-5 h-5 bg-[#0B5107] rounded-full flex items-center justify-center border border-gray-800">
-                      <Check size={12} className="text-white" />
-                    </div>
+            <div className="flex-1">
+              {/* Fila superior: nombre, handle y botones */}
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-2xl font-medium text-gray-900 m-0">
+                      {profile.user.name}
+                    </h3>
+                    {profile.user.isVerified && (
+                      <div className="w-5 h-5 bg-[#0B5107] rounded-full flex items-center justify-center border border-gray-800">
+                        <Check size={12} className="text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-gray-500 text-sm">@{profile.user.handle}</p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {isOwnProfile ? (
+                    <>
+                      <SettingsButton onClick={handleSettingsClick} />
+                      <SavedButton onClick={handleSavedClick} />
+                      <MoreButton onClick={() => {}} />
+                    </>
+                  ) : (
+                    <>
+                      <CommissionButton />
+                      <SubscribeButton
+                        isSubscribed={isSubscribed}
+                        onClick={handleSubscribe}
+                      />
+                      <FollowButton
+                        isFollowing={isFollowing}
+                        onClick={handleFollow}
+                      />
+                      <MoreButton onClick={() => {}} />
+                    </>
                   )}
                 </div>
-                <Text type="secondary">@{profile.user.handle}</Text>
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                {isOwnProfile ? (
-                  <EditProfileButton />
-                ) : (
-                  <>
-                    <CommissionButton />
-                    <SubscribeButton isSubscribed={isSubscribed} onClick={handleSubscribe} />
-                    <FollowButton isFollowing={isFollowing} onClick={handleFollow} />
-                    <MoreButton />
-                  </>
-                )}
+              {/* Biografía */}
+              <p className="text-gray-800 text-sm text-justify mt-4 leading-relaxed">
+                {profile.bio}
+              </p>
+
+              {/* Seguidores / seguidos */}
+              <div className="flex gap-6 mt-4 text-sm">
+                <span>{profile.followingCount} Seguidos</span>
+                <span>{profile.followersCount} Seguidores</span>
               </div>
-            </div>
-
-            <p className="text-gray-800 text-sm text-justify mt-4 leading-relaxed">
-              {profile.bio}
-            </p>
-
-            <div className="flex gap-6 mt-4 text-sm">
-              <span>{profile.followingCount} Seguidos</span>
-              <span>{profile.followersCount} Seguidores</span>
             </div>
           </div>
-        </div>
 
-        <div className="mt-8">
-          <Tabs
-            activeKey={activeMainTab}
-            onChange={setActiveMainTab}
-            items={mainTabItems}
-            centered={!isMobile}
-            tabBarStyle={{ background: '#E3E2DE', borderBottom: 'none' }}
-            tabBarGutter={46}
-          />
-        </div>
-
-        {activeMainTab === 'portfolio' && (
-          <div className="mt-4">
+          {/* Tabs principales */}
+          <div className="mt-8">
             <Tabs
-              activeKey={activePortfolioSubTab}
-              onChange={setActivePortfolioSubTab}
-              items={portfolioSubTabs}
+              activeKey={activeMainTab}
+              onChange={setActiveMainTab}
+              items={mainTabItems}
               centered={!isMobile}
-              tabBarStyle={{ background: '#E3E2DE', borderBottom: 'none' }}
+              tabBarStyle={{ borderBottom: "none" }}
               tabBarGutter={46}
-              size="small"
             />
           </div>
-        )}
 
-        <div className="w-full h-px bg-[#8F8E8A] my-4" />
-
-        <div className="space-y-8">
-          {filteredPosts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-          {filteredPosts.length === 0 && (
-            <div className="text-center text-gray-500 py-8">
-              {t('profile.no_posts')}
+          {/* Subtabs de portfolio */}
+          {activeMainTab === "portfolio" && (
+            <div className="mt-4">
+              <Tabs
+                activeKey={activePortfolioSubTab}
+                onChange={setActivePortfolioSubTab}
+                items={portfolioSubTabs}
+                centered={!isMobile}
+                tabBarStyle={{ borderBottom: "none" }}
+                tabBarGutter={46}
+                size="small"
+              />
             </div>
           )}
+        </div>
+
+        {/* Línea divisoria */}
+        <div className="w-full h-px bg-[#8F8E8A] my-4" />
+
+        <div className="px-[80px] pb-6">
+          {/* Botón de Actualizar Portafolio (solo para perfil propio) */}
+          {isOwnProfile && (
+            <div className="mb-4">
+              <UpdatePortfolioButton onClick={handleUpdatePortfolio} />
+              <CreatePortfolioPostModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                onSuccess={() => {
+                  // Opcional: recargar los posts del perfil
+                  // Por ejemplo, volver a llamar a fetchProfile(username)
+                }}
+              />
+            </div>
+          )}
+
+          {/* Lista de posts */}
+          <div className="space-y-8">
+            {filteredPosts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+            {filteredPosts.length === 0 && (
+              <div className="text-center text-gray-500 py-8">
+                {t("profile.no_posts")}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

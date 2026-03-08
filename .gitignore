@@ -12,6 +12,12 @@
 **/obj/
 **/Debug/
 **/Release/
+[Bb]in/
+[Oo]bj/
+*.dll
+*.exe
+.env
+
 # Common node modules locations
 /node_modules
 /wwwroot/node_modules

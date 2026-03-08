@@ -60,7 +60,10 @@
     "following": "Following",
     "post_required": "Write something or attach media",
     "post_success": "Post created successfully",
-    "post_error": "Failed to create post"
+    "post_error": "Failed to create post",
+    "errorLoadingFeed": "Error loading feed",
+    "loginToSeeFollowing": "Log in to see who you follow",
+    "noPosts": "No posts to show"
   },
   "post": {
     "auth_required": "You need to log in to perform this action",
@@ -77,7 +80,10 @@
     "see_more": "See more..."
   },
   "common": {
-    "follow": "Follow"
+    "follow": "Follow",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving..."
   },
   "explore": {
     "tabs": {
@@ -119,9 +125,87 @@
       "trending_authors": "Trending authors"
     }
   },
+  "commissions": {
+    "loading": "Loading commissions...",
+    "list_title": "User commissions",
+    "cta_more": "Learn more",
+    "detail": {
+      "loading": "Loading details...",
+      "breadcrumb": "Commission",
+      "back_to_commissions": "Back to commissions",
+      "about_title": "About the commission",
+      "tags_title": "Tags",
+      "comments_title": "Comments",
+      "comment_placeholder": "Comment",
+      "comment_post": "Post",
+      "price_title": "Price",
+      "pay_cta": "Go to pay",
+      "message_creator_cta": "Message the creator"
+    }
+  },
+  "subscriptions": {
+    "loading": "Loading subscriptions...",
+    "list_title": "User subscriptions",
+    "cta_join": "Join",
+    "includes": "Includes"
+  },
   "notifications": {
     "title": "Notification Center",
     "empty": "No notifications",
     "mark_all_read": "Mark all as read"
+  },
+  "profile": {
+    "auth_required": "You must log in to perform this action",
+    "tabs": {
+      "portfolio": "Portfolio",
+      "publications": "Publications",
+      "members": "Members"
+    },
+    "portfolio": {
+      "all": "All",
+      "images": "Images",
+      "music": "Music",
+      "literature": "Literature"
+    },
+    "no_posts": "No posts",
+    "not_found": "Profile not found",
+    "following": "Following",
+    "followers": "Followers",
+    "follow_button": {
+      "following": "Following",
+      "follow": "Follow"
+    },
+    "subscribe_button": {
+      "subscribed": "Subscribed",
+      "subscribe": "Subscribe"
+    },
+    "commission_button": "Commission",
+    "edit_profile_button": "Edit profile"
+  },
+  "chat": {
+    "placeholder": "Send message...",
+    "online": "Online",
+    "offline": "Offline",
+    "select_conversation": "Select a conversation to start chatting"
+  },
+  "createPost": {
+    "authRequired": "You must be logged in",
+    "titleRequired": "Title is required",
+    "fileRequired": "Please attach at least one file",
+    "success": "Post created successfully",
+    "error": "Error creating post",
+    "music": "song",
+    "image": "image",
+    "literature": "literature",
+    "content": "content",
+    "title": "Add {{type}} to portfolio",
+    "contentType": "Content type",
+    "uploadLabel": "Insert one or several items",
+    "uploadText": "Attach file(s)",
+    "belongsToAlbum": "Add selection to an album",
+    "titleField": "Title",
+    "titlePlaceholder": "Title of the {{type}}",
+    "description": "Description (optional)",
+    "descriptionPlaceholder": "Add a description"
   }
 }

@@ -85,6 +85,15 @@ namespace Krea.Infrastructure.Data.Configurations {
                    .WithMany()
                    .HasForeignKey("BannerPictureId")
                    .OnDelete(DeleteBehavior.SetNull);
+            
+            // Conversations
+            builder.HasMany(p => p.Conversations)
+                .WithOne(p => p.User)
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Navigation(u => u.Conversations)
+                .UsePropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }

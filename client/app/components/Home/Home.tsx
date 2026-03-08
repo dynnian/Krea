@@ -1,240 +1,127 @@
+// components/Home/Home.tsx
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Grid } from "antd";
+import { Grid, message } from "antd";
 import { useAuth } from "../../contexts/AuthContext";
-import UserNavbar from "../UserNavbar";
 import Composer from "../Composer";
 import FeedTabs from "../FeedTabs";
 import PostCard from "../Posts/PostCard";
-import { PostType } from "../../types/common";
-import type { Post } from "../../types/post";
-import type { Timestamp } from "../../types/common";
 import TagsSidebar from "./TagsSidebar";
+import { feedApi } from "../../services/postsService";
+import { feedPostToPost } from "../../utils/postMappers";
+import type { Post } from "../../types/post";
 
 const { useBreakpoint } = Grid;
-
-// Datos mock adaptados a los tipos reales
-const mockPosts: Post[] = [
-  {
-    id: 1,
-    user_post_id: 1,
-    type: PostType.IMAGE,
-    title: null,
-    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit...",
-    is_work: false,
-    is_deleted: false,
-    is_local: false,
-    post_replied_to: null,
-    post_repost_of: null,
-    created_at: new Date().toISOString() as Timestamp,
-    updated_at: new Date().toISOString() as Timestamp,
-    author: {
-      id: 1,
-      name: "Usuario",
-      handle: "usuario1",
-      avatar: undefined,
-      sub: "1",
-      email: "usuario1@example.com",
-    },
-    media: [
-      {
-        post_id: 1,
-        media_id: 101,
-        is_work_media: false,
-        media: {
-          id: 101,
-          filename: "imagen.jpg",
-          mime_type: "image/jpeg",
-          path: "https://placehold.co/596x321",
-          file_size: 1024,
-          uploaded_at: new Date().toISOString() as Timestamp,
-        },
-      },
-    ],
-    likesCount: 24,
-    favoritesCount: 5,
-  },
-  {
-    id: 2,
-    user_post_id: 2,
-    type: null,
-    title: null,
-    content: "Segundo post sin imagen, solo texto.",
-    is_work: false,
-    is_deleted: false,
-    is_local: false,
-    post_replied_to: null,
-    post_repost_of: null,
-    created_at: new Date(Date.now() - 86400000).toISOString() as Timestamp,
-    updated_at: new Date(Date.now() - 86400000).toISOString() as Timestamp,
-    author: {
-      id: 2,
-      name: "Usuario",
-      handle: "usuario2",
-      avatar: undefined,
-      sub: "2",
-      email: "usuario2@example.com",
-    },
-    media: [],
-    likesCount: 12,
-    favoritesCount: 3,
-  },
-  {
-    id: 3,
-    user_post_id: 3,
-    type: PostType.AUDIO,
-    title: null,
-    content: "Mi nueva canción ya disponible. Escúchala aquí:",
-    is_work: false,
-    is_deleted: false,
-    is_local: false,
-    post_replied_to: null,
-    post_repost_of: null,
-    created_at: new Date(Date.now() - 172800000).toISOString() as Timestamp,
-    updated_at: new Date(Date.now() - 172800000).toISOString() as Timestamp,
-    author: {
-      id: 3,
-      name: "Músico",
-      handle: "musicopro",
-      avatar: undefined,
-      sub: "3",
-      email: "musico@example.com",
-    },
-    media: [
-      {
-        post_id: 3,
-        media_id: 103,
-        is_work_media: false,
-        media: {
-          id: 103,
-          filename: "audio.mp3",
-          mime_type: "audio/mpeg",
-          path: "../assets/Awaken Pillar Men Theme.mp3",
-          file_size: 2048,
-          uploaded_at: new Date().toISOString() as Timestamp,
-        },
-      },
-    ],
-    likesCount: 45,
-    favoritesCount: 12,
-  },
-  {
-    id: 4,
-    user_post_id: 4,
-    type: PostType.LINK,
-    title: null,
-    content: "Comparto el link a mi nuevo artículo sobre literatura moderna.",
-    is_work: false,
-    is_deleted: false,
-    is_local: false,
-    post_replied_to: null,
-    post_repost_of: null,
-    created_at: new Date(Date.now() - 259200000).toISOString() as Timestamp,
-    updated_at: new Date(Date.now() - 259200000).toISOString() as Timestamp,
-    author: {
-      id: 4,
-      name: "Escritor",
-      handle: "escritor",
-      avatar: undefined,
-      sub: "4",
-      email: "escritor@example.com",
-    },
-    media: [
-      {
-        post_id: 4,
-        media_id: 104,
-        is_work_media: false,
-        media: {
-          id: 104,
-          filename: "enlace.txt",
-          mime_type: "text/plain",
-          path: "https://ejemplo.com/articulo",
-          file_size: 512,
-          uploaded_at: new Date().toISOString() as Timestamp,
-        },
-      },
-    ],
-    likesCount: 18,
-    favoritesCount: 4,
-  },
-];
 
 export default function Home() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [isMounted, setIsMounted] = useState(false);
   const screens = useBreakpoint();
+  const isMobile = !screens.md;
 
   const [activeTab, setActiveTab] = useState<"forYou" | "following">("forYou");
-
   const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
+    const loadFeed = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        let feedPosts;
+        if (activeTab === "forYou") {
+          feedPosts = await feedApi.getRecent(user?.id);
+        } else {
+          if (!user) {
+            setActiveTab("forYou");
+            return;
+          }
+          feedPosts = await feedApi.getFollowing(user.id);
+        }
+        const mapped = feedPosts.map(feedPostToPost);
+        setPosts(mapped);
+      } catch (err) {
+        console.error("Error loading feed:", err);
+        setError(t("home.errorLoadingFeed"));
+        message.error(t("home.errorLoadingFeed"));
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    loadFeed();
+  }, [activeTab, user, t]);
+
+  // Si no hay usuario y la pestaña es "following", cambiar a "forYou"
   useEffect(() => {
-    // Aquí cargarías los posts según usuario y pestaña
-    setPosts(mockPosts);
-  }, [user, activeTab]);
+    if (activeTab === "following" && !user) {
+      setActiveTab("forYou");
+      message.info(t("home.loginToSeeFollowing"));
+    }
+  }, [activeTab, user, t]);
 
   const handleNewPost = (newPost: Post) => {
     setPosts([newPost, ...posts]);
   };
 
-  const handleLike = async (postId: number) => {
+  const handleLike = async (postId: string | number) => {
     console.log("Like", postId);
-    // Llamada API real
+    // Llamada real con postsApi.like / unlike
   };
 
-  const handleRepost = async (postId: number) => {
+  const handleRepost = async (postId: string | number) => {
     console.log("Repost", postId);
+    // Llamada real con postsApi.repost
   };
-
-  const isMobile = isMounted && !screens.sm;
-
-  if (!isMounted) {
-    return (
-      <div className="min-h-screen bg-[#E3E2DE]">
-        <div className="h-16 bg-[#1351AA] animate-pulse" />
-        <div className="max-w-3xl mx-auto p-4 animate-pulse">
-          <div className="h-40 bg-gray-200 rounded-lg mb-6" />
-          <div className="h-10 bg-gray-200 rounded-lg mb-6" />
-          <div className="space-y-4">
-            <div className="h-32 bg-gray-200 rounded-lg" />
-            <div className="h-32 bg-gray-200 rounded-lg" />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#E3E2DE]">
       <main className="flex justify-center px-2 sm:px-4 gap-6">
+        {/* Columna principal: feed - ahora ocupa todo el espacio disponible */}
         <div
           className={`
-         w-full max-w-2xl lg:max-w-3xl xl:max-w-4xl
-        ${!isMobile ? "bg-[#E8F1FC] border-l-2 border-r-2 border-[#8F8E8A] px-6 py-6" : "px-2"}
+            flex-1 min-w-0 max-w-5xl
+            ${!isMobile ? "bg-[#E8F1FC] border-l-2 border-r-2 border-[#8F8E8A] px-6 py-6" : "px-2"}
           `}
         >
           {user && <Composer onPost={handleNewPost} />}
-          <FeedTabs activeTab={activeTab} onTabChange={setActiveTab} isMobile={isMobile} />
-          <div className="space-y-4 sm:space-y-6">
-        {posts.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            onLike={handleLike}
-            onRepost={handleRepost}
+          <FeedTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            isMobile={isMobile}
           />
-        ))}
-          </div>
+          {loading && (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1351AA]" />
+            </div>
+          )}
+          {error && (
+            <div className="text-center py-8 text-red-500">{error}</div>
+          )}
+          {!loading && !error && (
+            <div className="space-y-4 sm:space-y-6">
+              {posts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  onLike={handleLike}
+                  onRepost={handleRepost}
+                />
+              ))}
+              {posts.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  {t("home.noPosts")}
+                </div>
+              )}
+            </div>
+          )}
         </div>
+
         {/* Sidebar de tags (solo en desktop) */}
         {!isMobile && (
           <div className="w-64 shrink-0 py-2">
-        <TagsSidebar />
+            <TagsSidebar />
           </div>
         )}
       </main>

@@ -21,7 +21,7 @@ interface Comment {
 }
 
 interface CommentSectionProps {
-  postId: number;
+  postId: string;
 }
 
 // Datos mock de comentarios
