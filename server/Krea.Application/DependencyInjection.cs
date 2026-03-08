@@ -3,6 +3,7 @@ namespace Krea.Application {
     using Abstractions.Feed;
     using Domain.Abstractions;
     using Features.Auth;
+    using Features.Auth.ChangePassword;
     using Features.Auth.Register;
     using Features.Auth.Login;
     using Features.Auth.ConfirmEmail;
@@ -31,6 +32,7 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<RegisterCommand, AuthResponse>, RegisterCommandHandler>();
             services.AddScoped<IRequestHandler<LoginQuery, AuthResponse>, LoginQueryHandler>();
             services.AddScoped<IRequestHandler<ConfirmEmailCommand, bool>, ConfirmEmailCommandHandler>();
+            services.AddScoped<IRequestHandler<ChangePasswordCommand, bool>, ChangePasswordCommandHandler>();
             services.AddScoped<IRequestHandler<RefreshTokenCommand, AuthResponse?>, RefreshTokenCommandHandler>();
             services.AddScoped<IRequestHandler<RevokeTokenCommand, bool>, RevokeTokenCommandHandler>();
             

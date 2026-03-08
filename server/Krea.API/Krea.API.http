@@ -24,6 +24,17 @@ Content-Type: application/json
   "password": "Test123!"
 }
 
+### ChangePassword
+POST http://localhost:5101/api/auth/change-password
+Content-Type: application/json
+Authorization: Bearer <auth_token>
+
+{
+  "userId": "GUID",
+  "currentPassword": "Test123!",
+  "newPassword": "Test124!"
+}
+
 ### Create Post
 POST http://localhost:5101/api/posts
 Content-Type: application/json

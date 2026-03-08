@@ -8,6 +8,8 @@ namespace Krea.API.Controllers {
     using Application.Features.Auth.RevokeToken;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
+    using Application.Features.Auth.ChangePassword;
+    using System.Security.Claims;
 
     [Route("api/[controller]")]
     [ApiController]
@@ -141,6 +143,30 @@ namespace Krea.API.Controllers {
             {
                 return BadRequest(new { error = ex.Message });
             }
+        }
+        
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordCommand command)
+        {
+            var userId = GetCurrentUserId();
+            if (command.UserId != userId)
+                return Unauthorized();
+
+            bool result = await sender.Send(command);
+            if (result)
+                return Ok();
+            return BadRequest("Password change failed");
+        }
+        
+        private Guid GetCurrentUserId()
+        {
+            string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid userId))
+            {
+                throw new UnauthorizedAccessException("User ID not found in claims.");
+            }
+            return userId;
         }
     }
 }
