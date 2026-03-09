@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Input } from 'antd';
+import { Input, Button, Space } from 'antd';
 import { Send, Paperclip, Image as ImageIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   onSend: (text: string) => void;
@@ -19,15 +19,11 @@ export default function MessageInput({ onSend }: Props) {
 
   return (
     <div className="p-6 border-t border-[#8F8E8A]">
-      <div className="flex items-center gap-4 bg-[#E3E2DE] rounded-full px-6 py-3 border border-[#8F8E8A]">
-        <div className="flex items-center gap-2">
-          <button className="text-gray-700">
-            <Paperclip size={24} />
-          </button>
-          <button className="text-gray-700">
-            <ImageIcon size={24} />
-          </button>
-        </div>
+      <Space.Compact className="w-full bg-[#E3E2DE] rounded-full px-6 py-3 border border-[#8F8E8A]">
+        <Space size="middle">
+          <Button type="text" icon={<Paperclip size={24} />} className="text-gray-700" />
+          <Button type="text" icon={<ImageIcon size={24} />} className="text-gray-700" />
+        </Space>
         <Input
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -36,10 +32,13 @@ export default function MessageInput({ onSend }: Props) {
           className="flex-1 bg-transparent placeholder-[#8F8E8A]"
           onPressEnter={handleSend}
         />
-        <button onClick={handleSend} className="text-gray-700">
-          <Send size={24} />
-        </button>
-      </div>
+        <Button
+          type="text"
+          icon={<Send size={24} />}
+          onClick={handleSend}
+          className="text-gray-700"
+        />
+      </Space.Compact>
     </div>
   );
 }

@@ -1,23 +1,19 @@
-export interface User {
-  id: string;
-  name: string;
-  avatar?: string;
-  online?: boolean;
-}
-
 export interface Conversation {
-  id: string;
-  user: User;
-  lastMessage: string;
-  lastMessageTime: string;
-  unreadCount?: number;
+  conversationId: string;
+  otherParticipantId: string;
+  otherParticipantName: string;
+  otherParticipantAvatar: string | null;
+  messages?: Message[]; // last message(s) for preview
 }
 
 export interface Message {
   id: string;
-  conversationId: string;
   senderId: string;
-  text: string;
-  timestamp: string;
-  avatar?: string; // avatar del remitente (para mostrar en la UI)
+  senderUsername: string;
+  senderDisplayName: string;
+  senderAvatarUrl: string | null;
+  receiverId: string;
+  content: string;
+  sentAt: string;
+  isRead: boolean;
 }

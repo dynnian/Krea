@@ -64,7 +64,7 @@ export default [
           },
           {
             path: "messages",
-            file: "routes/messages.tsx",
+            file: "routes/chat.tsx",
           }
           // {
           //   path: "settings",

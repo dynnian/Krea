@@ -1,6 +1,8 @@
 import React from 'react';
-import { type Conversation } from '../../types/chat';
-import { Avatar } from 'antd';
+import { List, Avatar, Badge, Typography } from 'antd';
+import type { Conversation } from '../../types/chat';
+
+const { Text } = Typography;
 
 interface Props {
   conversations: Conversation[];
@@ -10,33 +12,51 @@ interface Props {
 
 export default function ConversationList({ conversations, selectedId, onSelect }: Props) {
   return (
-    <div className="flex flex-col">
-      {conversations.map((conv, index) => (
-        <React.Fragment key={conv.id}>
-          <button
+    <List
+      dataSource={conversations}
+      split={false}
+      renderItem={(conv, index) => {
+        const isSelected = conv.id === selectedId;
+        const bgColor = isSelected
+          ? 'bg-[#BFD1EA]'
+          : index === 0
+          ? 'bg-[#94B1DA]'
+          : 'bg-[#BFD1EA]';
+
+        return (
+          <div
             onClick={() => onSelect(conv)}
-            className={`flex items-center gap-4 px-6 py-3 w-full text-left hover:bg-[#BFD1EA] transition-colors ${
-              selectedId === conv.id ? 'bg-[#BFD1EA]' : index === 0 ? 'bg-[#94B1DA]' : 'bg-[#BFD1EA]'
-            }`}
+            className={`cursor-pointer px-6 py-3 hover:bg-[#94B1DA] ${bgColor}`}
           >
-            <div className="relative">
-              <Avatar src={conv.user.avatar} size={64} className="border border-gray-800" />
-              {conv.user.online && (
-                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-medium text-[#1B1C1E] text-lg truncate">{conv.user.name}</div>
-              <div className="text-sm text-[#1B1C1E] truncate">
-                {conv.lastMessage} - {conv.lastMessageTime}
-              </div>
-            </div>
-          </button>
-          {index < conversations.length - 1 && (
-            <div className="border-t border-[#8F8E8A] mx-6"></div>
-          )}
-        </React.Fragment>
-      ))}
-    </div>
+            <List.Item className="border-0 p-0">
+              <List.Item.Meta
+                avatar={
+                  <Badge
+                    color="green"
+                    dot={conv.user.online}
+                    offset={[-5, 40]}
+                  >
+                    <Avatar src={conv.user.avatar} size={64} className="border border-gray-800" />
+                  </Badge>
+                }
+                title={
+                  <Text strong className="text-[#1B1C1E] text-lg block truncate">
+                    {conv.user.name}
+                  </Text>
+                }
+                description={
+                  <Text className="text-[#1B1C1E] text-sm truncate">
+                    {conv.lastMessage} - {conv.lastMessageTime}
+                  </Text>
+                }
+              />
+            </List.Item>
+            {index < conversations.length - 1 && (
+              <div className="border-t border-[#8F8E8A] mx-6 my-2" />
+            )}
+          </div>
+        );
+      }}
+    />
   );
 }
