@@ -7,6 +7,7 @@ namespace Krea.API {
     using Application;
     using Application.Abstractions.Url;
     using Hubs;
+    using Infrastructure.Configuration;
     using Infrastructure.Setup;
     using Services;
 
@@ -73,6 +74,10 @@ namespace Krea.API {
         
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<IConfirmationUrlBuilder, ConfirmationUrlBuilder>();
+            
+            // Seeding configs
+            builder.Services.Configure<AdminUserOptions>(builder.Configuration.GetSection("AdminUser"));
+            builder.Services.Configure<SeedingOptions>(builder.Configuration.GetSection("Seeding"));
 
             WebApplication app = builder.Build();
 

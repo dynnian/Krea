@@ -24,6 +24,15 @@ Content-Type: application/json
   "password": "Test123!"
 }
 
+### Admin Login
+POST http://localhost:5101/api/auth/login
+Content-Type: application/json
+
+{
+  "EmailOrUsername": "admin@krea.local",
+  "Password": "Admin123!"
+}
+
 ### ChangePassword
 POST http://localhost:5101/api/auth/change-password
 Content-Type: application/json
