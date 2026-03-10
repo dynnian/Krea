@@ -11,6 +11,8 @@ namespace Krea.Application {
     using Features.Auth.RevokeToken;
     using Features.DirectMessages.Dto;
     using Features.DirectMessages.GetConversation;
+    using Features.DirectMessages.GetConversationMessages;
+    using Features.DirectMessages.GetUserConversations;
     using Features.DirectMessages.MarkMessageAsRead;
     using Features.DirectMessages.SendDirectMessage;
     using Features.Posts;
@@ -63,6 +65,8 @@ namespace Krea.Application {
             services.AddScoped< IRequestHandler<GetConversationQuery, ConversationDto>, GetConversationQueryHandler>();
             services.AddScoped< IRequestHandler<MarkMessageAsReadCommand, bool>, MarkMessageAsReadCommandHandler>();
             services.AddScoped< IRequestHandler<SendDirectMessageCommand, DirectMessageDto>, SendDirectMessageCommandHandler>();
+            services.AddScoped<IRequestHandler<GetUserConversationsQuery, List<ConversationPreviewDto>>, GetUserConversationsQueryHandler>();
+            services.AddScoped<IRequestHandler<GetConversationMessagesQuery, List<DirectMessageDto>>, GetConversationMessagesQueryHandler>();
             
             return services;
         }
