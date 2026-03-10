@@ -2909,6 +2909,7 @@
       "dependencies": [
         "npm:@ant-design/cssinjs@^2.1.0",
         "npm:@ant-design/icons@^6.1.0",
+        "npm:@fontsource/inter@^5.2.8",
         "npm:@react-router/dev@7.12.0",
         "npm:@react-router/node@7.12.0",
         "npm:@react-router/serve@7.12.0",
