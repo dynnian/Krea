@@ -17,6 +17,7 @@ namespace Krea.API {
         
             builder.Services.AddApplication();
             builder.Services.AddControllers();
+            builder.Services.AddSignalR();
             builder.Services.AddOpenApi();
             builder.Services.AddCors(options =>
             {
