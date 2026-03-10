@@ -19,13 +19,13 @@ public class ConversationRepository(AppDbContext context) : IConversationReposit
             .Include(c => c.Icon)
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
-
+    
     public async Task<IEnumerable<Conversation>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await context.Conversations
-            .Include(c => c.Participants.Where(p => p.UserId == userId))
+            .Include(c => c.Participants)
                 .ThenInclude(p => p.User)
-            .Include(c => c.Messages.OrderByDescending(m => m.SentAt).Take(20)) // Últimos 20 mensajes
+            .Include(c => c.Messages.OrderByDescending(m => m.SentAt).Take(1))
             .Include(c => c.Icon)
             .Where(c => c.Participants.Any(p => p.UserId == userId && p.IsActive))
             .ToListAsync(cancellationToken);
