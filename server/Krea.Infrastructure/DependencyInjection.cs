@@ -8,6 +8,7 @@ using Domain.Abstractions;
 using Domain.Repositories;
 using Application.Abstractions;
 using Application.Abstractions.Auth;
+using Application.Abstractions.Collection;
 using Application.Abstractions.Email;
 using Application.Abstractions.Feed;
 using Application.Abstractions.FileStorage;
@@ -67,6 +68,7 @@ public static class DependencyInjection
         services.AddScoped<IMediaRepository, MediaRepository>();
         services.AddScoped<IHashtagRepository, HashtagRepository>();
         services.AddScoped<IFollowRepository, FollowRepository>();
+        services.AddScoped<ICollectionRepository, CollectionRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
         // Servicios de aplicación (infraestructura)
@@ -84,6 +86,7 @@ public static class DependencyInjection
 
         services.AddScoped<IFeedQueryService, FeedQueryService>();
         services.AddScoped<IFileStorage, LocalFileStorage>();
+        services.AddScoped<ICollectionQueries, CollectionQueries>();
         services.AddScoped<ISender, Sender>();
         
         return services;

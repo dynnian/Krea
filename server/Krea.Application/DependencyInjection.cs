@@ -9,6 +9,13 @@ namespace Krea.Application {
     using Features.Auth.ConfirmEmail;
     using Features.Auth.Refresh;
     using Features.Auth.RevokeToken;
+    using Features.Collections.AddPostToCollection;
+    using Features.Collections.CreateCollection;
+    using Features.Collections.DeleteCollection;
+    using Features.Collections.Dto;
+    using Features.Collections.GetCollectionById;
+    using Features.Collections.GetUserCollections;
+    using Features.Collections.RemovePostFromCollection;
     using Features.DirectMessages.Dto;
     using Features.DirectMessages.GetConversation;
     using Features.DirectMessages.GetConversationMessages;
@@ -46,6 +53,14 @@ namespace Krea.Application {
             services.AddScoped<GetRecentFeedHandler>();
             services.AddScoped<GetTrendingFeedHandler>();
             services.AddScoped<GetFollowingFeedHandler>();
+            
+            //Collection
+            services.AddScoped<IRequestHandler<CreateCollectionCommand, CreateCollectionResponse>, CreateCollectionHandler>();
+            services.AddScoped<IRequestHandler<GetUserCollectionsQuery, IReadOnlyList<UserCollectionDto>>, GetUserCollectionsHandler>();
+            services.AddScoped<IRequestHandler<DeleteCollectionCommand, Unit>, DeleteCollectionHandler>();
+            services.AddScoped<IRequestHandler<AddPostToCollectionCommand, AddPostToCollectionResponse>, AddPostToCollectionHandler>();
+            services.AddScoped<IRequestHandler<RemovePostFromCollectionCommand, Unit>,RemovePostFromCollectionHandler>();
+            services.AddScoped<IRequestHandler<GetCollectionByIdQuery, CollectionDetailDto?>, GetCollectionByIdQueryHandler>();
             
             // Posts
             services.AddScoped<IRequestHandler<GetAllPostsQuery, IReadOnlyList<PostDto>>, GetAllPostsHandler>();
