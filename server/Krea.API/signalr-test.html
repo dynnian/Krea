@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SignalR DM Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+</head>
+<body>
+    <h2>Usuario 1</h2>
+    <input id="token1" type="text" size="60" placeholder="Token de user1" />
+    <input id="userId1" type="text" placeholder="ID de user1" />
+    <button onclick="connectUser1()">Conectar user1</button>
+    <div id="messages1"></div>
+
+    <h2>Usuario 2</h2>
+    <input id="token2" type="text" size="60" placeholder="Token de user2" />
+    <input id="userId2" type="text" placeholder="ID de user2" />
+    <button onclick="connectUser2()">Conectar user2</button>
+    <div id="messages2"></div>
+
+    <h3>Enviar mensaje (desde user1 a user2)</h3>
+    <input id="receiverId" placeholder="ID del receptor (user2)" />
+    <input id="content" placeholder="Mensaje" />
+    <button onclick="sendMessage()">Enviar</button>
+
+    <script>
+        const baseUrl = "http://localhost:5101";
+        let connection1, connection2;
+
+        function connectUser1() {
+            const token = document.getElementById("token1").value;
+            connection1 = new signalR.HubConnectionBuilder()
+                .withUrl(baseUrl + "/hubs/directMessage", { 
+                    accessTokenFactory: () => token,
+                    withCredentials: true 
+                })
+                .build();
+
+            connection1.on("ReceiveMessage", (message) => {
+                document.getElementById("messages1").innerHTML += 
+                    `<p><b>Recibido (user1):</b> ${message.content}</p>`;
+            });
+
+            connection1.start().then(() => console.log("User1 conectado"));
+        }
+
+        function connectUser2() {
+            const token = document.getElementById("token2").value;
+            connection2 = new signalR.HubConnectionBuilder()
+                .withUrl(baseUrl + "/hubs/directMessage", { 
+                    accessTokenFactory: () => token,
+                    withCredentials: true 
+                })
+                .build();
+
+            connection2.on("ReceiveMessage", (message) => {
+                document.getElementById("messages2").innerHTML += 
+                    `<p><b>Recibido (user2):</b> ${message.content}</p>`;
+            });
+
+            connection2.start().then(() => console.log("User2 conectado"));
+        }
+
+        async function sendMessage() {
+            const receiverId = document.getElementById("receiverId").value;
+            const content = document.getElementById("content").value;
+            const senderId = document.getElementById("userId1").value;
+            if (!connection1) return alert("Conecta user1 primero");
+            await connection1.invoke("SendMessage", {
+                senderId: senderId,
+                receiverId: receiverId,
+                content: content
+            });
+        }
+    </script>
+</body>
+</html>
