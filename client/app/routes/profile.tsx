@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import DigitalPortfolio from "../components/Profile/DigitalPortfolio";
 import MusicPortfolio from "../components/Profile/MusicPortfolio";
 import { digitalPortfolioMock } from "../data/digitalPortfolioMock";
+import WriterPortfolio from "../components/Profile/WriterPortfolio";
 import { settingsRepository } from "../services/settingsRepository";
 import {
   Heart,
@@ -956,8 +957,8 @@ const getFilteredPosts = () => {
           )}
           
           {activeMainTab === "portfolio" && effectivePortfolioTab === "literature" && (
-            <div className="text-center text-gray-500 py-8">
-              Portafolio de literatura pendiente.
+            <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
+              <WriterPortfolio />
             </div>
           )}
 
