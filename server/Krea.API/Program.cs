@@ -27,7 +27,7 @@ namespace Krea.API {
                     policy.AllowAnyOrigin()
                         .AllowAnyMethod()
                         .AllowAnyHeader()
-                        .AllowCredentials();
+                        /*.AllowCredentials()*/;
                 });
             });
         
