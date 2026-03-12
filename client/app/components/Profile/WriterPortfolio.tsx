@@ -1,12 +1,23 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Bookmark, Heart } from "lucide-react";
 import { writerPortfolioMock, type WriterWork } from "../../data/writerPortfolioMock";
 
 const WriterCard: React.FC<{ work: WriterWork }> = ({ work }) => {
+  const descriptionRef = useRef<HTMLParagraphElement | null>(null);
+  const [showReadMore, setShowReadMore] = useState(false);
+
+useEffect(() => {
+  const el = descriptionRef.current;
+  if (!el) return;
+
+  const isOverflowing = el.scrollHeight > el.clientHeight;
+  setShowReadMore(isOverflowing);
+}, [work.description]);
+
 	return (
 		<div className="w-[687px] h-[170px] bg-[#E8F1FC] border border-[#8F8E8A] p-[15px]">
 			<div className="flex h-full gap-[22px] items-center">
-				<div className="h-full aspect-[2/3] shrink-0 overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
+        <div className="h-full aspect-[2/3] shrink-0 overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
 					<img
 						src={work.coverUrl}
 						alt={work.title}
@@ -36,17 +47,22 @@ const WriterCard: React.FC<{ work: WriterWork }> = ({ work }) => {
 					</div>
 
 					<div className="mt-[0px] h-auto min-w-0">
-						<p className="text-[11px] text-justify font-medium text-[#1B1C1E] line-clamp-3 overflow-hidden">
-							{work.description}
-						</p>
-            {/*
-						<button
-							type="button"
-							className="mt-[2px] text-[11px] leading-[14px] font-medium text-[#0B5107] underline underline-offset-2"
-						>
-							Leer más...
-						</button>
-          */}
+            <div className="mt-[px] min-w-0">
+              <p
+                ref={descriptionRef}
+                className="text-[11px] leading-[16px] text-justify font-medium text-[#1B1C1E] line-clamp-3 overflow-hidden"
+              >
+                {work.description}
+              {showReadMore && (
+                <button
+                  type="button"
+                  className="inline text-[11px] leading-[14px] font-medium text-[#0B5107] underline underline-offset-2"
+                >
+                  Leer más...
+                </button>
+              )}
+              </p>
+            </div>
           </div>
 					<div className="mt-auto pt-[0px] flex items-center gap-3">
 						<button

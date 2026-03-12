@@ -24,7 +24,7 @@ export const writerPortfolioMock: WriterWork[] = [
     chaptersCount: 8,
     genre: "Fantasia, Romance, etc...",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. olor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.",
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. olor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt. Ut enim ad minim veniam, quis. olor sit amet, consectetur adipiscing  adipiscing veniam, quis. olor ",
     coverUrl:
 "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=500&q=80",
   },
