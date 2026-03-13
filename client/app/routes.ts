@@ -85,13 +85,12 @@ export default [
         children: [
           {
             index: true,
-            file: "routes/admin/dashboard.tsx", // crea este archivo
+            file: "routes/admin/dashboard.tsx", 
           },
-          // {
-          //   path: "users",
-          //   file: "routes/admin/users.tsx", // ejemplo
-          // },
-          // más rutas de admin...
+          { path: "users", file: "routes/admin/users.tsx" },     
+          { path: "reports", file: "routes/admin/reports.tsx" }, 
+          { path: "federation", file: "routes/admin/federation.tsx" }, 
+          { path: "settings", file: "routes/admin/settings.tsx" }, 
         ],
       },
     ],

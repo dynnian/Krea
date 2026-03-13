@@ -1,19 +1,19 @@
-import { Outlet } from "react-router";
-import { Grid } from "antd";
+import type React from "react"
+import { Sidebar } from "../components/Admin/sidebar.tsx"
+import { Header } from "../components/Admin/header.tsx"
 
-const { useBreakpoint } = Grid;
-
-export default function AdminLayout() {
-  const screens = useBreakpoint();
-  const isMobile = !screens.md;
-
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <>
-      <main className="flex justify-center px-2 sm:px-4">
-        <div className="w-full max-w-7xl">
-          <Outlet />
-        </div>
-      </main>
-    </>
-  );
+    <div className="flex h-screen overflow-hidden bg-[#E3E2DE]">
+      <Sidebar />
+      <div className="flex flex-1 flex-col overflow-hidden lg:ml-0">
+        <Header />
+        <main className="flex-1 overflow-y-auto p-8">{children}</main>
+      </div>
+    </div>
+  )
 }

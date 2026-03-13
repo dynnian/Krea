@@ -11,7 +11,7 @@ export default function AdminProtectedLayout() {
         <Spin size="large" />
       </div>
     );
-  }
+  }l
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
