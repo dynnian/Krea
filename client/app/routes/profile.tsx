@@ -372,18 +372,20 @@ const CommissionButton: React.FC<CommissionButtonProps> = ({ onClick }) => (
   </button>
 );
 
-interface EditProfileButtonProps {
+interface ConfigurationButtonProps {
   onClick?: () => void;
 }
 
-const EditProfileButton: React.FC<EditProfileButtonProps> = ({ onClick }) => (
+const ConfigurationButton: React.FC<ConfigurationButtonProps> = ({ onClick }) => (
   <button
     onClick={onClick}
     className="px-5 py-1 rounded-full text-xs font-medium bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] flex items-center gap-1"
   >
     <Edit size={14} />
-    Editar perfil
+    Configuración
   </button>
+  
+  
 );
 
 interface MoreButtonProps {
@@ -564,6 +566,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
           <p className="text-gray-800 mt-1 text-sm text-justify">{post.content}</p>
 
+
+
           {post.type === PostType.IMAGE && post.media.length > 0 && (
             <div className="mt-3">
               {post.media.length === 1 ? (
@@ -595,6 +599,9 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                 </div>
               )}
             </div>
+            
+
+
           )}
 
           {post.type === PostType.AUDIO && audioMedia && (
@@ -663,20 +670,20 @@ const Profile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
- // const [portfolioSettings, setPortfolioSettings] = useState <{
- // imagesEnabled: boolean;
- // musicEnabled: boolean;
- // literatureEnabled: boolean;
- // } | null>(null);
+  const [portfolioSettings, setPortfolioSettings] = useState <{
+  imagesEnabled: boolean;
+ musicEnabled: boolean;
+  literatureEnabled: boolean;
+  } | null>(null);
 
+const [activeMainTab, setActiveMainTab] = useState('portfolio');
+const [activePortfolioSubTab, setActivePortfolioSubTab] = useState("images");
+const [activeMusicTab, setActiveMusicTab] = useState<"songs" | "albums">("songs");
+const [isFollowing, setIsFollowing] = useState(false);
+const [isSubscribed, setIsSubscribed] = useState(false);
 
-  const [activeMainTab, setActiveMainTab] = useState('portfolio');
-  const [activePortfolioSubTab, setActivePortfolioSubTab] = useState("images");
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [isSubscribed, setIsSubscribed] = useState(false);
-
-  // Determinar si es el perfil propio (ruta /profile/me)
-  // const isOwnProfile = username === 'me';
+// Determinar si es el perfil propio (ruta /profile/me)
+// const isOwnProfile = username === 'me';
 
 const username = usernameParam ?? "me";
 const isOwnProfile = username === "me";
@@ -691,7 +698,7 @@ const isOwnProfile = username === "me";
       try {
         setLoading(true);
         let profileData: ProfileData;
-
+        
         if (isOwnProfile) {
           if (!user) {
             // Si no hay usuario autenticado, redirigir al login
@@ -798,29 +805,6 @@ const effectivePortfolioTab =
   portfolioSubTabs.find((tab) => tab.key === activePortfolioSubTab)?.key ??
   portfolioSubTabs[0]?.key ??
   "";
-/*
-  const getFilteredPosts = () => {
-    let posts = profile.posts;
-
-    if (activeMainTab === 'portfolio') {
-      posts = posts.filter(p => p.isWork === true);
-      if (activePortfolioSubTab !== 'all') {
-        const typeMap: Record<string, PostType> = {
-          images: PostType.IMAGE,
-          music: PostType.AUDIO,
-          literature: PostType.LINK,
-        };
-        posts = posts.filter(p => p.type === typeMap[activePortfolioSubTab]);
-      }
-    } else if (activeMainTab === 'publications') {
-      posts = posts.filter(p => p.isWork === false);
-    } else if (activeMainTab === 'members') {
-      posts = [];
-    }
-
-    return posts;
-  };
-*/
 
 const getFilteredPosts = () => {
   let posts = profile.posts;
@@ -837,9 +821,37 @@ const getFilteredPosts = () => {
 };
   const filteredPosts = getFilteredPosts();
   const isPortfolioView = activeMainTab === "portfolio";
+  const getActivePortfolioFormRoute = () => {
+    if (activeMainTab !== "portfolio") return null;
 
+    if (activePortfolioSubTab === "images") {
+      return `/profile/${username}/portfolio/update/artist`;
+    }
+
+    if (activePortfolioSubTab === "literature") {
+      return `/profile/${username}/portfolio/update/writer`;
+    }
+
+    if (activePortfolioSubTab === "music") {
+      return activeMusicTab === "albums"
+        ? `/profile/${username}/portfolio/update/music/albums`
+        : `/profile/${username}/portfolio/update/music/songs`;
+    }
+
+    return null;
+  };
+
+  const handleUpdatePortfolioClick = () => {
+    const route = getActivePortfolioFormRoute();
+    if (!route) return;
+
+    navigate(route);
+  };
+
+const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
+  
  return (
-  <div className="w-full max-w-[870px] h-full">
+  <div className="w-full max-w-[870px] h-full min-h-screen">
     <div
     className={`w-full h-full ${
       isPortfolioView
@@ -850,6 +862,9 @@ const getFilteredPosts = () => {
       <div className=" pt-6 ">
         {/* Perfil header */}
         <div className="flex flex-col md:flex-row gap-6 px-[70px]" >
+          
+
+          
           <div className="flex justify-center md:justify-start">
             <Avatar
               src={profile.user.avatar}
@@ -877,7 +892,7 @@ const getFilteredPosts = () => {
 
               <div className="flex flex-wrap gap-2">
                 {isOwnProfile ? (
-                  <EditProfileButton />
+                  <ConfigurationButton />
                 ) : (
                   <>
                     <CommissionButton />
@@ -917,19 +932,39 @@ const getFilteredPosts = () => {
           />
         </div>
 
-        {activeMainTab === "portfolio" && (
-          <div className=" krea-tabs">
-            <Tabs
-              activeKey={effectivePortfolioTab}
-              onChange={setActivePortfolioSubTab}
-              items={portfolioSubTabs}
-              centered={!isMobile}
-              tabBarStyle={{ borderBottom: "none" }}
-              tabBarGutter={46}
-              size="small"
-            />
-          </div>
-        )}
+{activeMainTab === "portfolio" && (
+  <>
+    <div className="krea-tabs">
+      <Tabs
+        activeKey={effectivePortfolioTab}
+        onChange={setActivePortfolioSubTab}
+        items={portfolioSubTabs}
+        centered={!isMobile}
+        tabBarStyle={{ borderBottom: "none" }}
+        tabBarGutter={46}
+        size="small"
+      />
+    </div>
+
+    {shouldShowUpdatePortfolioButton && (
+      <div className="px-[70px] mt-[-6px] mb-[10px] flex justify-end">
+       <div className="ml-[500px] -mt-[30px]"> 
+          <button
+            type="button"
+            onClick={handleUpdatePortfolioClick}
+            className="rounded-full bg-[#0B5107] px-[14px] py-[6px] text-[11px] font-medium border border-[#1B1C1E] "
+            
+          >
+            <span className="text-[11px] font-medium leading-5 text-[#E3E2DE]">
+                  Actualizar Portafolio
+                </span>
+            
+           </button>
+        </div>
+      </div>
+    )}
+  </>
+)}
       </div>
         
          {/* LINEA DEL DIABLO*/}
@@ -965,7 +1000,10 @@ const getFilteredPosts = () => {
             {activeMainTab !== "portfolio" && (
               <div className="space-y-8 px-[70px]">
                 {filteredPosts.map((post) => (
-                  <PostCard key={post.id} post={post} />
+                  <div key={post.id}>
+                    <PostCard post={post} />
+                    <div className="w-[868px] h-px bg-[#8F8E8A] my-4 -ml-[70px]" />
+                  </div>
                 ))}
                 {filteredPosts.length === 0 && (
                   <div className="text-center text-gray-500 py-8 ">
@@ -975,6 +1013,7 @@ const getFilteredPosts = () => {
               </div>
             )}
             </div>
+            
         </div>
   </div>
 );
