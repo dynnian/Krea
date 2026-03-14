@@ -355,7 +355,9 @@ const SubscribeButton: React.FC<SubscribeButtonProps> = ({ isSubscribed, onClick
         : 'bg-[#F3F3F1] text-[#1B1C1E] border-[#1B1C1E]'
     }`}
   >
-    {isSubscribed ? 'Subscrito' : 'Subscribirse'}
+    <span className="text-[11px] font-medium leading-5 text-[#1B1C1E]"> 
+      {isSubscribed ? 'Subscrito' : 'Subscribirse'}
+  </span>
   </button>
 );
 
@@ -368,7 +370,9 @@ const CommissionButton: React.FC<CommissionButtonProps> = ({ onClick }) => (
     onClick={onClick}
     className="px-5 py-1 rounded-full text-xs font-medium bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E]"
   >
+    <span className="text-[11px] font-medium leading-5 text-[#1B1C1E]">
     Comisión
+    </span>
   </button>
 );
 
@@ -378,14 +382,32 @@ interface ConfigurationButtonProps {
 
 const ConfigurationButton: React.FC<ConfigurationButtonProps> = ({ onClick }) => (
   <button
+    type="button"
     onClick={onClick}
-    className="px-5 py-1 rounded-full text-xs font-medium bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] flex items-center gap-1"
+    className="px-5 py-1 rounded-full cursor-pointer transition hover:bg-[#E6E5E2] bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] flex items-center gap-1"
   >
     <Edit size={14} />
-    Configuración
+    <span className="text-[13px]  font-medium leading-5 text-[#1B1C1E]">
+       Configuración
+    </span> 
   </button>
-  
-  
+);
+
+interface FavoritesButtonProps {
+  onClick?: () => void;
+}
+
+const FavoritesButton: React.FC<FavoritesButtonProps> = ({ onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="px-5 py-1 rounded-full cursor-pointer transition hover:bg-[#E6E5E2] bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] flex items-center gap-1"
+  >
+    <Bookmark size={14} />
+    <span className="text-[13px] font-medium leading-5 text-[#1B1C1E]">
+     Guardados
+    </span>
+  </button>
 );
 
 interface MoreButtonProps {
@@ -474,6 +496,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const [bookmarked, setBookmarked] = useState(false);
   const [bookmarksCount, setBookmarksCount] = useState(0);
 
+
+
   const requireAuth = () => {
     if (!user) {
       message.warning(t('profile.auth_required'));
@@ -533,6 +557,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       setBookmarksCount(prev => (previous ? prev + 1 : prev - 1));
     }
   };
+
+
 
   const formatDate = (iso: string) => {
     const date = new Date(iso);
@@ -682,6 +708,13 @@ const [activeMusicTab, setActiveMusicTab] = useState<"songs" | "albums">("songs"
 const [isFollowing, setIsFollowing] = useState(false);
 const [isSubscribed, setIsSubscribed] = useState(false);
 
+const handleGoToSettings = () => {
+  navigate("/settings");
+};
+
+const handleGoToSaved = () => {
+ navigate("/saved");
+};
 // Determinar si es el perfil propio (ruta /profile/me)
 // const isOwnProfile = username === 'me';
 
@@ -890,24 +923,28 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
                 <Text type="secondary">@{profile.user.handle}</Text>
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                {isOwnProfile ? (
-                  <ConfigurationButton />
-                ) : (
-                  <>
-                    <CommissionButton />
-                    <SubscribeButton
-                      isSubscribed={isSubscribed}
-                      onClick={handleSubscribe}
-                    />
-                    <FollowButton
-                      isFollowing={isFollowing}
-                      onClick={handleFollow}
-                    />
-                    <MoreButton />
-                  </>
-                )}
-              </div>
+            <div className="flex flex-wrap gap-2">
+              {isOwnProfile ? (
+                <>
+                  <ConfigurationButton onClick={handleGoToSettings} />
+                  <FavoritesButton onClick={handleGoToSaved} />
+                  <MoreButton />
+                </>
+              ) : (
+                <>
+                  <CommissionButton />
+                  <SubscribeButton
+                    isSubscribed={isSubscribed}
+                    onClick={handleSubscribe}
+                  />
+                  <FollowButton
+                    isFollowing={isFollowing}
+                    onClick={handleFollow}
+                  />
+                  <MoreButton />
+                </>
+              )}
+            </div>
             </div>
 
             <p className="text-gray-800 text-sm text-justify mt-4 leading-relaxed">
@@ -948,26 +985,24 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
 
     {shouldShowUpdatePortfolioButton && (
       <div className="px-[70px] mt-[-6px] mb-[10px] flex justify-end">
-       <div className="ml-[500px] -mt-[30px]"> 
+       <div className="ml-[500px] -mt-[30px] relative z-20"> 
           <button
             type="button"
             onClick={handleUpdatePortfolioClick}
-            className="rounded-full bg-[#0B5107] px-[14px] py-[6px] text-[11px] font-medium border border-[#1B1C1E] "
-            
+            className="rounded-full bg-[#0B5107] cursor-pointer transition hover:bg-[#093B05] px-[14px] py-[6px] text-[11px] border border-[#1B1C1E]"
           >
-            <span className="text-[11px] font-medium leading-5 text-[#E3E2DE]">
+            <span className="text-[13px] font-medium leading-5 text-[#E3E2DE]">
                   Actualizar Portafolio
-                </span>
-            
+            </span>
            </button>
         </div>
       </div>
     )}
-  </>
+     </>
 )}
       </div>
         
-         {/* LINEA DEL DIABLO*/}
+         {/*LINEA DEL DIABLO*/}
         {!isPortfolioView && (
           <div className="w-[868px] h-px bg-[#8F8E8A] my-4 self-center" />
         )}
