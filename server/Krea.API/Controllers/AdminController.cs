@@ -92,6 +92,25 @@ namespace Krea.API.Controllers {
             }
         }
 
+        [HttpDelete("users/{userId:guid}")]
+        public async Task<IActionResult> DeleteUser(
+            Guid userId,
+            CancellationToken cancellationToken) {
+            try {
+                await _sender.Send(new DeleteAdminUserCommand(GetCurrentUserId(), userId), cancellationToken);
+                return NoContent();
+            }
+            catch (InvalidOperationException ex) {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (ArgumentException ex) {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (KeyNotFoundException ex) {
+                return NotFound(new { error = ex.Message });
+            }
+        }
+
         [HttpGet("reports")]
         public async Task<ActionResult<AdminReportsOverviewDto>> GetReports(CancellationToken cancellationToken) {
             AdminReportsOverviewDto result = await _sender.Send(new GetAdminReportsOverviewQuery(), cancellationToken);

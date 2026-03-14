@@ -179,6 +179,18 @@ namespace Krea.Infrastructure.Services {
             return (true, Array.Empty<string>());
         }
 
+        public async Task<(bool Succeeded, string[] Errors)> DeleteUserAsync(Guid userId) {
+            AppUser? appUser = await _userManager.FindByIdAsync(userId.ToString());
+            if (appUser is null)
+                return (false, ["User not found."]);
+
+            IdentityResult result = await _userManager.DeleteAsync(appUser);
+            if (!result.Succeeded)
+                return (false, result.Errors.Select(e => e.Description).ToArray());
+
+            return (true, Array.Empty<string>());
+        }
+
         public async Task<IList<string>> GetRolesAsync(UserIdentity user) {
             AppUser? appUser = await _userManager.FindByIdAsync(user.Id.ToString());
             if (appUser == null) return new List<string>();

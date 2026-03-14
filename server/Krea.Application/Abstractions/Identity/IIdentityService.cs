@@ -12,6 +12,7 @@ namespace Krea.Application.Abstractions.Identity {
         Task<bool> CheckPasswordAsync(UserIdentity user, string password);
         Task<bool> ChangePasswordAsync(UserIdentity user, string currentPassword, string newPassword);
         Task<(bool Succeeded, string[] Errors)> CreateUserAsync(UserIdentity user, string password);
+        Task<(bool Succeeded, string[] Errors)> DeleteUserAsync(Guid userId);
         Task<IList<string>> GetRolesAsync(UserIdentity user);
         Task<string> GenerateEmailConfirmationTokenAsync(UserIdentity user);
         Task<bool> ConfirmEmailAsync(UserIdentity user, string token);
