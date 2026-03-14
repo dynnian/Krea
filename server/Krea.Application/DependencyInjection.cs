@@ -30,6 +30,7 @@ namespace Krea.Application {
     using Features.DirectMessages.Mappings;
     using Features.Feed;
     using Features.Follows;
+    using Features.Payments.ConfirmPayment;
     using Features.User;
     using Features.Admin.Configuration;
     using Features.Admin.Dashboard;
@@ -102,14 +103,18 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<CreatePostUploadCommand, CreatePostUploadResponse>, CreatePostUploadHandler>();
             services.AddScoped<IRequestHandler<ExploreQuery, PagedResult<ExplorePostDto>>, ExploreHandler>();
             
-            services.AddScoped<ISender, Sender>();
-            
             // Messaging
-            services.AddScoped< IRequestHandler<GetConversationQuery, ConversationDto>, GetConversationQueryHandler>();
-            services.AddScoped< IRequestHandler<MarkMessageAsReadCommand, bool>, MarkMessageAsReadCommandHandler>();
-            services.AddScoped< IRequestHandler<SendDirectMessageCommand, DirectMessageDto>, SendDirectMessageCommandHandler>();
+            services.AddScoped<IRequestHandler<GetConversationQuery, ConversationDto>, GetConversationQueryHandler>();
+            services.AddScoped<IRequestHandler<MarkMessageAsReadCommand, bool>, MarkMessageAsReadCommandHandler>();
+            services.AddScoped<IRequestHandler<SendDirectMessageCommand, DirectMessageDto>, SendDirectMessageCommandHandler>();
             services.AddScoped<IRequestHandler<GetUserConversationsQuery, List<ConversationPreviewDto>>, GetUserConversationsQueryHandler>();
             services.AddScoped<IRequestHandler<GetConversationMessagesQuery, List<DirectMessageDto>>, GetConversationMessagesQueryHandler>();
+            
+            // Payments
+            services.AddScoped<IRequestHandler<ConfirmPaymentCommand, Unit>, ConfirmPaymentHandler>();
+            
+            
+            services.AddScoped<ISender, Sender>();
             
             return services;
         }

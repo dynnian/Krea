@@ -15,6 +15,7 @@ using Application.Abstractions.Feed;
 using Application.Abstractions.FileStorage;
 using Application.Abstractions.Filter;
 using Application.Abstractions.Identity;
+using Application.Abstractions.Payments;
 using Configuration;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -57,10 +58,13 @@ public static class DependencyInjection
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
+        
+        // Pagos
+        services.AddScoped<IPaymentQueryService, PaymentQueryService>();
+        // Register PaymentGateway
 
         // Repositorios
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<IDonationRepository, DonationRepository>();
         services.AddScoped<IMembershipPlanRepository, MembershipPlanRepository>();
         services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
