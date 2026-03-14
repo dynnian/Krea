@@ -1,4 +1,4 @@
-namespace Krea.Application.Features.Posts {
+namespace Krea.Application.Features.Posts.Like {
     using Domain.Abstractions;
     using Domain.Repositories;
     using Dto;

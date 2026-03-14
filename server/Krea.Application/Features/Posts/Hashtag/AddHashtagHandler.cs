@@ -1,4 +1,4 @@
-namespace Krea.Application.Features.Posts {
+namespace Krea.Application.Features.Posts.Hashtag {
     using Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;
