@@ -14,7 +14,7 @@ namespace Krea.API.Controllers {
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 
-    
+
     /// <summary>
     /// Controller responsible for managing post-related operations within the platform.
     /// </summary>
@@ -37,7 +37,7 @@ namespace Krea.API.Controllers {
         /// Mediator used to dispatch application commands and queries.
         /// </param>
         public PostsController(ISender sender) => _sender = sender;
-        
+
         /// <summary>
         /// Retrieves a paginated list of all posts available in the platform.
         /// </summary>
@@ -74,12 +74,11 @@ namespace Krea.API.Controllers {
             Guid authorId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
-            CancellationToken cancellationToken = default)
-        {
-            var result = await _sender.Send(
+            CancellationToken cancellationToken = default) {
+            IReadOnlyList<PostDto> result = await _sender.Send(
                 new GetPostsByUserQuery(authorId, page, pageSize),
                 cancellationToken);
-        
+
             return Ok(result);
         }
 
@@ -94,8 +93,7 @@ namespace Krea.API.Controllers {
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(
             Guid id,
-            CancellationToken cancellationToken = default)
-        {
+            CancellationToken cancellationToken = default) {
             GetPostByIdResponse? result = await _sender.Send(
                 new GetPostByIdCommand(id),
                 cancellationToken);
@@ -105,7 +103,7 @@ namespace Krea.API.Controllers {
 
             return Ok(result);
         }
-        
+
         /// <summary>
         /// Creates a new post.
         /// </summary>
@@ -119,8 +117,7 @@ namespace Krea.API.Controllers {
         [HttpPost]
         public async Task<IActionResult> Create(
             [FromBody] CreatePostCommand command,
-            CancellationToken cancellationToken = default)
-        {
+            CancellationToken cancellationToken = default) {
             CreatePostResponse result = await _sender.Send(command, cancellationToken);
 
             return CreatedAtAction(
@@ -156,15 +153,14 @@ namespace Krea.API.Controllers {
         [HttpDelete("{postId:guid}")]
         public async Task<IActionResult> DeletePost(
             Guid postId,
-            CancellationToken cancellationToken)
-        {
-             await _sender.Send(
+            CancellationToken cancellationToken) {
+            await _sender.Send(
                 new DeletePostCommand(postId),
                 cancellationToken);
 
             return NoContent();
         }
-        
+
         /// <summary>
         /// Creates a reply to an existing post.
         /// </summary>
@@ -178,8 +174,7 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> Reply(
             Guid postId,
             [FromBody] ReplyPostCommand command,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             Guid replyId = await _sender.Send(
                 command with { ReplyToPostId = postId },
                 cancellationToken);
@@ -189,7 +184,7 @@ namespace Krea.API.Controllers {
                 new { id = replyId },
                 new { ReplyPostId = replyId });
         }
-        
+
         /// <summary>
         /// Creates a repost of an existing post.
         /// </summary>
@@ -203,8 +198,7 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> Repost(
             Guid postId,
             [FromBody] RepostPostCommand command,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             Guid repostId = await _sender.Send(
                 command with { OriginalPostId = postId },
                 cancellationToken);
@@ -214,7 +208,7 @@ namespace Krea.API.Controllers {
                 new { id = repostId },
                 new { RepostId = repostId });
         }
-        
+
         /// <summary>
         /// Adds a like to a post.
         /// </summary>
@@ -228,15 +222,14 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> Like(
             Guid postId,
             [FromBody] LikePostCommand command,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             await _sender.Send(
                 command with { PostId = postId },
                 cancellationToken);
 
             return NoContent();
         }
-        
+
         /// <summary>
         /// Removes a like from a post.
         /// </summary>
@@ -250,15 +243,14 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> Unlike(
             Guid postId,
             [FromBody] UnlikePostCommand command,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             await _sender.Send(
                 command with { PostId = postId },
                 cancellationToken);
 
             return NoContent();
         }
-        
+
         /// <summary>
         /// Uploads media content associated with a post.
         /// </summary>
@@ -272,9 +264,8 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> CreateUpload(
             Guid postId,
             [FromForm] CreatePostUploadRequest request,
-            CancellationToken cancellationToken)
-        {
-            await using var stream = request.File.OpenReadStream();
+            CancellationToken cancellationToken) {
+            await using Stream stream = request.File.OpenReadStream();
 
             var command = new CreatePostUploadCommand(
                 postId,
@@ -299,7 +290,7 @@ namespace Krea.API.Controllers {
                 request.IsWorkMedia
             );
 
-            var result = await _sender.Send(command, cancellationToken);
+            CreatePostUploadResponse result = await _sender.Send(command, cancellationToken);
 
             return Ok(result);
         }

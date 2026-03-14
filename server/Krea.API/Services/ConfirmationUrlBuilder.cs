@@ -10,22 +10,20 @@ namespace Krea.API.Services {
     /// and <see cref="LinkGenerator"/> to generate an absolute URL pointing to the
     /// <see cref="AuthController.ConfirmEmail"/> action.
     /// </remarks>
-    public class ConfirmationUrlBuilder : IConfirmationUrlBuilder
-    {
+    public class ConfirmationUrlBuilder : IConfirmationUrlBuilder {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly LinkGenerator _linkGenerator;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfirmationUrlBuilder"/> class.
         /// </summary>
         /// <param name="httpContextAccessor">Accessor for the current HTTP context.</param>
         /// <param name="linkGenerator">Generator for creating absolute URLs.</param>
-        public ConfirmationUrlBuilder(IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator)
-        {
+        public ConfirmationUrlBuilder(IHttpContextAccessor httpContextAccessor, LinkGenerator linkGenerator) {
             _httpContextAccessor = httpContextAccessor;
             _linkGenerator = linkGenerator;
         }
-        
+
         /// <summary>
         /// Builds an absolute URL for email confirmation.
         /// </summary>
@@ -38,18 +36,16 @@ namespace Krea.API.Services {
         /// The returned URL is expected to be used in the email body. The token is passed as-is and will be automatically
         /// URL-encoded by the <see cref="LinkGenerator"/>. The generated URL includes the scheme, host, and path from the current request.
         /// </remarks>
-        public string BuildEmailConfirmationLink(Guid userId, string token)
-        {
-            var httpContext = _httpContextAccessor.HttpContext;
+        public string BuildEmailConfirmationLink(Guid userId, string token) {
+            HttpContext? httpContext = _httpContextAccessor.HttpContext;
             if (httpContext == null) throw new NullReferenceException("HttpContext is null");
-            var link = _linkGenerator.GetUriByAction(
+            string? link = _linkGenerator.GetUriByAction(
                 httpContext,
-                action: "ConfirmEmail",
-                controller: "Auth",
-                values: new { userId, token }
+                "ConfirmEmail",
+                "Auth",
+                new { userId, token }
             );
             return link!;
-
         }
     }
 }
