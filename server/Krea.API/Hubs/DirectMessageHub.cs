@@ -12,39 +12,36 @@ namespace Krea.API.Hubs {
     /// </summary>
     [Authorize]
     public class DirectMessageHub(ISender sender, ILogger<DirectMessageHub> logger) : Hub {
-    
         /// <summary>
         /// Called when a client connects to the hub.
         /// Adds the connection to a group named with the user's ID for targeted messages.
         /// </summary>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        public override async Task OnConnectedAsync()
-        {
+        public override async Task OnConnectedAsync() {
             Guid? userId = GetCurrentUserId();
-            if (userId.HasValue)
-            {
+            if (userId.HasValue) {
                 await Groups.AddToGroupAsync(Context.ConnectionId, userId.Value.ToString());
                 logger.LogInformation("User {UserId} connected to DM hub", userId);
             }
+
             await base.OnConnectedAsync();
         }
-    
+
         /// <summary>
         /// Called when a client disconnects from the hub.
         /// Removes the connection from the user's group.
         /// </summary>
         /// <param name="exception">The exception that caused the disconnection, if any.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        public override async Task OnDisconnectedAsync(Exception? exception)
-        {
+        public override async Task OnDisconnectedAsync(Exception? exception) {
             Guid? userId = GetCurrentUserId();
-            if (userId.HasValue)
-            {
+            if (userId.HasValue) {
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId.Value.ToString());
             }
+
             await base.OnDisconnectedAsync(exception);
         }
-    
+
         /// <summary>
         /// Sends a direct message to another user.
         /// The message is persisted and then delivered in real-time to both the sender and the receiver.
@@ -56,46 +53,40 @@ namespace Krea.API.Hubs {
         /// - "ReceiveMessage" with the <see cref="DirectMessageDto"/> when the message is successfully sent.
         /// - "ErrorMessage" with a string describing the error if the operation fails.
         /// </remarks>
-        public async Task SendMessage(SendDirectMessageCommand command)
-        {
+        public async Task SendMessage(SendDirectMessageCommand command) {
             Guid? senderId = GetCurrentUserId();
-            if (!senderId.HasValue)
-            {
+            if (!senderId.HasValue) {
                 await Clients.Caller.SendAsync("ErrorMessage", "User not authenticated");
                 return;
             }
-        
+
             // Check senderId coincides with authenticated user
-            if (command.SenderId != senderId.Value)
-            {
+            if (command.SenderId != senderId.Value) {
                 await Clients.Caller.SendAsync("ErrorMessage", "Invalid sender ID");
                 return;
             }
 
-            try
-            {
+            try {
                 DirectMessageDto messageDto = await sender.Send(command);
-            
+
                 // Send to receiver
                 await Clients.Group(command.ReceiverId.ToString())
-                    .SendAsync("ReceiveMessage", messageDto);
-            
+                             .SendAsync("ReceiveMessage", messageDto);
+
                 // Send to sender UI
                 await Clients.Caller.SendAsync("ReceiveMessage", messageDto);
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 logger.LogError(ex, "Error sending message");
                 await Clients.Caller.SendAsync("ErrorMessage", "Failed to send message");
             }
         }
-    
+
         /// <summary>
         /// Extracts the current user's ID from the claims principal.
         /// </summary>
         /// <returns>The user's ID as a Guid, or null if not authenticated.</returns>
-        private Guid? GetCurrentUserId()
-        {
+        private Guid? GetCurrentUserId() {
             Claim? userIdClaim = Context.User?.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out Guid userId))
                 return userId;

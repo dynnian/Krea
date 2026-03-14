@@ -23,6 +23,7 @@ namespace Krea.Application {
     using Features.DirectMessages.Mappings;
     using Features.Feed;
     using Features.Follows;
+    using Features.User;
     using Features.Posts.CreatePost;
     using Features.Posts.DeletePost;
     using Features.Posts.GetPostById;
@@ -46,6 +47,8 @@ namespace Krea.Application {
             //User
             services.AddScoped<IRequestHandler<FollowUserCommand, Unit>, FollowUserHandler>();
             services.AddScoped<IRequestHandler<UnfollowUserCommand, Unit>, UnfollowUserHandler>();
+            services.AddScoped<IRequestHandler<GetUserProfileQuery, UserDto?>, GetUserProfileQueryHandler>();
+            services.AddScoped<IRequestHandler<UpdateUserProfileCommand, UserDto>, UpdateUserProfileCommandHandler>();
             
             //Feed
             services.AddScoped<GetRecentFeedHandler>();

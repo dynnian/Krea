@@ -6,8 +6,7 @@ namespace Krea.API.Controllers {
 
     [ApiController]
     [Route("api/feed")]
-    public sealed class FeedController : ControllerBase
-    {
+    public sealed class FeedController : ControllerBase {
         private readonly GetRecentFeedHandler _recentHandler;
         private readonly GetTrendingFeedHandler _trendingHandler;
         private readonly GetFollowingFeedHandler _followingHandler;
@@ -15,8 +14,7 @@ namespace Krea.API.Controllers {
         public FeedController(
             GetRecentFeedHandler recentHandler,
             GetTrendingFeedHandler trendingHandler,
-            GetFollowingFeedHandler followingHandler)
-        {
+            GetFollowingFeedHandler followingHandler) {
             _recentHandler = recentHandler;
             _trendingHandler = trendingHandler;
             _followingHandler = followingHandler;
@@ -27,11 +25,10 @@ namespace Krea.API.Controllers {
             [FromQuery] Guid currentUserId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            CancellationToken ct = default)
-        {
+            CancellationToken ct = default) {
             var query = new GetRecentFeedQuery(currentUserId, page, pageSize);
 
-            var result = await _recentHandler.Handle(query, ct);
+            IReadOnlyList<PostFeedResponse> result = await _recentHandler.Handle(query, ct);
 
             return Ok(result);
         }
@@ -41,11 +38,10 @@ namespace Krea.API.Controllers {
             [FromQuery] Guid currentUserId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            CancellationToken ct = default)
-        {
+            CancellationToken ct = default) {
             var query = new GetTrendingFeedQuery(currentUserId, page, pageSize);
 
-            var result = await _trendingHandler.Handle(query, ct);
+            IReadOnlyList<PostFeedResponse> result = await _trendingHandler.Handle(query, ct);
 
             return Ok(result);
         }
@@ -55,11 +51,10 @@ namespace Krea.API.Controllers {
             [FromQuery] Guid currentUserId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            CancellationToken ct = default)
-        {
+            CancellationToken ct = default) {
             var query = new GetFollowingFeedQuery(currentUserId, page, pageSize);
 
-            var result = await _followingHandler.Handle(query, ct);
+            IReadOnlyList<PostFeedResponse> result = await _followingHandler.Handle(query, ct);
 
             return Ok(result);
         }
