@@ -96,10 +96,14 @@ namespace Krea.Domain.Entities {
             UpdatedAt = DateTime.UtcNow;
         }
 
+        public void Suspend() => Disable();
+
         public void Enable() {
             IsDisabled = false;
             UpdatedAt = DateTime.UtcNow;
         }
+
+        public void Unsuspend() => Enable();
 
         public void UpdateProfilePicture(Media profilePicture) {
             ProfilePicture = profilePicture;

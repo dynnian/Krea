@@ -35,8 +35,9 @@ namespace Krea.Infrastructure.Data {
 
         public DbSet<Conversation> Conversations => Set<Conversation>();
         public DbSet<Message> Messages => Set<Message>();
+        public DbSet<InstanceConfiguration> InstanceConfigurations => Set<InstanceConfiguration>();
+        public DbSet<PostModerationReport> PostModerationReports => Set<PostModerationReport>();
 
-        // public DbSet<Report> Reports => Set<Report>();
         // public DbSet<ReportCategory> ReportCategories => Set<ReportCategory>();
         // public DbSet<ModerationAction> ModerationActions => Set<ModerationAction>();
 

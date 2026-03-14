@@ -60,5 +60,20 @@ namespace Krea.Infrastructure.Repositories {
                           .Include(p => p.Uploads)
                           .Include(p => p.Hashtags)
                           .ToListAsync(cancellationToken);
+
+        public Task<int> CountAsync(CancellationToken cancellationToken = default) =>
+            _context.Posts.CountAsync(p => !p.IsDeleted, cancellationToken);
+
+        public async Task<IReadOnlyList<Post>> GetRecentAsync(int take, CancellationToken cancellationToken = default) {
+            if (take <= 0)
+                return Array.Empty<Post>();
+
+            return await _context.Posts
+                                 .AsNoTracking()
+                                 .Where(p => !p.IsDeleted)
+                                 .OrderByDescending(p => p.UploadedAt)
+                                 .Take(take)
+                                 .ToListAsync(cancellationToken);
+        }
     }
 }
