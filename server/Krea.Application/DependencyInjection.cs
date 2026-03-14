@@ -32,6 +32,7 @@ namespace Krea.Application {
     using Features.Feed;
     using Features.Follows;
     using Features.Payments.ConfirmPayment;
+    using Features.Payments.ConfirmPayment;
     using Features.User;
     using Features.Admin.Configuration;
     using Features.Admin.Dashboard;
@@ -182,6 +183,9 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<SendDirectMessageCommand, DirectMessageDto>, SendDirectMessageCommandHandler>();
             services.AddScoped<IRequestHandler<GetUserConversationsQuery, List<ConversationPreviewDto>>, GetUserConversationsQueryHandler>();
             services.AddScoped<IRequestHandler<GetConversationMessagesQuery, List<DirectMessageDto>>, GetConversationMessagesQueryHandler>();
+            
+            // Payments
+            services.AddScoped<IRequestHandler<ConfirmPaymentCommand, Unit>, ConfirmPaymentHandler>();
             
             // Payments
             services.AddScoped<IRequestHandler<ConfirmPaymentCommand, Unit>, ConfirmPaymentHandler>();
