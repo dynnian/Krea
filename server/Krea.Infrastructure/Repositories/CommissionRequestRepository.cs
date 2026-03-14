@@ -3,44 +3,69 @@ using Krea.Domain.Repositories;
 using Krea.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Krea.Infrastructure.Repositories {
-    public sealed class CommissionRequestRepository
-        : ICommissionRequestRepository {
-        private readonly AppDbContext _context;
+namespace Krea.Infrastructure.Repositories;
 
-        public CommissionRequestRepository(AppDbContext context) => _context = context;
+public sealed class CommissionRequestRepository(AppDbContext context) 
+    : ICommissionRequestRepository {
+    
+    public async Task<CommissionRequest?> GetByIdAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        return await context.CommissionRequests
+            .AsNoTracking()
+            .Include(cr => cr.Bidder)
+            .Include(cr => cr.Offering)
+            .FirstOrDefaultAsync(cr => cr.Id == id, cancellationToken);
+    }
 
-        public async Task<CommissionRequest?> GetByIdAsync(Guid id) =>
-            await _context.CommissionRequests
-                          .Include(cr => cr.Bidder)
-                          .Include(cr => cr.Offering)
-                          .FirstOrDefaultAsync(cr => cr.Id == id);
+    public async Task<CommissionRequest?> GetByIdWithPaymentsAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        return await context.CommissionRequests
+            .AsNoTracking()
+            .Include(cr => cr.Bidder)
+            .Include(cr => cr.Offering)
+            .Include(cr => cr.Payments)
+                .ThenInclude(p => p.Payer)
+            .FirstOrDefaultAsync(cr => cr.Id == id, cancellationToken);
+    }
 
-        public async Task<CommissionRequest?> GetByIdWithPaymentsAsync(Guid id) =>
-            await _context.CommissionRequests
-                          .Include(cr => cr.Bidder)
-                          .Include(cr => cr.Offering)
-                          .Include(cr => cr.Payments)
-                          .ThenInclude(p => p.Payer)
-                          .FirstOrDefaultAsync(cr => cr.Id == id);
+    public async Task<IReadOnlyList<CommissionRequest>> GetByBidderAsync(
+        Guid bidderId,
+        CancellationToken cancellationToken = default)
+    {
+        return await context.CommissionRequests
+            .AsNoTracking()
+            .Include(cr => cr.Offering)
+            .Where(cr => cr.Bidder.Id == bidderId)
+            .ToListAsync(cancellationToken);
+    }
 
-        public async Task<IReadOnlyList<CommissionRequest>> GetByBidderAsync(Guid bidderId) =>
-            await _context.CommissionRequests
-                          .Include(cr => cr.Offering)
-                          .Where(cr => EF.Property<Guid>(cr, "BidderId") == bidderId)
-                          .ToListAsync();
+    public async Task<IReadOnlyList<CommissionRequest>> GetByOfferingAsync(
+        Guid offeringId,
+        CancellationToken cancellationToken = default)
+    {
+        return await context.CommissionRequests
+            .AsNoTracking()
+            .Include(cr => cr.Bidder)
+            .Where(cr => cr.Offering.Id == offeringId)
+            .ToListAsync(cancellationToken);
+    }
 
-        public async Task<IReadOnlyList<CommissionRequest>> GetByOfferingAsync(Guid offeringId) =>
-            await _context.CommissionRequests
-                          .Include(cr => cr.Bidder)
-                          .Where(cr => EF.Property<Guid>(cr, "OfferingId") == offeringId)
-                          .ToListAsync();
+    public async Task AddAsync(
+        CommissionRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        await context.CommissionRequests.AddAsync(request, cancellationToken);
+    }
 
-        public async Task AddAsync(CommissionRequest request) => await _context.CommissionRequests.AddAsync(request);
-
-        public Task UpdateAsync(CommissionRequest request) {
-            _context.CommissionRequests.Update(request);
-            return Task.CompletedTask;
-        }
+    public Task UpdateAsync(
+        CommissionRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        context.CommissionRequests.Update(request);
+        return Task.CompletedTask;
     }
 }

@@ -68,6 +68,16 @@ namespace Krea.Domain.Entities {
             _payments.Add(payment);
             return payment;
         }
+        
+        public void ConfirmPayment(Guid paymentId)
+        {
+            Payment? payment = _payments.FirstOrDefault(p => p.Id == paymentId);
+            if (payment == null)
+                throw new InvalidOperationException("Payment not found in this commission request.");
+
+            payment.MarkCompleted();
+            Start();
+        }
 
         public void Accept() => SetStatus(CommissionRequestStatus.Accepted);
         public void Start() => SetStatus(CommissionRequestStatus.InProgress);
@@ -80,8 +90,8 @@ namespace Krea.Domain.Entities {
         }
 
         private static void Validate(User bidder, CommissionOffering offering, string brief) {
-            if (bidder is null) throw new ArgumentNullException(nameof(bidder));
-            if (offering is null) throw new ArgumentNullException(nameof(offering));
+            ArgumentNullException.ThrowIfNull(bidder);
+            ArgumentNullException.ThrowIfNull(offering);
             if (string.IsNullOrWhiteSpace(brief)) throw new ArgumentException("Brief is required.");
         }
     }

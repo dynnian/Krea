@@ -24,6 +24,7 @@ namespace Krea.Application {
     using Features.DirectMessages.Mappings;
     using Features.Feed;
     using Features.Follows;
+    using Features.Payments.ConfirmPayment;
 
     public static class DependencyInjection {
         public static IServiceCollection AddApplication(this IServiceCollection services) {
@@ -67,6 +68,9 @@ namespace Krea.Application {
             services.AddScoped< IRequestHandler<SendDirectMessageCommand, DirectMessageDto>, SendDirectMessageCommandHandler>();
             services.AddScoped<IRequestHandler<GetUserConversationsQuery, List<ConversationPreviewDto>>, GetUserConversationsQueryHandler>();
             services.AddScoped<IRequestHandler<GetConversationMessagesQuery, List<DirectMessageDto>>, GetConversationMessagesQueryHandler>();
+            
+            // Payments
+            services.AddScoped<IRequestHandler<ConfirmPaymentCommand, Unit>, ConfirmPaymentHandler>();
             
             return services;
         }
