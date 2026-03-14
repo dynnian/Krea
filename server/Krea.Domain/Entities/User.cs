@@ -103,11 +103,25 @@ namespace Krea.Domain.Entities {
 
         public void UpdateProfilePicture(Media profilePicture) {
             ProfilePicture = profilePicture;
+            ProfilePictureId = profilePicture.Id;
             UpdatedAt = DateTime.UtcNow;
         }
 
         public void UpdateBannerPicture(Media bannerPicture) {
             BannerPicture = bannerPicture;
+            BannerPictureId = bannerPicture.Id;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void ClearProfilePicture() {
+            ProfilePicture = null;
+            ProfilePictureId = null;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void ClearBannerPicture() {
+            BannerPicture = null;
+            BannerPictureId = null;
             UpdatedAt = DateTime.UtcNow;
         }
 
@@ -120,6 +134,18 @@ namespace Krea.Domain.Entities {
             if (string.IsNullOrWhiteSpace(displayName))
                 throw new ArgumentException("Display name is required");
             DisplayName = displayName;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void UpdateLocalization(string languageCode, string timeZoneId) {
+            if (string.IsNullOrWhiteSpace(languageCode))
+                throw new ArgumentException("Language code is required");
+
+            if (string.IsNullOrWhiteSpace(timeZoneId))
+                throw new ArgumentException("Time zone is required");
+
+            LanguageCode = languageCode;
+            TimeZoneId = timeZoneId;
             UpdatedAt = DateTime.UtcNow;
         }
 
