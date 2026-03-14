@@ -16,6 +16,7 @@ namespace Krea.Infrastructure {
     using Application.Abstractions.FileStorage;
     using Application.Abstractions.Filter;
     using Application.Abstractions.Identity;
+    using Application.Abstractions.Payments;
     using Configuration;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
@@ -61,18 +62,22 @@ namespace Krea.Infrastructure {
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             // Identity
-            services.AddIdentity<AppUser, IdentityRole<Guid>>(options => {
-                        options.Password.RequireDigit = true;
-                        options.Password.RequiredLength = 6;
-                        options.Password.RequireNonAlphanumeric = false;
-                        options.Password.RequireUppercase = true;
-                        options.Password.RequireLowercase = true;
-                        options.User.RequireUniqueEmail = true;
-                        options.SignIn.RequireConfirmedEmail = false;
-                    })
-                    .AddRoles<IdentityRole<Guid>>()
-                    .AddEntityFrameworkStores<AppDbContext>()
-                    .AddDefaultTokenProviders();
+            services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
+                {
+                    options.Password.RequireDigit = true;
+                    options.Password.RequiredLength = 6;
+                    options.Password.RequireNonAlphanumeric = false;
+                    options.Password.RequireUppercase = true;
+                    options.Password.RequireLowercase = true;
+                    options.User.RequireUniqueEmail = true;
+                    options.SignIn.RequireConfirmedEmail = false;
+                })
+                .AddRoles<IdentityRole<Guid>>()
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
+            
+            // Pagos
+            services.AddScoped<IPaymentQueryService, PaymentQueryService>();
 
             // Repositorios
             services.AddScoped<IUserRepository, UserRepository>();
@@ -93,6 +98,27 @@ namespace Krea.Infrastructure {
             services.AddScoped<IMediaRepository, MediaRepository>();
             services.AddScoped<IHashtagRepository, HashtagRepository>();
             services.AddScoped<IFollowRepository, FollowRepository>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+            services.AddScoped<IInstanceConfigurationRepository, InstanceConfigurationRepository>();
+            services.AddScoped<IPostModerationReportRepository, PostModerationReportRepository>();
+            // Repositorios
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IDonationRepository, DonationRepository>();
+            services.AddScoped<IMembershipPlanRepository, MembershipPlanRepository>();
+            services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+            services.AddScoped<ICommissionOfferingRepository, CommissionOfferingRepository>();
+            services.AddScoped<ICommissionRequestRepository, CommissionRequestRepository>();
+            services.AddScoped<IConversationRepository, ConversationRepository>();
+            services.AddScoped<IMessageRepository, MessageRepository>();
+            services.AddScoped<IPostRepository, PostRepository>();
+            services.AddScoped<IPostUploadRepository, PostUploadRepository>();
+            services.AddScoped<IPostReadRepository, PostReadRepository>();
+            services.AddScoped<IGenreRepository, GenreRepository>();
+            services.AddScoped<ICollectionRepository, CollectionRepository>();
+            services.AddScoped<IMediaRepository, MediaRepository>();
+            services.AddScoped<IHashtagRepository, HashtagRepository>();
+            services.AddScoped<IFollowRepository, FollowRepository>();
+            services.AddScoped<ICollectionRepository, CollectionRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IInstanceConfigurationRepository, InstanceConfigurationRepository>();
             services.AddScoped<IPostModerationReportRepository, PostModerationReportRepository>();

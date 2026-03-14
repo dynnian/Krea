@@ -44,8 +44,12 @@ namespace Krea.Infrastructure.Data.Configurations {
                    .IsRequired();
 
             builder.OwnsOne(p => p.ExternalRef, ext => {
+                ext.Property(e => e.Provider)
+                    .HasColumnName("external_ref_provider")
+                    .HasMaxLength(20)
+                    .IsRequired();
                 ext.Property(e => e.Value)
-                   .HasColumnName("external_ref")
+                   .HasColumnName("external_ref_value")
                    .HasMaxLength(128)
                    .IsRequired();
             });

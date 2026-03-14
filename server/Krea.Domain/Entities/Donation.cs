@@ -62,10 +62,19 @@ namespace Krea.Domain.Entities {
             _payments.Add(payment);
             return payment;
         }
+        
+        public void ConfirmPayment(Guid paymentId)
+        {
+            Payment? payment = _payments.FirstOrDefault(p => p.Id == paymentId);
+            if (payment == null)
+                throw new InvalidOperationException("Payment not found in this commission request.");
+
+            payment.MarkCompleted();
+        }
 
         private static void Validate(User donor, User recipient, Money amount) {
-            if (donor is null) throw new ArgumentNullException(nameof(donor));
-            if (recipient is null) throw new ArgumentNullException(nameof(recipient));
+            ArgumentNullException.ThrowIfNull(donor);
+            ArgumentNullException.ThrowIfNull(recipient);
             if (ReferenceEquals(donor, recipient))
                 throw new ArgumentException("Cannot donate to yourself.");
             if (amount <= 0)
