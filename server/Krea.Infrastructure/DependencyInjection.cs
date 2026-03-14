@@ -7,6 +7,7 @@ using Services;
 using Domain.Abstractions;
 using Domain.Repositories;
 using Application.Abstractions;
+using Application.Abstractions.Admin;
 using Application.Abstractions.Auth;
 using Application.Abstractions.Email;
 using Application.Abstractions.Feed;
@@ -31,6 +32,10 @@ public static class DependencyInjection
         // Seeding
         services.Configure<SeedingOptions>(
             configuration.GetSection("Seeding")
+        );
+
+        services.Configure<InstanceSettingsOptions>(
+            configuration.GetSection("InstanceSettings")
         );
 
         // Unit Of Work
@@ -69,10 +74,12 @@ public static class DependencyInjection
         services.AddScoped<IHashtagRepository, HashtagRepository>();
         services.AddScoped<IFollowRepository, FollowRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IInstanceConfigurationRepository, InstanceConfigurationRepository>();
 
         // Servicios de aplicación (infraestructura)
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IInstanceSettingsService, InstanceSettingsService>();
         bool useFakeEmail = configuration.GetValue<bool>("UseFakeEmail");
         if (useFakeEmail)
         {

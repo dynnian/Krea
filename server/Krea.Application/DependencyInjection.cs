@@ -24,6 +24,10 @@ namespace Krea.Application {
     using Features.Feed;
     using Features.Follows;
     using Features.User;
+    using Features.Admin.Configuration;
+    using Features.Admin.Dashboard;
+    using Features.Admin.Reports;
+    using Features.Admin.Users;
     using Features.Posts.CreatePost;
     using Features.Posts.DeletePost;
     using Features.Posts.GetPostById;
@@ -49,6 +53,15 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<UnfollowUserCommand, Unit>, UnfollowUserHandler>();
             services.AddScoped<IRequestHandler<GetUserProfileQuery, UserDto?>, GetUserProfileQueryHandler>();
             services.AddScoped<IRequestHandler<UpdateUserProfileCommand, UserDto>, UpdateUserProfileCommandHandler>();
+
+            // Admin
+            services.AddScoped<IRequestHandler<GetAdminUsersQuery, AdminUsersPageDto>, GetAdminUsersHandler>();
+            services.AddScoped<IRequestHandler<UpdateAdminUserStatusCommand, Unit>, UpdateAdminUserStatusHandler>();
+            services.AddScoped<IRequestHandler<UpdateAdminUserRoleCommand, Unit>, UpdateAdminUserRoleHandler>();
+            services.AddScoped<IRequestHandler<GetAdminDashboardQuery, AdminDashboardDto>, GetAdminDashboardHandler>();
+            services.AddScoped<IRequestHandler<GetAdminReportsOverviewQuery, AdminReportsOverviewDto>, GetAdminReportsOverviewHandler>();
+            services.AddScoped<IRequestHandler<GetAdminInstanceConfigurationQuery, AdminInstanceConfigurationDto>, GetAdminInstanceConfigurationHandler>();
+            services.AddScoped<IRequestHandler<UpdateAdminInstanceConfigurationCommand, AdminInstanceConfigurationDto>, UpdateAdminInstanceConfigurationHandler>();
             
             //Feed
             services.AddScoped<GetRecentFeedHandler>();

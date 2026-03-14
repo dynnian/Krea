@@ -42,6 +42,20 @@ namespace Krea.Infrastructure.Repositories {
             await _context.Set<Follow>()
                 .AddAsync(follow, cancellationToken); 
         }
+
+        public Task<int> CountAsync(CancellationToken cancellationToken) =>
+            _context.Set<Follow>().CountAsync(cancellationToken);
+
+        public async Task<IReadOnlyList<Follow>> GetRecentAsync(int take, CancellationToken cancellationToken) {
+            if (take <= 0)
+                return Array.Empty<Follow>();
+
+            return await _context.Set<Follow>()
+                                 .AsNoTracking()
+                                 .OrderByDescending(f => f.FollowedAt)
+                                 .Take(take)
+                                 .ToListAsync(cancellationToken);
+        }
         
         public void Remove(Follow follow) 
         { 
