@@ -11,9 +11,10 @@ namespace Krea.Application {
     using Features.Auth.RevokeToken;
     using Features.DirectMessages.Dto;
     using Features.DirectMessages.GetConversation;
+    using Features.DirectMessages.GetConversationMessages;
+    using Features.DirectMessages.GetUserConversations;
     using Features.DirectMessages.MarkMessageAsRead;
     using Features.DirectMessages.SendDirectMessage;
-    using Features.Posts;
     using Features.Posts.Dto;
     using Features.Posts.GetAllPosts;
     using Features.Posts.GetPostsByUser;
@@ -22,6 +23,12 @@ namespace Krea.Application {
     using Features.DirectMessages.Mappings;
     using Features.Feed;
     using Features.Follows;
+    using Features.Posts.CreatePost;
+    using Features.Posts.DeletePost;
+    using Features.Posts.GetPostById;
+    using Features.Posts.Like;
+    using Features.Posts.ReplyPost;
+    using Features.Posts.Repost;
 
     public static class DependencyInjection {
         public static IServiceCollection AddApplication(this IServiceCollection services) {
@@ -48,9 +55,9 @@ namespace Krea.Application {
             // Posts
             services.AddScoped<IRequestHandler<GetAllPostsQuery, IReadOnlyList<PostDto>>, GetAllPostsHandler>();
             services.AddScoped<IRequestHandler<GetPostsByUserQuery, IReadOnlyList<PostDto>>, GetPostsByUserHandler>();
-            services.AddScoped<IRequestHandler<GetPostById.Request, GetPostById.Response?>, GetPostById>();
-            services.AddScoped<IRequestHandler<CreatePost.Request, CreatePost.Response>, CreatePost>();
-            services.AddScoped<IRequestHandler<DeletePost.Request, DeletePost.Response>, DeletePost>();
+            services.AddScoped<IRequestHandler<CreatePostCommand, CreatePostResponse>, CreatePostHandler>();
+            services.AddScoped<IRequestHandler<DeletePostCommand, DeletePostResponse>, DeletePostHandler>();
+            services.AddScoped<IRequestHandler<GetPostByIdCommand, GetPostByIdResponse?>, GetPostByIdHandler>();
             services.AddScoped<IRequestHandler<ReplyPostCommand, Guid>, ReplyPostHandler>();
             services.AddScoped<IRequestHandler<RepostPostCommand, Guid>, RepostHandler>();
             services.AddScoped<IRequestHandler<LikePostCommand, Unit>, LikePostHandler>();
@@ -63,6 +70,8 @@ namespace Krea.Application {
             services.AddScoped< IRequestHandler<GetConversationQuery, ConversationDto>, GetConversationQueryHandler>();
             services.AddScoped< IRequestHandler<MarkMessageAsReadCommand, bool>, MarkMessageAsReadCommandHandler>();
             services.AddScoped< IRequestHandler<SendDirectMessageCommand, DirectMessageDto>, SendDirectMessageCommandHandler>();
+            services.AddScoped<IRequestHandler<GetUserConversationsQuery, List<ConversationPreviewDto>>, GetUserConversationsQueryHandler>();
+            services.AddScoped<IRequestHandler<GetConversationMessagesQuery, List<DirectMessageDto>>, GetConversationMessagesQueryHandler>();
             
             return services;
         }

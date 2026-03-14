@@ -8,6 +8,7 @@ const axiosClient = axios.create({
   //timeout: 20000,
   headers: {
     "Content-Type": "application/json",
+     "Accept": '*/*'
   },
 });
 axiosClient.interceptors.request.use(

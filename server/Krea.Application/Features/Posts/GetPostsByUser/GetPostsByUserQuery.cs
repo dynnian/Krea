@@ -1,5 +1,6 @@
-namespace Krea.Application.Features.Posts.Dto {
+namespace Krea.Application.Features.Posts.GetPostsByUser {
     using Domain.Abstractions;
+    using Dto;
 
     public sealed record GetPostsByUserQuery(
         Guid AuthorPostId,

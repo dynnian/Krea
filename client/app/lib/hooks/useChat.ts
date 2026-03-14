@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from "react";
 import { useAuth } from "~/contexts/AuthContext";
-import { useChatStore } from "../../store/chatStore.ts";
+import { storage } from "../storage.ts";
 import {
   startConnection,
   stopConnection,
@@ -12,7 +12,8 @@ import {
 import type {
   Conversation as ConversationDTO,
   Message as MessageDTO,
-} from "../types/chat";
+} from "../../types/chat.ts";
+import { useChatStore } from "../../store/chatStore.ts";
 
 // UI-friendly types (matches your old hook's return)
 export interface UIConversation {
@@ -63,7 +64,7 @@ const mapMessageToUI = (
 
 export function useChat() {
   const { user } = useAuth();
-  const token = user?.token; // adjust based on your auth context
+  const token = storage.getToken(); // adjust based on your auth context
 
   // Store selectors
   const conversationsDTO = useChatStore((state) => state.conversations);
@@ -98,6 +99,7 @@ export function useChat() {
   // Initialize user in store and load conversations
   useEffect(() => {
     if (user) {
+      console.log("User present, loading conversations");
       setCurrentUser(user.id);
       loadConversations();
     }
@@ -106,7 +108,7 @@ export function useChat() {
   // SignalR connection
   useEffect(() => {
     if (!user || !token) return;
-    startConnection(token).catch(console.error);
+    startConnection().catch(console.error);
     return () => {
       stopConnection();
     };

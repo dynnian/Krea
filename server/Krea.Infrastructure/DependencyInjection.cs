@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Minio;
 
 public static class DependencyInjection
 {
@@ -81,9 +82,25 @@ public static class DependencyInjection
         {
             services.AddScoped<IEmailService, EmailService>();
         }
+        
+        //MinIO
+        services.AddSingleton<IMinioClient>(sp =>
+        {
+            var configuration = sp.GetRequiredService<IConfiguration>();
+
+            return new MinioClient()
+                .WithEndpoint(configuration["Minio:Endpoint"])
+                .WithCredentials(
+                    configuration["Minio:AccessKey"],
+                    configuration["Minio:SecretKey"])
+                .WithSSL(false)
+                .Build();
+        });
+        
+        services.AddScoped<IFileStorage, MinioFileStorage>();
 
         services.AddScoped<IFeedQueryService, FeedQueryService>();
-        services.AddScoped<IFileStorage, LocalFileStorage>();
+        //services.AddScoped<IFileStorage, LocalFileStorage>();
         services.AddScoped<ISender, Sender>();
         
         return services;

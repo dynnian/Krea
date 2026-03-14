@@ -25,7 +25,7 @@ const logoImage = "/assets/Logotipo 1.png";
 const backgroundImage = "/assets/landscape.jpg";
 
 export default function LoginRoute() {
-  const { login } = useAuth();
+  const { login,user } = useAuth();
   const { isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -40,9 +40,13 @@ export default function LoginRoute() {
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      navigate("/", { replace: true });
+      if (user?.role === "Admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
     }
-  }, [isAuthenticated, loading, navigate]);
+  }, [isAuthenticated, loading, navigate, user]);
 
   const isMobile = isMounted && !screens.sm;
 
@@ -66,7 +70,7 @@ export default function LoginRoute() {
     try {
       // Map form data to the expected LoginDTO (email field)
       await login({ email: data.emailOrUsername, password: data.password }, rememberMe);
-      navigate("/", { replace: true });
+      // navigate("/", { replace: true });
     } catch (error) {
       // Set error message in local state, do NOT rethrow
       if (axios.isAxiosError(error) && error.response) {

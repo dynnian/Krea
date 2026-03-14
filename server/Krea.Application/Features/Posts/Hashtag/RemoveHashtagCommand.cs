@@ -1,4 +1,4 @@
-namespace Krea.Application.Features.Posts.Dto;
+namespace Krea.Application.Features.Posts.Hashtag;
 
 public sealed record RemoveHashtagCommand(
     Guid PostId,

@@ -19,15 +19,15 @@ public class ConversationRepository(AppDbContext context) : IConversationReposit
             .Include(c => c.Icon)
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
-
+    
     public async Task<IEnumerable<Conversation>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await context.Conversations
-            .Include(c => c.Participants.Where(p => p.UserId == userId))
+            .Include(c => c.Participants)
                 .ThenInclude(p => p.User)
-            .Include(c => c.Messages.OrderByDescending(m => m.SentAt).Take(20)) // Últimos 20 mensajes
+            .Include(c => c.Messages.OrderByDescending(m => m.SentAt).Take(1))
             .Include(c => c.Icon)
-            .Where(c => c.Participants.Any(p => p.UserId == userId && p.IsActive))
+            .Where(c => c.Participants.Any(p => p.UserId == userId && p.LeftAt == null))
             .ToListAsync(cancellationToken);
     }
 
@@ -39,9 +39,9 @@ public class ConversationRepository(AppDbContext context) : IConversationReposit
             .Include(c => c.Messages)
             .Include(c => c.Icon)
             .Where(c => c.Type == ConversationType.DirectMessage)
-            .Where(c => c.Participants.Any(p => p.UserId == user1Id && p.IsActive))
-            .Where(c => c.Participants.Any(p => p.UserId == user2Id && p.IsActive))
-            .Where(c => c.Participants.Count(p => p.IsActive) == 2)
+            .Where(c => c.Participants.Any(p => p.UserId == user1Id && p.LeftAt == null))
+            .Where(c => c.Participants.Any(p => p.UserId == user2Id && p.LeftAt == null))
+            .Where(c => c.Participants.Count(p => p.LeftAt == null) == 2)
             .FirstOrDefaultAsync(cancellationToken);
     }
 

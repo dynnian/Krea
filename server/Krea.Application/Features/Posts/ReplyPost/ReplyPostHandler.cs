@@ -1,9 +1,8 @@
-namespace Krea.Application.Features.Posts {
+namespace Krea.Application.Features.Posts.ReplyPost {
     using Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;
     using Domain.ValueObjects;
-    using Dto;
 
     public sealed class ReplyPostHandler 
         : IRequestHandler<ReplyPostCommand, Guid>

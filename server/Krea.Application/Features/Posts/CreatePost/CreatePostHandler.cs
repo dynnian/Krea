@@ -1,35 +1,27 @@
-namespace Krea.Application.Features.Posts {
+namespace Krea.Application.Features.Posts.CreatePost {
     using Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;
     using Domain.ValueObjects;
 
-    public sealed class CreatePost
-        : IRequestHandler<CreatePost.Request, CreatePost.Response> {
+    public sealed class CreatePostHandler
+        : IRequestHandler<CreatePostCommand, CreatePostResponse>
+    {
         private readonly IPostRepository _postRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public CreatePost(
+        public CreatePostHandler(
             IPostRepository postRepository,
-            IUnitOfWork unitOfWork) {
+            IUnitOfWork unitOfWork)
+        {
             _postRepository = postRepository;
             _unitOfWork = unitOfWork;
         }
 
-        public sealed record Request(
-            Guid AuthorPostId,
-            PostType Type,
-            string Title,
-            string? Content,
-            bool IsWork,
-            bool IsLocal
-        ) : IRequest<Response>;
-
-        public sealed record Response(Guid PostId);
-
-        public async Task<Response> Handle(
-            Request request,
-            CancellationToken cancellationToken) {
+        public async Task<CreatePostResponse> Handle(
+            CreatePostCommand request,
+            CancellationToken cancellationToken)
+        {
             var post = new Post(
                 request.AuthorPostId,
                 request.Type,
@@ -42,7 +34,7 @@ namespace Krea.Application.Features.Posts {
             await _postRepository.AddAsync(post, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return new Response(post.Id);
+            return new CreatePostResponse(post.Id);
         }
     }
 }
