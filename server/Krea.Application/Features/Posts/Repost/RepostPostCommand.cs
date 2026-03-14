@@ -1,4 +1,4 @@
-namespace Krea.Application.Features.Posts.Dto {
+namespace Krea.Application.Features.Posts.Repost {
     using Domain.Abstractions;
 
     public sealed record RepostPostCommand(
