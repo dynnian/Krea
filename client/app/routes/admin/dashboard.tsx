@@ -11,7 +11,7 @@ import { Link } from "react-router"
 import { useTranslation } from "react-i18next"
 
 export default function DashboardPage() {
-  const { t } = useTranslation() // use admin namespace
+  const { t } = useTranslation() 
 
   const stats = [
     { label: t("dashboard.totalUsers"), value: "12,847", change: "+12.5%", icon: <UserOutlined /> },

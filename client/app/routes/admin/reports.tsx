@@ -1,12 +1,17 @@
 // routes/admin/reports.tsx
 import { Card } from "antd"
-import { ReportsKPI } from "client/app/components/Admin/reports-kpi.tsx"
-import { ReportsFilters } from "client/app/components/Admin/reports-filters.tsx"
-import { ActivityTable } from "client/app/components/Admin/activity-table.tsx"
+import { ReportsKPI } from "@/components/Admin/reports-kpi.tsx"
+import { ReportsFilters } from "@/components/Admin/reports-filters.tsx"
+import { ActivityTable } from "@/components/Admin/activity-table.tsx"
 import { useTranslation } from "react-i18next"
+import { useEffect } from "react";
 
 export default function ReportsPage() {
-  const { t } = useTranslation('admin')
+  const { t } = useTranslation()
+  useEffect(() => {
+    console.log("ReportsPage mounted");
+  }, []);
+
 
   return (
     <div className="space-y-6">

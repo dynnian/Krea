@@ -1,29 +1,47 @@
 import { Input, Badge, Avatar, Dropdown, Button, Select } from "antd"
 import { SearchOutlined, BellOutlined, GlobalOutlined } from "@ant-design/icons"
 import { useTranslation } from "react-i18next"
-import { useI18n } from "client/app/contexts/I18nContext.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx"
+import { useAuth } from "@/contexts/AuthContext.tsx"
+import { useNavigate } from "react-router"
 import type { MenuProps } from "antd"
 
 export function Header() {
-  const { t, i18n } = useTranslation('admin') // use admin namespace
-  const { setLanguage } = useI18n()           // language switcher from your context
+  const { t, i18n } = useTranslation()
+  const { setLanguage } = useI18n()
+  const { logout, user } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate("/login")
+  }
 
   const dropdownItems: MenuProps["items"] = [
     {
       key: "header",
       label: (
         <div className="flex flex-col py-1">
-          <span className="text-sm font-medium text-[#1B1C1E]">{t("header.adminUser")}</span>
-          <span className="text-xs text-[#8F8E8A]">admin@krea.app</span>
+          <span className="text-sm font-medium text-[#1B1C1E]">
+            {user?.name || t("header.adminUser")}
+          </span>
+          <span className="text-xs text-[#8F8E8A]">{user?.email || "admin@krea.app"}</span>
         </div>
       ),
       disabled: true,
     },
     { type: "divider" },
-    { key: "profile", label: t("header.profileSettings") },
-    { key: "preferences", label: t("header.systemPreferences") },
+    {
+      key: "profile",
+      label: t("header.profileSettings"),
+      onClick: () => navigate("/admin/settings"), // or a dedicated profile page later
+    },
     { type: "divider" },
-    { key: "signout", label: <span className="text-red-500">{t("header.signOut")}</span> },
+    {
+      key: "signout",
+      label: <span className="text-red-500">{t("header.signOut")}</span>,
+      onClick: handleLogout,
+    },
   ]
 
   return (
@@ -72,7 +90,7 @@ export function Header() {
             className="cursor-pointer border-2 border-[#8F8E8A]/40 hover:border-[#0B5107]/50"
             style={{ background: "#0B5107" }}
           >
-            AD
+            {user?.name?.charAt(0) || "AD"}
           </Avatar>
         </Dropdown>
       </div>

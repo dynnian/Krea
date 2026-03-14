@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 const { TextArea } = Input
 
 export default function SettingsPage() {
-  const { t } = useTranslation('admin')
+  const { t } = useTranslation()
 
   return (
     <div className="space-y-6">

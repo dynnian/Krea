@@ -1,11 +1,11 @@
 // routes/admin/users.tsx
 import { Card } from "antd"
-import { UsersTable } from "client/app/components/Admin/users-table.tsx"
-import { UsersFilters } from "client/app/components/Admin/users-filters.tsx"
+import { UsersTable } from "@/components/Admin/users-table.tsx"
+import { UsersFilters } from "@/components/Admin/users-filters.tsx"
 import { useTranslation } from "react-i18next"
 
 export default function UsersPage() {
-  const { t } = useTranslation('admin')
+  const { t } = useTranslation()
 
   return (
     <div className="space-y-6">

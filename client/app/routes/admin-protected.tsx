@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from "react-router";
 import { Spin } from "antd";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext.tsx";
 
 export default function AdminProtectedLayout() {
   const { isAuthenticated, loading, user } = useAuth();
@@ -11,7 +11,7 @@ export default function AdminProtectedLayout() {
         <Spin size="large" />
       </div>
     );
-  }l
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

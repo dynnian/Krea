@@ -1,11 +1,11 @@
 import { Row, Col } from "antd"
-import { InstanceInfo } from "client/app/components/Admin/instance-info.tsx"          
-import { FederationSettings } from "client/app/components/Admin/federation-settings.tsx" 
-import { RemoteInstancesList } from "client/app/components/Admin/remote-instances-list.tsx" 
+import { InstanceInfo } from "@/components/Admin/instance-info.tsx"          
+import { FederationSettings } from "@/components/Admin/federation-settings.tsx" 
+import { RemoteInstancesList } from "@/components/Admin/remote-instances-list.tsx" 
 import { useTranslation } from "react-i18next"
 
 export default function FederationPage() {
-  const { t } = useTranslation('admin') // use admin namespace
+  const { t } = useTranslation() 
 
   return (
     <div className="space-y-6">
