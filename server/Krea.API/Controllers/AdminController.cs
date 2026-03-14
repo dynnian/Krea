@@ -117,6 +117,50 @@ namespace Krea.API.Controllers {
             return Ok(result);
         }
 
+        [HttpGet("reports/posts")]
+        public async Task<ActionResult<AdminPostModerationReportsPageDto>> GetPostReports(
+            [FromQuery] string? status,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            CancellationToken cancellationToken = default) {
+            if (!TryParseReportStatus(status, out Domain.ValueObjects.PostModerationReportStatus? parsedStatus)) {
+                return BadRequest(new { error = "Invalid status. Allowed values: Pending, Resolved." });
+            }
+
+            AdminPostModerationReportsPageDto result = await _sender.Send(
+                new GetAdminPostModerationReportsQuery(parsedStatus, page, pageSize),
+                cancellationToken);
+
+            return Ok(result);
+        }
+
+        [HttpPatch("reports/posts/{reportId:guid}/evaluate")]
+        public async Task<IActionResult> EvaluatePostReport(
+            Guid reportId,
+            [FromBody] EvaluateAdminPostModerationReportRequest request,
+            CancellationToken cancellationToken) {
+            if (!TryParseModerationAction(request.Action, out Domain.ValueObjects.PostModerationDecisionAction action)) {
+                return BadRequest(new { error = "Invalid action. Allowed values: Dismiss, DeletePost, SuspendAuthor." });
+            }
+
+            try {
+                await _sender.Send(
+                    new EvaluateAdminPostModerationReportCommand(GetCurrentUserId(), reportId, action, request.ModeratorNote),
+                    cancellationToken);
+
+                return NoContent();
+            }
+            catch (InvalidOperationException ex) {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (ArgumentException ex) {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (KeyNotFoundException ex) {
+                return NotFound(new { error = ex.Message });
+            }
+        }
+
         [HttpGet("configuration")]
         public async Task<ActionResult<AdminInstanceConfigurationDto>> GetConfiguration(CancellationToken cancellationToken) {
             AdminInstanceConfigurationDto result = await _sender.Send(
@@ -174,6 +218,28 @@ namespace Krea.API.Controllers {
             }
 
             return Enum.TryParse(sortDirection, true, out parsedSortDirection);
+        }
+
+        private static bool TryParseReportStatus(string? status, out Domain.ValueObjects.PostModerationReportStatus? parsedStatus) {
+            parsedStatus = null;
+
+            if (string.IsNullOrWhiteSpace(status))
+                return true;
+
+            if (!Enum.TryParse(status, true, out Domain.ValueObjects.PostModerationReportStatus value))
+                return false;
+
+            parsedStatus = value;
+            return true;
+        }
+
+        private static bool TryParseModerationAction(string? action, out Domain.ValueObjects.PostModerationDecisionAction parsedAction) {
+            if (string.IsNullOrWhiteSpace(action)) {
+                parsedAction = default;
+                return false;
+            }
+
+            return Enum.TryParse(action, true, out parsedAction);
         }
 
         private Guid GetCurrentUserId() {

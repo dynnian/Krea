@@ -75,6 +75,7 @@ public static class DependencyInjection
         services.AddScoped<IFollowRepository, FollowRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IInstanceConfigurationRepository, InstanceConfigurationRepository>();
+        services.AddScoped<IPostModerationReportRepository, PostModerationReportRepository>();
 
         // Servicios de aplicación (infraestructura)
         services.AddScoped<IIdentityService, IdentityService>();
