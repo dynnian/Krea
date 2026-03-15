@@ -1,6 +1,8 @@
 namespace Krea.API.Services {
     using Application.Abstractions.Url;
     using Controllers;
+namespace Krea.API.Services {
+    using Application.Abstractions.Url;
 
     /// <summary>
     /// Builds absolute URLs for email confirmation links.

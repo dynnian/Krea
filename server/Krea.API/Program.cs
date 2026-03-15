@@ -6,9 +6,12 @@ namespace Krea.API {
     using System.Text;
     using Infrastructure;
     using Application;
+    using Application.Abstractions.Auth;
+    using Application.Abstractions.Payments;
     using Application.Abstractions.Url;
     using Hubs;
     using Infrastructure.Configuration;
+    using Infrastructure.Services;
     using Infrastructure.Setup;
     using Microsoft.Extensions.Primitives;
     using Services;
@@ -32,13 +35,21 @@ namespace Krea.API {
 
             ConfigureCors(builder.Services, builder.Configuration, builder.Environment.IsDevelopment());
             ConfigureAuthentication(builder.Services, builder.Configuration, builder.Environment.IsDevelopment());
-
             builder.Services.AddAuthorization();
+            
+            // Stripe
+            builder.Services.Configure<StripeOptions>(builder.Configuration.GetSection("Stripe"));
+            builder.Services.AddScoped<IPaymentGateway, StripePaymentGateway>();
+            
+            
 
+        
+            // API Services
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<IConfirmationUrlBuilder, ConfirmationUrlBuilder>();
-
-            // Seeding config
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+            
+            // Seeding configs
             builder.Services.Configure<AdminUserOptions>(builder.Configuration.GetSection("AdminUser"));
             builder.Services.Configure<SeedingOptions>(builder.Configuration.GetSection("Seeding"));
 
