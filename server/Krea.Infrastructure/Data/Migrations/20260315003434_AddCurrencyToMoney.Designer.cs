@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Krea.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Krea.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260315003434_AddCurrencyToMoney")]
+    partial class AddCurrencyToMoney
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,9 +51,6 @@ namespace Krea.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -342,34 +342,6 @@ namespace Krea.Infrastructure.Data.Migrations
                     b.ToTable("hashtags", (string)null);
                 });
 
-            modelBuilder.Entity("Krea.Domain.Entities.InstanceConfiguration", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AdministratorEmail")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)");
-
-                    b.Property<string>("PlatformName")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("instance_configuration", (string)null);
-                });
-
             modelBuilder.Entity("Krea.Domain.Entities.Like", b =>
                 {
                     b.Property<Guid>("Id")
@@ -615,7 +587,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
                     b.ToTable("payments", null, t =>
                         {
-                            t.HasCheckConstraint("CK_Payment_SingleTarget", "\n            (CASE WHEN \"SubscriptionId\" IS NOT NULL THEN 1 ELSE 0 END +\n             CASE WHEN \"DonationId\" IS NOT NULL THEN 1 ELSE 0 END +\n             CASE WHEN \"CommissionRequestId\" IS NOT NULL THEN 1 ELSE 0 END) = 1\n        ");
+                            t.HasCheckConstraint("CK_Payment_SingleTarget", "\r\n            (CASE WHEN \"SubscriptionId\" IS NOT NULL THEN 1 ELSE 0 END +\r\n             CASE WHEN \"DonationId\" IS NOT NULL THEN 1 ELSE 0 END +\r\n             CASE WHEN \"CommissionRequestId\" IS NOT NULL THEN 1 ELSE 0 END) = 1\r\n        ");
                         });
                 });
 
@@ -714,92 +686,9 @@ namespace Krea.Infrastructure.Data.Migrations
                     b.ToTable("posts", (string)null);
                 });
 
-            modelBuilder.Entity("Krea.Domain.Entities.PostFavorite", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("PostId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PostId");
-
-                    b.HasIndex("UserId", "PostId")
-                        .IsUnique();
-
-                    b.ToTable("post_favorites", (string)null);
-                });
-
-            modelBuilder.Entity("Krea.Domain.Entities.PostModerationReport", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Details")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<string>("ModeratorNote")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<Guid>("PostId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<Guid>("ReporterUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("ResolvedAction")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("ResolvedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("ResolvedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("PostId");
-
-                    b.HasIndex("ReporterUserId");
-
-                    b.HasIndex("Status");
-
-                    b.ToTable("post_moderation_reports", (string)null);
-                });
-
             modelBuilder.Entity("Krea.Domain.Entities.PostUpload", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("CoverMediaId")
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsWorkMedia")
@@ -812,8 +701,6 @@ namespace Krea.Infrastructure.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CoverMediaId");
 
                     b.HasIndex("MediaId");
 
@@ -1640,51 +1527,8 @@ namespace Krea.Infrastructure.Data.Migrations
                     b.Navigation("RepostOf");
                 });
 
-            modelBuilder.Entity("Krea.Domain.Entities.PostFavorite", b =>
-                {
-                    b.HasOne("Krea.Domain.Entities.Post", "Post")
-                        .WithMany("Favorites")
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Krea.Domain.Entities.User", "User")
-                        .WithMany("Favorites")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Post");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Krea.Domain.Entities.PostModerationReport", b =>
-                {
-                    b.HasOne("Krea.Domain.Entities.Post", "Post")
-                        .WithMany()
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Krea.Domain.Entities.User", "ReporterUser")
-                        .WithMany()
-                        .HasForeignKey("ReporterUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Post");
-
-                    b.Navigation("ReporterUser");
-                });
-
             modelBuilder.Entity("Krea.Domain.Entities.PostUpload", b =>
                 {
-                    b.HasOne("Krea.Domain.Entities.Media", "CoverMedia")
-                        .WithMany()
-                        .HasForeignKey("CoverMediaId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Krea.Domain.Entities.Media", "Media")
                         .WithMany()
                         .HasForeignKey("MediaId")
@@ -1696,8 +1540,6 @@ namespace Krea.Infrastructure.Data.Migrations
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("CoverMedia");
 
                     b.Navigation("Media");
 
@@ -1895,8 +1737,6 @@ namespace Krea.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Krea.Domain.Entities.Post", b =>
                 {
-                    b.Navigation("Favorites");
-
                     b.Navigation("Likes");
 
                     b.Navigation("Uploads");
@@ -1929,8 +1769,6 @@ namespace Krea.Infrastructure.Data.Migrations
                     b.Navigation("Collections");
 
                     b.Navigation("Conversations");
-
-                    b.Navigation("Favorites");
 
                     b.Navigation("Likes");
 
