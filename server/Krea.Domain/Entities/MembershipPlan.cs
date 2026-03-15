@@ -97,7 +97,7 @@ namespace Krea.Domain.Entities {
             if (string.IsNullOrWhiteSpace(benefits))
                 throw new ArgumentException("Benefits are required.");
 
-            if (price <= 0)
+            if (price <= Money.Zero(price.Currency))
                 throw new ArgumentException("Price must be greater than zero.");
 
             if (maxSlots <= 0)

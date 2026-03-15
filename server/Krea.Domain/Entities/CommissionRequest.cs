@@ -60,8 +60,10 @@ namespace Krea.Domain.Entities {
                 throw new InvalidOperationException(
                     "Payments can only be created for accepted or in-progress commissions.");
             }
-
-            if (amount <= Offering.BasePrice)
+            
+            if (amount.Currency != Offering.BasePrice.Currency)
+                throw new ArgumentException("Payment currency must match the offering's base price currency.");
+            if (amount < Offering.BasePrice)
                 throw new ArgumentException("Paid amount cannot be lower than base price.");
 
             var payment = new Payment(payer, amount, externalRef, this);

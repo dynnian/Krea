@@ -30,13 +30,16 @@ namespace Krea.Infrastructure.Data.Configurations {
             builder.Property(o => o.CreatedAt)
                    .IsRequired();
 
-            builder.Property(o => o.BasePrice)
-                   .HasConversion(
-                       m => m.Amount,
-                       v => new Money(v))
-                   .HasColumnName("base_price")
-                   .HasColumnType("decimal(18,2)")
-                   .IsRequired();
+            builder.ComplexProperty(o => o.BasePrice, money =>
+            {
+                money.Property(m => m.Amount)
+                    .HasColumnName("amount")
+                    .HasColumnType("decimal(18,2)");
+
+                money.Property(m => m.Currency)
+                    .HasColumnName("currency")
+                    .HasMaxLength(3);
+            });
 
             builder.HasOne(o => o.Artist)
                    .WithMany()
