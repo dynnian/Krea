@@ -20,7 +20,7 @@ namespace Krea.Infrastructure.Services {
                 .Where(p => p.ExternalRef.Provider == externalRef.Provider && p.ExternalRef.Value == externalRef.Value)
                 .Select(p => new
                 {
-                    Id =  p.Id,
+                    p.Id,
                     CommissionRequestId = p.CommissionRequest != null ? p.CommissionRequest.Id : (Guid?)null,
                     DonationId = p.Donation != null ? p.Donation.Id : (Guid?)null,
                     SubscriptionId = p.Subscription != null ? p.Subscription.Id : (Guid?)null
