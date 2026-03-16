@@ -1,41 +1,20 @@
-// app/services/chat.ts
-import type { Conversation, Message } from "../types/chat.ts";
+import type { ConversationDto, DirectMessageDto } from "../types/chat.ts";
 import axios from "../lib/axios.ts";
 
-export async function fetchConversations(): Promise<Conversation[]> {
-  try {
-    const response = await axios.get("/conversations");
-    return response.data;
-  } catch (error) {
-    throw new Error("Error al cargar conversaciones");
-  }
+export async function fetchConversations(): Promise<ConversationDto[]> {
+  const response = await axios.get('/DirectMessages/conversations');
+  return response.data;
 }
 
-export async function fetchMessages(
-  conversationId: string,
-): Promise<Message[]> {
-  try {
-    const response = await axios.get(
-      `/conversations/${conversationId}/messages`,
-    );
-    return response.data;
-  } catch (error) {
-    throw new Error("Error al cargar mensajes");
-  }
+export async function fetchMessages(conversationId: string): Promise<DirectMessageDto[]> {
+  const response = await axios.get(`/DirectMessages/conversations/${conversationId}/messages`);
+  return response.data;
 }
 
-// This REST endpoint is still available as a fallback, but you'll likely use SignalR for sending
-export async function sendMessageRest(
-  conversationId: string,
-  text: string,
-): Promise<Message> {
-  try {
-    const response = await axios.post(
-      `/conversations/${conversationId}/messages`,
-      { text },
-    );
-    return response.data;
-  } catch (error) {
-    throw new Error("Error al enviar mensaje");
-  }
+export async function sendMessageRest(receiverId: string, content: string): Promise<DirectMessageDto> {
+  const response = await axios.post('/DirectMessages', {
+    receiverId,
+    content
+  });
+  return response.data;
 }

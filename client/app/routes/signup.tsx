@@ -12,7 +12,7 @@ import { Link, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useI18n } from "../contexts/I18nContext";
-import { useAuth, type RegisterDTO } from "~/contexts/AuthContext";
+import { useAuth, type RegisterDTO } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 
 const { useBreakpoint } = Grid;

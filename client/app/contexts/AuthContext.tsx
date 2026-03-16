@@ -1,10 +1,10 @@
 // contexts/AuthContext.tsx
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import axiosClient from '../lib/axios.ts';
 import { storage } from '../lib/storage.ts';
-
+import { initSignalR, stopSignalR } from '../services/signalrListener';
 // Token payload from JWT (based on your actual token)
 interface TokenPayload {
   sub: string;
@@ -78,9 +78,21 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | undefined>();
   const [loading, setLoading] = useState(true);
-
+  const isMounted = useRef(false);
+  
+  useEffect(() => {
+    if (user) {
+      // Small delay to ensure everything is settled
+      const timer = setTimeout(() => {
+        initSignalR(user.id);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
   // Restore session on mount
   useEffect(() => {
+    if (isMounted.current) return;
+    isMounted.current = true;
     const token = storage.getToken();
     const storedUser = storage.getUser() as AuthUser | undefined;
 
@@ -106,6 +118,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(undefined);
     }
     setLoading(false);
+  }, []);
+  useEffect(() => {
+  console.log('🟢 AuthProvider MOUNTED');
+  return () => console.log('🔴 AuthProvider UNMOUNTED');
   }, []);
 
   const login = async (credentials: LoginDTO, rememberMe = false) => {
@@ -150,7 +166,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Store token and user with rememberMe preference
       storage.setToken(token, rememberMe);
       storage.setUser(authUser, rememberMe);
-
       // Update state
       setUser(authUser);
     } catch (error) {
@@ -207,19 +222,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     storage.clearAll();
     setUser(undefined);
-  };
+    stopSignalR();
 
+  };
+  console.log('AuthProvider render, user reference:', user);
+    const value = useMemo(() => ({
+    user,
+    login,
+    register,
+    confirmEmail,
+    logout,
+    isAuthenticated: !!user,
+    loading,
+  }), [user, login, register, confirmEmail, logout, loading]);
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        login,
-        register,
-        confirmEmail,
-        logout,
-        isAuthenticated: !!user,
-        loading,
-      }}
+      value={value}
     >
       {children}
     </AuthContext.Provider>

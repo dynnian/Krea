@@ -1,13 +1,13 @@
 import React from 'react';
 import { List, Avatar, Badge, Typography } from 'antd';
-import type { Conversation } from '../../types/chat';
+import type { UIConversation } from '../../types/chat';
 
 const { Text } = Typography;
 
 interface Props {
-  conversations: Conversation[];
+  conversations: UIConversation[];
   selectedId?: string;
-  onSelect: (conv: Conversation) => void;
+  onSelect: (conv: UIConversation) => void;
 }
 
 export default function ConversationList({ conversations, selectedId, onSelect }: Props) {
