@@ -2,6 +2,7 @@ namespace Krea.Infrastructure.Services {
     using Application.Abstractions.Feed;
     using Application.Features.Posts.Dto;
     using Data;
+    using Domain.Entities;
     using Microsoft.EntityFrameworkCore;
 
     public sealed class FeedQueryService : IFeedQueryService
@@ -31,12 +32,65 @@ namespace Krea.Infrastructure.Services {
                     Title = p.Title,
                     Content = p.Content!,
                     AuthorId = p.AuthorPostId,
+                    AuthorUsername = p.AuthorPost.DisplayName,
                     UploadedAt = p.UploadedAt,
+                    MediaPreviewUrl = p.Uploads
+                        .Select(u => u.Media.Path)
+                        .FirstOrDefault(),
+                    MediaMimeType = p.Uploads
+                        .Select(u => u.Media.MimeType)
+                        .FirstOrDefault(),
                     LikeCount = p.Likes.Count(),
                     IsLikedByCurrentUser =
                         p.Likes.Any(l => l.UserId == currentUserId),
                     ReplyCount =
                         _context.Posts.Count(r => r.RepliedToId == p.Id),
+                    RepostCount =
+                        _context.Posts.Count(r => r.RepostOfId == p.Id)
+                })
+                .ToListAsync(ct);
+        }
+        
+        public async Task<IReadOnlyList<PostFeedResponse>> GetFollowingFeedAsync(
+            Guid currentUserId,
+            int page,
+            int pageSize,
+            CancellationToken ct)
+        {
+            var followingIds = _context.Set<Follow>()
+                .Where(f => f.SourceId == currentUserId)
+                .Select(f => f.TargetId);
+
+            return await _context.Posts
+                .AsNoTracking()
+                .Where(p =>
+                    !p.IsDeleted &&
+                    followingIds.Contains(p.AuthorPostId))
+                .OrderByDescending(p => p.UploadedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(p => new PostFeedResponse
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Content = p.Content!,
+                    AuthorId = p.AuthorPostId,
+                    AuthorUsername = p.AuthorPost.DisplayName,
+                    UploadedAt = p.UploadedAt,
+                    MediaPreviewUrl = p.Uploads
+                        .Select(u => u.Media.Path)
+                        .FirstOrDefault(),
+                    MediaMimeType = p.Uploads
+                        .Select(u => u.Media.MimeType)
+                        .FirstOrDefault(),
+                    LikeCount = p.Likes.Count(),
+
+                    IsLikedByCurrentUser =
+                        p.Likes.Any(l => l.UserId == currentUserId),
+
+                    ReplyCount =
+                        _context.Posts.Count(r => r.RepliedToId == p.Id),
+
                     RepostCount =
                         _context.Posts.Count(r => r.RepostOfId == p.Id)
                 })
@@ -65,8 +119,14 @@ namespace Krea.Infrastructure.Services {
                     Title = p.Title,
                     Content = p.Content!,
                     AuthorId = p.AuthorPostId,
+                    AuthorUsername = p.AuthorPost.DisplayName,
                     UploadedAt = p.UploadedAt,
-
+                    MediaPreviewUrl = p.Uploads
+                        .Select(u => u.Media.Path)
+                        .FirstOrDefault(),
+                    MediaMimeType = p.Uploads
+                        .Select(u => u.Media.MimeType)
+                        .FirstOrDefault(),
                     LikeCount = p.Likes.Count(),
 
                     IsLikedByCurrentUser =

@@ -42,7 +42,7 @@ const SongCard: React.FC<{ song: MusicSong }> = ({ song }) => {
             </span>
           </div>
 
-          <div className="mt-1">
+          <div className="mt-1 cursor-pointer">
             <AudioWaveform
               audioUrl={song.audioUrl}
               showPlayButton={false}
@@ -58,7 +58,7 @@ const SongCard: React.FC<{ song: MusicSong }> = ({ song }) => {
           <div className="flex items-center justify-center gap-5 mt-4 text-[#0B5107]">
             <button
               type="button"
-              className="w-10 h-10 rounded-full border border-[#1B1C1E] bg-[#E9FDE8] flex items-center justify-center"
+              className="w-10 h-10 rounded-full border cursor-pointer border-[#1B1C1E] bg-[#E9FDE8] flex items-center justify-center"
             >
               <Heart size={18} />
             </button>
@@ -67,7 +67,7 @@ const SongCard: React.FC<{ song: MusicSong }> = ({ song }) => {
               type="button"
               disabled={!isWaveReady}
               onClick={() => waveformControls.current?.playPause()}
-              className={`w-10 h-10 rounded-full border border-[#1B1C1E] flex items-center justify-center ${
+              className={`w-10 h-10 rounded-full cursor-pointer border border-[#1B1C1E] flex items-center justify-center ${
                 isWaveReady
                   ? "bg-[#E9FDE8] text-[#0B5107]"
                   : "bg-gray-200 text-gray-400 cursor-not-allowed"
@@ -78,7 +78,7 @@ const SongCard: React.FC<{ song: MusicSong }> = ({ song }) => {
 
             <button
               type="button"
-              className="w-10 h-10 rounded-full border border-[#1B1C1E] bg-[#E9FDE8] flex items-center justify-center"
+              className="w-10 h-10 rounded-full border cursor-pointer border-[#1B1C1E] bg-[#E9FDE8] flex items-center justify-center"
             >
               <Bookmark size={18} />
             </button>
@@ -137,16 +137,16 @@ const AlbumCard: React.FC<{ album: MusicAlbum }> = ({ album }) => {
                 type="button"
                 disabled={!isWaveReady}
                 onClick={() => waveformControls.current?.playPause()}
-                className={`w-10 h-10 rounded-full border border-[#1B1C1E] flex items-center justify-center flex-shrink-0 ${
+                className={`w-10 h-10 rounded-full cursor-pointer border border-[#1B1C1E] flex items-center justify-center flex-shrink-0 ${
                   isWaveReady
-                    ? "bg-[#E9FDE8] text-[#0B5107]"
+                    ? "bg-[#E9FDE8] cursor-pointertext-[#0B5107]"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed"
                 }`}
               >
                 {isPlaying ? <Pause size={18} /> : <Play size={18} />}
               </button>
 
-              <div className="w-full min-w-0">
+              <div className="w-full cursor-pointer min-w-0">
                 <AudioWaveform
                   audioUrl={selectedTrack.audioUrl}
                   showPlayButton={false}
@@ -173,7 +173,7 @@ const AlbumCard: React.FC<{ album: MusicAlbum }> = ({ album }) => {
                   <button
                     type="button"
                     onClick={() => handleSelectTrack(track)}
-                    className={`w-5 h-5 flex items-center justify-center transition-colors ${
+                    className={`w-5 h-5 flex cursor-pointer items-center justify-center transition-colors ${
                       isSelected ? "text-[#0B5107]" : "text-[#1B1C1E]"
                     }`}
                   >
@@ -202,7 +202,7 @@ const AlbumCard: React.FC<{ album: MusicAlbum }> = ({ album }) => {
           <div className="pt-4">
             <button
               type="button"
-              className="mt-3 text-sm text-[#1B1C1E] hover:underline"
+              className="mt-3 cursor-pointer text-sm text-[#1B1C1E] hover:underline"
             >
               Mostrar album completo...
             </button>

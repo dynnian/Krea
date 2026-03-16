@@ -1,0 +1,10 @@
+{
+  "imports": {
+    "@microsoft/signalr": "npm:@microsoft/signalr@^8.0.7",
+    "zustand": "npm:zustand@^5.0.11"
+  },
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "dev": "deno run -A --node-modules-dir npm:vite"
+  }
+}

@@ -1,9 +1,16 @@
-@Krea.API_HostAddress = http://localhost:5101
+@API_HostAddress = http://localhost:5101
+@auth_token = ACCESS_TOKEN
 @userId = GUID_DEL_USUARIO
 @postId = GUID_DEL_POST
 
+// Mensajería
+@senderId = GUID_DEL_USUARIO
+@receiverId = GUID_DEL_USUARIO
+@conversationId = GUID_DE_LA_CONV
+@messageId = GUID_DEL_MENSAJE
+
 ### Register
-POST http://localhost:5101/api/auth/register
+POST {{API_HostAddress}}/api/auth/register
 Content-Type: application/json
 
 {
@@ -16,7 +23,7 @@ Content-Type: application/json
 }
 
 ### Login
-POST http://localhost:5101/api/auth/login
+POST {{API_HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
@@ -24,8 +31,37 @@ Content-Type: application/json
   "password": "Test123!"
 }
 
+### Login 2
+POST http://{{API_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "EmailOrUserName": "testUser4",
+  "password": "Test123!"
+}
+
+### Admin Login
+POST http://{{API_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "EmailOrUsername": "admin@krea.local",
+  "Password": "Admin123!"
+}
+
+### ChangePassword
+POST http://{{API_HostAddress}}/api/auth/change-password
+Content-Type: application/json
+Authorization: Bearer <auth_token>
+
+{
+  "userId": "GUID",
+  "currentPassword": "Test123!",
+  "newPassword": "Test124!"
+}
+
 ### Create Post
-POST http://localhost:5101/api/posts
+POST http://{{API_HostAddress}}/api/posts
 Content-Type: application/json
 
 {
@@ -36,13 +72,13 @@ Content-Type: application/json
 }
 
 ### Get All Posts
-GET http://localhost:5101/api/posts?page=1&pageSize=10
+GET http://{{API_HostAddress}}/api/posts?page=1&pageSize=10
 
 ### Get Post By Id
-GET http://localhost:5101/api/posts/{{postId}}
+GET http://{{API_HostAddress}}/api/posts/{{postId}}
 
 ### Reply to Post
-POST http://localhost:5101/api/posts/{{postId}}/reply
+POST http://{{API_HostAddress}}/api/posts/{{postId}}/reply
 Content-Type: application/json
 
 {
@@ -52,7 +88,7 @@ Content-Type: application/json
 }
 
 ### Repost
-POST http://localhost:5101/api/posts/{{postId}}/repost
+POST http://{{API_HostAddress}}/api/posts/{{postId}}/repost
 Content-Type: application/json
 
 {
@@ -60,7 +96,7 @@ Content-Type: application/json
 }
 
 ### Like
-POST http://localhost:5101/api/posts/{{postId}}/like
+POST http://{{API_HostAddress}}/api/posts/{{postId}}/like
 Content-Type: application/json
 
 {
@@ -68,7 +104,7 @@ Content-Type: application/json
 }
 
 ### Unlike
-DELETE http://localhost:5101/api/posts/{{postId}}/unlike
+DELETE http://{{API_HostAddress}}/api/posts/{{postId}}/unlike
 Content-Type: application/json
 
 {
@@ -76,10 +112,35 @@ Content-Type: application/json
 }
 
 ### Add Upload
-POST http://localhost:5101/api/posts/{{postId}}/upload
+POST http://{{API_HostAddress}}/api/posts/{{postId}}/upload
 Content-Type: application/json
 
 {
   "mediaId": "GUID_MEDIA",
   "isWorkMedia": false
 }
+
+
+
+### Send Message
+POST http://{{API_HostAddress}}/api/directmessages
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "senderId": "{{senderId}}",
+  "receiverId": "{{receiverId}}",
+  "content": "Hola, mensaje de prueba"
+}
+
+### Get Conversations
+GET {{API_HostAddress}}/api/directmessages/conversations
+Authorization: Bearer {{auth_token}}
+
+### Get Conversation Messages
+GET {{API_HostAddress}}/api/directmessages/conversations/{{conversationId}}/messages?page=1&pageSize=20
+Authorization: Bearer {{auth_token}}
+
+### Mark Message As Read
+PATCH {{API_HostAddress}}/api/directmessages/{{messageId}}/read
+Authorization: Bearer {{auth_token}}

@@ -6,6 +6,8 @@ namespace Krea.API {
     using Infrastructure;
     using Application;
     using Application.Abstractions.Url;
+    using Hubs;
+    using Infrastructure.Configuration;
     using Infrastructure.Setup;
     using Services;
 
@@ -16,14 +18,16 @@ namespace Krea.API {
         
             builder.Services.AddApplication();
             builder.Services.AddControllers();
+            builder.Services.AddSignalR();
             builder.Services.AddOpenApi();
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll", policy =>
+                options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.AllowAnyOrigin()   // For development only – restrict in production
+                    policy.AllowAnyOrigin()
                         .AllowAnyMethod()
-                        .AllowAnyHeader();
+                        .AllowAnyHeader()
+                        /*.AllowCredentials()*/;
                 });
             });
         
@@ -50,12 +54,30 @@ namespace Krea.API {
                         IssuerSigningKey = new SymmetricSecurityKey(
                             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
                     };
+                    // Accept token in query string
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                            {
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
 
             builder.Services.AddAuthorization();
         
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<IConfirmationUrlBuilder, ConfirmationUrlBuilder>();
+            
+            // Seeding configs
+            builder.Services.Configure<AdminUserOptions>(builder.Configuration.GetSection("AdminUser"));
+            builder.Services.Configure<SeedingOptions>(builder.Configuration.GetSection("Seeding"));
 
             WebApplication app = builder.Build();
 
@@ -63,8 +85,7 @@ namespace Krea.API {
             {
                 await DatabaseInitializer.InitializeAsync(scope.ServiceProvider);
             }
-        
-            // Configure the HTTP request pipeline.
+            
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
@@ -81,8 +102,10 @@ namespace Krea.API {
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseStaticFiles();
-            app.UseCors("AllowAll");
+            app.UseCors("AllowFrontend");
             app.MapControllers();
+            
+            app.MapHub<DirectMessageHub>("/hubs/directmessage");
 
             await app.RunAsync();
         }

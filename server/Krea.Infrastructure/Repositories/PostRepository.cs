@@ -35,14 +35,16 @@ namespace Krea.Infrastructure.Repositories {
             int pageSize,
             CancellationToken cancellationToken = default) =>
             await _context.Posts
-                          .AsNoTracking()
-                          .Where(p => !p.IsDeleted)
-                          .OrderByDescending(p => p.UploadedAt)
-                          .Skip((page - 1) * pageSize)
-                          .Take(pageSize)
-                          .Include(p => p.Uploads)
-                          .Include(p => p.Hashtags)
-                          .ToListAsync(cancellationToken);
+                .AsNoTracking()
+                .AsSplitQuery()
+                .Where(p => !p.IsDeleted)
+                .OrderByDescending(p => p.UploadedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Include(p => p.Uploads)
+                .ThenInclude(u => u.Media)
+                .Include(p => p.Hashtags)
+                .ToListAsync(cancellationToken);
 
         public async Task<IReadOnlyList<Post>> GetByUserAsync(
             Guid authorPostId,

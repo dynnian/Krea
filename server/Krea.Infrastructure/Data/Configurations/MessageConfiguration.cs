@@ -16,12 +16,6 @@ namespace Krea.Infrastructure.Data.Configurations {
                    .HasForeignKey("UserId")
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Property<Guid>("ConversationId");
-            builder.HasOne(m => m.Conversation)
-                   .WithMany(c => c.Messages)
-                   .HasForeignKey("ConversationId")
-                   .OnDelete(DeleteBehavior.Cascade);
-
             builder.Property(m => m.ContentType)
                    .HasConversion<string>()
                    .HasColumnName("content_type")
@@ -53,9 +47,10 @@ namespace Krea.Infrastructure.Data.Configurations {
                        });
 
             // Índices
-            builder.HasIndex("ConversationId");
-            builder.HasIndex("UserId");
+            builder.HasIndex(m => m.ConversationId);
+            builder.HasIndex(m => m.UserId);
             builder.HasIndex(m => m.SentAt);
+            builder.HasIndex(m => new { m.ConversationId, m.SentAt });
         }
     }
 }

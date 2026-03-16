@@ -9,7 +9,7 @@ namespace Krea.Domain.Entities {
         public Media? Image { get; private set; }
         public Guid? MediaId { get; private set; }
 
-        public string Description { get; private set; }
+        public string? Description { get; private set; }
 
         public int ItemCount { get; private set; }
 
@@ -46,7 +46,7 @@ namespace Krea.Domain.Entities {
             Guid id,
             Guid ownerId,
             string title,
-            string description,
+            string? description,
             Guid? mediaId,
             int itemCount,
             DateTime createdAt,

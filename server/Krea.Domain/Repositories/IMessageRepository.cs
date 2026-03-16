@@ -2,11 +2,11 @@ using Krea.Domain.Entities;
 
 namespace Krea.Domain.Repositories {
     public interface IMessageRepository {
-        Task<Message?> GetByIdAsync(Guid id);
-        Task<IReadOnlyList<Message>> GetByConversationAsync(Guid conversationId);
-        Task<IReadOnlyList<Message>> GetByUserAsync(Guid userId);
-        Task AddAsync(Message message);
-        Task UpdateAsync(Message message);
-        Task DeleteAsync(Message message);
+        Task<Message?> GetByIdAsync(Guid id,  CancellationToken cancellationToken =  default);
+        Task<IReadOnlyList<Message>> GetByConversationAsync(Guid conversationId, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<Message>> GetByUserAsync(Guid userId, CancellationToken cancellationToken = default);
+        Task Add(Message message);
+        Task Update(Message message);
+        Task Delete(Message message);
     }
 }

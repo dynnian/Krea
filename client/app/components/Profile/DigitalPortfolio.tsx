@@ -29,7 +29,7 @@ export default function DigitalPortfolio({ items }: DigitalPortfolioProps) {
             <img
             src={item.imageUrl}
             alt={item.title}
-            className="w-full h-full object-cover hover:scale-105 transition"
+            className="w-full h-full object-cover cursor-pointer hover:scale-105 transition"
             />
         </div>
         ))}

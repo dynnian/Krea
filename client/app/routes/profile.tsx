@@ -9,6 +9,9 @@ import MusicPortfolio from "../components/Profile/MusicPortfolio";
 import { digitalPortfolioMock } from "../data/digitalPortfolioMock";
 import WriterPortfolio from "../components/Profile/WriterPortfolio";
 import { settingsRepository } from "../services/settingsRepository";
+import CreatePortfolioPostModal from "~/components/Posts/CreatePortfolioPostModal";
+
+
 import {
   Heart,
   MessageCircle,
@@ -707,6 +710,8 @@ const [activePortfolioSubTab, setActivePortfolioSubTab] = useState("images");
 const [activeMusicTab, setActiveMusicTab] = useState<"songs" | "albums">("songs");
 const [isFollowing, setIsFollowing] = useState(false);
 const [isSubscribed, setIsSubscribed] = useState(false);
+const [modalVisible, setModalVisible] = useState(false);
+const [portfolioModalType, setPortfolioModalType] = useState<UploadMediaType>(PostType.IMAGE);
 
 const handleGoToSettings = () => {
   navigate("/settings");
@@ -874,12 +879,17 @@ const getFilteredPosts = () => {
     return null;
   };
 
-  const handleUpdatePortfolioClick = () => {
-    const route = getActivePortfolioFormRoute();
-    if (!route) return;
+const handleUpdatePortfolioClick = () => {
+  if (activePortfolioSubTab === "images") {
+    setPortfolioModalType("image");
+  } else if (activePortfolioSubTab === "literature") {
+    setPortfolioModalType("text");
+  } else if (activePortfolioSubTab === "music") {
+    setPortfolioModalType("music");
+  }
 
-    navigate(route);
-  };
+  setModalVisible(true);
+};
 
 const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
   
@@ -997,10 +1007,10 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
            </button>
         </div>
       </div>
-    )}
-     </>
-)}
-      </div>
+              )}
+              </>
+          )}
+    </div>
         
          {/*LINEA DEL DIABLO*/}
         {!isPortfolioView && (
@@ -1048,7 +1058,14 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
               </div>
             )}
             </div>
-            
+                  <CreatePortfolioPostModal
+        visible={modalVisible}
+        initialPostType={portfolioModalType}
+        onClose={() => setModalVisible(false)}
+        onSuccess={() => {
+          setModalVisible(false);
+        }}
+      />
         </div>
   </div>
 );

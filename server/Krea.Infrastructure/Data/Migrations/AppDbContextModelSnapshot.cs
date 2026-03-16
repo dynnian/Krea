@@ -31,7 +31,6 @@ namespace Krea.Infrastructure.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
@@ -142,31 +141,96 @@ namespace Krea.Infrastructure.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("description");
 
                     b.Property<Guid?>("IconId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("icon_id");
 
                     b.Property<string>("Title")
-                        .IsRequired()
                         .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("title");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("type");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("icon_id")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IconId");
+                    b.HasIndex("CreatedAt");
 
-                    b.HasIndex("Title");
+                    b.HasIndex("Type");
 
-                    b.ToTable("conversations", (string)null);
+                    b.HasIndex("icon_id");
+
+                    b.ToTable("conversations", null, t =>
+                        {
+                            t.Property("icon_id")
+                                .HasColumnName("icon_id1");
+                        });
+                });
+
+            modelBuilder.Entity("Krea.Domain.Entities.ConversationParticipant", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("conversation_id");
+
+                    b.Property<bool>("IsMuted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_muted");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("joined_at");
+
+                    b.Property<Guid?>("LastReadMessageId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_read_message_id");
+
+                    b.Property<DateTime?>("LeftAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("left_at");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("role");
+
+                    b.Property<int>("UnreadCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("unread_count");
+
+                    b.HasKey("UserId", "ConversationId");
+
+                    b.HasIndex("ConversationId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "LeftAt");
+
+                    b.ToTable("conversation_participants", (string)null);
                 });
 
             modelBuilder.Entity("Krea.Domain.Entities.Donation", b =>
@@ -198,6 +262,30 @@ namespace Krea.Infrastructure.Data.Migrations
                     b.HasIndex("RecipientId");
 
                     b.ToTable("donations", (string)null);
+                });
+
+            modelBuilder.Entity("Krea.Domain.Entities.Follow", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("FollowedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("SourceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TargetId");
+
+                    b.HasIndex("SourceId", "TargetId")
+                        .IsUnique();
+
+                    b.ToTable("follows", (string)null);
                 });
 
             modelBuilder.Entity("Krea.Domain.Entities.Genre", b =>
@@ -381,6 +469,8 @@ namespace Krea.Infrastructure.Data.Migrations
                     b.HasIndex("SentAt");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("ConversationId", "SentAt");
 
                     b.ToTable("messages", (string)null);
                 });
@@ -581,6 +671,59 @@ namespace Krea.Infrastructure.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("post_uploads", (string)null);
+                });
+
+            modelBuilder.Entity("Krea.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_revoked");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_used");
+
+                    b.Property<string>("ReplacedByToken")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("replaced_by_token");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("token");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("refresh_tokens", (string)null);
                 });
 
             modelBuilder.Entity("Krea.Domain.Entities.Role", b =>
@@ -1117,10 +1260,29 @@ namespace Krea.Infrastructure.Data.Migrations
                 {
                     b.HasOne("Krea.Domain.Entities.Media", "Icon")
                         .WithMany()
-                        .HasForeignKey("IconId")
+                        .HasForeignKey("icon_id")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Icon");
+                });
+
+            modelBuilder.Entity("Krea.Domain.Entities.ConversationParticipant", b =>
+                {
+                    b.HasOne("Krea.Domain.Entities.Conversation", "Conversation")
+                        .WithMany("Participants")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Krea.Domain.Entities.User", "User")
+                        .WithMany("Conversations")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Krea.Domain.Entities.Donation", b =>
@@ -1140,6 +1302,25 @@ namespace Krea.Infrastructure.Data.Migrations
                     b.Navigation("Donor");
 
                     b.Navigation("Recipient");
+                });
+
+            modelBuilder.Entity("Krea.Domain.Entities.Follow", b =>
+                {
+                    b.HasOne("Krea.Domain.Entities.User", "Source")
+                        .WithMany()
+                        .HasForeignKey("SourceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Krea.Domain.Entities.User", "Target")
+                        .WithMany()
+                        .HasForeignKey("TargetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Source");
+
+                    b.Navigation("Target");
                 });
 
             modelBuilder.Entity("Krea.Domain.Entities.Like", b =>
@@ -1502,6 +1683,8 @@ namespace Krea.Infrastructure.Data.Migrations
             modelBuilder.Entity("Krea.Domain.Entities.Conversation", b =>
                 {
                     b.Navigation("Messages");
+
+                    b.Navigation("Participants");
                 });
 
             modelBuilder.Entity("Krea.Domain.Entities.Donation", b =>
@@ -1541,6 +1724,8 @@ namespace Krea.Infrastructure.Data.Migrations
             modelBuilder.Entity("Krea.Domain.Entities.User", b =>
                 {
                     b.Navigation("Collections");
+
+                    b.Navigation("Conversations");
 
                     b.Navigation("Likes");
 
