@@ -1,6 +1,5 @@
 namespace Krea.API.Contracts {
-    public sealed class CreatePostUploadRequest
-    {
+    public sealed class CreatePostUploadRequest {
         public IFormFile File { get; init; } = null!;
 
         public string Type { get; init; } = null!;
@@ -18,7 +17,7 @@ namespace Krea.API.Contracts {
         public string? Format { get; init; }
 
         // Music
-        public int? BitrateKbps  { get; init; }
+        public int? BitrateKbps { get; init; }
         public int? DurationSec { get; init; }
 
         // Text

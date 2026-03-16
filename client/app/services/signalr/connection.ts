@@ -1,18 +1,24 @@
-// app/services/signalr/connection.ts
 import * as signalR from "@microsoft/signalr";
 import { storage } from "../../lib/storage.ts";
 
 let connection: signalR.HubConnection | null = null;
 
+const hubUrl = import.meta.env.VITE_HUB_BASE_URL;
+
 export const getConnection = () => {
   if (!connection) {
     connection = new signalR.HubConnectionBuilder()
-      .withUrl(`${import.meta.env.VITE_API_BASE_URL}/hubs/directMessage`, {
-        accessTokenFactory: () => storage.getToken() ?? "",
+      .withUrl(hubUrl, {
+        accessTokenFactory: () => {
+          const token = storage.getToken();
+          console.log('🔑 SignalR accessTokenFactory returning:', token ? 'token present' : 'NO TOKEN');
+          return token ?? "";
+        },
       })
       .withAutomaticReconnect()
       .build();
   }
+  console.log("Getting SignalR connection",hubUrl, connection);
   return connection;
 };
 

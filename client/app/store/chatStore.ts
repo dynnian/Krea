@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { Conversation, Message } from "../types/chat";
+import type { ConversationDto, DirectMessageDto } from "../types/chat";
 import {
   fetchConversations,
   fetchMessages,
@@ -8,25 +8,20 @@ import {
 } from "../services/conversations";
 import { sendMessageViaHub } from "../services/signalr/chatHub";
 
-interface ChatState {
-  // Normalized DTOs
-  conversations: Record<string, Conversation>;
+export interface ChatState {
+  conversations: Record<string, ConversationDto>;
   conversationIds: string[];
-  messages: Record<string, Record<string, Message>>; // by conversationId -> messageId
-
-  // UI state
+  messages: Record<string, Record<string, DirectMessageDto>>;
   currentConversationId: string | null;
   currentUserId: string | null;
-
-  // Loading states
   loadingConversations: boolean;
   loadingMessages: Record<string, boolean>;
 
-  // Actions
   setCurrentUser: (id: string) => void;
   loadConversations: () => Promise<void>;
   loadMessages: (conversationId: string) => Promise<void>;
-  addMessage: (conversationId: string, message: Message) => void;
+  addMessage: (conversationId: string, message: DirectMessageDto) => void;
+  addConversation: (conversation: ConversationDto) => void;
   setCurrentConversation: (id: string | null) => void;
   sendMessage: (receiverId: string, content: string) => Promise<void>;
 }
@@ -44,24 +39,44 @@ export const useChatStore = create<ChatState>()(
 
       setCurrentUser: (id) => set({ currentUserId: id }),
 
+      addConversation: (conversation: ConversationDto) => {
+        set((state) => {
+          if (state.conversations[conversation.conversationId]) return state;
+          return {
+            conversations: {
+              ...state.conversations,
+              [conversation.conversationId]: conversation,
+            },
+            conversationIds: [
+              conversation.conversationId,
+              ...state.conversationIds,
+            ],
+          };
+        });
+      },
+
       loadConversations: async () => {
+        console.log("🟡 loadConversations started");
         set({ loadingConversations: true });
         try {
           const data = await fetchConversations();
-          const entities: Record<string, Conversation> = {};
+          console.log("🟢 fetchConversations succeeded", data);
+          const entities: Record<string, ConversationDto> = {};
           const ids: string[] = [];
           data.forEach((conv) => {
             entities[conv.conversationId] = conv;
             ids.push(conv.conversationId);
           });
-          // Sort by latest message time
-          ids.sort((a, b) => {
-            const timeA = entities[a].messages?.[0]?.sentAt || "";
-            const timeB = entities[b].messages?.[0]?.sentAt || "";
-            return timeB.localeCompare(timeA);
-          });
+          ids.sort((a, b) =>
+            (entities[b].lastMessageAt || "").localeCompare(
+              entities[a].lastMessageAt || "",
+            ),
+          );
           set({ conversations: entities, conversationIds: ids });
+        } catch (error) {
+          console.error("🔴 fetchConversations failed", error);
         } finally {
+          console.log("🔵 finally: setting loadingConversations = false");
           set({ loadingConversations: false });
         }
       },
@@ -72,7 +87,7 @@ export const useChatStore = create<ChatState>()(
         }));
         try {
           const msgs = await fetchMessages(conversationId);
-          const messageMap: Record<string, Message> = {};
+          const messageMap: Record<string, DirectMessageDto> = {};
           msgs.forEach((msg) => {
             messageMap[msg.id] = msg;
           });
@@ -91,10 +106,7 @@ export const useChatStore = create<ChatState>()(
 
       addMessage: (conversationId, message) => {
         set((state) => {
-          // Avoid duplicates
           if (state.messages[conversationId]?.[message.id]) return state;
-
-          // Update messages
           const newMessages = {
             ...state.messages,
             [conversationId]: {
@@ -102,13 +114,12 @@ export const useChatStore = create<ChatState>()(
               [message.id]: message,
             },
           };
-
-          // Update conversation's last message (for preview)
           const conversation = state.conversations[conversationId];
           if (conversation) {
             const updatedConversation = {
               ...conversation,
-              messages: [message, ...(conversation.messages || [])].slice(0, 1),
+              lastMessage: message,
+              lastMessageAt: message.sentAt,
             };
             return {
               messages: newMessages,
@@ -116,14 +127,12 @@ export const useChatStore = create<ChatState>()(
                 ...state.conversations,
                 [conversationId]: updatedConversation,
               },
-              // Move conversation to top
               conversationIds: [
                 conversationId,
                 ...state.conversationIds.filter((id) => id !== conversationId),
               ],
             };
           }
-
           return { messages: newMessages };
         });
       },
@@ -131,45 +140,20 @@ export const useChatStore = create<ChatState>()(
       setCurrentConversation: (id) => set({ currentConversationId: id }),
 
       sendMessage: async (receiverId, content) => {
-        const { currentConversationId, currentUserId, addMessage } = get();
+        const { currentConversationId, currentUserId } = get();
         if (!currentConversationId || !currentUserId) return;
 
-        // Optimistic update
-        const tempId = crypto.randomUUID();
-        const tempMessage: Message = {
-          id: tempId,
-          senderId: currentUserId,
-          receiverId,
-          content,
-          sentAt: new Date().toISOString(),
-          isRead: false,
-          senderUsername: "",
-          senderDisplayName: "",
-          senderAvatarUrl: null,
-        };
-        addMessage(currentConversationId, tempMessage);
-
         try {
-          await sendMessageViaHub(receiverId, content);
+          await sendMessageViaHub(currentUserId, receiverId, content);
+          // No agregamos mensaje optimista; el real vendrá por SignalR
         } catch (error) {
           console.warn("SignalR failed, falling back to REST", error);
-          // Remove optimistic message
-          set((state) => {
-            const { [tempId]: _, ...rest } =
-              state.messages[currentConversationId] || {};
-            return {
-              messages: {
-                ...state.messages,
-                [currentConversationId]: rest,
-              },
-            };
-          });
           try {
-            const sent = await sendMessageRest(currentConversationId, content);
-            addMessage(currentConversationId, sent);
+            const sent = await sendMessageRest(receiverId, content);
+            // Si usas REST como fallback, agregas el mensaje devuelto
+            get().addMessage(currentConversationId, sent);
           } catch (restError) {
             console.error("REST also failed", restError);
-            // Show error notification (you can extend this)
           }
         }
       },

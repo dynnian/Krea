@@ -1,7 +1,11 @@
 {
   "imports": {
     "@microsoft/signalr": "npm:@microsoft/signalr@^8.0.7",
-    "zustand": "npm:zustand@^5.0.11"
+    "zustand": "npm:zustand@^5.0.11",
+    "@/": "./app/",
+    "dayjs": "npm:dayjs@^1.11.19",
+    "dayjs/plugin/": "npm:dayjs@^1.11.19/plugin/",
+    "dayjs/locale/": "npm:dayjs@^1.11.19/locale/"
   },
   "nodeModulesDir": "auto",
   "tasks": {

@@ -18,7 +18,6 @@ namespace Krea.API.Controllers {
     [ApiController]
     [Authorize]
     public class DirectMessagesController(ISender sender) : ControllerBase {
-        
         /// <summary>
         /// Retrieves all conversations for the authenticated user.
         /// </summary>
@@ -27,11 +26,10 @@ namespace Krea.API.Controllers {
         /// the last message (for preview), and unread count.
         /// </returns>
         [HttpGet("conversations")]
-        public async Task<ActionResult<List<ConversationPreviewDto>>> GetConversations()
-        {
-            var userId = GetCurrentUserId();
+        public async Task<ActionResult<List<ConversationPreviewDto>>> GetConversations() {
+            Guid userId = GetCurrentUserId();
             var query = new GetUserConversationsQuery(userId);
-            var result = await sender.Send(query);
+            List<ConversationPreviewDto> result = await sender.Send(query);
             return Ok(result);
         }
 
@@ -49,11 +47,10 @@ namespace Krea.API.Controllers {
         public async Task<ActionResult<List<DirectMessageDto>>> GetConversationMessages(
             Guid conversationId,
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20)
-        {
-            var userId = GetCurrentUserId();
+            [FromQuery] int pageSize = 20) {
+            Guid userId = GetCurrentUserId();
             var query = new GetConversationMessagesQuery(userId, conversationId, page, pageSize);
-            var result = await sender.Send(query);
+            List<DirectMessageDto> result = await sender.Send(query);
             return Ok(result);
         }
 
@@ -70,11 +67,10 @@ namespace Krea.API.Controllers {
         public async Task<ActionResult<ConversationDto>> GetConversation(
             Guid otherUserId,
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20)
-        {
-            var userId = GetCurrentUserId();
+            [FromQuery] int pageSize = 20) {
+            Guid userId = GetCurrentUserId();
             var query = new GetConversationQuery(userId, otherUserId, page, pageSize);
-            var result = await sender.Send(query);
+            ConversationDto result = await sender.Send(query);
             return Ok(result);
         }
 
@@ -87,13 +83,12 @@ namespace Krea.API.Controllers {
         /// Returns Unauthorized if the sender ID does not match the authenticated user.
         /// </returns>
         [HttpPost]
-        public async Task<ActionResult<DirectMessageDto>> SendMessage([FromBody] SendDirectMessageCommand command)
-        {
-            var userId = GetCurrentUserId();
+        public async Task<ActionResult<DirectMessageDto>> SendMessage([FromBody] SendDirectMessageCommand command) {
+            Guid userId = GetCurrentUserId();
             if (command.SenderId != userId)
                 return Unauthorized();
 
-            var result = await sender.Send(command);
+            DirectMessageDto result = await sender.Send(command);
             return CreatedAtAction(nameof(GetConversation), new { otherUserId = command.ReceiverId }, result);
         }
 
@@ -106,19 +101,17 @@ namespace Krea.API.Controllers {
         /// Returns NotFound if the message does not exist or the user is not a participant.
         /// </returns>
         [HttpPatch("{messageId}/read")]
-        public async Task<IActionResult> MarkAsRead(Guid messageId)
-        {
-            var userId = GetCurrentUserId();
+        public async Task<IActionResult> MarkAsRead(Guid messageId) {
+            Guid userId = GetCurrentUserId();
             var command = new MarkMessageAsReadCommand(messageId, userId);
-            var result = await sender.Send(command);
+            bool result = await sender.Send(command);
             if (!result)
                 return NotFound();
             return Ok();
         }
 
-        private Guid GetCurrentUserId()
-        {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        private Guid GetCurrentUserId() {
+            string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             return Guid.Parse(userIdClaim!);
         }
     }

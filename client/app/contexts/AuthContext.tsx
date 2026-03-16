@@ -1,23 +1,23 @@
 // contexts/AuthContext.tsx
 import { jwtDecode } from 'jwt-decode';
-import axios from 'axios';                       // <-- import axios for type guard
-import { createContext, useContext, useEffect, useState } from 'react';
-import axiosClient from '../lib/axios';
-import { storage } from '../lib/storage';
-
+import axios from 'axios';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import axiosClient from '../lib/axios.ts';
+import { storage } from '../lib/storage.ts';
+import { initSignalR, stopSignalR } from '../services/signalrListener';
 // Token payload from JWT (based on your actual token)
 interface TokenPayload {
-  sub: string;           // user id (UUID)
-  unique_name: string;   // username
+  sub: string;
+  unique_name: string;
   email: string;
   displayName: string;
+  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string; // <-- add this
   exp?: number;
   iss?: string;
   aud?: string;
-  role?: string;         // if present
 }
 
-// User object returned from /Auth/login
+// User object returned from /Auth/login (inside the response)
 interface UserResponse {
   id: string;
   username: string;
@@ -26,6 +26,14 @@ interface UserResponse {
   biography: string | null;
   languageCode: string;
   timeZoneId: string;
+  roleId: number;        // note: roleId, not role string
+}
+
+// Complete login response from backend
+interface LoginResponse {
+  token: string;
+  expiration: string;    // ISO date string
+  user: UserResponse;
 }
 
 // AuthUser for the app (id is string, not number)
@@ -37,13 +45,14 @@ export interface AuthUser {
   biography?: string | null;
   languageCode?: string;
   timeZoneId?: string;
-  role?: string;
+  role?: string;         // optional, can be derived from token
 }
 
 export interface LoginDTO {
   email: string;         // from form, maps to emailOrUsername in backend
   password: string;
 }
+
 export interface RegisterDTO {
   username: string;
   email: string;
@@ -54,12 +63,10 @@ export interface RegisterDTO {
   biography?: string | null;
 }
 
-
-
 interface AuthContextType {
   user: AuthUser | undefined;
   login: (credentials: LoginDTO, rememberMe?: boolean) => Promise<void>;
-  register: (data: RegisterDTO, rememberMe?: boolean) => Promise<void>;  // nuevo
+  register: (data: RegisterDTO, rememberMe?: boolean) => Promise<void>;
   confirmEmail: (userId: string, token: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
@@ -71,14 +78,25 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | undefined>();
   const [loading, setLoading] = useState(true);
-
+  const isMounted = useRef(false);
+  
+  useEffect(() => {
+    if (user) {
+      // Small delay to ensure everything is settled
+      const timer = setTimeout(() => {
+        initSignalR(user.id);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
   // Restore session on mount
   useEffect(() => {
+    if (isMounted.current) return;
+    isMounted.current = true;
     const token = storage.getToken();
     const storedUser = storage.getUser() as AuthUser | undefined;
 
     if (token && storedUser) {
-      // Optional: verify token expiration
       try {
         const decoded = jwtDecode<TokenPayload>(token);
         const now = Date.now() / 1000;
@@ -101,50 +119,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setLoading(false);
   }, []);
+  useEffect(() => {
+  console.log('🟢 AuthProvider MOUNTED');
+  return () => console.log('🔴 AuthProvider UNMOUNTED');
+  }, []);
 
   const login = async (credentials: LoginDTO, rememberMe = false) => {
     try {
-      // 1. Call real backend
+      // Call backend login endpoint
       const response = await axiosClient.post('/Auth/login', {
         emailOrUsername: credentials.email,
         password: credentials.password,
       });
 
-      const { token, user } = response.data as { token: string; user: UserResponse };
+      // The response data matches the LoginResponse interface
+      const data = response.data as LoginResponse;
 
-      if (!token || !user) {
+      const { token, user: userData } = data;
+
+      if (!token || !userData) {
         throw new Error('Invalid response from server');
       }
 
-      // 2. Build AuthUser from the user object
+      // Build AuthUser from the user object
       const authUser: AuthUser = {
-        id: user.id,
-        email: user.email,
-        name: user.displayName,
-        handle: user.username,
-        biography: user.biography,
-        languageCode: user.languageCode,
-        timeZoneId: user.timeZoneId,
+        id: userData.id,
+        email: userData.email,
+        name: userData.displayName,
+        handle: userData.username,
+        biography: userData.biography,
+        languageCode: userData.languageCode,
+        timeZoneId: userData.timeZoneId,
       };
 
-      // 3. Optionally extract role from token
+      // Optionally extract role from token (if needed)
       try {
         const decoded = jwtDecode<TokenPayload>(token);
-        if (decoded.role) {
-          authUser.role = decoded.role;
+        const roleClaim = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+        if (roleClaim) {
+          authUser.role = roleClaim; // "Admin" for admin users
         }
       } catch {
         // ignore
       }
 
-      // 4. Store token and user with rememberMe preference
+      // Store token and user with rememberMe preference
       storage.setToken(token, rememberMe);
       storage.setUser(authUser, rememberMe);
-
-      // 5. Update state
+      // Update state
       setUser(authUser);
     } catch (error) {
-      // 6. Enhanced error handling
+      // Enhanced error handling
       if (axios.isAxiosError(error) && error.response) {
         const data = error.response.data;
         const message =
@@ -157,10 +182,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error('Network error. Please check your connection.');
     }
   };
+
   const register = async (data: RegisterDTO, rememberMe = false) => {
     try {
       await axiosClient.post('/Auth/register', data);
-      // No guardamos token ni usuario – la cuenta requiere confirmación
+      // No token or user returned – account requires confirmation
       return;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -175,13 +201,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error('Network error. Please check your connection.');
     }
   };
+
   const confirmEmail = async (userId: string, token: string) => {
     try {
       await axiosClient.get('/Auth/confirm-email', {
         params: { userId, token }
       });
       // If the request succeeds, the email is confirmed.
-      // No token or user is returned – the user must log in manually.
+      // The user must log in manually.
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         const data = error.response.data;
@@ -191,24 +218,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error('Network error');
     }
   };
-  
 
   const logout = () => {
     storage.clearAll();
     setUser(undefined);
-  };
+    stopSignalR();
 
+  };
+  console.log('AuthProvider render, user reference:', user);
+    const value = useMemo(() => ({
+    user,
+    login,
+    register,
+    confirmEmail,
+    logout,
+    isAuthenticated: !!user,
+    loading,
+  }), [user, login, register, confirmEmail, logout, loading]);
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        login,
-        register,
-        confirmEmail,
-        logout,
-        isAuthenticated: !!user,
-        loading,
-      }}
+      value={value}
     >
       {children}
     </AuthContext.Provider>

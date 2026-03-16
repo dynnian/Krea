@@ -1,19 +1,17 @@
 import { Outlet } from "react-router";
-import { Grid } from "antd";
-
-const { useBreakpoint } = Grid;
+import { Sidebar } from "../components/Admin/sidebar.tsx";
+import { Header } from "../components/Admin/header.tsx";
 
 export default function AdminLayout() {
-  const screens = useBreakpoint();
-  const isMobile = !screens.md;
-
   return (
-    <>
-      <main className="flex justify-center px-2 sm:px-4">
-        <div className="w-full max-w-7xl">
-          <Outlet />
-        </div>
-      </main>
-    </>
+    <div className="flex h-screen overflow-hidden bg-[#E3E2DE]">
+      <Sidebar />
+      <div className="flex flex-1 flex-col overflow-hidden w-full">
+        <Header />
+        <main className="flex-1 overflow-y-auto p-8">
+          <Outlet />  
+        </main>
+      </div>
+    </div>
   );
 }
