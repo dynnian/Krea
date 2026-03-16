@@ -9,7 +9,7 @@ import MusicPortfolio from "../components/Profile/MusicPortfolio";
 import { digitalPortfolioMock } from "../data/digitalPortfolioMock";
 import WriterPortfolio from "../components/Profile/WriterPortfolio";
 import { settingsRepository } from "../services/settingsRepository";
-import CreatePortfolioPostModal from "~/components/Posts/CreatePortfolioPostModal";
+import CreatePortfolioPostModal from "../components/Posts/CreatePortfolioPostModal";
 
 
 import {
