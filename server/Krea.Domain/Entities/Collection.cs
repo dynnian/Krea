@@ -30,14 +30,13 @@ namespace Krea.Domain.Entities {
         public Collection(
             Guid ownerId,
             string title,
-            string? description,
-            int itemCount
+            string? description
         ) {
             Id = Guid.NewGuid();
             OwnerId = ownerId;
             Title = title;
             Description = description ?? string.Empty;
-            ItemCount = itemCount;
+            ItemCount = 0;
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
         }
@@ -48,15 +47,13 @@ namespace Krea.Domain.Entities {
             string title,
             string? description,
             Guid? mediaId,
-            int itemCount,
             DateTime createdAt,
             DateTime updatedAt
         ) {
             var collection = new Collection(
                 ownerId,
                 title,
-                description,
-                itemCount);
+                description);
 
             collection.Id = id;
             collection.MediaId = mediaId;
@@ -92,6 +89,7 @@ namespace Krea.Domain.Entities {
 
         public void UpdateImage(Media image) {
             Image = image;
+            MediaId = image.Id;
             UpdatedAt = DateTime.UtcNow;
         }
     }
