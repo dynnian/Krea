@@ -201,7 +201,9 @@
     "placeholder": "Send message...",
     "online": "Online",
     "offline": "Offline",
-    "select_conversation": "Select a conversation to start chatting"
+    "select_conversation": "Select a conversation to start chatting",
+    "start_messaging": "Start messaging...",
+    "conversations": "Conversations"
   },
   "createPost": {
     "authRequired": "You must be logged in",

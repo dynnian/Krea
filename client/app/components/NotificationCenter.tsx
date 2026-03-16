@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/es';
 import 'dayjs/locale/en';
+import { useEffect } from "react";
 
 // Extender dayjs con el plugin de tiempo relativo
 dayjs.extend(relativeTime);
@@ -21,9 +22,11 @@ export default function NotificationCenter() {
   const { language } = useI18n(); // 'es' o 'en'
   const { notifications, markAsRead, markAllAsRead } = useNotifications();
 
-  // Cambiar el locale de dayjs según el idioma actual
-  const currentLocale = localeMap[language as keyof typeof localeMap] || 'en';
-  dayjs.locale(currentLocale);
+  useEffect(() => {
+    const currentLocale = localeMap[language as keyof typeof localeMap] || 'en';
+    dayjs.locale(currentLocale);
+  }, [language]);
+
 
   return (
     <div className="w-[529px] bg-[#E8F1FC] rounded-[13px] outline outline-2 outline-[#8F8E8A] outline-offset-[-2px] flex flex-col items-center overflow-hidden">

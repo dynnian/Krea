@@ -201,7 +201,9 @@
     "placeholder": "Enviar mensaje...",
     "online": "En línea",
     "offline": "Desconectado",
-    "select_conversation": "Selecciona una conversación para empezar a chatear"
+    "select_conversation": "Selecciona una conversación para empezar a chatear",
+    "start_messaging": "Start messaging...",
+    "conversations": "Conversations"
   },
 
   "createPost": {

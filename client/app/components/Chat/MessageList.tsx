@@ -1,11 +1,11 @@
 import React, { useRef, useEffect } from 'react';
 import { List, Avatar, Typography, Flex } from 'antd';
-import type { Message } from '../../types/chat';
+import type { UIMessage } from '../../types/chat';
 
 const { Text } = Typography;
 
 interface Props {
-  messages: Message[];
+  messages: UIMessage[];
   currentUserId: string;
 }
 
