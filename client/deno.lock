@@ -3,9 +3,10 @@
   "specifiers": {
     "npm:@ant-design/cssinjs@^2.1.0": "2.1.2_react@19.2.4_react-dom@19.2.4__react@19.2.4",
     "npm:@ant-design/icons@^6.1.0": "6.1.0_react@19.2.4_react-dom@19.2.4__react@19.2.4",
+    "npm:@fontsource/inter@^5.2.8": "5.2.8",
     "npm:@microsoft/signalr@^8.0.17": "8.0.17",
     "npm:@microsoft/signalr@^8.0.7": "8.0.17",
-    "npm:@react-router/dev@7.12.0": "7.12.0_@react-router+serve@7.12.0__react-router@7.12.0___react@19.2.4___react-dom@19.2.4____react@19.2.4__express@4.22.1__typescript@5.9.3__react@19.2.4__react-dom@19.2.4___react@19.2.4_react-router@7.12.0__react@19.2.4__react-dom@19.2.4___react@19.2.4_typescript@5.9.3_vite@7.3.1__@types+node@22.19.15__picomatch@4.0.3_@babel+core@7.29.0_react@19.2.4_react-dom@19.2.4__react@19.2.4_@types+node@22.19.15",
+    "npm:@react-router/dev@7.12.0": "7.12.0_@react-router+serve@7.12.0__react-router@7.12.0___react@19.2.4___react-dom@19.2.4____react@19.2.4__express@4.22.1__typescript@5.9.3__react@19.2.4__react-dom@19.2.4___react@19.2.4_react-router@7.12.0__react@19.2.4__react-dom@19.2.4___react@19.2.4_typescript@5.9.3_vite@7.3.1__@types+node@22.19.15__picomatch@4.0.3",
     "npm:@react-router/node@7.12.0": "7.12.0_react-router@7.12.0__react@19.2.4__react-dom@19.2.4___react@19.2.4_typescript@5.9.3_react@19.2.4_react-dom@19.2.4__react@19.2.4",
     "npm:@react-router/serve@7.12.0": "7.12.0_react-router@7.12.0__react@19.2.4__react-dom@19.2.4___react@19.2.4_express@4.22.1_typescript@5.9.3_react@19.2.4_react-dom@19.2.4__react@19.2.4",
     "npm:@rollup/rollup-linux-x64-gnu@^4.59.0": "4.59.0",
@@ -472,6 +473,9 @@
     },
     "@floating-ui/utils@0.2.11": {
       "integrity": "sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg=="
+    },
+    "@fontsource/inter@5.2.8": {
+      "integrity": "sha512-P6r5WnJoKiNVV+zvW2xM13gNdFhAEpQ9dQJHt3naLvfg+LkF2ldgSLiF4T41lf1SQCM9QmkqPTn4TH568IRagg=="
     },
     "@jridgewell/gen-mapping@0.3.13": {
       "integrity": "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==",
@@ -947,7 +951,7 @@
         "react-dom"
       ]
     },
-    "@react-router/dev@7.12.0_@react-router+serve@7.12.0__react-router@7.12.0___react@19.2.4___react-dom@19.2.4____react@19.2.4__express@4.22.1__typescript@5.9.3__react@19.2.4__react-dom@19.2.4___react@19.2.4_react-router@7.12.0__react@19.2.4__react-dom@19.2.4___react@19.2.4_typescript@5.9.3_vite@7.3.1__@types+node@22.19.15__picomatch@4.0.3_@babel+core@7.29.0_react@19.2.4_react-dom@19.2.4__react@19.2.4_@types+node@22.19.15": {
+    "@react-router/dev@7.12.0_@react-router+serve@7.12.0__react-router@7.12.0___react@19.2.4___react-dom@19.2.4____react@19.2.4__express@4.22.1__typescript@5.9.3__react@19.2.4__react-dom@19.2.4___react@19.2.4_react-router@7.12.0__react@19.2.4__react-dom@19.2.4___react@19.2.4_typescript@5.9.3_vite@7.3.1__@types+node@22.19.15__picomatch@4.0.3": {
       "integrity": "sha512-5GpwXgq4pnOVeG7l6ADkCHA1rthJus1q/A3NRYJAIypclUQDYAzg1/fDNjvaKuTSrq+Nr3u6aj2v+oC+47MX6g==",
       "dependencies": [
         "@babel/core",
@@ -3014,6 +3018,7 @@
       "dependencies": [
         "npm:@ant-design/cssinjs@^2.1.0",
         "npm:@ant-design/icons@^6.1.0",
+        "npm:@fontsource/inter@^5.2.8",
         "npm:@microsoft/signalr@^8.0.17",
         "npm:@react-router/dev@7.12.0",
         "npm:@react-router/node@7.12.0",

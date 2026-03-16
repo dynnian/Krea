@@ -1,9 +1,17 @@
 // profile.tsx
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Avatar, Tabs, Typography, Grid, message, Spin } from 'antd';
 import { useAuth } from '../contexts/AuthContext';
+import DigitalPortfolio from "../components/Profile/DigitalPortfolio";
+import MusicPortfolio from "../components/Profile/MusicPortfolio";
+import { digitalPortfolioMock } from "../data/digitalPortfolioMock";
+import WriterPortfolio from "../components/Profile/WriterPortfolio";
+import { settingsRepository } from "../services/settingsRepository";
+import CreatePortfolioPostModal from "~/components/Posts/CreatePortfolioPostModal";
+
+
 import {
   Heart,
   MessageCircle,
@@ -14,9 +22,9 @@ import {
   Check,
   Play,
   Pause,
+  Edit,
 } from 'lucide-react';
 import WaveSurfer from 'wavesurfer.js';
-import CreatePortfolioPostModal from '~/components/Posts/CreatePortfolioPostModal';
 
 const { useBreakpoint } = Grid;
 const { Title, Text } = Typography;
@@ -260,6 +268,7 @@ async function fetchProfile(username: string): Promise<ProfileData> {
 }
 
 async function followUser(username: string) {
+  // Implementar llamada real
   console.log('Follow', username);
 }
 
@@ -349,7 +358,9 @@ const SubscribeButton: React.FC<SubscribeButtonProps> = ({ isSubscribed, onClick
         : 'bg-[#F3F3F1] text-[#1B1C1E] border-[#1B1C1E]'
     }`}
   >
-    {isSubscribed ? 'Subscrito' : 'Subscribirse'}
+    <span className="text-[11px] font-medium leading-5 text-[#1B1C1E]"> 
+      {isSubscribed ? 'Subscrito' : 'Subscribirse'}
+  </span>
   </button>
 );
 
@@ -362,7 +373,43 @@ const CommissionButton: React.FC<CommissionButtonProps> = ({ onClick }) => (
     onClick={onClick}
     className="px-5 py-1 rounded-full text-xs font-medium bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E]"
   >
+    <span className="text-[11px] font-medium leading-5 text-[#1B1C1E]">
     Comisión
+    </span>
+  </button>
+);
+
+interface ConfigurationButtonProps {
+  onClick?: () => void;
+}
+
+const ConfigurationButton: React.FC<ConfigurationButtonProps> = ({ onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="px-5 py-1 rounded-full cursor-pointer transition hover:bg-[#E6E5E2] bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] flex items-center gap-1"
+  >
+    <Edit size={14} />
+    <span className="text-[13px]  font-medium leading-5 text-[#1B1C1E]">
+       Configuración
+    </span> 
+  </button>
+);
+
+interface FavoritesButtonProps {
+  onClick?: () => void;
+}
+
+const FavoritesButton: React.FC<FavoritesButtonProps> = ({ onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="px-5 py-1 rounded-full cursor-pointer transition hover:bg-[#E6E5E2] bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] flex items-center gap-1"
+  >
+    <Bookmark size={14} />
+    <span className="text-[13px] font-medium leading-5 text-[#1B1C1E]">
+     Guardados
+    </span>
   </button>
 );
 
@@ -379,48 +426,6 @@ const MoreButton: React.FC<MoreButtonProps> = ({ onClick }) => (
   </button>
 );
 
-// ---------- Nuevos botones para perfil propio ----------
-interface SettingsButtonProps {
-  onClick?: () => void;
-}
-
-const SettingsButton: React.FC<SettingsButtonProps> = ({ onClick }) => (
-  <Link
-    to="/settings"
-    className="px-5 py-1 rounded-full text-xs font-medium bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] hover:bg-gray-200 transition"
-    onClick={onClick}
-  >
-    Configuración
-  </Link>
-);
-
-interface SavedButtonProps {
-  onClick?: () => void;
-}
-
-const SavedButton: React.FC<SavedButtonProps> = ({ onClick }) => (
-  <Link
-    to="/bookmarks" // Ruta aún no definida, puedes cambiarla cuando exista
-    className="px-5 py-1 rounded-full text-xs font-medium bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] hover:bg-gray-200 transition"
-    onClick={onClick}
-  >
-    Guardados
-  </Link>
-);
-
-interface UpdatePortfolioButtonProps {
-  onClick?: () => void;
-}
-
-const UpdatePortfolioButton: React.FC<UpdatePortfolioButtonProps> = ({ onClick }) => (
-  <button
-    onClick={onClick}
-    className="w-full py-2 px-4 bg-[#0B5107] text-[#E3E2DE] text-xs font-medium rounded-full border border-[#1B1C1E] hover:bg-green-700 transition"
-  >
-    Actualizar Portafolio
-  </button>
-);
-
 interface WaveformPlayerProps {
   audioUrl: string;
   coverUrl?: string;
@@ -430,7 +435,6 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({ audioUrl, coverUrl }) =
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurfer = useRef<WaveSurfer | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-
   useEffect(() => {
     if (waveformRef.current && !wavesurfer.current) {
       wavesurfer.current = WaveSurfer.create({
@@ -441,7 +445,8 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({ audioUrl, coverUrl }) =
         barWidth: 2,
         barGap: 1,
         height: 40,
-        url: audioUrl
+        responsive: true,
+        url: audioUrl,
       });
 
       wavesurfer.current.on('play', () => setIsPlaying(true));
@@ -476,6 +481,8 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({ audioUrl, coverUrl }) =
   );
 };
 
+
+
 // ---------- PostCard ----------
 interface PostCardProps {
   post: Post;
@@ -491,6 +498,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const [repostsCount, setRepostsCount] = useState(post.favoritesCount);
   const [bookmarked, setBookmarked] = useState(false);
   const [bookmarksCount, setBookmarksCount] = useState(0);
+
+
 
   const requireAuth = () => {
     if (!user) {
@@ -552,6 +561,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     }
   };
 
+
+
   const formatDate = (iso: string) => {
     const date = new Date(iso);
     return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
@@ -584,6 +595,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
           <p className="text-gray-800 mt-1 text-sm text-justify">{post.content}</p>
 
+
+
           {post.type === PostType.IMAGE && post.media.length > 0 && (
             <div className="mt-3">
               {post.media.length === 1 ? (
@@ -615,6 +628,9 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                 </div>
               )}
             </div>
+            
+
+
           )}
 
           {post.type === PostType.AUDIO && audioMedia && (
@@ -674,6 +690,7 @@ const Profile: React.FC = () => {
   const { t } = useTranslation();
   const screens = useBreakpoint();
   const isMobile = !screens.md;
+  // const { username } = useParams<{ username: string }>();
   const { username: usernameParam } = useParams<{ username: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -682,19 +699,32 @@ const Profile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [activeMainTab, setActiveMainTab] = useState('portfolio');
-  const [activePortfolioSubTab, setActivePortfolioSubTab] = useState('all');
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [portfolioSettings, setPortfolioSettings] = useState <{
+  imagesEnabled: boolean;
+ musicEnabled: boolean;
+  literatureEnabled: boolean;
+  } | null>(null);
 
-  const handleUpdatePortfolio = () => {
-    setModalVisible(true);
-  };
+const [activeMainTab, setActiveMainTab] = useState('portfolio');
+const [activePortfolioSubTab, setActivePortfolioSubTab] = useState("images");
+const [activeMusicTab, setActiveMusicTab] = useState<"songs" | "albums">("songs");
+const [isFollowing, setIsFollowing] = useState(false);
+const [isSubscribed, setIsSubscribed] = useState(false);
+const [modalVisible, setModalVisible] = useState(false);
+const [portfolioModalType, setPortfolioModalType] = useState<UploadMediaType>(PostType.IMAGE);
 
-  const username = usernameParam ?? "me";
-  const isOwnProfile = username === "me";
+const handleGoToSettings = () => {
+  navigate("/settings");
+};
 
+const handleGoToSaved = () => {
+ navigate("/saved");
+};
+// Determinar si es el perfil propio (ruta /profile/me)
+// const isOwnProfile = username === 'me';
+
+const username = usernameParam ?? "me";
+const isOwnProfile = username === "me";
   useEffect(() => {
     const loadProfile = async () => {
       if (!username) {
@@ -706,14 +736,17 @@ const Profile: React.FC = () => {
       try {
         setLoading(true);
         let profileData: ProfileData;
-
+        
         if (isOwnProfile) {
           if (!user) {
+            // Si no hay usuario autenticado, redirigir al login
             navigate('/login');
             return;
           }
+          // Aquí llamarías a una API que devuelva el perfil del usuario autenticado
           profileData = await fetchProfile('me');
         } else {
+          // Perfil de otro usuario
           profileData = await fetchProfile(username);
         }
 
@@ -730,6 +763,15 @@ const Profile: React.FC = () => {
 
     loadProfile();
   }, [username, user, navigate, isOwnProfile]);
+
+    useEffect(() => {
+    const loadPortfolioSettings = async () => {
+      const settings = await settingsRepository.getSettings();
+      setPortfolioSettings(settings.portfolio);
+    };
+
+  void loadPortfolioSettings();
+}, []);
 
   const handleFollow = async () => {
     if (!user) {
@@ -769,17 +811,6 @@ const Profile: React.FC = () => {
     }
   };
 
-  // Handlers para nuevos botones
-  const handleSettingsClick = () => {
-    // Opcional: lógica adicional antes de navegar
-    console.log('Navegando a configuración');
-  };
-
-  const handleSavedClick = () => {
-    console.log('Navegando a guardados');
-  };
-
-
   if (loading) {
     return (
       <div className="w-full min-h-screen bg-[#E3E2DE] flex items-center justify-center">
@@ -796,174 +827,248 @@ const Profile: React.FC = () => {
     );
   }
 
-  const mainTabItems = [
-    { key: 'portfolio', label: t('profile.tabs.portfolio') },
-    { key: 'publications', label: t('profile.tabs.publications') },
-    { key: 'members', label: t('profile.tabs.members') },
+  const mainTabItems  = [
+    { key: 'portfolio', label: t('Portafolio') },
+    { key: 'publications', label: t('Publicatciones') },
+    { key: 'members', label: t('Miembros') },
   ];
 
-  const portfolioSubTabs = [
-    { key: 'all', label: t('profile.portfolio.all') },
-    { key: 'images', label: t('profile.portfolio.images') },
-    { key: 'music', label: t('profile.portfolio.music') },
-    { key: 'literature', label: t('profile.portfolio.literature') },
-  ];
+const portfolioSubTabs = [
+  { key: "images", label: "Imágenes" },
+  { key: "music", label: "Música" },
+  { key: "literature", label: "Literatura" },
+];
 
-  const getFilteredPosts = () => {
-    let posts = profile.posts;
+const effectivePortfolioTab =
+  portfolioSubTabs.find((tab) => tab.key === activePortfolioSubTab)?.key ??
+  portfolioSubTabs[0]?.key ??
+  "";
 
-    if (activeMainTab === 'portfolio') {
-      posts = posts.filter(p => p.isWork === true);
-      if (activePortfolioSubTab !== 'all') {
-        const typeMap: Record<string, PostType> = {
-          images: PostType.IMAGE,
-          music: PostType.AUDIO,
-          literature: PostType.LINK,
-        };
-        posts = posts.filter(p => p.type === typeMap[activePortfolioSubTab]);
-      }
-    } else if (activeMainTab === 'publications') {
-      posts = posts.filter(p => p.isWork === false);
-    } else if (activeMainTab === 'members') {
-      posts = [];
+const getFilteredPosts = () => {
+  let posts = profile.posts;
+
+  if (activeMainTab === "publications") {
+    posts = posts.filter((p) => p.isWork === false);
+  } else if (activeMainTab === "members") {
+    posts = [];
+  } else if (activeMainTab === "portfolio") {
+    posts = [];
+  }
+
+  return posts;
+};
+  const filteredPosts = getFilteredPosts();
+  const isPortfolioView = activeMainTab === "portfolio";
+  const getActivePortfolioFormRoute = () => {
+    if (activeMainTab !== "portfolio") return null;
+
+    if (activePortfolioSubTab === "images") {
+      return `/profile/${username}/portfolio/update/artist`;
     }
 
-    return posts;
+    if (activePortfolioSubTab === "literature") {
+      return `/profile/${username}/portfolio/update/writer`;
+    }
+
+    if (activePortfolioSubTab === "music") {
+      return activeMusicTab === "albums"
+        ? `/profile/${username}/portfolio/update/music/albums`
+        : `/profile/${username}/portfolio/update/music/songs`;
+    }
+
+    return null;
   };
 
-  const filteredPosts = getFilteredPosts();
+const handleUpdatePortfolioClick = () => {
+  if (activePortfolioSubTab === "images") {
+    setPortfolioModalType("image");
+  } else if (activePortfolioSubTab === "literature") {
+    setPortfolioModalType("text");
+  } else if (activePortfolioSubTab === "music") {
+    setPortfolioModalType("music");
+  }
 
-  return (
-    <div className="w-full max-w-[870px] bg-[#E3E2DE] h-screen">
-      <div className="w-full bg-[#E8F1FC] border-l-2 border-r-2 border-[#8F8E8A]">
-        <div className="px-[80px] pt-6">
-          {/* Header del perfil */}
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex justify-center md:justify-start">
-              <Avatar
-                src={profile.user.avatar}
-                icon={!profile.user.avatar && <User size={60} />}
-                size={141}
-                className="bg-white border-2 border-gray-800"
-              />
-            </div>
+  setModalVisible(true);
+};
 
-            <div className="flex-1">
-              {/* Fila superior: nombre, handle y botones */}
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-2xl font-medium text-gray-900 m-0">
-                      {profile.user.name}
-                    </h3>
-                    {profile.user.isVerified && (
-                      <div className="w-5 h-5 bg-[#0B5107] rounded-full flex items-center justify-center border border-gray-800">
-                        <Check size={12} className="text-white" />
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-gray-500 text-sm">@{profile.user.handle}</p>
-                </div>
+const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
+  
+ return (
+  <div className="w-full max-w-[870px] h-full min-h-screen">
+    <div
+    className={`w-full h-full ${
+      isPortfolioView
+        ? "bg-transparent border-none"
+        : "bg-[#E8F1FC] border-l-2 border-r-2 border-[#8F8E8A]"
+    }`}
+  >
+      <div className=" pt-6 ">
+        {/* Perfil header */}
+        <div className="flex flex-col md:flex-row gap-6 px-[70px]" >
+          
 
-                <div className="flex flex-wrap items-center gap-2">
-                  {isOwnProfile ? (
-                    <>
-                      <SettingsButton onClick={handleSettingsClick} />
-                      <SavedButton onClick={handleSavedClick} />
-                      <MoreButton onClick={() => {}} />
-                    </>
-                  ) : (
-                    <>
-                      <CommissionButton />
-                      <SubscribeButton
-                        isSubscribed={isSubscribed}
-                        onClick={handleSubscribe}
-                      />
-                      <FollowButton
-                        isFollowing={isFollowing}
-                        onClick={handleFollow}
-                      />
-                      <MoreButton onClick={() => {}} />
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Biografía */}
-              <p className="text-gray-800 text-sm text-justify mt-4 leading-relaxed">
-                {profile.bio}
-              </p>
-
-              {/* Seguidores / seguidos */}
-              <div className="flex gap-6 mt-4 text-sm">
-                <span>{profile.followingCount} Seguidos</span>
-                <span>{profile.followersCount} Seguidores</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Tabs principales */}
-          <div className="mt-8">
-            <Tabs
-              activeKey={activeMainTab}
-              onChange={setActiveMainTab}
-              items={mainTabItems}
-              centered={!isMobile}
-              tabBarStyle={{ borderBottom: "none" }}
-              tabBarGutter={46}
+          
+          <div className="flex justify-center md:justify-start">
+            <Avatar
+              src={profile.user.avatar}
+              icon={!profile.user.avatar && <User size={60} />}
+              size={141}
+              className="bg-white border-2 border-gray-800"
             />
           </div>
 
-          {/* Subtabs de portfolio */}
-          {activeMainTab === "portfolio" && (
-            <div className="mt-4">
-              <Tabs
-                activeKey={activePortfolioSubTab}
-                onChange={setActivePortfolioSubTab}
-                items={portfolioSubTabs}
-                centered={!isMobile}
-                tabBarStyle={{ borderBottom: "none" }}
-                tabBarGutter={46}
-                size="small"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Línea divisoria */}
-        <div className="w-full h-px bg-[#8F8E8A] my-4" />
-
-        <div className="px-[80px] pb-6">
-          {/* Botón de Actualizar Portafolio (solo para perfil propio) */}
-          {isOwnProfile && (
-            <div className="mb-4">
-              <UpdatePortfolioButton onClick={handleUpdatePortfolio} />
-              <CreatePortfolioPostModal
-                visible={modalVisible}
-                onClose={() => setModalVisible(false)}
-                onSuccess={() => {
-                  // Opcional: recargar los posts del perfil
-                  // Por ejemplo, volver a llamar a fetchProfile(username)
-                }}
-              />
-            </div>
-          )}
-
-          {/* Lista de posts */}
-          <div className="space-y-8">
-            {filteredPosts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-            {filteredPosts.length === 0 && (
-              <div className="text-center text-gray-500 py-8">
-                {t("profile.no_posts")}
+          <div className="flex-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Title level={3} className="!mb-0">
+                    {profile.user.name}
+                  </Title>
+                  {profile.user.isVerified && (
+                    <div className="w-5 h-5 bg-[#0B5107] rounded-full flex items-center justify-center border border-gray-800">
+                      <Check size={12} className="text-white" />
+                    </div>
+                  )}
+                </div>
+                <Text type="secondary">@{profile.user.handle}</Text>
               </div>
-            )}
+
+            <div className="flex flex-wrap gap-2">
+              {isOwnProfile ? (
+                <>
+                  <ConfigurationButton onClick={handleGoToSettings} />
+                  <FavoritesButton onClick={handleGoToSaved} />
+                  <MoreButton />
+                </>
+              ) : (
+                <>
+                  <CommissionButton />
+                  <SubscribeButton
+                    isSubscribed={isSubscribed}
+                    onClick={handleSubscribe}
+                  />
+                  <FollowButton
+                    isFollowing={isFollowing}
+                    onClick={handleFollow}
+                  />
+                  <MoreButton />
+                </>
+              )}
+            </div>
+            </div>
+
+            <p className="text-gray-800 text-sm text-justify mt-4 leading-relaxed">
+              {profile.bio}
+            </p>
+
+            <div className="flex gap-6 mt-4 text-sm">
+              <span>{profile.followingCount} Seguidos</span>
+              <span>{profile.followersCount} Seguidores</span>
+            </div>
           </div>
         </div>
-      </div>
+
+        <div className=" krea-tabs">
+          <Tabs
+            activeKey={activeMainTab}
+            onChange={setActiveMainTab}
+            items={mainTabItems}
+            centered={!isMobile}
+            tabBarStyle={{ borderBottom: "none" }}
+            tabBarGutter={46}
+          />
+        </div>
+
+{activeMainTab === "portfolio" && (
+  <>
+    <div className="krea-tabs">
+      <Tabs
+        activeKey={effectivePortfolioTab}
+        onChange={setActivePortfolioSubTab}
+        items={portfolioSubTabs}
+        centered={!isMobile}
+        tabBarStyle={{ borderBottom: "none" }}
+        tabBarGutter={46}
+        size="small"
+      />
     </div>
-  );
+
+    {shouldShowUpdatePortfolioButton && (
+      <div className="px-[70px] mt-[-6px] mb-[10px] flex justify-end">
+       <div className="ml-[500px] -mt-[30px] relative z-20"> 
+          <button
+            type="button"
+            onClick={handleUpdatePortfolioClick}
+            className="rounded-full bg-[#0B5107] cursor-pointer transition hover:bg-[#093B05] px-[14px] py-[6px] text-[11px] border border-[#1B1C1E]"
+          >
+            <span className="text-[13px] font-medium leading-5 text-[#E3E2DE]">
+                  Actualizar Portafolio
+            </span>
+           </button>
+        </div>
+      </div>
+              )}
+              </>
+          )}
+    </div>
+        
+         {/*LINEA DEL DIABLO*/}
+        {!isPortfolioView && (
+          <div className="w-[868px] h-px bg-[#8F8E8A] my-4 self-center" />
+        )}
+
+        <div className={` ${
+            isPortfolioView
+              ? "pt-[20px]"
+              : ""
+          }`}
+        >
+
+          {activeMainTab === "portfolio" && effectivePortfolioTab === "images" && (
+           <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+          <DigitalPortfolio items={digitalPortfolioMock} />
+           </div>
+          )}
+
+          {activeMainTab === "portfolio" && effectivePortfolioTab === "music" && (
+            <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
+              <MusicPortfolio />
+            </div>
+          )}
+          
+          {activeMainTab === "portfolio" && effectivePortfolioTab === "literature" && (
+            <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
+              <WriterPortfolio />
+            </div>
+          )}
+
+            {activeMainTab !== "portfolio" && (
+              <div className="space-y-8 px-[70px]">
+                {filteredPosts.map((post) => (
+                  <div key={post.id}>
+                    <PostCard post={post} />
+                    <div className="w-[868px] h-px bg-[#8F8E8A] my-4 -ml-[70px]" />
+                  </div>
+                ))}
+                {filteredPosts.length === 0 && (
+                  <div className="text-center text-gray-500 py-8 ">
+                    {t("profile.no_posts")}
+                  </div>
+                )}
+              </div>
+            )}
+            </div>
+                  <CreatePortfolioPostModal
+        visible={modalVisible}
+        initialPostType={portfolioModalType}
+        onClose={() => setModalVisible(false)}
+        onSuccess={() => {
+          setModalVisible(false);
+        }}
+      />
+        </div>
+  </div>
+);
 };
 
 export default Profile;

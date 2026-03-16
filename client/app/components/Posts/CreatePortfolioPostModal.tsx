@@ -1,5 +1,4 @@
-// components/Posts/CreatePortfolioPostModal.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Upload, Input, Checkbox, message, Select } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import type { UploadFile, UploadProps } from 'antd/es/upload/interface';
@@ -10,18 +9,21 @@ import { PostType } from '../../types/common';
 import type { CreatePostData, UploadMediaData } from '../../types/api';
 import type { UploadMediaType } from '../../types/api';
 
+
 const { Dragger } = Upload;
 const { TextArea } = Input;
 const { Option } = Select;
 
 interface CreatePortfolioPostModalProps {
   visible: boolean;
+  initialPostType?: UploadMediaType;
   onClose: () => void;
   onSuccess?: () => void;
 }
 
 const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
   visible,
+  initialPostType = PostType.IMAGE,
   onClose,
   onSuccess,
 }) => {
@@ -31,8 +33,14 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [postType, setPostType] = useState<UploadMediaType>(PostType.IMAGE);
+  const [postType, setPostType] = useState<UploadMediaType>(initialPostType);
   const [belongsToAlbum, setBelongsToAlbum] = useState(false);
+  useEffect(() => {
+    if (visible) {
+      setPostType(initialPostType);
+    }
+  }, [visible, initialPostType]);
+  
 
   // Mapeo de PostType (string) al número que espera el backend
   const postTypeToNumber: Record<PostType, number> = {

@@ -1,14 +1,15 @@
 :root {
-  --settings-bg: #ccd4e4;
-  --settings-panel: #cfd7e6;
+  --settings-bg: #E9F1FC;
+  --settings-panel: #E9F1FC;
   --settings-surface: #f3f3f1;
   --settings-border: #8f8e8a;
 }
 
 .settings-page {
-  width: 100%;
+  width: 75%; 
   min-height: calc(100vh - 64px);
   background: var(--settings-bg);
+  font-family: inter;
 }
 
 .settings-shell {
@@ -29,7 +30,7 @@
 .settings-title {
   margin: 0;
   padding: 14px 16px;
-  font-size: 34px;
+  font-size: 24px;
   font-weight: 500;
   border-bottom: 1px solid var(--settings-border);
 }
@@ -45,14 +46,20 @@
   border-bottom: 1px solid var(--settings-border);
   background: var(--settings-panel);
   color: #141414;
-  padding: 8px 14px;
-  font-size: 16px;
+  padding: 9.5px 20px;
+  font-size: 14px;
   cursor: pointer;
+  transition: background 0.2s ease;
 }
 
 .settings-nav-item--active {
   background: #1351aa;
   color: #ffffff;
+}
+
+.settings-nav-item:not(.settings-nav-item--active):hover {
+  background: #C0CFE4;
+  color: #000000;
 }
 
 .settings-content {
@@ -80,16 +87,18 @@
 }
 
 .settings-avatar-button {
-  border-radius: 16px;
+  width: 164px;
+  height: 37px;
+  Padding: 1px0px;
+  border-radius: 160px;
   border-color: #1b1c1e;
   background: #0b5107;
   color: #f3f3f1;
-  font-size: 12px;
+  font-size: 11px;
 }
 
-.settings-avatar-button:hover,
-.settings-avatar-button:focus {
-  background: #0b5107 !important;
+.settings-avatar-button:hover, .settings-avatar-button:focus {
+  background: #093B05 !important;
   color: #f3f3f1 !important;
 }
 
@@ -142,16 +151,36 @@
   background: #f3f3f1;
 }
 
+.settings-cancel-button:hover {
+  border-color: #000000 !important; 
+  color: #f3f3f1 !important;
+  background: #AB1313 !important;
+}
+
+.settings-cancel-button:active {
+  border-color: #AB1313 !important;
+  background: #f3f3f1 !important;
+  color: #AB1313 !important;
+    transition: background 0.0s ease;
+}
+
 .settings-save-button {
   border-color: #1b1c1e;
   background: #0b5107;
   color: #f3f3f1;
 }
 
-.settings-save-button:hover,
-.settings-save-button:focus {
-  background: #0b5107 !important;
+.settings-save-button:hover {
+  background: #093B05 !important;
   color: #f3f3f1 !important;
+  border-color: #000000 !important
+}
+
+.settings-save-button:active {
+  border-color: #0b5107 !important;
+  background: #f3f3f1 !important;
+  color: #0b5107 !important;
+    transition: background 0.0s ease;
 }
 
 .settings-section-header-row {
@@ -160,7 +189,7 @@
 
 .settings-section-title {
   margin: 0;
-  font-size: 38px;
+  font-size: 24px;
   font-weight: 500;
 }
 
@@ -188,6 +217,23 @@
 .settings-pill--on {
   background: #0b5107;
   color: #f3f3f1;
+  padding-inline: 25px;
+  padding-block: 13px;
+  font-size: 11px;
+  border-radius: 100;
+}
+
+.settings-pill--on:hover {
+  background: #093B05 !important;
+  color: #f3f3f1 !important;
+  border-color: #000000 !important;
+}
+
+.settings-pill--on:active {
+  border-color: #0b5107 !important;
+  background: #f3f3f1 !important;
+  color: #0b5107 !important;
+    transition: background 0.0s ease;
 }
 
 .settings-cards-grid {
@@ -299,7 +345,7 @@
 
 .settings-toggle-row p {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .settings-security-wrap {
@@ -347,7 +393,7 @@
   background: transparent;
   text-align: left;
   padding: 14px 18px;
-  font-size: 20px;
+  font-size: 200px;
   cursor: pointer;
 }
 
