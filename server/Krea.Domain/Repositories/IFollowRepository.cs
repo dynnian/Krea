@@ -16,6 +16,10 @@ namespace Krea.Domain.Repositories {
             Follow follow,
             CancellationToken cancellationToken);
 
+        Task<int> CountAsync(CancellationToken cancellationToken);
+
+        Task<IReadOnlyList<Follow>> GetRecentAsync(int take, CancellationToken cancellationToken);
+
         void Remove(Follow follow);
     }
 }

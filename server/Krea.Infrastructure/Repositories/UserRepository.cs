@@ -15,11 +15,49 @@ namespace Krea.Infrastructure.Repositories {
                           .Include(u => u.BannerPicture)
                           .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
+        public async Task<IReadOnlyList<User>> GetByIdsAsync(
+            IReadOnlyCollection<Guid> ids,
+            CancellationToken cancellationToken = default) {
+            if (ids.Count == 0)
+                return Array.Empty<User>();
+
+            return await _context.DomainUsers
+                                 .Include(u => u.ProfilePicture)
+                                 .Include(u => u.BannerPicture)
+                                 .Where(u => ids.Contains(u.Id))
+                                 .ToListAsync(cancellationToken);
+        }
+
         public async Task<IReadOnlyList<User>> GetAllAsync(CancellationToken cancellationToken = default) =>
             await _context.DomainUsers
                           .Include(u => u.ProfilePicture)
                           .Include(u => u.BannerPicture)
                           .ToListAsync(cancellationToken);
+
+        public Task<int> CountAsync(CancellationToken cancellationToken = default) =>
+            _context.DomainUsers.CountAsync(cancellationToken);
+
+        public Task<int> CountActiveSinceAsync(DateTime fromUtc, CancellationToken cancellationToken = default) =>
+            _context.DomainUsers.CountAsync(u => u.LastLoginAt != null && u.LastLoginAt >= fromUtc, cancellationToken);
+
+        public Task<int> CountSuspendedAsync(CancellationToken cancellationToken = default) =>
+            _context.DomainUsers.CountAsync(u => u.IsDisabled, cancellationToken);
+
+        public Task<int> CountBannedAsync(CancellationToken cancellationToken = default) =>
+            _context.DomainUsers.CountAsync(u => u.IsBanned, cancellationToken);
+
+        public async Task<IReadOnlyList<User>> GetRecentlyRegisteredAsync(
+            int take,
+            CancellationToken cancellationToken = default) {
+            if (take <= 0)
+                return Array.Empty<User>();
+
+            return await _context.DomainUsers
+                                 .AsNoTracking()
+                                 .OrderByDescending(u => u.RegisteredAt)
+                                 .Take(take)
+                                 .ToListAsync(cancellationToken);
+        }
 
         public async Task AddAsync(User user, CancellationToken cancellationToken = default) =>
             await _context.DomainUsers.AddAsync(user, cancellationToken);

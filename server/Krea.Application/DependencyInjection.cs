@@ -22,7 +22,6 @@ namespace Krea.Application {
     using Features.DirectMessages.GetUserConversations;
     using Features.DirectMessages.MarkMessageAsRead;
     using Features.DirectMessages.SendDirectMessage;
-    using Features.Posts;
     using Features.Posts.Dto;
     using Features.Posts.GetAllPosts;
     using Features.Posts.GetPostsByUser;
@@ -31,6 +30,17 @@ namespace Krea.Application {
     using Features.DirectMessages.Mappings;
     using Features.Feed;
     using Features.Follows;
+    using Features.User;
+    using Features.Admin.Configuration;
+    using Features.Admin.Dashboard;
+    using Features.Admin.Reports;
+    using Features.Admin.Users;
+    using Features.Posts.CreatePost;
+    using Features.Posts.DeletePost;
+    using Features.Posts.GetPostById;
+    using Features.Posts.Like;
+    using Features.Posts.ReplyPost;
+    using Features.Posts.Repost;
 
     public static class DependencyInjection {
         public static IServiceCollection AddApplication(this IServiceCollection services) {
@@ -48,6 +58,20 @@ namespace Krea.Application {
             //User
             services.AddScoped<IRequestHandler<FollowUserCommand, Unit>, FollowUserHandler>();
             services.AddScoped<IRequestHandler<UnfollowUserCommand, Unit>, UnfollowUserHandler>();
+            services.AddScoped<IRequestHandler<GetUserProfileQuery, UserDto?>, GetUserProfileQueryHandler>();
+            services.AddScoped<IRequestHandler<UpdateUserProfileCommand, UserDto>, UpdateUserProfileCommandHandler>();
+
+            // Admin
+            services.AddScoped<IRequestHandler<GetAdminUsersQuery, AdminUsersPageDto>, GetAdminUsersHandler>();
+            services.AddScoped<IRequestHandler<UpdateAdminUserStatusCommand, Unit>, UpdateAdminUserStatusHandler>();
+            services.AddScoped<IRequestHandler<UpdateAdminUserRoleCommand, Unit>, UpdateAdminUserRoleHandler>();
+            services.AddScoped<IRequestHandler<DeleteAdminUserCommand, Unit>, DeleteAdminUserHandler>();
+            services.AddScoped<IRequestHandler<GetAdminDashboardQuery, AdminDashboardDto>, GetAdminDashboardHandler>();
+            services.AddScoped<IRequestHandler<GetAdminReportsOverviewQuery, AdminReportsOverviewDto>, GetAdminReportsOverviewHandler>();
+            services.AddScoped<IRequestHandler<GetAdminPostModerationReportsQuery, AdminPostModerationReportsPageDto>, GetAdminPostModerationReportsHandler>();
+            services.AddScoped<IRequestHandler<EvaluateAdminPostModerationReportCommand, Unit>, EvaluateAdminPostModerationReportHandler>();
+            services.AddScoped<IRequestHandler<GetAdminInstanceConfigurationQuery, AdminInstanceConfigurationDto>, GetAdminInstanceConfigurationHandler>();
+            services.AddScoped<IRequestHandler<UpdateAdminInstanceConfigurationCommand, AdminInstanceConfigurationDto>, UpdateAdminInstanceConfigurationHandler>();
             
             //Feed
             services.AddScoped<GetRecentFeedHandler>();
@@ -65,9 +89,9 @@ namespace Krea.Application {
             // Posts
             services.AddScoped<IRequestHandler<GetAllPostsQuery, IReadOnlyList<PostDto>>, GetAllPostsHandler>();
             services.AddScoped<IRequestHandler<GetPostsByUserQuery, IReadOnlyList<PostDto>>, GetPostsByUserHandler>();
-            services.AddScoped<IRequestHandler<GetPostById.Request, GetPostById.Response?>, GetPostById>();
-            services.AddScoped<IRequestHandler<CreatePost.Request, CreatePost.Response>, CreatePost>();
-            services.AddScoped<IRequestHandler<DeletePost.Request, DeletePost.Response>, DeletePost>();
+            services.AddScoped<IRequestHandler<CreatePostCommand, CreatePostResponse>, CreatePostHandler>();
+            services.AddScoped<IRequestHandler<DeletePostCommand, DeletePostResponse>, DeletePostHandler>();
+            services.AddScoped<IRequestHandler<GetPostByIdCommand, GetPostByIdResponse?>, GetPostByIdHandler>();
             services.AddScoped<IRequestHandler<ReplyPostCommand, Guid>, ReplyPostHandler>();
             services.AddScoped<IRequestHandler<RepostPostCommand, Guid>, RepostHandler>();
             services.AddScoped<IRequestHandler<LikePostCommand, Unit>, LikePostHandler>();

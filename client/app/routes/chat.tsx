@@ -1,12 +1,13 @@
-import React from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '~/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useChat } from '../lib/hooks/useChat';
 import ConversationList from '../components/Chat/ConversationList';
 import MessageList from '../components/Chat/MessageList';
 import MessageInput from '../components/Chat/MessageInput';
-import { Spin } from 'antd';
+import { Spin, Drawer, Button } from 'antd';
+import { MenuOutlined } from '@ant-design/icons';
 
 export default function ChatPage() {
   const { t } = useTranslation();
@@ -20,63 +21,112 @@ export default function ChatPage() {
     sendMessage,
   } = useChat();
 
+  const [drawerVisible, setDrawerVisible] = useState(false);
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  if (loading) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-[#E3E2DE]">
-        <Spin size="large" />
-      </div>
-    );
-  }
+  const handleSelectConversation = (conv) => {
+    selectConversation(conv);
+    setDrawerVisible(false);
+  };
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-[#E3E2DE]">
-      {/* Lista de conversaciones */}
-      <div className="w-[421px] bg-[#E8F1FC] border-r border-[#646360] overflow-y-auto">
-        <ConversationList
-          conversations={conversations}
-          selectedId={currentConversation?.id}
-          onSelect={selectConversation}
-        />
-      </div>
+    <div className="flex h-[calc(100vh-64px)] bg-[#E3E2DE] overflow-hidden justify-center">
+      {/* Contenedor con ancho máximo y centrado */}
+      <div className="w-full max-w-7xl flex overflow-hidden">
+        {/* Sidebar para desktop: 30% en desktop, oculto en móvil */}
+        <div className="hidden md:block w-[40%] bg-[#E8F1FC] border-r border-[#646360] overflow-hidden">
+          <div className="h-full overflow-y-auto">
+            <ConversationList
+              conversations={conversations}
+              selectedId={currentConversation?.id}
+              onSelect={selectConversation}
+            />
+          </div>
+        </div>
 
-      {/* Área de mensajes */}
-      <div className="flex-1 bg-[#E8F1FC] flex flex-col overflow-hidden">
-        {currentConversation ? (
-          <>
-            {/* Cabecera */}
-            <div className="p-4 border-b border-[#646360] bg-[#E8F1FC]">
-              <div className="flex items-center gap-3">
-                <img
-                  src={currentConversation.user.avatar || 'https://placehold.co/48x48'}
-                  alt={currentConversation.user.name}
-                  className="w-12 h-12 rounded-full border border-gray-800"
+        {/* Drawer para móvil */}
+        <Drawer
+          title={t('chat.conversations')}
+          placement="left"
+          onClose={() => setDrawerVisible(false)}
+          open={drawerVisible}
+          width={320}
+          push={false}
+          destroyOnClose
+          className="md:hidden"
+        >
+          <ConversationList
+            conversations={conversations}
+            selectedId={currentConversation?.id}
+            onSelect={handleSelectConversation}
+          />
+        </Drawer>
+
+        {/* Área de chat: 70% en desktop, 100% en móvil */}
+        <div className="flex-1 md:w-[60%] bg-[#E8F1FC] flex flex-col overflow-hidden">
+          {currentConversation ? (
+            <>
+              {/* Header con botón de menú solo en móvil */}
+              <div className="p-4 border-b border-[#646360] bg-[#E8F1FC] flex items-center">
+                <Button
+                  type="text"
+                  icon={<MenuOutlined />}
+                  onClick={() => setDrawerVisible(true)}
+                  className="md:hidden mr-2"
                 />
-                <div>
-                  <div className="font-medium text-[#1B1C1E] text-lg">
-                    {currentConversation.user.name}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {currentConversation.user.online ? t('chat.online') : t('chat.offline')}
+                <div className="flex items-center gap-3">
+                  <img
+                    src={currentConversation.user.avatar || 'https://placehold.co/48x48'}
+                    alt={currentConversation.user.name}
+                    className="w-12 h-12 rounded-full border border-gray-800 object-cover"
+                  />
+                  <div>
+                    <div className="font-medium text-[#1B1C1E] text-lg">
+                      {currentConversation.user.name}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {currentConversation.user.online ? t('chat.online') : t('chat.offline')}
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* Mensajes */}
+              <div className="flex-1 overflow-y-auto p-4">
+                <MessageList messages={messages} currentUserId={user.id} />
+              </div>
+
+              {/* Input */}
+              <div className="p-4 bg-[#E8F1FC] border-t border-[#646360]">
+                <MessageInput onSend={sendMessage} />
+              </div>
+            </>
+          ) : (
+            /* Cuando no hay conversación seleccionada */
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {/* Header con botón de menú solo en móvil (para poder abrir el drawer) */}
+              <div className="p-4 border-b border-[#646360] bg-[#E8F1FC] flex items-center md:hidden">
+                <Button
+                  type="text"
+                  icon={<MenuOutlined />}
+                  onClick={() => setDrawerVisible(true)}
+                  className="mr-2"
+                />
+                <span className="font-medium text-[#1B1C1E]">{t('chat.conversations')}</span>
+              </div>
+              {/* Mensaje centrado */}
+              <div className="flex-1 flex items-center justify-center text-gray-500">
+                <div className="text-center">
+                  <p className="text-xl font-medium">{t('chat.select_conversation')}</p>
+                  <p className="text-sm opacity-70">{t('chat.start_messaging')}</p>
+                </div>
+              </div>
             </div>
-
-            {/* Mensajes */}
-            <MessageList messages={messages} currentUserId={user.id} />
-
-            {/* Input */}
-            <MessageInput onSend={sendMessage} />
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-500">
-            {t('chat.select_conversation')}
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

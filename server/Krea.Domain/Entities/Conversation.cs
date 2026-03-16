@@ -91,18 +91,18 @@ public sealed class Conversation
 
         UpdatedAt = DateTime.UtcNow;
         return message;
+
+        void IncrementUnreadForOthers(Guid senderId)
+        {
+            foreach (var p in _participants.Where(p => p.UserId != senderId && p.IsActive))
+                p.IncrementUnread();
+        }
     }
 
     private void EnsureParticipant(Guid userId)
     {
         if (!_participants.Any(p => p.UserId == userId && p.IsActive))
             throw new InvalidOperationException("User not active in conversation.");
-    }
-
-    private void IncrementUnreadForOthers(Guid senderId)
-    {
-        foreach (var p in _participants.Where(p => p.UserId != senderId && p.IsActive))
-            p.IncrementUnread();
     }
 
     private static void Validate(

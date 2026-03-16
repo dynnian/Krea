@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Input, Button, Space } from 'antd';
-import { Send, Paperclip, Image as ImageIcon } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -20,10 +20,7 @@ export default function MessageInput({ onSend }: Props) {
   return (
     <div className="p-6 border-t border-[#8F8E8A]">
       <Space.Compact className="w-full bg-[#E3E2DE] rounded-full px-6 py-3 border border-[#8F8E8A]">
-        <Space size="middle">
-          <Button type="text" icon={<Paperclip size={24} />} className="text-gray-700" />
-          <Button type="text" icon={<ImageIcon size={24} />} className="text-gray-700" />
-        </Space>
+        
         <Input
           value={text}
           onChange={(e) => setText(e.target.value)}

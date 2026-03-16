@@ -7,6 +7,7 @@ using Services;
 using Domain.Abstractions;
 using Domain.Repositories;
 using Application.Abstractions;
+using Application.Abstractions.Admin;
 using Application.Abstractions.Auth;
 using Application.Abstractions.Collection;
 using Application.Abstractions.Email;
@@ -19,6 +20,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Minio;
 
 public static class DependencyInjection
 {
@@ -31,6 +33,10 @@ public static class DependencyInjection
         // Seeding
         services.Configure<SeedingOptions>(
             configuration.GetSection("Seeding")
+        );
+
+        services.Configure<InstanceSettingsOptions>(
+            configuration.GetSection("InstanceSettings")
         );
 
         // Unit Of Work
@@ -70,10 +76,13 @@ public static class DependencyInjection
         services.AddScoped<IFollowRepository, FollowRepository>();
         services.AddScoped<ICollectionRepository, CollectionRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IInstanceConfigurationRepository, InstanceConfigurationRepository>();
+        services.AddScoped<IPostModerationReportRepository, PostModerationReportRepository>();
 
         // Servicios de aplicación (infraestructura)
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IInstanceSettingsService, InstanceSettingsService>();
         bool useFakeEmail = configuration.GetValue<bool>("UseFakeEmail");
         if (useFakeEmail)
         {
@@ -83,9 +92,25 @@ public static class DependencyInjection
         {
             services.AddScoped<IEmailService, EmailService>();
         }
+        
+        //MinIO
+        services.AddSingleton<IMinioClient>(sp =>
+        {
+            var configuration = sp.GetRequiredService<IConfiguration>();
+
+            return new MinioClient()
+                .WithEndpoint(configuration["Minio:Endpoint"])
+                .WithCredentials(
+                    configuration["Minio:AccessKey"],
+                    configuration["Minio:SecretKey"])
+                .WithSSL(false)
+                .Build();
+        });
+        
+        services.AddScoped<IFileStorage, MinioFileStorage>();
 
         services.AddScoped<IFeedQueryService, FeedQueryService>();
-        services.AddScoped<IFileStorage, LocalFileStorage>();
+        //services.AddScoped<IFileStorage, LocalFileStorage>();
         services.AddScoped<ICollectionQueries, CollectionQueries>();
         services.AddScoped<ISender, Sender>();
         
