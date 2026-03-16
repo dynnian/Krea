@@ -22,10 +22,10 @@ namespace Krea.API {
             builder.Services.AddOpenApi();
             builder.Services.AddCors(options => {
                 options.AddPolicy("AllowFrontend", policy => {
-                    policy.AllowAnyOrigin()
+                    policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
                           .AllowAnyMethod()
                           .AllowAnyHeader()
-                        /*.AllowCredentials()*/;
+                          .AllowCredentials();
                 });
             });
 
@@ -89,11 +89,10 @@ namespace Krea.API {
             }
 
             app.UseHttpsRedirection();
-
+            app.UseCors("AllowFrontend");
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseStaticFiles();
-            app.UseCors("AllowFrontend");
             app.MapControllers();
 
             app.MapHub<DirectMessageHub>("/hubs/directmessage");
