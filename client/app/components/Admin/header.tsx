@@ -47,16 +47,6 @@ export function Header() {
   return (
     <header className="flex h-16 items-center gap-4 border-b border-[#8F8E8A]/40 bg-white px-6 shadow-sm pl-16 lg:pl-6">
       <div className="flex-1 flex items-center gap-4">
-        <Input
-          placeholder={t("header.searchPlaceholder")}
-          prefix={<SearchOutlined className="text-[#8F8E8A]" />}
-          className="max-w-md"
-          style={{ 
-            background: "#F3F3F1", 
-            borderColor: "rgba(143, 142, 138, 0.5)",
-            borderRadius: 8,
-          }}
-        />
       </div>
 
       <div className="flex items-center gap-3">
@@ -71,16 +61,6 @@ export function Header() {
             { value: "es", label: "ES" },
           ]}
         />
-
-        {/* Notifications */}
-        <Badge count={3} size="small">
-          <Button
-            type="text"
-            icon={<BellOutlined className="text-lg text-[#8F8E8A]" />}
-            className="flex items-center justify-center hover:bg-[#F3F3F1]"
-            style={{ width: 40, height: 40 }}
-          />
-        </Badge>
 
         {/* Profile Dropdown */}
         <Dropdown menu={{ items: dropdownItems }} trigger={["click"]} placement="bottomRight">
