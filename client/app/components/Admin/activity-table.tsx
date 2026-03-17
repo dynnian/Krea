@@ -1,54 +1,13 @@
+// components/Admin/activity-table.tsx
 import { Table, Tag, Button } from "antd"
 import { LeftOutlined, RightOutlined } from "@ant-design/icons"
 import { useTranslation } from "react-i18next"
+import type { ActivityItemDto } from "@/types/admin"
+import { useState } from "react"
 
-const activities = [
-  {
-    id: "1",
-    type: "userActivity",
-    action: "userRegistration",
-    user: "alice_creator",
-    details: "newUserCreated",
-    timestamp: "2024-12-04 14:32:15",
-    status: "success",
-  },
-  {
-    id: "2",
-    type: "moderation",
-    action: "contentRemoved",
-    user: "bob_moderator",
-    details: "postFlagged",
-    timestamp: "2024-12-04 14:15:42",
-    status: "warning",
-  },
-  {
-    id: "3",
-    type: "federation",
-    action: "incomingPost",
-    user: "mastodon.social",
-    details: "activityPubReceived",
-    timestamp: "2024-12-04 14:08:33",
-    status: "info",
-  },
-  {
-    id: "4",
-    type: "moderation",
-    action: "userSuspended",
-    user: "charlie_user",
-    details: "multipleViolations",
-    timestamp: "2024-12-04 13:45:21",
-    status: "error",
-  },
-  {
-    id: "5",
-    type: "federation",
-    action: "outgoingPost",
-    user: "diana_artist",
-    details: "contentDelivered",
-    timestamp: "2024-12-04 13:22:10",
-    status: "success",
-  },
-]
+interface ActivityTableProps {
+  activities: ActivityItemDto[];
+}
 
 const statusColors: Record<string, string> = {
   success: "success",
@@ -57,8 +16,12 @@ const statusColors: Record<string, string> = {
   info: "processing",
 }
 
-export function ActivityTable() {
+export function ActivityTable({ activities }: ActivityTableProps) {
   const { t } = useTranslation()
+  const [page, setPage] = useState(1)
+  const pageSize = 10
+
+  const paginatedData = activities.slice((page - 1) * pageSize, page * pageSize)
 
   const columns = [
     {
@@ -67,9 +30,9 @@ export function ActivityTable() {
       key: "type",
       render: (type: string) => (
         <span className="font-medium text-[#1B1C1E]">
-          {type === "userActivity" ? t("reports.userActivity") : 
-           type === "moderation" ? t("reports.moderation") : 
-           t("nav.federation")}
+          {type === "userActivity" ? t("reports.userActivity") :
+           type === "moderation" ? t("reports.moderation") :
+           type === "federation" ? t("nav.federation") : type}
         </span>
       ),
     },
@@ -78,62 +41,70 @@ export function ActivityTable() {
       dataIndex: "action",
       key: "action",
       render: (action: string) => (
-        <span className="text-[#1B1C1E]">{t(`reports.${action}`)}</span>
+        <span className="text-[#1B1C1E]">{action}</span>
       ),
     },
     {
       title: t("reports.userSource"),
-      dataIndex: "user",
-      key: "user",
-      render: (user: string) => <span className="text-[#8F8E8A]">{user}</span>,
+      dataIndex: "source",
+      key: "source",
+      render: (source: string) => <span className="text-[#8F8E8A]">{source}</span>,
     },
     {
       title: t("reports.details"),
       dataIndex: "details",
       key: "details",
       render: (details: string) => (
-        <span className="text-[#8F8E8A]">{t(`reports.${details}`)}</span>
+        <span className="text-[#8F8E8A]">{details}</span>
       ),
     },
     {
       title: t("reports.timestamp"),
-      dataIndex: "timestamp",
-      key: "timestamp",
-      render: (timestamp: string) => <span className="text-[#8F8E8A]">{timestamp}</span>,
+      dataIndex: "occurredAt",
+      key: "occurredAt",
+      render: (timestamp: string) => (
+        <span className="text-[#8F8E8A]">{new Date(timestamp).toLocaleString()}</span>
+      ),
     },
     {
       title: t("users.status"),
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
-        <Tag color={statusColors[status]} className="rounded-full px-2.5 capitalize">
-          {t(`reports.${status}`)}
+        <Tag color={statusColors[status] || "default"} className="rounded-full px-2.5 capitalize">
+          {status}
         </Tag>
       ),
     },
   ]
 
+  const totalPages = Math.ceil(activities.length / pageSize)
+
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-[#8F8E8A]/50 overflow-hidden bg-white">
         <Table
-          dataSource={activities}
+          dataSource={paginatedData}
           columns={columns}
-          rowKey="id"
+          rowKey={(record) => `${record.type}-${record.occurredAt}`}
           pagination={false}
         />
       </div>
-      
+
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-[#8F8E8A]">
-          {t("common.showing")} 1 {t("common.to")} 5 {t("common.of")} 50 {t("common.results")}
+          {t("common.showing")} {Math.min((page - 1) * pageSize + 1, activities.length)} {t("common.to")}{" "}
+          {Math.min(page * pageSize, activities.length)} {t("common.of")} {activities.length}{" "}
+          {t("common.results")}
         </p>
         <div className="flex items-center gap-2">
           <Button
             icon={<LeftOutlined />}
-            style={{ 
-              background: "#F3F3F1", 
+            disabled={page === 1}
+            onClick={() => setPage(p => p - 1)}
+            style={{
+              background: "#F3F3F1",
               borderColor: "rgba(143, 142, 138, 0.5)",
               height: 32,
             }}
@@ -141,8 +112,10 @@ export function ActivityTable() {
             {t("common.previous")}
           </Button>
           <Button
-            style={{ 
-              background: "#F3F3F1", 
+            disabled={page === totalPages || totalPages === 0}
+            onClick={() => setPage(p => p + 1)}
+            style={{
+              background: "#F3F3F1",
               borderColor: "rgba(143, 142, 138, 0.5)",
               height: 32,
             }}

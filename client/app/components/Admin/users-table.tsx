@@ -1,188 +1,197 @@
-import { useState } from "react"
-import { Table, Avatar, Tag, Dropdown, Button } from "antd"
-import { MoreOutlined, EyeOutlined, EditOutlined, StopOutlined, CheckCircleOutlined, SafetyOutlined } from "@ant-design/icons"
-import { EditUserModal } from "./edit-user-modal.tsx"
-import { useTranslation } from "react-i18next"
-import type { MenuProps } from "antd"
+// components/Admin/users-table.tsx
+import { useState } from 'react';
+import { Table, Avatar, Tag, Dropdown, Button, Modal, message } from 'antd'; // import Modal and message
+import {
+  MoreOutlined,
+  EditOutlined,
+  StopOutlined,
+  CheckCircleOutlined,
+  DeleteOutlined,
+} from '@ant-design/icons';
+import { EditUserModal } from './edit-user-modal';
+import { useTranslation } from 'react-i18next';
+import { updateUserStatus, updateUserRole, deleteUser } from '@/services/admin/usersService';
+import type { AdminUserListItemDto } from '@/types/admin';
+import type { MenuProps } from 'antd';
 
-const users = [
-  {
-    id: "1",
-    username: "alice_creator",
-    email: "alice@example.com",
-    role: "artist",
-    status: "active",
-    created: "2024-01-15",
-    avatar: "/diverse-woman-portrait.png",
-  },
-  {
-    id: "2",
-    username: "bob_moderator",
-    email: "bob@example.com",
-    role: "mod",
-    status: "active",
-    created: "2024-02-20",
-    avatar: "/man.jpg",
-  },
-  {
-    id: "3",
-    username: "charlie_user",
-    email: "charlie@example.com",
-    role: "user",
-    status: "suspended",
-    created: "2024-03-10",
-    avatar: "/diverse-group.png",
-  },
-  {
-    id: "4",
-    username: "diana_artist",
-    email: "diana@example.com",
-    role: "artist",
-    status: "active",
-    created: "2024-04-05",
-    avatar: "/diverse-artists-studio.png",
-  },
-  {
-    id: "5",
-    username: "eve_admin",
-    email: "eve@example.com",
-    role: "admin",
-    status: "active",
-    created: "2023-12-01",
-    avatar: "/admin-interface.png",
-  },
-]
+const statusMap: Record<number, { color: string; text: string }> = {
+  1: { color: '#10b981', text: 'active' },
+  2: { color: '#f59e0b', text: 'suspended' },
+};
 
 const roleColors: Record<string, string> = {
-  user: "default",
-  artist: "green",
-  mod: "purple",
-  admin: "blue",
+  Artist: 'green',
+  Admin: 'blue',
+};
+
+interface UsersTableProps {
+  data: AdminUserListItemDto[];
+  loading: boolean;
+  pagination: any; // or proper PaginationProps
+  onUserUpdated: () => void;
+  availableRoles: string[];
 }
 
-const statusColors: Record<string, string> = {
-  active: "success",
-  suspended: "error",
-}
+export function UsersTable({ data, loading, pagination, onUserUpdated, availableRoles }: UsersTableProps) {
+  const [selectedUser, setSelectedUser] = useState<AdminUserListItemDto | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const { t } = useTranslation();
 
-export function UsersTable() {
-  const [selectedUser, setSelectedUser] = useState<(typeof users)[0] | null>(null)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const { t } = useTranslation()
+  const handleEdit = (user: AdminUserListItemDto) => {
+    setSelectedUser(user);
+    setIsEditModalOpen(true);
+  };
 
-  const handleEdit = (user: (typeof users)[0]) => {
-    setSelectedUser(user)
-    setIsEditModalOpen(true)
-  }
+  const handleStatusChange = async (user: AdminUserListItemDto) => {
+    const newStatus = user.status === 1 ? 2 : 1;
+    try {
+      await updateUserStatus(user.id, { status: newStatus });
+      message.success(t('users.statusUpdateSuccess'));
+      onUserUpdated();
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      message.error(t('users.statusUpdateError'));
+    }
+  };
 
-  const getMenuItems = (user: (typeof users)[0]): MenuProps["items"] => [
+  const handleDelete = (userId: string) => {
+    Modal.confirm({
+      title: t('users.deleteConfirmTitle'),
+      content: t('users.deleteConfirmContent'),
+      okText: t('common.delete'),
+      cancelText: t('common.cancel'),
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          await deleteUser(userId);
+          message.success(t('users.deleteSuccess'));
+          onUserUpdated();
+        } catch (error) {
+          console.error('Failed to delete user:', error);
+          message.error(t('users.deleteError'));
+        }
+      },
+    });
+  };
+
+  const getMenuItems = (user: AdminUserListItemDto): MenuProps['items'] => [
     {
-      key: "view",
-      icon: <EyeOutlined />,
-      label: t("users.viewDetails"),
-    },
-    {
-      key: "edit",
+      key: 'edit',
       icon: <EditOutlined />,
-      label: t("users.editUser"),
+      label: t('users.editUser'),
       onClick: () => handleEdit(user),
     },
     {
-      key: "role",
-      icon: <SafetyOutlined />,
-      label: t("users.assignRole"),
+      key: 'status',
+      icon: user.status === 1 ? <StopOutlined /> : <CheckCircleOutlined />,
+      label: user.status === 1 ? t('users.suspend') : t('users.reactivate'),
+      onClick: () => handleStatusChange(user),
     },
     {
-      key: "suspend",
-      icon: user.status === "active" ? <StopOutlined /> : <CheckCircleOutlined />,
-      label: user.status === "active" ? t("users.suspend") : t("users.reactivate"),
-      danger: user.status === "active",
+      key: 'delete',
+      icon: <DeleteOutlined />,
+      label: t('users.delete'),
+      danger: true,
+      onClick: () => handleDelete(user.id),
     },
-  ]
+  ];
 
   const columns = [
     {
-      title: t("users.user"),
-      dataIndex: "username",
-      key: "username",
-      render: (_: unknown, record: (typeof users)[0]) => (
+      title: t('users.user'),
+      dataIndex: 'username',
+      key: 'username',
+      render: (_: unknown, record: AdminUserListItemDto) => (
         <div className="flex items-center gap-3">
-          <Avatar 
-            src={record.avatar} 
+          <Avatar
             size={40}
-            className="border-2 border-[#8F8E8A]/30"
+            className="border-2 border-[#8F8E8A]/30 bg-[#0B5107] text-white"
           >
-            {record.username.slice(0, 2).toUpperCase()}
+            {record.displayName?.[0]?.toUpperCase() || record.username[0].toUpperCase()}
           </Avatar>
-          <span className="font-medium text-[#1B1C1E]">{record.username}</span>
+          <div>
+            <div className="font-medium text-[#1B1C1E]">{record.displayName || record.username}</div>
+            <div className="text-xs text-[#8F8E8A]">@{record.username}</div>
+          </div>
         </div>
       ),
     },
     {
-      title: t("users.email"),
-      dataIndex: "email",
-      key: "email",
+      title: t('users.email'),
+      dataIndex: 'email',
+      key: 'email',
       render: (email: string) => <span className="text-[#8F8E8A]">{email}</span>,
     },
     {
-      title: t("users.role"),
-      dataIndex: "role",
-      key: "role",
+      title: t('users.role'),
+      dataIndex: 'role',
+      key: 'role',
       render: (role: string) => (
-        <Tag color={roleColors[role]} className="rounded-full px-2.5 capitalize">
+        <Tag color={roleColors[role] || 'default'} className="rounded-full px-2.5 capitalize">
           {role}
         </Tag>
       ),
     },
     {
-      title: t("users.status"),
-      dataIndex: "status",
-      key: "status",
-      render: (status: string) => (
-        <Tag color={statusColors[status]} className="rounded-full px-2.5 capitalize">
-          {status}
-        </Tag>
+      title: t('users.status'),
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: number) => {
+        const config = statusMap[status] || { color: '#8F8E8A', text: 'unknown' };
+        return (
+          <Tag
+            color={config.color}
+            className="rounded-full px-2.5 capitalize text-white border-0"
+          >
+            {t(`users.${config.text}`)}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: t('users.created'),
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (date: string) => (
+        <span className="text-[#8F8E8A]">{new Date(date).toLocaleDateString()}</span>
       ),
     },
     {
-      title: t("users.created"),
-      dataIndex: "created",
-      key: "created",
-      render: (created: string) => <span className="text-[#8F8E8A]">{created}</span>,
-    },
-    {
-      title: t("common.actions"),
-      key: "actions",
+      title: t('common.actions'),
+      key: 'actions',
       width: 70,
-      render: (_: unknown, record: (typeof users)[0]) => (
-        <Dropdown menu={{ items: getMenuItems(record) }} trigger={["click"]}>
-          <Button 
-            type="text" 
+      render: (_: unknown, record: AdminUserListItemDto) => (
+        <Dropdown menu={{ items: getMenuItems(record) }} trigger={['click']}>
+          <Button
+            type="text"
             icon={<MoreOutlined className="text-[#8F8E8A]" />}
             className="hover:bg-[#F3F3F1]"
           />
         </Dropdown>
       ),
     },
-  ]
+  ];
 
   return (
     <>
       <div className="rounded-lg border border-[#8F8E8A]/50 overflow-hidden bg-white">
         <Table
-          dataSource={users}
+          dataSource={data}
           columns={columns}
           rowKey="id"
-          pagination={false}
+          pagination={pagination}
+          loading={loading}
           className="ant-table-users"
         />
       </div>
 
-      <EditUserModal 
-        user={selectedUser} 
-        open={isEditModalOpen} 
-        onOpenChange={setIsEditModalOpen} 
+      <EditUserModal
+        user={selectedUser}
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        onSuccess={onUserUpdated}
+        availableRoles={availableRoles}
       />
     </>
-  )
+  );
 }

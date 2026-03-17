@@ -26,7 +26,7 @@ export function Sidebar() {
     { key: "/admin", icon: <LayoutDashboard color="white" />, label: t("nav.dashboard") },
     { key: "/admin/users", icon: <Users color="white" />, label: t("nav.users") },
     { key: "/admin/reports", icon: <FileText color="white" />, label: t("nav.reports") },
-    { key: "/admin/federation", icon: <Globe color="white" />, label: t("nav.federation") },
+    // { key: "/admin/federation", icon: <Globe color="white" />, label: t("nav.federation") },
     { key: "/admin/settings", icon: <Settings color="white" />, label: t("nav.settings") },
   ]
 
