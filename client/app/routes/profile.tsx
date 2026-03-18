@@ -10,6 +10,7 @@ import { digitalPortfolioMock } from "../data/digitalPortfolioMock";
 import WriterPortfolio from "../components/Profile/WriterPortfolio";
 import { settingsRepository } from "../services/settingsRepository";
 import CreatePortfolioPostModal from "../components/Posts/CreatePortfolioPostModal";
+import axiosClient from "../lib/axios";
 
 
 import {
@@ -265,6 +266,11 @@ async function fetchProfile(username: string): Promise<ProfileData> {
       resolve(mockProfile);
     }, 500);
   });
+}
+
+async function fetchMyProfileFromApi() {
+  const res = await axiosClient.get("/users/me/profile");
+  return res.data;
 }
 
 async function followUser(username: string) {
@@ -737,18 +743,28 @@ const isOwnProfile = username === "me";
         setLoading(true);
         let profileData: ProfileData;
         
-        if (isOwnProfile) {
-          if (!user) {
-            // Si no hay usuario autenticado, redirigir al login
-            navigate('/login');
-            return;
-          }
-          // Aquí llamarías a una API que devuelva el perfil del usuario autenticado
-          profileData = await fetchProfile('me');
-        } else {
-          // Perfil de otro usuario
-          profileData = await fetchProfile(username);
-        }
+ if (isOwnProfile) {
+  if (!user) {
+    navigate('/login');
+    return;
+  }
+
+  const mockProfile = await fetchProfile('me');
+  const apiProfile = await fetchMyProfileFromApi();
+  console.log("apiProfile", apiProfile);
+
+  profileData = {
+    ...mockProfile,
+    user: {
+      ...mockProfile.user,
+      name: apiProfile.displayName || apiProfile.username,
+      handle: apiProfile.username,
+    },
+    bio: apiProfile.biography ?? "",
+  };
+  } else {
+    profileData = await fetchProfile(username);
+  }
 
         setProfile(profileData);
         setIsFollowing(profileData.isFollowing || false);
