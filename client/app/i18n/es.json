@@ -255,7 +255,9 @@
     "reportsAnalytics": "Reportes y Analiticas",
     "reportsAnalyticsDesc": "Ver estadisticas y registros de actividad de la plataforma",
     "federationSettings": "Configuracion de Federacion",
-    "federationSettingsDesc": "Configurar ActivityPub e instancias remotas"
+    "federationSettingsDesc": "Configurar ActivityPub e instancias remotas",
+    "configurationDesc": "Administrar configuración de la plataforma",
+    "Settings": "Configuracion"
   },
   "activity": {
     "newUserRegistration": "Nuevo registro de usuario",
@@ -296,7 +298,16 @@
     "reactivate": "Reactivar",
     "editUserTitle": "Editar Usuario",
     "editUserDesc": "Actualizar informacion y permisos del usuario",
-    "username": "Nombre de Usuario"
+    "username": "Nombre de Usuario",
+    "delete": "Eliminar",
+    "deleteConfirm": "¿Estas seguro de que quieres eliminar a este usuario? Esta accion no se puede deshacer.",
+    "deleteSuccess": "Usuario eliminado exitosamente",
+    "deleteError": "Error al eliminar el usuario",
+    "statusUpdateSuccess": "Estatus del usuario actualizado existosamente",
+    "statusUpdateError": "Error al actualizar el estatus del usuario",
+    "deleteConfirmTitle": "Eliminar usuario",
+    "deleteConfirmContent": "Estas seguro de que quieres eliminar a este usuario? Esta accion no se puede deshacer.",
+    "deleteConfirmOk": "Si, eliminar"
   },
   "reports": {
     "title": "Reportes y Analiticas",
@@ -387,18 +398,32 @@
     "reasonPlaceholder": "Por que estas agregando o bloqueando esta instancia?"
   },
   "settings": {
-    "title": "Configuracion",
-    "subtitle": "Configurar ajustes globales de la plataforma",
-    "generalSettings": "Configuracion General",
-    "generalSettingsDesc": "Configuracion basica de la plataforma",
-    "platformName": "Nombre de la Plataforma",
-    "description": "Descripcion",
-    "platformDescription": "Una plataforma federada para artistas y creadores",
-    "adminEmail": "Correo del Administrador",
-    "securitySettings": "Configuracion de Seguridad",
-    "securitySettingsDesc": "Configuracion de autenticacion y seguridad",
-    "sessionTimeout": "Tiempo de Sesion (minutos)",
-    "maxLoginAttempts": "Intentos Maximos de Inicio de Sesion"
+    "title": "Configuración",
+    "subtitle": "Administra la configuración de la plataforma",
+    "generalSettings": "Configuración General",
+    "generalSettingsDesc": "Edita la información básica de la plataforma",
+    "platformName": "Nombre de la plataforma",
+    "description": "Descripción",
+    "adminEmail": "Correo del administrador",
+    "fetchError": "Error al cargar la configuración",
+    "updateSuccess": "Configuración actualizada correctamente",
+    "updateError": "Error al actualizar la configuración",
+    "platformNameRequired": "El nombre de la plataforma es obligatorio",
+    "descriptionRequired": "La descripción es obligatoria",
+    "emailRequired": "El correo es obligatorio",
+    "emailInvalid": "Ingresa un correo válido",
+    "changePassword": "Cambiar Contraseña",
+    "changePasswordDesc": "Actualiza tu contraseña de acceso",
+    "currentPassword": "Contraseña actual",
+    "currentPasswordRequired": "La contraseña actual es obligatoria",
+    "newPassword": "Nueva contraseña",
+    "newPasswordRequired": "La nueva contraseña es obligatoria",
+    "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
+    "confirmPassword": "Confirmar nueva contraseña",
+    "confirmPasswordRequired": "Por favor confirma tu nueva contraseña",
+    "passwordsDoNotMatch": "Las contraseñas no coinciden",
+    "passwordChangeSuccess": "Contraseña cambiada exitosamente",
+    "passwordChangeError": "Error al cambiar la contraseña"
   },
   "version": "Krea Platform v2.1.0"
 }

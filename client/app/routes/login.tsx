@@ -205,7 +205,7 @@ export default function LoginRoute() {
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
                       >
-                        <span className="text-gray-700">{t("login.remember_me")}</span> {/* Changed to dark text */}
+                        <span className="text-white">{t("login.remember_me")}</span> {/* Changed to dark text */}
                       </Checkbox>
                       <a href="#" className="text-sm text-blue-600 hover:text-blue-800">
                         {t("login.forgot_password")}

@@ -254,7 +254,9 @@
     "reportsAnalytics": "Reports & Analytics",
     "reportsAnalyticsDesc": "View platform statistics and activity logs",
     "federationSettings": "Federation Settings",
-    "federationSettingsDesc": "Configure ActivityPub and remote instances"
+    "federationSettingsDesc": "Configure ActivityPub and remote instances",
+    "configurationDesc": "Manage platform settings",
+    "Settings": "Settings"
   },
   "activity": {
     "newUserRegistration": "New user registration",
@@ -295,7 +297,16 @@
     "reactivate": "Reactivate",
     "editUserTitle": "Edit User",
     "editUserDesc": "Update user information and permissions",
-    "username": "Username"
+    "username": "Username",
+    "delete": "Delete",
+    "deleteConfirm": "Are you sure you want to delete this user? This action cannot be undone.",
+    "deleteSuccess": "User deleted successfully",
+    "deleteError": "Failed to delete user",
+    "statusUpdateSuccess": "User status updated successfully",
+    "statusUpdateError": "Failed to update user status",
+    "deleteConfirmTitle":"Delete User",
+    "deleteConfirmContent":"Are you sure you want to delete this user? This action cannot be undone.",
+    "deleteConfirmOk": "Yes, delete"
   },
   "reports": {
     "title": "Reports & Analytics",
@@ -386,18 +397,25 @@
     "reasonPlaceholder": "Why are you adding or blocking this instance?"
   },
   "settings": {
-    "title": "Settings",
-    "subtitle": "Configure global platform settings",
-    "generalSettings": "General Settings",
-    "generalSettingsDesc": "Basic platform configuration",
-    "platformName": "Platform Name",
-    "description": "Description",
-    "platformDescription": "A federated platform for artists and creators",
-    "adminEmail": "Admin Email",
-    "securitySettings": "Security Settings",
-    "securitySettingsDesc": "Authentication and security configuration",
-    "sessionTimeout": "Session Timeout (minutes)",
-    "maxLoginAttempts": "Max Login Attempts"
+    "fetchError": "Failed to load settings",
+    "updateSuccess": "Settings updated successfully",
+    "updateError": "Failed to update settings",
+    "platformNameRequired": "Platform name is required",
+    "descriptionRequired": "Description is required",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Please enter a valid email",
+    "changePassword": "Change Password",
+    "changePasswordDesc": "Update your account password",
+    "currentPassword": "Current Password",
+    "currentPasswordRequired": "Current password is required",
+    "newPassword": "New Password",
+    "newPasswordRequired": "New password is required",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "confirmPassword": "Confirm New Password",
+    "confirmPasswordRequired": "Please confirm your new password",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordChangeSuccess": "Password changed successfully",
+    "passwordChangeError": "Failed to change password"
   },
   "version": "Krea Platform v2.1.0"
 }
