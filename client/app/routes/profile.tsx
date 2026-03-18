@@ -1,17 +1,19 @@
 // profile.tsx
+// deno-lint-ignore-file
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Avatar, Tabs, Typography, Grid, message, Spin } from 'antd';
-import { useAuth } from '../contexts/AuthContext';
-import DigitalPortfolio from "../components/Profile/DigitalPortfolio";
-import MusicPortfolio from "../components/Profile/MusicPortfolio";
-import { digitalPortfolioMock } from "../data/digitalPortfolioMock";
-import WriterPortfolio from "../components/Profile/WriterPortfolio";
-import { settingsRepository } from "../services/settingsRepository";
-import CreatePortfolioPostModal from "../components/Posts/CreatePortfolioPostModal";
-import axiosClient from "../lib/axios";
-
+import { useAuth } from '../contexts/AuthContext.tsx';
+import DigitalPortfolio from "../components/Profile/DigitalPortfolio.tsx";
+import MusicPortfolio from "../components/Profile/MusicPortfolio.tsx";
+import { digitalPortfolioMock } from "../data/digitalPortfolioMock.ts";
+import WriterPortfolio from "../components/Profile/WriterPortfolio.tsx";
+import { settingsRepository } from "../services/settingsRepository.ts";
+import CreatePortfolioPostModal from "../components/Posts/CreatePortfolioPostModal.tsx";
+import axiosClient from "../lib/axios.ts";
+import type { UploadMediaType } from "../types/api.ts";
+import { PostType as PortfolioPostType } from "../types/common.ts";
 
 import {
   Heart,
@@ -38,6 +40,7 @@ export enum PostType {
 }
 
 interface Author {
+  id?: string;
   name: string;
   handle: string;
   avatar?: string;
@@ -273,13 +276,17 @@ async function fetchMyProfileFromApi() {
   return res.data;
 }
 
-async function followUser(username: string) {
-  // Implementar llamada real
-  console.log('Follow', username);
+async function fetchPostsByAuthorFromApi(authorId: string) {
+  const res = await axiosClient.get(`/posts/user/${authorId}`);
+  return res.data;
 }
 
-async function unfollowUser(username: string) {
-  console.log('Unfollow', username);
+async function followUser(targetId: string) {
+  await axiosClient.post(`/users/${targetId}/follow`);
+}
+
+async function unfollowUser(targetId: string) {
+  await axiosClient.delete(`/users/${targetId}/unfollow`);
 }
 
 async function subscribeUser(username: string) {
@@ -451,7 +458,7 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({ audioUrl, coverUrl }) =
         barWidth: 2,
         barGap: 1,
         height: 40,
-        responsive: true,
+        // responsive: true,
         url: audioUrl,
       });
 
@@ -717,7 +724,8 @@ const [activeMusicTab, setActiveMusicTab] = useState<"songs" | "albums">("songs"
 const [isFollowing, setIsFollowing] = useState(false);
 const [isSubscribed, setIsSubscribed] = useState(false);
 const [modalVisible, setModalVisible] = useState(false);
-const [portfolioModalType, setPortfolioModalType] = useState<UploadMediaType>(PostType.IMAGE);
+const [portfolioModalType, setPortfolioModalType] = useState<UploadMediaType>(PortfolioPostType.IMAGE);
+
 
 const handleGoToSettings = () => {
   navigate("/settings");
@@ -751,17 +759,30 @@ const isOwnProfile = username === "me";
 
   const mockProfile = await fetchProfile('me');
   const apiProfile = await fetchMyProfileFromApi();
-  console.log("apiProfile", apiProfile);
+
+  let apiPosts = null;
+  try {
+    apiPosts = await fetchPostsByAuthorFromApi(apiProfile.id);
+    console.log("apiPosts", apiPosts);
+  } catch (postsError: any) {
+    console.error("fetchPostsByAuthorFromApi error:", postsError);
+    console.error("posts response data:", postsError?.response?.data);
+    console.error("posts response status:", postsError?.response?.status);
+  }
 
   profileData = {
     ...mockProfile,
     user: {
       ...mockProfile.user,
+      id: apiProfile.id,
       name: apiProfile.displayName || apiProfile.username,
       handle: apiProfile.username,
     },
     bio: apiProfile.biography ?? "",
+    followersCount: 0,
+    followingCount: 0,
   };
+
   } else {
     profileData = await fetchProfile(username);
   }
@@ -771,7 +792,10 @@ const isOwnProfile = username === "me";
         setIsSubscribed(profileData.isSubscribed || false);
         setError(null);
       } catch (err: any) {
-        setError(err.message);
+        console.error("loadProfile error:", err);
+        console.error("response data:", err?.response?.data);
+        console.error("response status:", err?.response?.status);
+        setError(err?.response?.data?.message || err.message);
       } finally {
         setLoading(false);
       }
@@ -789,24 +813,48 @@ const isOwnProfile = username === "me";
   void loadPortfolioSettings();
 }, []);
 
-  const handleFollow = async () => {
-    if (!user) {
-      message.warning(t('profile.auth_required'));
-      navigate('/login');
-      return;
+const handleFollow = async () => {
+  if (!user) {
+    message.warning(t('profile.auth_required'));
+    navigate('/login');
+    return;
+  }
+
+  const targetId = profile?.user.id;
+  if (!targetId) {
+    message.error('Este perfil no tiene un ID válido para seguir/dejar de seguir.');
+    return;
+  }
+
+  const previous = isFollowing;
+  setIsFollowing(!previous);
+
+  try {
+    if (previous) {
+      await unfollowUser(targetId);
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              followersCount: Math.max(0, prev.followersCount - 1),
+            }
+          : prev
+      );
+    } else {
+      await followUser(targetId);
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              followersCount: prev.followersCount + 1,
+            }
+          : prev
+      );
     }
-    const previous = isFollowing;
-    setIsFollowing(!previous);
-    try {
-      if (previous) {
-        await unfollowUser(username!);
-      } else {
-        await followUser(username!);
-      }
-    } catch {
-      setIsFollowing(previous);
-    }
-  };
+  } catch {
+    setIsFollowing(previous);
+  }
+};
 
   const handleSubscribe = async () => {
     if (!user) {
@@ -897,15 +945,16 @@ const getFilteredPosts = () => {
 
 const handleUpdatePortfolioClick = () => {
   if (activePortfolioSubTab === "images") {
-    setPortfolioModalType("image");
+    setPortfolioModalType(PortfolioPostType.IMAGE);
   } else if (activePortfolioSubTab === "literature") {
-    setPortfolioModalType("text");
+    setPortfolioModalType(PortfolioPostType.TEXT);
   } else if (activePortfolioSubTab === "music") {
-    setPortfolioModalType("music");
+    setPortfolioModalType(PortfolioPostType.MUSIC);
   }
 
   setModalVisible(true);
 };
+
 
 const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
   
@@ -1085,6 +1134,5 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
         </div>
   </div>
 );
-};
-
+}
 export default Profile;
