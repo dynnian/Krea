@@ -9,5 +9,7 @@ namespace Krea.Application.Abstractions.FileStorage {
             string contentType,
             long size,
             CancellationToken cancellationToken);
+        
+        Task DeleteAsync(string fileName, CancellationToken cancellationToken);
     }
 }

@@ -37,5 +37,7 @@ namespace Krea.Infrastructure.Services
                 Size = size
             };
         }
+
+        public async Task DeleteAsync(string fileName, CancellationToken cancellationToken){}
     }
 }

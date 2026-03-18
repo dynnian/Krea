@@ -107,8 +107,16 @@ public static class DependencyInjection
                 .Build();
         });
         
-        services.AddScoped<IFileStorage, MinioFileStorage>();
+        services.AddScoped<IFileStorage>(sp =>
+        {
+            var minioClient = sp.GetRequiredService<IMinioClient>();
+            var configuration = sp.GetRequiredService<IConfiguration>();
 
+            var baseUrl = configuration["Minio:BaseUrl"]
+                          ?? throw new Exception("Minio:BaseUrl is not configured");
+
+            return new MinioFileStorage(minioClient, baseUrl);
+        });
         services.AddScoped<IFeedQueryService, FeedQueryService>();
         //services.AddScoped<IFileStorage, LocalFileStorage>();
         services.AddScoped<ICollectionQueries, CollectionQueries>();
