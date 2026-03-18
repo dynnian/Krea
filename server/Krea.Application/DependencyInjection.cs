@@ -35,6 +35,7 @@ namespace Krea.Application {
     using Features.Admin.Dashboard;
     using Features.Admin.Reports;
     using Features.Admin.Users;
+    using Features.Collections.UploadCollectionCover;
     using Features.Posts.CreatePost;
     using Features.Posts.DeletePost;
     using Features.Posts.GetPostById;
@@ -85,6 +86,7 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<AddPostToCollectionCommand, AddPostToCollectionResponse>, AddPostToCollectionHandler>();
             services.AddScoped<IRequestHandler<RemovePostFromCollectionCommand, Unit>,RemovePostFromCollectionHandler>();
             services.AddScoped<IRequestHandler<GetCollectionByIdQuery, CollectionDetailDto?>, GetCollectionByIdQueryHandler>();
+            services.AddScoped<IRequestHandler<UploadCollectionCoverCommand, UploadCollectionCoverResponse>, UploadCollectionCoverHandler >();
             
             // Posts
             services.AddScoped<IRequestHandler<GetAllPostsQuery, IReadOnlyList<PostDto>>, GetAllPostsHandler>();
