@@ -6,6 +6,7 @@ namespace Krea.API.Controllers {
     using Application.Features.Collections.GetCollectionById;
     using Application.Features.Collections.GetUserCollections;
     using Application.Features.Collections.RemovePostFromCollection;
+    using Application.Features.Collections.UploadCollectionCover;
     using Domain.Abstractions;
     using Microsoft.AspNetCore.Mvc;
     
@@ -173,6 +174,56 @@ namespace Krea.API.Controllers {
                 return NotFound();
             
             return Ok(result); 
+        }
+        
+        /// <summary>
+        /// Uploads or replaces the cover image of a collection.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint allows the owner of a collection to upload a new cover image.
+        /// 
+        /// If the collection already has a cover:
+        /// - The new image will replace the existing one.
+        /// - The previous image will be removed from storage and database.
+        /// 
+        /// Supported file types: images only (e.g., jpg, png, webp).
+        /// 
+        /// The request must be sent as <c>multipart/form-data</c>.
+        /// </remarks>
+        /// <param name="collectionId">The unique identifier of the collection.</param>
+        /// <param name="file">The image file to upload as the collection cover.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>
+        /// Returns the uploaded media information including its identifier and accessible URL.
+        /// </returns>
+        /// <response code="200">Cover uploaded successfully.</response>
+        /// <response code="400">Invalid file or request data.</response>
+        /// <response code="404">Collection not found.</response>
+        /// <response code="401">Unauthorized.</response>
+        /// <response code="403">Forbidden. The user is not the owner of the collection.</response>
+        [HttpPost("{collectionId:guid}/cover")]
+        [Consumes("multipart/form-data")]
+        [ProducesResponseType(typeof(UploadCollectionCoverResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UploadCover(
+            Guid collectionId,
+            [FromForm] IFormFile file,
+            CancellationToken cancellationToken)
+        {
+            if (file is null || file.Length == 0)
+                return BadRequest("File is required.");
+
+            await using var stream = file.OpenReadStream();
+
+            var command = new UploadCollectionCoverCommand(
+                collectionId,
+                file.FileName,
+                file.ContentType,
+                file.Length,
+                stream);
+
+            var result = await _sender.Send(command, cancellationToken);
+
+            return Ok(result);
         }
     }
 }
