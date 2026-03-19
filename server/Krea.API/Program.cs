@@ -5,9 +5,12 @@ namespace Krea.API {
     using System.Text;
     using Infrastructure;
     using Application;
+    using Application.Abstractions.Auth;
+    using Application.Abstractions.Payments;
     using Application.Abstractions.Url;
     using Hubs;
     using Infrastructure.Configuration;
+    using Infrastructure.Services;
     using Infrastructure.Setup;
     using Microsoft.Extensions.Primitives;
     using Services;
@@ -62,12 +65,52 @@ namespace Krea.API {
                            }
                        };
                    });
+            builder.Services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+                    };
+                    // Accept token in query string
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                            {
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
+            
+            // Stripe
+            builder.Services.Configure<StripeOptions>(builder.Configuration.GetSection("Stripe"));
+            builder.Services.AddScoped<IPaymentGateway, StripePaymentGateway>();
 
             builder.Services.AddAuthorization();
 
+        
+            // API Services
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<IConfirmationUrlBuilder, ConfirmationUrlBuilder>();
-
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+            
             // Seeding configs
             builder.Services.Configure<AdminUserOptions>(builder.Configuration.GetSection("AdminUser"));
             builder.Services.Configure<SeedingOptions>(builder.Configuration.GetSection("Seeding"));

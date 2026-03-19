@@ -28,6 +28,7 @@ namespace Krea.Application {
     using Features.PostUploads.CreatePostUpload;
     using Microsoft.Extensions.DependencyInjection;
     using Features.DirectMessages.Mappings;
+    using Features.Donations.CreateDonation;
     using Features.Feed;
     using Features.Follows;
     using Features.Payments.ConfirmPayment;
@@ -44,6 +45,7 @@ namespace Krea.Application {
     using Features.Posts.Like;
     using Features.Posts.ReplyPost;
     using Features.Posts.Repost;
+    using Features.Payments.ConfirmPayment;
 
     public static class DependencyInjection {
         public static IServiceCollection AddApplication(this IServiceCollection services) {
@@ -115,6 +117,10 @@ namespace Krea.Application {
             
             
             services.AddScoped<ISender, Sender>();
+            
+            // Payments
+            services.AddScoped<IRequestHandler<ConfirmPaymentCommand, Unit>, ConfirmPaymentCommandHandler>();
+            services.AddScoped<IRequestHandler<CreateDonationCommand, CreateDonationResponse>, CreateDonationCommandHandler>();
             
             return services;
         }

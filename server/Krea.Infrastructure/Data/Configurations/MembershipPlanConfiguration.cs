@@ -33,13 +33,16 @@ namespace Krea.Infrastructure.Data.Configurations {
             builder.Property(p => p.UpdatedAt)
                    .IsRequired();
 
-            builder.Property(p => p.PriceAmount)
-                   .HasConversion(
-                       money => money.Amount,
-                       value => new Money(value))
-                   .HasColumnName("price_amount")
-                   .HasColumnType("decimal(18,2)")
-                   .IsRequired();
+            builder.ComplexProperty(p => p.PriceAmount, money =>
+            {
+                money.Property(m => m.Amount)
+                    .HasColumnName("amount")
+                    .HasColumnType("decimal(18,2)");
+
+                money.Property(m => m.Currency)
+                    .HasColumnName("currency")
+                    .HasMaxLength(3);
+            });
 
             // Artist relationship
             builder.Property<Guid>("ArtistId");

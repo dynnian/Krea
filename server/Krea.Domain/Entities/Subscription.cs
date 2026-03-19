@@ -78,7 +78,7 @@ namespace Krea.Domain.Entities {
         {
             Payment? payment = _payments.FirstOrDefault(p => p.Id == paymentId);
             if (payment == null)
-                throw new InvalidOperationException("Payment not found in this commission request.");
+                throw new InvalidOperationException("Payment not found in this subscription.");
 
             payment.MarkCompleted();
         }
