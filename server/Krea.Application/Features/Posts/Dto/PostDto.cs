@@ -22,12 +22,13 @@ namespace Krea.Application.Features.Posts.Dto {
             {
                 Id = post.Id,
                 UserId = post.AuthorPostId,
-                AuthorUsername = post.AuthorPost.DisplayName,
+                AuthorUsername = post.AuthorPost?.DisplayName ?? "Unknown",
                 Title = post.Title,
                 Content = post.Content,
                 CreatedAt = post.UploadedAt,
 
-                Media = post.Uploads
+                Media = post.Uploads?
+                    .Where(u => u.Media != null)
                     .Select(upload => new PostMediaDto
                     {
                         Id = upload.Media.Id,
@@ -36,7 +37,7 @@ namespace Krea.Application.Features.Posts.Dto {
                         Url = upload.Media.Path,
                         IsWorkMedia = upload.IsWorkMedia
                     })
-                    .ToList()
+                    .ToList() ?? []
             };
         }
     }

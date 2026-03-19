@@ -50,16 +50,19 @@ namespace Krea.Infrastructure.Repositories {
             Guid authorPostId,
             int page,
             int pageSize,
-            CancellationToken cancellationToken = default) =>
-            await _context.Posts
-                          .AsNoTracking()
-                          .Where(p => p.AuthorPostId == authorPostId && !p.IsDeleted)
-                          .OrderByDescending(p => p.UploadedAt)
-                          .Skip((page - 1) * pageSize)
-                          .Take(pageSize)
-                          .Include(p => p.Uploads)
-                          .Include(p => p.Hashtags)
-                          .ToListAsync(cancellationToken);
+            CancellationToken cancellationToken = default) {
+            return await _context.Posts
+                .AsNoTracking()
+                .Where(p => p.AuthorPostId == authorPostId && !p.IsDeleted)
+                .OrderByDescending(p => p.UploadedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Include(p => p.AuthorPost)
+                .Include(p => p.Uploads)
+                .ThenInclude(u => u.Media)
+                .Include(p => p.Hashtags)
+                .ToListAsync(cancellationToken);
+        }
 
         public Task<int> CountAsync(CancellationToken cancellationToken = default) =>
             _context.Posts.CountAsync(p => !p.IsDeleted, cancellationToken);
