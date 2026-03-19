@@ -1,38 +1,57 @@
-namespace Krea.API.Controllers {
+namespace Krea.API.Controllers
+{
+    using Application.Abstractions.Payments;
+    using Application.Features.Payments.ConfirmPayment;
     using Domain.Abstractions;
-    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
+    using Stripe;
 
+    /// <summary>
+    /// Handles incoming Stripe webhook events, such as payment confirmations.
+    /// </summary>
     [ApiController]
     [Route("api/webhooks/stripe")]
-    [AllowAnonymous]
-    public class StripeWebhookController : ControllerBase
+    public class StripeWebhookController(
+        IPaymentGateway paymentGateway,
+        ISender sender,
+        ILogger<StripeWebhookController> logger)
+        : ControllerBase
     {
-        private readonly ISender _sender;
-        private readonly ILogger<StripeWebhookController> _logger;
-
-        public StripeWebhookController(ISender sender, ILogger<StripeWebhookController> logger)
-        {
-            _sender = sender;
-            _logger = logger;
-        }
-
+        /// <summary>
+        /// Receives Stripe webhook events, verifies the signature, and processes relevant events.
+        /// </summary>
+        /// <returns>HTTP 200 if the event was handled (or ignored); otherwise 400 on verification failure.</returns>
+        /// <remarks>
+        /// This endpoint is publicly accessible (no authentication) but relies on Stripe's signature
+        /// verification for security. Only <c>checkout.session.completed</c> events are processed.
+        /// </remarks>
         [HttpPost]
         public async Task<IActionResult> HandleWebhook()
         {
-            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+            string json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+            string? stripeSignature = Request.Headers["Stripe-Signature"];
 
-            // Add signature verification
-            // Manually construct event for testing
-            // In Prod use Stripe.EventUtility.
+            if (string.IsNullOrEmpty(stripeSignature))
+            {
+                logger.LogWarning("Stripe-Signature header missing.");
+                return BadRequest();
+            }
 
-            // Placeholder: just log and return OK.
-            _logger.LogInformation("Webhook received (body length: {Length})", json.Length);
+            try
+            {
+                StripeWebhookEvent webhookEvent = paymentGateway.ConstructStripeEvent(json, stripeSignature);
 
-            // When signature is implemented, deserialize into a Stripe.Event.
-            // Parse with Stripe.EventUtility.ConstructEvent.
+                if (webhookEvent.Type != "checkout.session.completed" || webhookEvent.SessionId == null) return Ok();
+                var command = new ConfirmPaymentCommand("stripe", webhookEvent.SessionId);
+                await sender.Send(command);
 
-            return Ok();
+                return Ok();
+            }
+            catch (StripeException ex)
+            {
+                logger.LogError(ex, "Stripe webhook signature verification failed.");
+                return BadRequest();
+            }
         }
     }
 }

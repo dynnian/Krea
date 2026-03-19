@@ -5,9 +5,12 @@ namespace Krea.API {
     using System.Text;
     using Infrastructure;
     using Application;
+    using Application.Abstractions.Auth;
+    using Application.Abstractions.Payments;
     using Application.Abstractions.Url;
     using Hubs;
     using Infrastructure.Configuration;
+    using Infrastructure.Services;
     using Infrastructure.Setup;
     using Services;
 
@@ -69,11 +72,17 @@ namespace Krea.API {
                         }
                     };
                 });
+            
+            // Stripe
+            builder.Services.Configure<StripeOptions>(builder.Configuration.GetSection("Stripe"));
+            builder.Services.AddScoped<IPaymentGateway, StripePaymentGateway>();
 
             builder.Services.AddAuthorization();
         
+            // API Services
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<IConfirmationUrlBuilder, ConfirmationUrlBuilder>();
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
             
             // Seeding configs
             builder.Services.Configure<AdminUserOptions>(builder.Configuration.GetSection("AdminUser"));
