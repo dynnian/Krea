@@ -2,6 +2,7 @@ namespace Krea.API.Controllers {
     using Application.Features.Posts.CreatePost;
     using Application.Features.Posts.DeletePost;
     using Application.Features.Posts.Dto;
+    using Application.Features.Posts.Explore;
     using Application.Features.Posts.GetAllPosts;
     using Application.Features.Posts.GetPostById;
     using Application.Features.Posts.GetPostsByUser;
@@ -292,6 +293,21 @@ namespace Krea.API.Controllers {
 
             CreatePostUploadResponse result = await _sender.Send(command, cancellationToken);
 
+            return Ok(result);
+        }
+        
+        /// <summary>
+        /// Explora contenido filtrando por categoria, generos y etiquetas.
+        /// </summary>
+        /// <param name="query">Parámetros de filtrado</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Listado paginado de publicaciones</returns>
+        [HttpGet("explore")]
+        public async Task<IActionResult> Explore(
+            [FromQuery] ExploreQuery query,
+            CancellationToken cancellationToken)
+        {
+            var result = await _sender.Send(query, cancellationToken);
             return Ok(result);
         }
     }
