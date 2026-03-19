@@ -55,7 +55,6 @@ public sealed class ConfirmPaymentCommandHandlerTests
     [Fact]
     public async Task Handle_WithValidDonation_MarksPaymentCompletedAndSaves()
     {
-        // Arrange
         _queryServiceMock.Setup(x => x.GetParentByExternalRefAsync(
                 It.Is<ExternalPaymentRef>(r => r.Provider == _externalRef.Provider && r.Value == _externalRef.Value),
                 It.IsAny<CancellationToken>()))
@@ -63,11 +62,9 @@ public sealed class ConfirmPaymentCommandHandlerTests
 
         _donationRepoMock.Setup(x => x.GetByIdWithPaymentsAsync(_donation.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(_donation);
-
-        // Act
+        
         await _handler.Handle(_validCommand, CancellationToken.None);
-
-        // Assert
+        
         Assert.Equal(PaymentStatus.Completed, _payment.Status);
         Assert.NotNull(_payment.PaidAt);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -76,16 +73,13 @@ public sealed class ConfirmPaymentCommandHandlerTests
     [Fact]
     public async Task Handle_WhenParentNotFound_LogsWarningAndReturns()
     {
-        // Arrange
         _queryServiceMock.Setup(x => x.GetParentByExternalRefAsync(
                 It.Is<ExternalPaymentRef>(r => r.Provider == _externalRef.Provider && r.Value == _externalRef.Value),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync((PaymentParentInfo?)null);
-
-        // Act
+        
         var result = await _handler.Handle(_validCommand, CancellationToken.None);
-
-        // Assert
+        
         Assert.Equal(Krea.Domain.Abstractions.Unit.Value, result);
         _loggerMock.Verify(
             x => x.Log(
@@ -101,7 +95,6 @@ public sealed class ConfirmPaymentCommandHandlerTests
     [Fact]
     public async Task Handle_WhenDonationNotFound_ThrowsInvalidOperationException()
     {
-        // Arrange
         _queryServiceMock.Setup(x => x.GetParentByExternalRefAsync(
                 It.Is<ExternalPaymentRef>(r => r.Provider == _externalRef.Provider && r.Value == _externalRef.Value),
                 It.IsAny<CancellationToken>()))
@@ -109,8 +102,7 @@ public sealed class ConfirmPaymentCommandHandlerTests
 
         _donationRepoMock.Setup(x => x.GetByIdWithPaymentsAsync(_donation.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Donation?)null);
-
-        // Act & Assert
+        
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(_validCommand, CancellationToken.None));
         Assert.Equal("Donation not found.", exception.Message);

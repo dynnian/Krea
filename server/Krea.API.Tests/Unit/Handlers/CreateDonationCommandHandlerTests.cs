@@ -58,7 +58,6 @@ public sealed class CreateDonationCommandHandlerTests
     [Fact]
     public async Task Handle_WithValidRequest_CreatesDonationAndReturnsResponse()
     {
-        // Arrange
         _currentUserMock.Setup(x => x.UserId).Returns(_donor.Id);
         _userRepoMock.Setup(x => x.GetByIdAsync(_donor.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(_donor);
@@ -76,11 +75,9 @@ public sealed class CreateDonationCommandHandlerTests
         Donation? capturedDonation = null;
         _donationRepoMock.Setup(x => x.Add(It.IsAny<Donation>()))
             .Callback<Donation>(d => capturedDonation = d);
-
-        // Act
+        
         var response = await _handler.Handle(_validCommand, CancellationToken.None);
-
-        // Assert
+        
         Assert.NotNull(response);
         Assert.Equal(sessionResult.Url, response.CheckoutUrl);
         Assert.NotEqual(Guid.Empty, response.DonationId);
