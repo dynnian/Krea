@@ -13,6 +13,7 @@ using Application.Abstractions.Collection;
 using Application.Abstractions.Email;
 using Application.Abstractions.Feed;
 using Application.Abstractions.FileStorage;
+using Application.Abstractions.Filter;
 using Application.Abstractions.Identity;
 using Configuration;
 using Domain.Entities;
@@ -69,6 +70,7 @@ public static class DependencyInjection
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IPostRepository, PostRepository>();
         services.AddScoped<IPostUploadRepository, PostUploadRepository>();
+        services.AddScoped<IPostReadRepository, PostReadRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
         services.AddScoped<ICollectionRepository, CollectionRepository>();
         services.AddScoped<IMediaRepository, MediaRepository>();
