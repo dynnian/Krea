@@ -15,7 +15,7 @@ public sealed class PostsControllerIntegrationTests {
         TestDataSeeder.SeededUsers seeded = default!;
         Guid postId = Guid.Empty;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
+        await using var host = await IntegrationTestHost.CreateAsync(seed: async services => {
             seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
             postId = await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "Seeded post");
         });
@@ -40,7 +40,7 @@ public sealed class PostsControllerIntegrationTests {
     public async Task CreatePost_PersistsPost() {
         TestDataSeeder.SeededUsers seeded = default!;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
+        await using var host = await IntegrationTestHost.CreateAsync(seed: async services => {
             seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
         });
 

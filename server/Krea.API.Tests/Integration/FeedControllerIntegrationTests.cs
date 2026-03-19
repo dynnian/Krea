@@ -10,7 +10,7 @@ public sealed class FeedControllerIntegrationTests {
     public async Task RecentFeed_ReturnsSeededPost() {
         TestDataSeeder.SeededUsers seeded = default!;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
+        await using var host = await IntegrationTestHost.CreateAsync(seed: async services => {
             seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
             await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "Feed post");
         });
@@ -29,7 +29,7 @@ public sealed class FeedControllerIntegrationTests {
     public async Task FollowingFeed_ReturnsPostsFromFollowedUsers() {
         TestDataSeeder.SeededUsers seeded = default!;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
+        await using var host = await IntegrationTestHost.CreateAsync(seed: async services => {
             seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
             await TestDataSeeder.SeedFollowAsync(services, seeded.AdminId, seeded.ArtistId);
             await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "Followed user post");

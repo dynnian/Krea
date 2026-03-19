@@ -13,7 +13,7 @@ using Xunit;
 public sealed class AuthControllerIntegrationTests {
     [Fact]
     public async Task Register_PersistsIdentityAndDomainUser() {
-        await using var host = await IntegrationTestHost.CreateAsync(TestDataSeeder.SeedRolesOnlyAsync);
+        await using var host = await IntegrationTestHost.CreateAsync(seed: TestDataSeeder.SeedRolesOnlyAsync);
 
         var response = await host.Client.PostAsJsonAsync("/api/auth/register", new {
             username = "newuser",

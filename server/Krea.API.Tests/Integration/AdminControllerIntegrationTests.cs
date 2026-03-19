@@ -2,26 +2,29 @@ namespace Krea.API.Tests.Integration;
 
 using System.Net;
 using System.Text.Json;
-using Krea.API.Tests.TestSupport;
-using Krea.Domain.Entities;
-using Krea.Domain.ValueObjects;
-using Krea.Infrastructure.Data;
-using Krea.Infrastructure.Identity;
-using Microsoft.AspNetCore.Identity;
+using TestSupport;
+using Domain.Entities;
+using Domain.ValueObjects;
+using Infrastructure.Data;
+using Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-public sealed class AdminControllerIntegrationTests {
+public sealed class AdminControllerIntegrationTests
+{
     [Fact]
-    public async Task GetDashboard_ReturnsAggregates() {
+    public async Task GetDashboard_ReturnsAggregates()
+    {
         TestDataSeeder.SeededUsers seeded = default!;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
-            seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
-            await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "Dashboard post");
-            await TestDataSeeder.SeedFollowAsync(services, seeded.AdminId, seeded.ArtistId);
-        });
+        await using var host = await IntegrationTestHost.CreateAsync(
+            seed: async services =>
+            {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+                await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "Dashboard post");
+                await TestDataSeeder.SeedFollowAsync(services, seeded.AdminId, seeded.ArtistId);
+            });
 
         HttpResponseMessage response = await IntegrationTestHost.SendAuthenticatedAsync(
             host.Client,
@@ -40,12 +43,15 @@ public sealed class AdminControllerIntegrationTests {
     }
 
     [Fact]
-    public async Task GetUsers_ReturnsSeededUsersFromDatabase() {
+    public async Task GetUsers_ReturnsSeededUsersFromDatabase()
+    {
         TestDataSeeder.SeededUsers seeded = default!;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
-            seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
-        });
+        await using var host = await IntegrationTestHost.CreateAsync(
+            seed: async services =>
+            {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+            });
 
         HttpResponseMessage response = await IntegrationTestHost.SendAuthenticatedAsync(
             host.Client,
@@ -64,12 +70,15 @@ public sealed class AdminControllerIntegrationTests {
     }
 
     [Fact]
-    public async Task UpdateUserRole_ChangesIdentityRole() {
+    public async Task UpdateUserRole_ChangesIdentityRole()
+    {
         TestDataSeeder.SeededUsers seeded = default!;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
-            seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
-        });
+        await using var host = await IntegrationTestHost.CreateAsync(
+            seed: async services =>
+            {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+            });
 
         HttpResponseMessage response = await IntegrationTestHost.SendAuthenticatedAsync(
             host.Client,
@@ -98,12 +107,15 @@ public sealed class AdminControllerIntegrationTests {
     }
 
     [Fact]
-    public async Task UpdateUserStatus_Suspended_ChangesDomainUserState() {
+    public async Task UpdateUserStatus_Suspended_ChangesDomainUserState()
+    {
         TestDataSeeder.SeededUsers seeded = default!;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
-            seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
-        });
+        await using var host = await IntegrationTestHost.CreateAsync(
+            seed: async services =>
+            {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+            });
 
         HttpResponseMessage response = await IntegrationTestHost.SendAuthenticatedAsync(
             host.Client,
@@ -124,14 +136,17 @@ public sealed class AdminControllerIntegrationTests {
     }
 
     [Fact]
-    public async Task GetReports_ReturnsAggregates() {
+    public async Task GetReports_ReturnsAggregates()
+    {
         TestDataSeeder.SeededUsers seeded = default!;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
-            seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
-            await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "Reports post");
-            await TestDataSeeder.SeedFollowAsync(services, seeded.AdminId, seeded.ArtistId);
-        });
+        await using var host = await IntegrationTestHost.CreateAsync(
+            seed: async services =>
+            {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+                await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "Reports post");
+                await TestDataSeeder.SeedFollowAsync(services, seeded.AdminId, seeded.ArtistId);
+            });
 
         HttpResponseMessage response = await IntegrationTestHost.SendAuthenticatedAsync(
             host.Client,
@@ -150,15 +165,18 @@ public sealed class AdminControllerIntegrationTests {
     }
 
     [Fact]
-    public async Task GetPostModerationReports_ReturnsSeededPendingReport() {
+    public async Task GetPostModerationReports_ReturnsSeededPendingReport()
+    {
         TestDataSeeder.SeededUsers seeded = default!;
         Guid reportId = Guid.Empty;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
-            seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
-            Guid postId = await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "post for moderation list");
-            reportId = await TestDataSeeder.SeedPostModerationReportAsync(services, postId, seeded.OtherId, reason: "Spam");
-        });
+        await using var host = await IntegrationTestHost.CreateAsync(
+            seed: async services =>
+            {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+                Guid postId = await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "post for moderation list");
+                reportId = await TestDataSeeder.SeedPostModerationReportAsync(services, postId, seeded.OtherId, reason: "Spam");
+            });
 
         HttpResponseMessage response = await IntegrationTestHost.SendAuthenticatedAsync(
             host.Client,
@@ -176,16 +194,19 @@ public sealed class AdminControllerIntegrationTests {
     }
 
     [Fact]
-    public async Task EvaluatePostModerationReport_DeletePost_ResolvesReportAndSoftDeletesPost() {
+    public async Task EvaluatePostModerationReport_DeletePost_ResolvesReportAndSoftDeletesPost()
+    {
         TestDataSeeder.SeededUsers seeded = default!;
         Guid postId = Guid.Empty;
         Guid reportId = Guid.Empty;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
-            seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
-            postId = await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "post to be removed");
-            reportId = await TestDataSeeder.SeedPostModerationReportAsync(services, postId, seeded.OtherId, reason: "Harassment");
-        });
+        await using var host = await IntegrationTestHost.CreateAsync(
+            seed: async services =>
+            {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+                postId = await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "post to be removed");
+                reportId = await TestDataSeeder.SeedPostModerationReportAsync(services, postId, seeded.OtherId, reason: "Harassment");
+            });
 
         HttpResponseMessage response = await IntegrationTestHost.SendAuthenticatedAsync(
             host.Client,
@@ -215,12 +236,15 @@ public sealed class AdminControllerIntegrationTests {
     }
 
     [Fact]
-    public async Task GetConfiguration_ReturnsPersistedDefaults() {
+    public async Task GetConfiguration_ReturnsPersistedDefaults()
+    {
         TestDataSeeder.SeededUsers seeded = default!;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
-            seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
-        });
+        await using var host = await IntegrationTestHost.CreateAsync(
+            seed: async services =>
+            {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+            });
 
         HttpResponseMessage response = await IntegrationTestHost.SendAuthenticatedAsync(
             host.Client,
@@ -239,12 +263,15 @@ public sealed class AdminControllerIntegrationTests {
     }
 
     [Fact]
-    public async Task UpdateConfiguration_UpdatesDatabase() {
+    public async Task UpdateConfiguration_UpdatesDatabase()
+    {
         TestDataSeeder.SeededUsers seeded = default!;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
-            seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
-        });
+        await using var host = await IntegrationTestHost.CreateAsync(
+            seed: async services =>
+            {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+            });
 
         HttpResponseMessage response = await IntegrationTestHost.SendAuthenticatedAsync(
             host.Client,
@@ -273,12 +300,15 @@ public sealed class AdminControllerIntegrationTests {
     }
 
     [Fact]
-    public async Task DeleteUser_RemovesDomainAndIdentityUser() {
+    public async Task DeleteUser_RemovesDomainAndIdentityUser()
+    {
         TestDataSeeder.SeededUsers seeded = default!;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
-            seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
-        });
+        await using var host = await IntegrationTestHost.CreateAsync(
+            seed: async services =>
+            {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+            });
 
         HttpResponseMessage response = await IntegrationTestHost.SendAuthenticatedAsync(
             host.Client,

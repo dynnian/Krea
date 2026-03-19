@@ -1,5 +1,6 @@
 namespace Krea.API.Tests.TestSupport;
 
+using Application.Abstractions.Auth;
 using Krea.API.Controllers;
 using Krea.API.Services;
 using Krea.Application;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 
 public sealed class IntegrationTestHost : IAsyncDisposable {
@@ -29,6 +31,7 @@ public sealed class IntegrationTestHost : IAsyncDisposable {
     public HttpClient Client { get; }
 
     public static async Task<IntegrationTestHost> CreateAsync(
+        Action<IServiceCollection>? configureServices = null,
         Func<IServiceProvider, Task>? seed = null,
         string? databaseName = null) {
         string dbName = databaseName ?? $"krea_test_{Guid.NewGuid():N}";
@@ -60,6 +63,7 @@ public sealed class IntegrationTestHost : IAsyncDisposable {
         builder.Services.AddInfrastructure(builder.Configuration);
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<IConfirmationUrlBuilder, ConfirmationUrlBuilder>();
+        builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
         builder.Services.AddControllers().AddApplicationPart(typeof(AdminController).Assembly);
         builder.Services.AddAuthentication(options => {
                 options.DefaultAuthenticateScheme = "Test";
@@ -67,7 +71,11 @@ public sealed class IntegrationTestHost : IAsyncDisposable {
             })
             .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", _ => { });
         builder.Services.AddAuthorization();
-
+        
+        configureServices?.Invoke(builder.Services);
+        
+        builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+        
         WebApplication app = builder.Build();
 
         app.UseAuthentication();
@@ -76,7 +84,7 @@ public sealed class IntegrationTestHost : IAsyncDisposable {
 
         using (IServiceScope scope = app.Services.CreateScope()) {
             AppDbContext dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            await dbContext.Database.MigrateAsync();
+            await dbContext.Database.EnsureCreatedAsync();
 
             if (seed is not null) {
                 await seed(scope.ServiceProvider);

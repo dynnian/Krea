@@ -10,9 +10,11 @@ public sealed class DirectMessagesControllerIntegrationTests {
     public async Task SendMessage_ThenGetConversations_ReturnsCreatedConversation() {
         TestDataSeeder.SeededUsers seeded = default!;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
-            seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
-        });
+        await using var host = await IntegrationTestHost.CreateAsync(
+            seed: async services =>
+            {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+            });
 
         HttpResponseMessage sendResponse = await IntegrationTestHost.SendAuthenticatedAsync(
             host.Client,

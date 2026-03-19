@@ -11,7 +11,7 @@ public sealed class UsersControllerIntegrationTests {
     public async Task PublicProfile_ReturnsSeededUserData() {
         TestDataSeeder.SeededUsers seeded = default!;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
+        await using var host = await IntegrationTestHost.CreateAsync(seed: async services => {
             seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
         });
 
@@ -30,7 +30,7 @@ public sealed class UsersControllerIntegrationTests {
     public async Task FollowAndUnfollow_ChangesDatabaseState() {
         TestDataSeeder.SeededUsers seeded = default!;
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
+        await using var host = await IntegrationTestHost.CreateAsync(seed: async services => {
             seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
         });
 
