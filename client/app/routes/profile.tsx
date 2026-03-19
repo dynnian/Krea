@@ -100,6 +100,24 @@ interface VisualPortfolioItem {
   imageUrl: string;
 }
 
+interface ApiPostMedia {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  url: string;
+  isWorkMedia: boolean;
+}
+
+interface ApiPost {
+  id: string;
+  userId: string;
+  authorUsername: string;
+  title: string | null;
+  content: string;
+  createdAt: string;
+  media: ApiPostMedia[];
+}
+
 // ---------- Funciones API (debes implementar) ----------
 async function fetchProfile(username: string): Promise<ProfileData> {
   // Simular llamada API
@@ -327,6 +345,8 @@ async function bookmarkPost(postId: number) {
 async function unbookmarkPost(postId: number) {
   console.log('Unbookmark', postId);
 }
+
+
 
 function mapPostsToVisualPortfolioItems(posts: Post[]): VisualPortfolioItem[] {
   return posts
@@ -844,11 +864,65 @@ setLoading(true);
       "No se pudieron cargar las publicaciones.";
   }
 
-  const resolvedPosts = Array.isArray(apiPosts?.items)
+  const rawPosts = Array.isArray(apiPosts?.items)
     ? apiPosts.items
     : Array.isArray(apiPosts)
       ? apiPosts
       : [];
+
+  const resolvedPosts = normalizeApiPosts(
+    rawPosts,
+    apiProfile.displayName || apiProfile.username
+  );
+
+      function normalizeApiPosts(apiPosts: ApiPost[], displayName: string): Post[] {
+  return apiPosts.map((post) => {
+    const hasAudio = post.media.some((m) => m.mimeType.startsWith("audio"));
+    const hasImage = post.media.some((m) => m.mimeType.startsWith("image"));
+
+    return {
+      id: Number.NaN,
+      userPostId: Number.NaN,
+      type: hasAudio
+        ? PostType.AUDIO
+        : hasImage
+          ? PostType.IMAGE
+          : PostType.LINK,
+      title: post.title,
+      content: post.content,
+      isWork: post.media.some((m) => m.isWorkMedia),
+      isDeleted: false,
+      isLocal: true,
+      postRepliedTo: null,
+      postRepostOf: null,
+      createdAt: post.createdAt,
+      updatedAt: post.createdAt,
+      author: {
+        id: post.userId,
+        name: displayName,
+        handle: post.authorUsername,
+        avatar: undefined,
+        isVerified: true,
+      },
+      media: post.media.map((m) => ({
+        postId: Number.NaN,
+        mediaId: m.id,
+        isWorkMedia: m.isWorkMedia,
+        media: {
+          id: m.id,
+          originalFileName: m.fileName,
+          fileName: m.fileName,
+          mimeType: m.mimeType,
+          path: m.url,
+          uploadedAt: post.createdAt,
+        },
+      })),
+      likesCount: 0,
+      favoritesCount: 0,
+      replies: [],
+    };
+  });
+}
 
   resolvedVisualPortfolioItems = mapPostsToVisualPortfolioItems(resolvedPosts);
   resolvedMusicSongs = mapPostsToMusicSongs(resolvedPosts);
@@ -1003,9 +1077,7 @@ const effectivePortfolioTab =
 const getFilteredPosts = () => {
   let posts = profile.posts;
 
-  if (activeMainTab === "publications") {
-    posts = posts.filter((p) => p.isWork === false);
-  } else if (activeMainTab === "members") {
+ if (activeMainTab === "members") {
     posts = [];
   } else if (activeMainTab === "portfolio") {
     posts = [];
