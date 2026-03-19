@@ -113,14 +113,10 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<GetConversationMessagesQuery, List<DirectMessageDto>>, GetConversationMessagesQueryHandler>();
             
             // Payments
-            services.AddScoped<IRequestHandler<ConfirmPaymentCommand, Unit>, ConfirmPaymentHandler>();
-            
-            
-            services.AddScoped<ISender, Sender>();
-            
-            // Payments
             services.AddScoped<IRequestHandler<ConfirmPaymentCommand, Unit>, ConfirmPaymentCommandHandler>();
             services.AddScoped<IRequestHandler<CreateDonationCommand, CreateDonationResponse>, CreateDonationCommandHandler>();
+            
+            services.AddScoped<ISender, Sender>();
             
             return services;
         }
