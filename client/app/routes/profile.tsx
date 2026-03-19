@@ -7,7 +7,8 @@ import { Avatar, Tabs, Typography, Grid, message, Spin } from 'antd';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import DigitalPortfolio from "../components/Profile/DigitalPortfolio.tsx";
 import MusicPortfolio from "../components/Profile/MusicPortfolio.tsx";
-import { digitalPortfolioMock } from "../data/digitalPortfolioMock.ts";
+import type { MusicAlbum, MusicSong } from "../data/musicPortfolioMock.ts";
+// import { digitalPortfolioMock } from "../data/digitalPortfolioMock.ts";
 import WriterPortfolio from "../components/Profile/WriterPortfolio.tsx";
 import { settingsRepository } from "../services/settingsRepository.ts";
 import CreatePortfolioPostModal from "../components/Posts/CreatePortfolioPostModal.tsx";
@@ -91,6 +92,12 @@ interface ProfileData {
   isFollowing?: boolean;
   isSubscribed?: boolean;
   posts: Post[];
+}
+
+interface VisualPortfolioItem {
+  id: string;
+  title: string;
+  imageUrl: string;
 }
 
 // ---------- Funciones API (debes implementar) ----------
@@ -319,6 +326,60 @@ async function bookmarkPost(postId: number) {
 
 async function unbookmarkPost(postId: number) {
   console.log('Unbookmark', postId);
+}
+
+function mapPostsToVisualPortfolioItems(posts: Post[]): VisualPortfolioItem[] {
+  return posts
+    .filter((post) => {
+      const hasImage = post.media?.some((m) =>
+        m.media?.mimeType?.startsWith('image')
+      );
+      return post.isWork && hasImage;
+    })
+    .map((post) => {
+      const firstImage = post.media.find((m) =>
+        m.media?.mimeType?.startsWith('image')
+      );
+
+      return {
+        id: String(post.id),
+        title: post.title ?? 'Sin título',
+        imageUrl: firstImage?.media.path ?? '',
+      };
+    })
+    .filter((item) => item.imageUrl);
+}
+
+function mapPostsToMusicSongs(posts: Post[]): MusicSong[] {
+  return posts
+    .filter((post) => {
+      const hasAudio = post.media?.some((m) =>
+        m.media?.mimeType?.startsWith("audio")
+      );
+      return post.isWork && post.type === PostType.AUDIO && hasAudio;
+    })
+    .map((post) => {
+      const audioMedia = post.media.find((m) =>
+        m.media?.mimeType?.startsWith("audio")
+      );
+
+      const coverMedia = post.media.find((m) =>
+        m.media?.mimeType?.startsWith("image")
+      );
+
+      if (!audioMedia) return null;
+
+      return {
+        id: String(post.id),
+        title: post.title ?? "Sin título",
+        genre: "Sin género",
+        coverUrl:
+          coverMedia?.media.path ??
+          "https://placehold.co/240x240?text=Cover",
+        audioUrl: audioMedia.media.path,
+      };
+    })
+    .filter((song): song is MusicSong => song !== null);
 }
 
 // ---------- Componentes reutilizables ----------
@@ -711,7 +772,10 @@ const Profile: React.FC = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [postsError, setPostsError] = useState<string | null>(null);
+  const [visualPortfolioItems, setVisualPortfolioItems] = useState<VisualPortfolioItem[]>([]);
+  const [musicSongs, setMusicSongs] = useState<MusicSong[]>([]);
+  const [musicAlbums, setMusicAlbums] = useState<MusicAlbum[]>([]);
   const [portfolioSettings, setPortfolioSettings] = useState <{
   imagesEnabled: boolean;
  musicEnabled: boolean;
@@ -747,28 +811,48 @@ const isOwnProfile = username === "me";
         return;
       }
 
-      try {
-        setLoading(true);
-        let profileData: ProfileData;
+try {
+setLoading(true);
+  let profileData: ProfileData;
+  let nextPostsError: string | null = null;
+  let resolvedVisualPortfolioItems: VisualPortfolioItem[] = [];
+  let resolvedMusicSongs: MusicSong[] = [];
+  let resolvedMusicAlbums: MusicAlbum[] = [];
+
         
- if (isOwnProfile) {
-  if (!user) {
-    navigate('/login');
-    return;
-  }
+      if (isOwnProfile) {
+        if (!user) {
+          navigate('/login');
+          return;
+        }
 
   const mockProfile = await fetchProfile('me');
   const apiProfile = await fetchMyProfileFromApi();
 
   let apiPosts = null;
+
   try {
     apiPosts = await fetchPostsByAuthorFromApi(apiProfile.id);
     console.log("apiPosts", apiPosts);
-  } catch (postsError: any) {
-    console.error("fetchPostsByAuthorFromApi error:", postsError);
-    console.error("posts response data:", postsError?.response?.data);
-    console.error("posts response status:", postsError?.response?.status);
+  } catch (postsErr: any) {
+    console.error("fetchPostsByAuthorFromApi error:", postsErr);
+    console.error("posts response data:", postsErr?.response?.data);
+    console.error("posts response status:", postsErr?.response?.status);
+
+    nextPostsError =
+      postsErr?.response?.data?.message ||
+      "No se pudieron cargar las publicaciones.";
   }
+
+  const resolvedPosts = Array.isArray(apiPosts?.items)
+    ? apiPosts.items
+    : Array.isArray(apiPosts)
+      ? apiPosts
+      : [];
+
+  resolvedVisualPortfolioItems = mapPostsToVisualPortfolioItems(resolvedPosts);
+  resolvedMusicSongs = mapPostsToMusicSongs(resolvedPosts);
+  resolvedMusicAlbums = [];
 
   profileData = {
     ...mockProfile,
@@ -781,6 +865,7 @@ const isOwnProfile = username === "me";
     bio: apiProfile.biography ?? "",
     followersCount: 0,
     followingCount: 0,
+    posts: resolvedPosts,
   };
 
   } else {
@@ -788,13 +873,20 @@ const isOwnProfile = username === "me";
   }
 
         setProfile(profileData);
+        setVisualPortfolioItems(resolvedVisualPortfolioItems);
+        setMusicSongs(resolvedMusicSongs);
+        setMusicAlbums(resolvedMusicAlbums);
         setIsFollowing(profileData.isFollowing || false);
         setIsSubscribed(profileData.isSubscribed || false);
+        setPostsError(nextPostsError);
         setError(null);
       } catch (err: any) {
         console.error("loadProfile error:", err);
         console.error("response data:", err?.response?.data);
         console.error("response status:", err?.response?.status);
+        setVisualPortfolioItems([]);
+        setMusicSongs([]);
+        setMusicAlbums([]);
         setError(err?.response?.data?.message || err.message);
       } finally {
         setLoading(false);
@@ -1091,13 +1183,13 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
 
           {activeMainTab === "portfolio" && effectivePortfolioTab === "images" && (
            <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-          <DigitalPortfolio items={digitalPortfolioMock} />
+          <DigitalPortfolio items={visualPortfolioItems} />
            </div>
           )}
 
           {activeMainTab === "portfolio" && effectivePortfolioTab === "music" && (
             <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
-              <MusicPortfolio />
+              <MusicPortfolio songs={musicSongs} albums={musicAlbums} error={postsError} />
             </div>
           )}
           
@@ -1108,20 +1200,28 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
           )}
 
             {activeMainTab !== "portfolio" && (
-              <div className="space-y-8 px-[70px]">
-                {filteredPosts.map((post) => (
-                  <div key={post.id}>
-                    <PostCard post={post} />
-                    <div className="w-[868px] h-px bg-[#8F8E8A] my-4 -ml-[70px]" />
-                  </div>
-                ))}
-                {filteredPosts.length === 0 && (
-                  <div className="text-center text-gray-500 py-8 ">
-                    {t("profile.no_posts")}
-                  </div>
-                )}
-              </div>
-            )}
+            <div className="space-y-8 px-[70px]">
+              {activeMainTab === "publications" && postsError ? (
+                <div className="text-center text-red-500 py-8">
+                  {postsError}
+                </div>
+              ) : (
+                <>
+                  {filteredPosts.map((post) => (
+                    <div key={post.id}>
+                      <PostCard post={post} />
+                      <div className="w-[868px] h-px bg-[#8F8E8A] my-4 -ml-[70px]" />
+                    </div>
+                  ))}
+                  {filteredPosts.length === 0 && (
+                    <div className="text-center text-gray-500 py-8 ">
+                      {t("profile.no_posts")}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
             </div>
                   <CreatePortfolioPostModal
         visible={modalVisible}

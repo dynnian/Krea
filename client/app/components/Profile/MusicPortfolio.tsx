@@ -12,6 +12,9 @@ import {
 
 type MusicPortfolioProps = {
   initialTab?: "songs" | "albums";
+  songs?: MusicSong[];
+  albums?: MusicAlbum[];
+  error?: string | null;
 };
 
 const SongCard: React.FC<{ song: MusicSong }> = ({ song }) => {
@@ -218,7 +221,12 @@ const AlbumCard: React.FC<{ album: MusicAlbum }> = ({ album }) => {
   );
 };
 
-export default function MusicPortfolio({ initialTab = "songs" }: MusicPortfolioProps) {
+export default function MusicPortfolio({
+  initialTab = "songs",
+  songs = [],
+  albums = [],
+  error = null,
+}: MusicPortfolioProps) {
   const [activeMusicTab, setActiveMusicTab] = useState<"songs" | "albums">(initialTab);
 
   const musicTabItems = [
@@ -242,17 +250,31 @@ export default function MusicPortfolio({ initialTab = "songs" }: MusicPortfolioP
 
       {activeMusicTab === "songs" && (
         <div className="max-w-[975px] mx-auto space-y-4">
-          {musicSongsMock.map((song) => (
-            <SongCard key={song.id} song={song} />
-          ))}
+          {songs.length > 0 ? (
+            songs.map((song) => (
+              <SongCard key={song.id} song={song} />
+            ))
+          ) : error ? (
+            <div className="text-center text-red-500 py-8">{error}</div>
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              No hay canciones disponibles.
+            </div>
+          )}
         </div>
       )}
 
       {activeMusicTab === "albums" && (
         <div className="max-w-[975px] mx-auto space-y-12">
-          {musicAlbumsMock.map((album) => (
-            <AlbumCard key={album.id} album={album} />
-          ))}
+          {albums.length > 0 ? (
+            albums.map((album) => (
+              <AlbumCard key={album.id} album={album} />
+            ))
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              No hay álbumes disponibles.
+            </div>
+          )}
         </div>
       )}
     </div>
