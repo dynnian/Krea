@@ -38,6 +38,7 @@ namespace Krea.Application {
     using Features.Collections.UploadCollectionCover;
     using Features.Posts.CreatePost;
     using Features.Posts.DeletePost;
+    using Features.Posts.Explore;
     using Features.Posts.GetPostById;
     using Features.Posts.Like;
     using Features.Posts.ReplyPost;
@@ -99,6 +100,7 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<LikePostCommand, Unit>, LikePostHandler>();
             services.AddScoped<IRequestHandler<UnlikePostCommand, Unit>, UnlikePostHandler>();
             services.AddScoped<IRequestHandler<CreatePostUploadCommand, CreatePostUploadResponse>, CreatePostUploadHandler>();
+            services.AddScoped<IRequestHandler<ExploreQuery, PagedResult<ExplorePostDto>>, ExploreHandler>();
             
             services.AddScoped<ISender, Sender>();
             
