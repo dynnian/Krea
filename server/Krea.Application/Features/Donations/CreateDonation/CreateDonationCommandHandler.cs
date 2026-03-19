@@ -45,7 +45,7 @@ namespace Krea.Application.Features.Donations.CreateDonation {
 
             // Create associated Payment with external reference
             var externalRef = new ExternalPaymentRef("stripe", session.SessionId);
-            donation.CreatePayment(donor, amountMoney, externalRef); // This adds the payment to the donation
+            donation.CreatePayment(donor, amountMoney, externalRef);
 
             // Save
             await donationRepository.Add(donation);
