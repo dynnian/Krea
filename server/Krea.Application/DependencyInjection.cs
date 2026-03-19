@@ -29,6 +29,7 @@ namespace Krea.Application {
     using Features.PostUploads.CreatePostUpload;
     using Microsoft.Extensions.DependencyInjection;
     using Features.DirectMessages.Mappings;
+    using Features.Donations.CreateDonation;
     using Features.Feed;
     using Features.Follows;
     using Features.Payments.ConfirmPayment;
@@ -185,7 +186,8 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<GetConversationMessagesQuery, List<DirectMessageDto>>, GetConversationMessagesQueryHandler>();
             
             // Payments
-            services.AddScoped<IRequestHandler<ConfirmPaymentCommand, Unit>, ConfirmPaymentHandler>();
+            services.AddScoped<IRequestHandler<ConfirmPaymentCommand, Unit>, ConfirmPaymentCommandHandler>();
+            services.AddScoped<IRequestHandler<CreateDonationCommand, CreateDonationResponse>, CreateDonationCommandHandler>();
             
             // Payments
             services.AddScoped<IRequestHandler<ConfirmPaymentCommand, Unit>, ConfirmPaymentHandler>();
