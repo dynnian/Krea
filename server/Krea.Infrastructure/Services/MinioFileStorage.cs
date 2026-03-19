@@ -41,8 +41,8 @@ namespace Krea.Infrastructure.Services {
                         .WithObjectSize(size)
                         .WithContentType(contentType),
                     cancellationToken);
-
-                var url = $"{_baseUrl}/{BucketName}/{objectName}";
+                var cleanBaseUrl = _baseUrl.Trim('\"', ' ').TrimEnd('/');
+                var url = $"{cleanBaseUrl}/{BucketName}/{objectName}";
 
                 Logger.Info("File uploaded: {ObjectName}", objectName);
 
