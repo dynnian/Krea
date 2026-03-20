@@ -4,6 +4,7 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
     using Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;
+    using Domain.ValueObjects;
     using System.ComponentModel.DataAnnotations;
 
     public sealed class CreatePostUploadHandler
@@ -68,9 +69,30 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
             await _uploadRepository.AddAsync(upload, cancellationToken);
             
             // Géneros
-            var genres = command.GenreIds is not null && command.GenreIds.Any()
-                ? await _genreRepository.GetByIdsAsync(command.GenreIds, cancellationToken)
-                : new List<Genre>();
+            var genres = new List<Genre>();
+
+            if (command.GenreIds is not null && command.GenreIds.Any())
+            {
+                genres = (await _genreRepository
+                        .GetByIdsAsync(command.GenreIds, cancellationToken))
+                    .ToList();
+
+                // Validar si existe
+                if (genres.Count != command.GenreIds.Count)
+                    throw new ValidationException("Some genres were not found.");
+
+                // Validar por tipo
+                var expectedType = command.Type.ToLower() switch
+                {
+                    "image" => GenreType.Image,
+                    "music" => GenreType.Music,
+                    "text" => GenreType.Text,
+                    _ => throw new ValidationException("Invalid type for genre validation.")
+                };
+
+                if (genres.Any(g => g.Type != expectedType))
+                    throw new ValidationException("One or more genres are invalid for this content type.");
+            }
 
             // Validar metadata antes de usarla
             ValidateMetadata(command);
