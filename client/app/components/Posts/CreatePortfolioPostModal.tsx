@@ -152,7 +152,7 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
       case PostType.IMAGE:
         return 'image/*';
       case PostType.TEXT:
-        return 'application/pdf,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        return 'application/pdf,application/epub+zip,.epub';
       default:
         return '*/*';
     }

@@ -9,7 +9,6 @@
     "npm:@react-router/dev@7.12.0": "7.12.0_@react-router+serve@7.12.0__react-router@7.12.0___react@19.2.4___react-dom@19.2.4____react@19.2.4__express@4.22.1__typescript@5.9.3__react@19.2.4__react-dom@19.2.4___react@19.2.4_react-router@7.12.0__react@19.2.4__react-dom@19.2.4___react@19.2.4_typescript@5.9.3_vite@7.3.1__@types+node@22.19.15__picomatch@4.0.3",
     "npm:@react-router/node@7.12.0": "7.12.0_react-router@7.12.0__react@19.2.4__react-dom@19.2.4___react@19.2.4_typescript@5.9.3_react@19.2.4_react-dom@19.2.4__react@19.2.4",
     "npm:@react-router/serve@7.12.0": "7.12.0_react-router@7.12.0__react@19.2.4__react-dom@19.2.4___react@19.2.4_express@4.22.1_typescript@5.9.3_react@19.2.4_react-dom@19.2.4__react@19.2.4",
-    "npm:@rollup/rollup-linux-x64-gnu@^4.59.0": "4.59.0",
     "npm:@tailwindcss/vite@^4.1.13": "4.2.1_vite@7.3.1__@types+node@22.19.15__picomatch@4.0.3_@types+node@22.19.15",
     "npm:@tiptap/extension-image@^3.18.0": "3.20.1_@tiptap+core@3.20.1__@tiptap+pm@3.20.1___prosemirror-model@1.25.4___prosemirror-state@1.4.4___prosemirror-view@1.41.6",
     "npm:@tiptap/extension-link@^3.18.0": "3.20.1_@tiptap+core@3.20.1__@tiptap+pm@3.20.1___prosemirror-model@1.25.4___prosemirror-state@1.4.4___prosemirror-view@1.41.6_@tiptap+pm@3.20.1__prosemirror-model@1.25.4__prosemirror-state@1.4.4__prosemirror-view@1.41.6",
@@ -43,7 +42,8 @@
     "npm:vite@*": "7.3.1_@types+node@22.19.15_picomatch@4.0.3",
     "npm:vite@^7.1.7": "7.3.1_@types+node@22.19.15_picomatch@4.0.3",
     "npm:wavesurfer.js@^7.12.1": "7.12.1",
-    "npm:zustand@^5.0.11": "5.0.11_@types+react@19.2.14_react@19.2.4"
+    "npm:zustand@^5.0.11": "5.0.12_@types+react@19.2.14_react@19.2.4",
+    "npm:zustand@^5.0.12": "5.0.12_@types+react@19.2.14_react@19.2.4"
   },
   "npm": {
     "@ant-design/colors@8.0.1": {
@@ -2997,8 +2997,8 @@
     "yallist@3.1.1": {
       "integrity": "sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g=="
     },
-    "zustand@5.0.11_@types+react@19.2.14_react@19.2.4": {
-      "integrity": "sha512-fdZY+dk7zn/vbWNCYmzZULHRrss0jx5pPFiOuMZ/5HJN6Yv3u+1Wswy/4MpZEkEGhtNH+pwxZB8OKgUBPzYAGg==",
+    "zustand@5.0.12_@types+react@19.2.14_react@19.2.4": {
+      "integrity": "sha512-i77ae3aZq4dhMlRhJVCYgMLKuSiZAaUPAct2AksxQ+gOtimhGMdXljRT21P5BNpeT4kXlLIckvkPM029OljD7g==",
       "dependencies": [
         "@types/react",
         "react"
@@ -3024,7 +3024,6 @@
         "npm:@react-router/dev@7.12.0",
         "npm:@react-router/node@7.12.0",
         "npm:@react-router/serve@7.12.0",
-        "npm:@rollup/rollup-linux-x64-gnu@^4.59.0",
         "npm:@tailwindcss/vite@^4.1.13",
         "npm:@tiptap/extension-image@^3.18.0",
         "npm:@tiptap/extension-link@^3.18.0",
@@ -3056,7 +3055,8 @@
         "npm:typescript@^5.9.2",
         "npm:vite-tsconfig-paths@^5.1.4",
         "npm:vite@^7.1.7",
-        "npm:wavesurfer.js@^7.12.1"
+        "npm:wavesurfer.js@^7.12.1",
+        "npm:zustand@^5.0.12"
       ]
     }
   }

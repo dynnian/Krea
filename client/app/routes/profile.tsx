@@ -1,19 +1,21 @@
 // profile.tsx
+// deno-lint-ignore-file
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Avatar, Tabs, Typography, Grid, message, Spin, Input } from 'antd';
-import { useAuth } from '../contexts/AuthContext';
-import axiosClient from "../lib/axios";
-import { postsApi } from "../services/postsService";
-import type { ApiPost, UploadMediaType, UserDto } from "../types/api";
-import DigitalPortfolio from "../components/Profile/DigitalPortfolio";
-import MusicPortfolio from "../components/Profile/MusicPortfolio";
-import { digitalPortfolioMock } from "../data/digitalPortfolioMock";
-import WriterPortfolio from "../components/Profile/WriterPortfolio";
-import { settingsRepository } from "../services/settingsRepository";
-import CreatePortfolioPostModal from "../components/Posts/CreatePortfolioPostModal";
-
+import { Avatar, Tabs, Typography, Grid, message, Spin } from 'antd';
+import { useAuth } from '../contexts/AuthContext.tsx';
+import DigitalPortfolio from "../components/Profile/DigitalPortfolio.tsx";
+import MusicPortfolio from "../components/Profile/MusicPortfolio.tsx";
+import type { MusicAlbum, MusicSong } from "../data/musicPortfolioMock.ts";
+// import { digitalPortfolioMock } from "../data/digitalPortfolioMock.ts";
+import WriterPortfolio from "../components/Profile/WriterPortfolio.tsx";
+import type { WriterWork } from "../data/writerPortfolioMock.ts";
+import { settingsRepository } from "../services/settingsRepository.ts";
+import CreatePortfolioPostModal from "../components/Posts/CreatePortfolioPostModal.tsx";
+import axiosClient from "../lib/axios.ts";
+import type { UploadMediaType } from "../types/api.ts";
+import { PostType as PortfolioPostType } from "../types/common.ts";
 
 import {
   Heart,
@@ -37,7 +39,6 @@ export enum PostType {
   IMAGE = 'image',
   AUDIO = 'audio',
   LINK = 'link',
-  TEXT = 'text',
 }
 
 interface Author {
@@ -58,23 +59,23 @@ interface Media {
 }
 
 interface PostMedia {
-  postId: string;
+  postId: number;
   mediaId: string;
   isWorkMedia: boolean;
   media: Media;
 }
 
 interface Post {
-  id: string;
-  userPostId: string;
+  id: number;
+  userPostId: number;
   type: PostType;
   title: string | null;
   content: string;
   isWork: boolean;
   isDeleted: boolean;
   isLocal: boolean;
-  postRepliedTo: string | null;
-  postRepostOf: string | null;
+  postRepliedTo: number | null;
+  postRepostOf: number | null;
   createdAt: string;
   updatedAt: string;
   author: Author;
@@ -87,8 +88,6 @@ interface Post {
 interface ProfileData {
   user: Author;
   bio: string;
-  languageCode: string;
-  timeZoneId: string;
   followingCount: number;
   followersCount: number;
   isFollowing?: boolean;
@@ -96,149 +95,216 @@ interface ProfileData {
   posts: Post[];
 }
 
-type PublicUserProfileResponse = {
+interface VisualPortfolioItem {
   id: string;
-  username: string;
-  displayName: string;
-  biography: string | null;
-  languageCode: string;
-  timeZoneId: string;
-};
-
-type BackendPostMedia = {
-  id?: string;
-  fileName?: string;
-  mimeType?: string;
-  url?: string;
-  isWorkMedia?: boolean;
-};
-
-type BackendProfilePost = {
-  postId?: string;
-  authorPostId?: string;
-  type?: number;
-  title?: string | null;
-  content?: string | null;
-  isWork?: boolean;
-  isDeleted?: boolean;
-  isLocal?: boolean;
-  postRepliedTo?: string | null;
-  postRepostOf?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-  media?: BackendPostMedia[];
-  // shape alterno del backend actual (PostDto)
-  id?: string;
-  userId?: string;
-  authorUsername?: string;
-};
-
-function isGuid(value: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    value
-  );
+  title: string;
+  imageUrl: string;
 }
 
-function mapApiTypeToProfilePostType(type: number): PostType {
-  if (type === 2) return PostType.IMAGE;
-  if (type === 3) return PostType.AUDIO;
-  if (type === 1) return PostType.TEXT;
-  return PostType.TEXT;
+interface ApiPostMedia {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  url: string;
+  isWorkMedia: boolean;
 }
 
-function normalizeMediaUrl(url?: string): string {
-  if (!url) return "";
-  if (url.startsWith("http")) return url;
-  return `${import.meta.env.VITE_API_BASE_URL?.replace("/api", "") ?? ""}${url}`;
+interface ApiPost {
+  id: string;
+  userId: string;
+  authorUsername: string;
+  title: string | null;
+  content: string;
+  createdAt: string;
+  media: ApiPostMedia[];
 }
 
-function mapApiPostToProfilePost(apiPost: BackendProfilePost, author: Author): Post {
-  const mappedMedia: PostMedia[] = (apiPost.media ?? []).map((mediaItem) => ({
-    postId: String(apiPost.postId ?? apiPost.id ?? ""),
-    mediaId: String(mediaItem.id ?? ""),
-    isWorkMedia: Boolean(mediaItem.isWorkMedia),
-    media: {
-      id: String(mediaItem.id ?? ""),
-      originalFileName: mediaItem.fileName ?? "",
-      fileName: mediaItem.fileName ?? "",
-      mimeType: mediaItem.mimeType ?? "",
-      path: normalizeMediaUrl(mediaItem.url),
-      uploadedAt: String(apiPost.createdAt ?? new Date().toISOString()),
-    },
-  }));
-
-  const mediaMime = mappedMedia[0]?.media.mimeType ?? "";
-  const inferredType =
-    typeof apiPost.type === "number"
-      ? mapApiTypeToProfilePostType(apiPost.type)
-      : mediaMime.startsWith("image/")
-      ? PostType.IMAGE
-      : mediaMime.startsWith("audio/")
-      ? PostType.AUDIO
-      : PostType.TEXT;
-
-  return {
-    id: String(apiPost.postId ?? apiPost.id ?? ""),
-    userPostId: String(apiPost.authorPostId ?? apiPost.userId ?? author.id ?? ""),
-    type: inferredType,
-    title: apiPost.title ?? null,
-    content: apiPost.content ?? "",
-    isWork: Boolean(apiPost.isWork),
-    isDeleted: Boolean(apiPost.isDeleted),
-    isLocal: Boolean(apiPost.isLocal),
-    postRepliedTo: apiPost.postRepliedTo ?? null,
-    postRepostOf: apiPost.postRepostOf ?? null,
-    createdAt: String(apiPost.createdAt ?? new Date().toISOString()),
-    updatedAt: String(apiPost.updatedAt ?? apiPost.createdAt ?? new Date().toISOString()),
-    author,
-    media: mappedMedia,
-    likesCount: 0,
-    favoritesCount: 0,
-    replies: [],
-  };
-}
-
-// ---------- Funciones API (integradas con backend disponible) ----------
+// ---------- Funciones API (debes implementar) ----------
 async function fetchProfile(username: string): Promise<ProfileData> {
-  let profileResponse: UserDto | PublicUserProfileResponse;
+  // Simular llamada API
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const mockProfile: ProfileData = {
+        user: {
+          name: username === 'me' ? 'Mi Usuario' : 'Usuario',
+          handle: username === 'me' ? 'mi_usuario' : username,
+          avatar: undefined,
+          isVerified: true,
+        },
+        bio: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididu.',
+        followingCount: 10,
+        followersCount: 10,
+        isFollowing: false,
+        isSubscribed: false,
+        posts: [
+          // Post con múltiples imágenes (isWork = true)
+          {
+            id: 1,
+            userPostId: 1,
+            type: PostType.IMAGE,
+            title: null,
+            content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis',
+            isWork: true,
+            isDeleted: false,
+            isLocal: false,
+            postRepliedTo: null,
+            postRepostOf: null,
+            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+            updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+            author: {
+              name: username === 'me' ? 'Mi Usuario' : 'Usuario',
+              handle: username === 'me' ? 'mi_usuario' : username,
+              avatar: undefined,
+            },
+            media: [
+              {
+                postId: 1,
+                mediaId: '101',
+                isWorkMedia: true,
+                media: {
+                  id: '101',
+                  originalFileName: 'imagen1.jpg',
+                  fileName: 'imagen1.jpg',
+                  mimeType: 'image/jpeg',
+                  path: 'https://placehold.co/294x431',
+                  uploadedAt: new Date().toISOString(),
+                },
+              },
+              {
+                postId: 1,
+                mediaId: '102',
+                isWorkMedia: true,
+                media: {
+                  id: '102',
+                  originalFileName: 'imagen2.jpg',
+                  fileName: 'imagen2.jpg',
+                  mimeType: 'image/jpeg',
+                  path: 'https://placehold.co/294x211',
+                  uploadedAt: new Date().toISOString(),
+                },
+              },
+              {
+                postId: 1,
+                mediaId: '103',
+                isWorkMedia: true,
+                media: {
+                  id: '103',
+                  originalFileName: 'imagen3.jpg',
+                  fileName: 'imagen3.jpg',
+                  mimeType: 'image/jpeg',
+                  path: 'https://placehold.co/294x211',
+                  uploadedAt: new Date().toISOString(),
+                },
+              },
+            ],
+            likesCount: 5,
+            favoritesCount: 2,
+            replies: [],
+          },
+          // Post con imagen grande (isWork = false)
+          {
+            id: 2,
+            userPostId: 2,
+            type: PostType.IMAGE,
+            title: null,
+            content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis',
+            isWork: false,
+            isDeleted: false,
+            isLocal: false,
+            postRepliedTo: null,
+            postRepostOf: null,
+            createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+            updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+            author: {
+              name: username === 'me' ? 'Mi Usuario' : 'Usuario',
+              handle: username === 'me' ? 'mi_usuario' : username,
+              avatar: undefined,
+            },
+            media: [
+              {
+                postId: 2,
+                mediaId: '201',
+                isWorkMedia: false,
+                media: {
+                  id: '201',
+                  originalFileName: 'imagen.jpg',
+                  fileName: 'imagen.jpg',
+                  mimeType: 'image/jpeg',
+                  path: 'https://placehold.co/596x321',
+                  uploadedAt: new Date().toISOString(),
+                },
+              },
+            ],
+            likesCount: 3,
+            favoritesCount: 1,
+            replies: [],
+          },
+          // Post con audio (isWork = true)
+          {
+            id: 3,
+            userPostId: 3,
+            type: PostType.AUDIO,
+            title: 'Mi canción',
+            content: 'Escucha mi nuevo tema',
+            isWork: true,
+            isDeleted: false,
+            isLocal: false,
+            postRepliedTo: null,
+            postRepostOf: null,
+            createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+            updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+            author: {
+              name: username === 'me' ? 'Mi Usuario' : 'Usuario',
+              handle: username === 'me' ? 'mi_usuario' : username,
+              avatar: undefined,
+            },
+            media: [
+              {
+                postId: 3,
+                mediaId: '301',
+                isWorkMedia: true,
+                media: {
+                  id: '301',
+                  originalFileName: 'audio.mp3',
+                  fileName: 'audio.mp3',
+                  mimeType: 'audio/mpeg',
+                  path: '/assets/audio-sample.mp3',
+                  uploadedAt: new Date().toISOString(),
+                },
+              },
+              {
+                postId: 3,
+                mediaId: '302',
+                isWorkMedia: true,
+                media: {
+                  id: '302',
+                  originalFileName: 'cover.jpg',
+                  fileName: 'cover.jpg',
+                  mimeType: 'image/jpeg',
+                  path: 'https://placehold.co/596x321',
+                  uploadedAt: new Date().toISOString(),
+                },
+              },
+            ],
+            likesCount: 5,
+            favoritesCount: 2,
+            replies: [],
+          },
+        ],
+      };
+      resolve(mockProfile);
+    }, 500);
+  });
+}
 
-  if (username === "me") {
-    const { data } = await axiosClient.get<UserDto>("/users/me/profile");
-    profileResponse = data;
-  } else {
-    if (!isGuid(username)) {
-      throw new Error(
-        "El backend actual expone perfil público por userId (GUID), no por username."
-      );
-    }
-    const { data } = await axiosClient.get<PublicUserProfileResponse>(`/users/${username}/profile`);
-    profileResponse = data;
-  }
+async function fetchMyProfileFromApi() {
+  const res = await axiosClient.get("/users/me/profile");
+  return res.data;
+}
 
-  const author: Author = {
-    id: profileResponse.id,
-    name: profileResponse.displayName,
-    handle: profileResponse.username,
-    avatar: undefined,
-    isVerified: true,
-  };
-
-  const apiPosts = (await postsApi.getUserPosts(profileResponse.id)) as unknown as BackendProfilePost[];
-  const posts = apiPosts.map((apiPost) => mapApiPostToProfilePost(apiPost, author));
-
-  return {
-    user: author,
-    bio: profileResponse.biography ?? "",
-    languageCode: profileResponse.languageCode,
-    timeZoneId: profileResponse.timeZoneId,
-    // TODO(frontend-integration): backend aún no expone contadores de seguidores/seguidos.
-    followingCount: 0,
-    followersCount: 0,
-    isFollowing: false,
-    // TODO(frontend-integration): conectar suscripción cuando backend exponga endpoints.
-    isSubscribed: false,
-    posts,
-  };
+async function fetchPostsByAuthorFromApi(authorId: string) {
+  const res = await axiosClient.get(`/posts/user/${authorId}`);
+  return res.data;
 }
 
 async function followUser(targetId: string) {
@@ -257,35 +323,125 @@ async function unsubscribeUser(username: string) {
   console.log('Unsubscribe', username);
 }
 
-async function likePost(postId: string, userId: string) {
-  await axiosClient.post(`/Posts/${postId}/like`, { postId, userId });
+async function likePost(postId: number) {
+  console.log('Like', postId);
 }
 
-async function unlikePost(postId: string, userId: string) {
-  await axiosClient.delete(`/Posts/${postId}/unlike`, { data: { postId, userId } });
+async function unlikePost(postId: number) {
+  console.log('Unlike', postId);
 }
 
-async function repostPost(postId: string, userId: string) {
-  await axiosClient.post(`/Posts/${postId}/repost`, {
-    authorId: userId,
-    originalPostId: postId,
-  });
+async function repostPost(postId: number) {
+  console.log('Repost', postId);
 }
 
-async function unRepostPost(postId: string) {
-  // TODO(frontend-integration): backend no expone endpoint de "undo repost" por ahora.
-  console.log('Unrepost pendiente endpoint backend', postId);
+async function unRepostPost(postId: number) {
+  console.log('Unrepost', postId);
 }
 
-async function bookmarkPost(postId: string) {
-  // TODO(frontend-integration): backend no expone endpoint de bookmarks por ahora.
-  console.log('Bookmark pendiente endpoint backend', postId);
+async function bookmarkPost(postId: number) {
+  console.log('Bookmark', postId);
 }
 
-async function unbookmarkPost(postId: string) {
-  // TODO(frontend-integration): backend no expone endpoint de bookmarks por ahora.
-  console.log('Unbookmark pendiente endpoint backend', postId);
+async function unbookmarkPost(postId: number) {
+  console.log('Unbookmark', postId);
 }
+
+
+
+function mapPostsToVisualPortfolioItems(posts: Post[]): VisualPortfolioItem[] {
+  return posts
+    .filter((post) => {
+      const hasImage = post.media?.some((m) =>
+        m.media?.mimeType?.startsWith('image')
+      );
+      return post.isWork && hasImage;
+    })
+    .map((post) => {
+      const firstImage = post.media.find((m) =>
+        m.media?.mimeType?.startsWith('image')
+      );
+
+      return {
+        id: String(post.id),
+        title: post.title ?? 'Sin título',
+        imageUrl: firstImage?.media.path ?? '',
+      };
+    })
+    .filter((item) => item.imageUrl);
+}
+
+function mapPostsToMusicSongs(posts: Post[]): MusicSong[] {
+  return posts
+    .filter((post) => {
+      const hasAudio = post.media?.some((m) =>
+        m.media?.mimeType?.startsWith("audio")
+      );
+      return post.isWork && post.type === PostType.AUDIO && hasAudio;
+    })
+    .map((post) => {
+      const audioMedia = post.media.find((m) =>
+        m.media?.mimeType?.startsWith("audio")
+      );
+
+      const coverMedia = post.media.find((m) =>
+        m.media?.mimeType?.startsWith("image")
+      );
+
+      if (!audioMedia) return null;
+
+      return {
+        id: String(post.id),
+        title: post.title ?? "Sin título",
+        genre: "Sin género",
+        coverUrl:
+          coverMedia?.media.path ??
+          "https://placehold.co/240x240?text=Cover",
+        audioUrl: audioMedia.media.path,
+      };
+    })
+    .filter((song): song is MusicSong => song !== null);
+}
+
+function mapPostsToWriterWorks(posts: Post[]): WriterWork[] {
+  return posts
+    .filter((post) => {
+      const hasDocument = post.media?.some((m) => {
+        const mime = m.media?.mimeType ?? "";
+        return (
+          mime === "application/pdf" ||
+          mime === "application/epub+zip"
+        );
+      });
+
+      return post.isWork && post.type === PostType.LINK && hasDocument;
+    })
+    .map((post) => {
+      const documentMedia = post.media.find((m) => {
+        const mime = m.media?.mimeType ?? "";
+        return (
+          mime === "application/pdf" ||
+          mime === "application/epub+zip"
+        );
+      });
+
+      const coverMedia = post.media.find((m) =>
+        m.media?.mimeType?.startsWith("image")
+      );
+
+      return {
+        id: String(post.id),
+        title: post.title ?? "Sin título",
+        coverUrl:
+          coverMedia?.media.path ??
+          "https://placehold.co/240x360?text=Libro",
+        chaptersCount: 1,
+        genre: "Sin género",
+        description: post.content ?? "",
+      };
+    });
+}
+
 
 // ---------- Componentes reutilizables ----------
 interface ActionButtonProps {
@@ -293,16 +449,12 @@ interface ActionButtonProps {
   onClick?: () => void;
   active?: boolean;
   count?: number;
-  disabled?: boolean;
 }
 
-const ActionButton: React.FC<ActionButtonProps> = ({ icon, onClick, active, count, disabled = false }) => (
+const ActionButton: React.FC<ActionButtonProps> = ({ icon, onClick, active, count }) => (
   <button
     onClick={onClick}
-    disabled={disabled}
-    className={`flex items-center gap-1 text-gray-700 hover:text-blue-600 transition-colors ${
-      disabled ? "opacity-60 cursor-not-allowed" : ""
-    }`}
+    className="flex items-center gap-1 text-gray-700 hover:text-blue-600 transition-colors"
   >
     <span className={active ? 'text-blue-600' : ''}>{icon}</span>
     {count !== undefined && <span className="text-xs">{count}</span>}
@@ -312,106 +464,89 @@ const ActionButton: React.FC<ActionButtonProps> = ({ icon, onClick, active, coun
 interface FollowButtonProps {
   isFollowing: boolean;
   onClick?: () => void;
-  disabled?: boolean;
 }
 
-const FollowButton: React.FC<FollowButtonProps> = ({ isFollowing, onClick, disabled = false }) => {
-  const { t } = useTranslation();
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`px-5 py-1 rounded-full text-xs font-medium border transition-colors ${
-        isFollowing
-          ? 'bg-[#1351AA] text-white border-[#1B1C1E]'
-          : 'bg-[#F3F3F1] text-[#1B1C1E] border-[#1B1C1E]'
-      } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-    >
-      {isFollowing ? t("profile.follow_button.following") : t("profile.follow_button.follow")}
-    </button>
-  );
-};
+const FollowButton: React.FC<FollowButtonProps> = ({ isFollowing, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`px-5 py-1 rounded-full text-xs font-medium border transition-colors ${
+      isFollowing
+        ? 'bg-[#1351AA] text-white border-[#1B1C1E]'
+        : 'bg-[#F3F3F1] text-[#1B1C1E] border-[#1B1C1E]'
+    }`}
+  >
+    {isFollowing ? 'Siguiendo' : 'Seguir'}
+  </button>
+);
 
 interface SubscribeButtonProps {
   isSubscribed: boolean;
   onClick?: () => void;
 }
 
-const SubscribeButton: React.FC<SubscribeButtonProps> = ({ isSubscribed, onClick }) => {
-  const { t } = useTranslation();
-  return (
-    <button
-      onClick={onClick}
-      className={`px-5 py-1 rounded-full text-xs font-medium border transition-colors ${
-        isSubscribed
-          ? 'bg-[#1351AA] text-white border-[#1B1C1E]'
-          : 'bg-[#F3F3F1] text-[#1B1C1E] border-[#1B1C1E]'
-      }`}
-    >
-      <span className="text-[11px] font-medium leading-5 text-[#1B1C1E]"> 
-        {isSubscribed ? t("profile.subscribe_button.subscribed") : t("profile.subscribe_button.subscribe")}
-    </span>
-    </button>
-  );
-};
+const SubscribeButton: React.FC<SubscribeButtonProps> = ({ isSubscribed, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`px-5 py-1 rounded-full text-xs font-medium border transition-colors ${
+      isSubscribed
+        ? 'bg-[#1351AA] text-white border-[#1B1C1E]'
+        : 'bg-[#F3F3F1] text-[#1B1C1E] border-[#1B1C1E]'
+    }`}
+  >
+    <span className="text-[11px] font-medium leading-5 text-[#1B1C1E]"> 
+      {isSubscribed ? 'Subscrito' : 'Subscribirse'}
+  </span>
+  </button>
+);
 
 interface CommissionButtonProps {
   onClick?: () => void;
 }
 
-const CommissionButton: React.FC<CommissionButtonProps> = ({ onClick }) => {
-  const { t } = useTranslation();
-  return (
-    <button
-      onClick={onClick}
-      className="px-5 py-1 rounded-full text-xs font-medium bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E]"
-    >
-      <span className="text-[11px] font-medium leading-5 text-[#1B1C1E]">
-      {t("profile.commission_button")}
-      </span>
-    </button>
-  );
-};
+const CommissionButton: React.FC<CommissionButtonProps> = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    className="px-5 py-1 rounded-full text-xs font-medium bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E]"
+  >
+    <span className="text-[11px] font-medium leading-5 text-[#1B1C1E]">
+    Comisión
+    </span>
+  </button>
+);
 
 interface ConfigurationButtonProps {
   onClick?: () => void;
 }
 
-const ConfigurationButton: React.FC<ConfigurationButtonProps> = ({ onClick }) => {
-  const { t } = useTranslation();
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="px-5 py-1 rounded-full cursor-pointer transition hover:bg-[#E6E5E2] bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] flex items-center gap-1"
-    >
-      <Edit size={14} />
-      <span className="text-[13px]  font-medium leading-5 text-[#1B1C1E]">
-        {t("profile.configuration_button")}
-      </span> 
-    </button>
-  );
-};
+const ConfigurationButton: React.FC<ConfigurationButtonProps> = ({ onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="px-5 py-1 rounded-full cursor-pointer transition hover:bg-[#E6E5E2] bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] flex items-center gap-1"
+  >
+    <Edit size={14} />
+    <span className="text-[13px]  font-medium leading-5 text-[#1B1C1E]">
+       Configuración
+    </span> 
+  </button>
+);
 
 interface FavoritesButtonProps {
   onClick?: () => void;
 }
 
-const FavoritesButton: React.FC<FavoritesButtonProps> = ({ onClick }) => {
-  const { t } = useTranslation();
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="px-5 py-1 rounded-full cursor-pointer transition hover:bg-[#E6E5E2] bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] flex items-center gap-1"
-    >
-      <Bookmark size={14} />
-      <span className="text-[13px] font-medium leading-5 text-[#1B1C1E]">
-      {t("profile.saved_button")}
-      </span>
-    </button>
-  );
-};
+const FavoritesButton: React.FC<FavoritesButtonProps> = ({ onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="px-5 py-1 rounded-full cursor-pointer transition hover:bg-[#E6E5E2] bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] flex items-center gap-1"
+  >
+    <Bookmark size={14} />
+    <span className="text-[13px] font-medium leading-5 text-[#1B1C1E]">
+     Guardados
+    </span>
+  </button>
+);
 
 interface MoreButtonProps {
   onClick?: () => void;
@@ -420,7 +555,7 @@ interface MoreButtonProps {
 const MoreButton: React.FC<MoreButtonProps> = ({ onClick }) => (
   <button
     onClick={onClick}
-    className="w-7 h-7 rounded-full bg-[#F3F3F1] border border-[#1B1C1E] flex items-center justify-center cursor-pointer transition hover:bg-[#E6E5E2]"
+    className="w-7 h-7 rounded-full bg-[#F3F3F1] border border-[#1B1C1E] flex items-center justify-center"
   >
     <MoreHorizontal size={16} />
   </button>
@@ -445,7 +580,7 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({ audioUrl, coverUrl }) =
         barWidth: 2,
         barGap: 1,
         height: 40,
-        responsive: true,
+        // responsive: true,
         url: audioUrl,
       });
 
@@ -496,11 +631,6 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const [likesCount, setLikesCount] = useState(post.likesCount);
   const [reposted, setReposted] = useState(false);
   const [repostsCount, setRepostsCount] = useState(post.favoritesCount);
-  const [repostLoading, setRepostLoading] = useState(false);
-  const [replyOpen, setReplyOpen] = useState(false);
-  const [replyText, setReplyText] = useState("");
-  const [replyLoading, setReplyLoading] = useState(false);
-  const [replyCount, setReplyCount] = useState(post.replies.length);
   const [bookmarked, setBookmarked] = useState(false);
   const [bookmarksCount, setBookmarksCount] = useState(0);
 
@@ -517,15 +647,14 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
   const handleLike = async () => {
     if (!requireAuth()) return;
-    if (!user?.id) return;
     const previous = liked;
     setLiked(!previous);
     setLikesCount(prev => (previous ? prev - 1 : prev + 1));
     try {
       if (previous) {
-        await unlikePost(post.id, user.id);
+        await unlikePost(post.id);
       } else {
-        await likePost(post.id, user.id);
+        await likePost(post.id);
       }
     } catch {
       setLiked(previous);
@@ -535,56 +664,18 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
   const handleRepost = async () => {
     if (!requireAuth()) return;
-    if (!user?.id) return;
-    if (repostLoading) return;
     const previous = reposted;
     setReposted(!previous);
     setRepostsCount(prev => (previous ? prev - 1 : prev + 1));
-    setRepostLoading(true);
     try {
       if (previous) {
         await unRepostPost(post.id);
       } else {
-        await repostPost(post.id, user.id);
+        await repostPost(post.id);
       }
-      message.success(
-        previous ? t("profile.repost_removed") : t("profile.repost_success")
-      );
     } catch {
       setReposted(previous);
       setRepostsCount(prev => (previous ? prev + 1 : prev - 1));
-      message.error(t("profile.repost_error"));
-    } finally {
-      setRepostLoading(false);
-    }
-  };
-
-  const handleReply = async () => {
-    if (!requireAuth()) return;
-    if (!user?.id) return;
-
-    const content = replyText.trim();
-    if (!content) {
-      message.warning(t("profile.reply_required"));
-      return;
-    }
-
-    try {
-      setReplyLoading(true);
-      await axiosClient.post(`/Posts/${post.id}/reply`, {
-        replyToPostId: post.id,
-        authorId: user.id,
-        title: post.title ?? t("profile.reply_default_title"),
-        content,
-      });
-      setReplyCount((prev) => prev + 1);
-      setReplyText("");
-      setReplyOpen(false);
-      message.success(t("profile.reply_success"));
-    } catch {
-      message.error(t("profile.reply_error"));
-    } finally {
-      setReplyLoading(false);
     }
   };
 
@@ -631,17 +722,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               <Check size={14} className="text-[#0B5107]" />
             )}
             <span className="text-gray-500">·</span>
-            <button
-              type="button"
-              onClick={() => {
-                if (post.author.id) {
-                  navigate(`/profile?userId=${post.author.id}`);
-                }
-              }}
-              className="text-gray-500 hover:text-blue-600 transition-colors"
-            >
-              @{post.author.handle}
-            </button>
+            <span className="text-gray-500">@{post.author.handle}</span>
             <span className="text-gray-500">·</span>
             <span className="text-gray-500">{formatDate(post.createdAt)}</span>
             <MoreButton onClick={() => {}} />
@@ -718,15 +799,13 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             />
             <ActionButton
               icon={<MessageCircle size={18} />}
-              count={replyCount}
-              onClick={() => setReplyOpen((prev) => !prev)}
+              count={post.replies.length}
             />
             <ActionButton
               icon={<Repeat2 size={18} fill={reposted ? 'currentColor' : 'none'} />}
               onClick={handleRepost}
               active={reposted}
               count={repostsCount}
-              disabled={repostLoading}
             />
             <ActionButton
               icon={<Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />}
@@ -735,26 +814,6 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               count={bookmarksCount}
             />
           </div>
-          {replyOpen ? (
-            <div className="mt-3 flex items-center gap-2">
-              <Input
-                value={replyText}
-                onChange={(event) => setReplyText(event.target.value)}
-                placeholder={t("profile.reply_placeholder")}
-                maxLength={500}
-              />
-              <button
-                type="button"
-                onClick={() => void handleReply()}
-                disabled={replyLoading}
-                className={`px-3 h-8 rounded-full border border-[#1B1C1E] text-[12px] ${
-                  replyLoading ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
-                }`}
-              >
-                {replyLoading ? t("profile.reply_sending") : t("profile.reply_send")}
-              </button>
-            </div>
-          ) : null}
         </div>
       </div>
     </div>
@@ -768,14 +827,17 @@ const Profile: React.FC = () => {
   const isMobile = !screens.md;
   // const { username } = useParams<{ username: string }>();
   const { username: usernameParam } = useParams<{ username: string }>();
-  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [postsError, setPostsError] = useState<string | null>(null);
+  const [visualPortfolioItems, setVisualPortfolioItems] = useState<VisualPortfolioItem[]>([]);
+  const [musicSongs, setMusicSongs] = useState<MusicSong[]>([]);
+  const [musicAlbums, setMusicAlbums] = useState<MusicAlbum[]>([]);
+  const [writerWorks, setWriterWorks] = useState<WriterWork[]>([]);
   const [portfolioSettings, setPortfolioSettings] = useState <{
   imagesEnabled: boolean;
  musicEnabled: boolean;
@@ -786,67 +848,173 @@ const [activeMainTab, setActiveMainTab] = useState('portfolio');
 const [activePortfolioSubTab, setActivePortfolioSubTab] = useState("images");
 const [activeMusicTab, setActiveMusicTab] = useState<"songs" | "albums">("songs");
 const [isFollowing, setIsFollowing] = useState(false);
-const [followLoading, setFollowLoading] = useState(false);
 const [isSubscribed, setIsSubscribed] = useState(false);
 const [modalVisible, setModalVisible] = useState(false);
-const [portfolioModalType, setPortfolioModalType] = useState<UploadMediaType>(PostType.IMAGE);
+const [portfolioModalType, setPortfolioModalType] = useState<UploadMediaType>(PortfolioPostType.IMAGE);
+
 
 const handleGoToSettings = () => {
   navigate("/settings");
 };
 
-const handleMoreMenuClick = () => {
-  message.info(t("profile.more_menu_pending"));
-};
-
 const handleGoToSaved = () => {
- message.info(t("profile.saved_pending"));
+ navigate("/saved");
 };
 // Determinar si es el perfil propio (ruta /profile/me)
 // const isOwnProfile = username === 'me';
 
 const username = usernameParam ?? "me";
-const queryUserId = searchParams.get("userId");
-const profileIdentifier = queryUserId ?? username;
-const isOwnProfile = profileIdentifier === "me";
+const isOwnProfile = username === "me";
   useEffect(() => {
     const loadProfile = async () => {
-      if (!profileIdentifier) {
+      if (!username) {
         setError('No username provided');
         setLoading(false);
         return;
       }
 
-      try {
-        setLoading(true);
-        let profileData: ProfileData;
+try {
+setLoading(true);
+  let profileData: ProfileData;
+  let nextPostsError: string | null = null;
+  let resolvedVisualPortfolioItems: VisualPortfolioItem[] = [];
+  let resolvedMusicSongs: MusicSong[] = [];
+  let resolvedMusicAlbums: MusicAlbum[] = [];
+  let resolvedWriterWorks: WriterWork[] = [];
+
         
-        if (isOwnProfile) {
-          if (!user) {
-            // Si no hay usuario autenticado, redirigir al login
-            navigate('/login');
-            return;
-          }
-          // Aquí llamarías a una API que devuelva el perfil del usuario autenticado
-          profileData = await fetchProfile('me');
-        } else {
-          // Perfil de otro usuario
-          profileData = await fetchProfile(profileIdentifier);
+      if (isOwnProfile) {
+        if (!user) {
+          navigate('/login');
+          return;
         }
 
+  const mockProfile = await fetchProfile('me');
+  const apiProfile = await fetchMyProfileFromApi();
+
+  let apiPosts = null;
+
+  try {
+    apiPosts = await fetchPostsByAuthorFromApi(apiProfile.id);
+    console.log("apiPosts", apiPosts);
+  } catch (postsErr: any) {
+    console.error("fetchPostsByAuthorFromApi error:", postsErr);
+    console.error("posts response data:", postsErr?.response?.data);
+    console.error("posts response status:", postsErr?.response?.status);
+
+    nextPostsError =
+      postsErr?.response?.data?.message ||
+      "No se pudieron cargar las publicaciones.";
+  }
+
+  const rawPosts = Array.isArray(apiPosts?.items)
+    ? apiPosts.items
+    : Array.isArray(apiPosts)
+      ? apiPosts
+      : [];
+
+  const resolvedPosts = normalizeApiPosts(
+    rawPosts,
+    apiProfile.displayName || apiProfile.username
+  );
+
+      function normalizeApiPosts(apiPosts: ApiPost[], displayName: string): Post[] {
+  return apiPosts.map((post) => {
+    const hasAudio = post.media.some((m) => m.mimeType.startsWith("audio"));
+    const hasImage = post.media.some((m) => m.mimeType.startsWith("image"));
+
+    return {
+      id: Number.NaN,
+      userPostId: Number.NaN,
+      type: hasAudio
+        ? PostType.AUDIO
+        : hasImage
+          ? PostType.IMAGE
+          : PostType.LINK,
+      title: post.title,
+      content: post.content,
+      isWork: post.media.some((m) => m.isWorkMedia),
+      isDeleted: false,
+      isLocal: true,
+      postRepliedTo: null,
+      postRepostOf: null,
+      createdAt: post.createdAt,
+      updatedAt: post.createdAt,
+      author: {
+        id: post.userId,
+        name: displayName,
+        handle: post.authorUsername,
+        avatar: undefined,
+        isVerified: true,
+      },
+      media: post.media.map((m) => ({
+        postId: Number.NaN,
+        mediaId: m.id,
+        isWorkMedia: m.isWorkMedia,
+        media: {
+          id: m.id,
+          originalFileName: m.fileName,
+          fileName: m.fileName,
+          mimeType: m.mimeType,
+          path: m.url,
+          uploadedAt: post.createdAt,
+        },
+      })),
+      likesCount: 0,
+      favoritesCount: 0,
+      replies: [],
+    };
+  });
+}
+
+  resolvedVisualPortfolioItems = mapPostsToVisualPortfolioItems(resolvedPosts);
+  resolvedMusicSongs = mapPostsToMusicSongs(resolvedPosts);
+  resolvedMusicAlbums = [];
+  resolvedWriterWorks = mapPostsToWriterWorks(resolvedPosts);
+
+  profileData = {
+    ...mockProfile,
+    user: {
+      ...mockProfile.user,
+      id: apiProfile.id,
+      name: apiProfile.displayName || apiProfile.username,
+      handle: apiProfile.username,
+    },
+    bio: apiProfile.biography ?? "",
+    followersCount: 0,
+    followingCount: 0,
+    posts: resolvedPosts,
+  };
+
+  } else {
+    profileData = await fetchProfile(username);
+  }
+
         setProfile(profileData);
+        setVisualPortfolioItems(resolvedVisualPortfolioItems);
+        setMusicSongs(resolvedMusicSongs);
+        setMusicAlbums(resolvedMusicAlbums);
+        setWriterWorks(resolvedWriterWorks);
         setIsFollowing(profileData.isFollowing || false);
         setIsSubscribed(profileData.isSubscribed || false);
+        setPostsError(nextPostsError);
         setError(null);
       } catch (err: any) {
-        setError(err.message);
+        console.error("loadProfile error:", err);
+        console.error("response data:", err?.response?.data);
+        console.error("response status:", err?.response?.status);
+        setVisualPortfolioItems([]);
+        setMusicSongs([]);
+        setMusicAlbums([]);
+        setWriterWorks([]);
+        setError(err?.response?.data?.message || err.message);
       } finally {
         setLoading(false);
       }
     };
 
     loadProfile();
-  }, [profileIdentifier, user, navigate, isOwnProfile]);
+  }, [username, user, navigate, isOwnProfile]);
 
     useEffect(() => {
     const loadPortfolioSettings = async () => {
@@ -857,30 +1025,48 @@ const isOwnProfile = profileIdentifier === "me";
   void loadPortfolioSettings();
 }, []);
 
-  const handleFollow = async () => {
-    if (!user) {
-      message.warning(t('profile.auth_required'));
-      navigate('/login');
-      return;
+const handleFollow = async () => {
+  if (!user) {
+    message.warning(t('profile.auth_required'));
+    navigate('/login');
+    return;
+  }
+
+  const targetId = profile?.user.id;
+  if (!targetId) {
+    message.error('Este perfil no tiene un ID válido para seguir/dejar de seguir.');
+    return;
+  }
+
+  const previous = isFollowing;
+  setIsFollowing(!previous);
+
+  try {
+    if (previous) {
+      await unfollowUser(targetId);
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              followersCount: Math.max(0, prev.followersCount - 1),
+            }
+          : prev
+      );
+    } else {
+      await followUser(targetId);
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              followersCount: prev.followersCount + 1,
+            }
+          : prev
+      );
     }
-    if (!profile?.user.id) return;
-    if (followLoading) return;
-    const previous = isFollowing;
-    setIsFollowing(!previous);
-    setFollowLoading(true);
-    try {
-      if (previous) {
-        await unfollowUser(profile.user.id);
-      } else {
-        await followUser(profile.user.id);
-      }
-    } catch {
-      setIsFollowing(previous);
-      message.error(t("profile.follow_update_error"));
-    } finally {
-      setFollowLoading(false);
-    }
-  };
+  } catch {
+    setIsFollowing(previous);
+  }
+};
 
   const handleSubscribe = async () => {
     if (!user) {
@@ -912,21 +1098,21 @@ const isOwnProfile = profileIdentifier === "me";
   if (error || !profile) {
     return (
       <div className="w-full min-h-screen bg-[#E3E2DE] flex items-center justify-center">
-        <Text type="danger">{error || t("profile.not_found")}</Text>
+        <Text type="danger">{error || 'Perfil no encontrado'}</Text>
       </div>
     );
   }
 
   const mainTabItems  = [
-    { key: 'portfolio', label: t('profile.tabs.portfolio') },
-    { key: 'publications', label: t('profile.tabs.publications') },
-    { key: 'members', label: t('profile.tabs.members') },
+    { key: 'portfolio', label: t('Portafolio') },
+    { key: 'publications', label: t('Publicatciones') },
+    { key: 'members', label: t('Miembros') },
   ];
 
 const portfolioSubTabs = [
-  { key: "images", label: t("profile.portfolio.images") },
-  { key: "music", label: t("profile.portfolio.music") },
-  { key: "literature", label: t("profile.portfolio.literature") },
+  { key: "images", label: "Imágenes" },
+  { key: "music", label: "Música" },
+  { key: "literature", label: "Literatura" },
 ];
 
 const effectivePortfolioTab =
@@ -937,9 +1123,7 @@ const effectivePortfolioTab =
 const getFilteredPosts = () => {
   let posts = profile.posts;
 
-  if (activeMainTab === "publications") {
-    posts = posts.filter((p) => p.isWork === false);
-  } else if (activeMainTab === "members") {
+ if (activeMainTab === "members") {
     posts = [];
   } else if (activeMainTab === "portfolio") {
     posts = [];
@@ -971,15 +1155,16 @@ const getFilteredPosts = () => {
 
 const handleUpdatePortfolioClick = () => {
   if (activePortfolioSubTab === "images") {
-    setPortfolioModalType("image");
+    setPortfolioModalType(PortfolioPostType.IMAGE);
   } else if (activePortfolioSubTab === "literature") {
-    setPortfolioModalType("text");
+    setPortfolioModalType(PortfolioPostType.TEXT);
   } else if (activePortfolioSubTab === "music") {
-    setPortfolioModalType("music");
+    setPortfolioModalType(PortfolioPostType.MUSIC);
   }
 
   setModalVisible(true);
 };
+
 
 const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
   
@@ -1028,7 +1213,7 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
                 <>
                   <ConfigurationButton onClick={handleGoToSettings} />
                   <FavoritesButton onClick={handleGoToSaved} />
-                  <MoreButton onClick={handleMoreMenuClick} />
+                  <MoreButton />
                 </>
               ) : (
                 <>
@@ -1040,7 +1225,6 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
                   <FollowButton
                     isFollowing={isFollowing}
                     onClick={handleFollow}
-                    disabled={followLoading}
                   />
                   <MoreButton />
                 </>
@@ -1053,8 +1237,8 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
             </p>
 
             <div className="flex gap-6 mt-4 text-sm">
-              <span>{profile.followingCount} {t("profile.following")}</span>
-              <span>{profile.followersCount} {t("profile.followers")}</span>
+              <span>{profile.followingCount} Seguidos</span>
+              <span>{profile.followersCount} Seguidores</span>
             </div>
           </div>
         </div>
@@ -1093,7 +1277,7 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
             className="rounded-full bg-[#0B5107] cursor-pointer transition hover:bg-[#093B05] px-[14px] py-[6px] text-[11px] border border-[#1B1C1E]"
           >
             <span className="text-[13px] font-medium leading-5 text-[#E3E2DE]">
-                  {t("profile.update_portfolio_button")}
+                  Actualizar Portafolio
             </span>
            </button>
         </div>
@@ -1117,37 +1301,45 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
 
           {activeMainTab === "portfolio" && effectivePortfolioTab === "images" && (
            <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-          <DigitalPortfolio items={digitalPortfolioMock} />
+          <DigitalPortfolio items={visualPortfolioItems} />
            </div>
           )}
 
           {activeMainTab === "portfolio" && effectivePortfolioTab === "music" && (
             <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
-              <MusicPortfolio />
+              <MusicPortfolio songs={musicSongs} albums={musicAlbums} error={postsError} />
             </div>
           )}
           
           {activeMainTab === "portfolio" && effectivePortfolioTab === "literature" && (
             <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
-              <WriterPortfolio />
+              <WriterPortfolio works={writerWorks} error={postsError} />
             </div>
           )}
 
             {activeMainTab !== "portfolio" && (
-              <div className="space-y-8 px-[70px]">
-                {filteredPosts.map((post) => (
-                  <div key={post.id}>
-                    <PostCard post={post} />
-                    <div className="w-[868px] h-px bg-[#8F8E8A] my-4 -ml-[70px]" />
-                  </div>
-                ))}
-                {filteredPosts.length === 0 && (
-                  <div className="text-center text-gray-500 py-8 ">
-                    {t("profile.no_posts")}
-                  </div>
-                )}
-              </div>
-            )}
+            <div className="space-y-8 px-[70px]">
+              {activeMainTab === "publications" && postsError ? (
+                <div className="text-center text-red-500 py-8">
+                  {postsError}
+                </div>
+              ) : (
+                <>
+                  {filteredPosts.map((post) => (
+                    <div key={post.id}>
+                      <PostCard post={post} />
+                      <div className="w-[868px] h-px bg-[#8F8E8A] my-4 -ml-[70px]" />
+                    </div>
+                  ))}
+                  {filteredPosts.length === 0 && (
+                    <div className="text-center text-gray-500 py-8 ">
+                      {t("profile.no_posts")}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
             </div>
                   <CreatePortfolioPostModal
         visible={modalVisible}
@@ -1160,6 +1352,5 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
         </div>
   </div>
 );
-};
-
+}
 export default Profile;
