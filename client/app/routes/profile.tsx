@@ -550,12 +550,20 @@ const FavoritesButton: React.FC<FavoritesButtonProps> = ({ onClick }) => (
 
 interface MoreButtonProps {
   onClick?: () => void;
+  variant?: "circle" | "plain";
 }
 
-const MoreButton: React.FC<MoreButtonProps> = ({ onClick }) => (
+const MoreButton: React.FC<MoreButtonProps> = ({
+  onClick,
+  variant = "circle",
+}) => (
   <button
     onClick={onClick}
-    className="text-[#1B1C1E] flex items-center justify-center"
+    className={
+      variant === "circle"
+        ? "w-7 h-7 rounded-full bg-[#F3F3F1] border border-[#1B1C1E] flex items-center justify-center"
+        : "text-[#1B1C1E] flex items-center justify-center"
+    }
   >
     <MoreHorizontal size={16} />
   </button>
@@ -1212,7 +1220,7 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
                 <>
                   <ConfigurationButton onClick={handleGoToSettings} />
                   <FavoritesButton onClick={handleGoToSaved} />
-                  <MoreButton />
+                  <MoreButton variant="circle" />
                 </>
               ) : (
                 <>
