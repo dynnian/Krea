@@ -1,16 +1,21 @@
 // profile.tsx
+// deno-lint-ignore-file
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Avatar, Tabs, Typography, Grid, message, Spin } from 'antd';
-import { useAuth } from '../contexts/AuthContext';
-import DigitalPortfolio from "../components/Profile/DigitalPortfolio";
-import MusicPortfolio from "../components/Profile/MusicPortfolio";
-import { digitalPortfolioMock } from "../data/digitalPortfolioMock";
-import WriterPortfolio from "../components/Profile/WriterPortfolio";
-import { settingsRepository } from "../services/settingsRepository";
-import CreatePortfolioPostModal from "../components/Posts/CreatePortfolioPostModal";
-
+import { useAuth } from '../contexts/AuthContext.tsx';
+import DigitalPortfolio from "../components/Profile/DigitalPortfolio.tsx";
+import MusicPortfolio from "../components/Profile/MusicPortfolio.tsx";
+import type { MusicAlbum, MusicSong } from "../data/musicPortfolioMock.ts";
+// import { digitalPortfolioMock } from "../data/digitalPortfolioMock.ts";
+import WriterPortfolio from "../components/Profile/WriterPortfolio.tsx";
+import type { WriterWork } from "../data/writerPortfolioMock.ts";
+import { settingsRepository } from "../services/settingsRepository.ts";
+import CreatePortfolioPostModal from "../components/Posts/CreatePortfolioPostModal.tsx";
+import axiosClient from "../lib/axios.ts";
+import type { UploadMediaType } from "../types/api.ts";
+import { PostType as PortfolioPostType } from "../types/common.ts";
 
 import {
   Heart,
@@ -37,6 +42,7 @@ export enum PostType {
 }
 
 interface Author {
+  id?: string;
   name: string;
   handle: string;
   avatar?: string;
@@ -87,6 +93,30 @@ interface ProfileData {
   isFollowing?: boolean;
   isSubscribed?: boolean;
   posts: Post[];
+}
+
+interface VisualPortfolioItem {
+  id: string;
+  title: string;
+  imageUrl: string;
+}
+
+interface ApiPostMedia {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  url: string;
+  isWorkMedia: boolean;
+}
+
+interface ApiPost {
+  id: string;
+  userId: string;
+  authorUsername: string;
+  title: string | null;
+  content: string;
+  createdAt: string;
+  media: ApiPostMedia[];
 }
 
 // ---------- Funciones API (debes implementar) ----------
@@ -267,13 +297,22 @@ async function fetchProfile(username: string): Promise<ProfileData> {
   });
 }
 
-async function followUser(username: string) {
-  // Implementar llamada real
-  console.log('Follow', username);
+async function fetchMyProfileFromApi() {
+  const res = await axiosClient.get("/users/me/profile");
+  return res.data;
 }
 
-async function unfollowUser(username: string) {
-  console.log('Unfollow', username);
+async function fetchPostsByAuthorFromApi(authorId: string) {
+  const res = await axiosClient.get(`/posts/user/${authorId}`);
+  return res.data;
+}
+
+async function followUser(targetId: string) {
+  await axiosClient.post(`/users/${targetId}/follow`);
+}
+
+async function unfollowUser(targetId: string) {
+  await axiosClient.delete(`/users/${targetId}/unfollow`);
 }
 
 async function subscribeUser(username: string) {
@@ -307,6 +346,102 @@ async function bookmarkPost(postId: number) {
 async function unbookmarkPost(postId: number) {
   console.log('Unbookmark', postId);
 }
+
+
+
+function mapPostsToVisualPortfolioItems(posts: Post[]): VisualPortfolioItem[] {
+  return posts
+    .filter((post) => {
+      const hasImage = post.media?.some((m) =>
+        m.media?.mimeType?.startsWith('image')
+      );
+      return post.isWork && hasImage;
+    })
+    .map((post) => {
+      const firstImage = post.media.find((m) =>
+        m.media?.mimeType?.startsWith('image')
+      );
+
+      return {
+        id: String(post.id),
+        title: post.title ?? 'Sin título',
+        imageUrl: firstImage?.media.path ?? '',
+      };
+    })
+    .filter((item) => item.imageUrl);
+}
+
+function mapPostsToMusicSongs(posts: Post[]): MusicSong[] {
+  return posts
+    .filter((post) => {
+      const hasAudio = post.media?.some((m) =>
+        m.media?.mimeType?.startsWith("audio")
+      );
+      return post.isWork && post.type === PostType.AUDIO && hasAudio;
+    })
+    .map((post) => {
+      const audioMedia = post.media.find((m) =>
+        m.media?.mimeType?.startsWith("audio")
+      );
+
+      const coverMedia = post.media.find((m) =>
+        m.media?.mimeType?.startsWith("image")
+      );
+
+      if (!audioMedia) return null;
+
+      return {
+        id: String(post.id),
+        title: post.title ?? "Sin título",
+        genre: "Sin género",
+        coverUrl:
+          coverMedia?.media.path ??
+          "https://placehold.co/240x240?text=Cover",
+        audioUrl: audioMedia.media.path,
+      };
+    })
+    .filter((song): song is MusicSong => song !== null);
+}
+
+function mapPostsToWriterWorks(posts: Post[]): WriterWork[] {
+  return posts
+    .filter((post) => {
+      const hasDocument = post.media?.some((m) => {
+        const mime = m.media?.mimeType ?? "";
+        return (
+          mime === "application/pdf" ||
+          mime === "application/epub+zip"
+        );
+      });
+
+      return post.isWork && post.type === PostType.LINK && hasDocument;
+    })
+    .map((post) => {
+      const documentMedia = post.media.find((m) => {
+        const mime = m.media?.mimeType ?? "";
+        return (
+          mime === "application/pdf" ||
+          mime === "application/epub+zip"
+        );
+      });
+
+      const coverMedia = post.media.find((m) =>
+        m.media?.mimeType?.startsWith("image")
+      );
+
+      return {
+        id: String(post.id),
+        title: post.title ?? "Sin título",
+        coverUrl:
+          coverMedia?.media.path ??
+          "https://placehold.co/240x360?text=Libro",
+        chaptersCount: 1,
+        genre: "Sin género",
+        description: post.content ?? "",
+      };
+    });
+}
+
 
 // ---------- Componentes reutilizables ----------
 interface ActionButtonProps {
@@ -420,7 +555,7 @@ interface MoreButtonProps {
 const MoreButton: React.FC<MoreButtonProps> = ({ onClick }) => (
   <button
     onClick={onClick}
-    className="w-7 h-7 rounded-full bg-[#F3F3F1] border border-[#1B1C1E] flex items-center justify-center"
+    className="text-[#1B1C1E] flex items-center justify-center"
   >
     <MoreHorizontal size={16} />
   </button>
@@ -445,7 +580,7 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({ audioUrl, coverUrl }) =
         barWidth: 2,
         barGap: 1,
         height: 40,
-        responsive: true,
+        // responsive: true,
         url: audioUrl,
       });
 
@@ -581,17 +716,17 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           className="bg-white border border-gray-800 flex-shrink-0"
         />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2 flex-wrap min-w-0">
             <span className="font-medium text-gray-900">{post.author.name}</span>
-            {post.author.isVerified && (
-              <Check size={14} className="text-[#0B5107]" />
-            )}
             <span className="text-gray-500">·</span>
             <span className="text-gray-500">@{post.author.handle}</span>
             <span className="text-gray-500">·</span>
             <span className="text-gray-500">{formatDate(post.createdAt)}</span>
-            <MoreButton onClick={() => {}} />
           </div>
+
+          <MoreButton variant="plain" onClick={() => {}} />
+        </div>
 
           <p className="text-gray-800 mt-1 text-sm text-justify">{post.content}</p>
 
@@ -676,7 +811,6 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               icon={<Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />}
               onClick={handleBookmark}
               active={bookmarked}
-              count={bookmarksCount}
             />
           </div>
         </div>
@@ -698,7 +832,11 @@ const Profile: React.FC = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [postsError, setPostsError] = useState<string | null>(null);
+  const [visualPortfolioItems, setVisualPortfolioItems] = useState<VisualPortfolioItem[]>([]);
+  const [musicSongs, setMusicSongs] = useState<MusicSong[]>([]);
+  const [musicAlbums, setMusicAlbums] = useState<MusicAlbum[]>([]);
+  const [writerWorks, setWriterWorks] = useState<WriterWork[]>([]);
   const [portfolioSettings, setPortfolioSettings] = useState <{
   imagesEnabled: boolean;
  musicEnabled: boolean;
@@ -711,7 +849,8 @@ const [activeMusicTab, setActiveMusicTab] = useState<"songs" | "albums">("songs"
 const [isFollowing, setIsFollowing] = useState(false);
 const [isSubscribed, setIsSubscribed] = useState(false);
 const [modalVisible, setModalVisible] = useState(false);
-const [portfolioModalType, setPortfolioModalType] = useState<UploadMediaType>(PostType.IMAGE);
+const [portfolioModalType, setPortfolioModalType] = useState<UploadMediaType>(PortfolioPostType.IMAGE);
+
 
 const handleGoToSettings = () => {
   navigate("/settings");
@@ -733,29 +872,141 @@ const isOwnProfile = username === "me";
         return;
       }
 
-      try {
-        setLoading(true);
-        let profileData: ProfileData;
+try {
+setLoading(true);
+  let profileData: ProfileData;
+  let nextPostsError: string | null = null;
+  let resolvedVisualPortfolioItems: VisualPortfolioItem[] = [];
+  let resolvedMusicSongs: MusicSong[] = [];
+  let resolvedMusicAlbums: MusicAlbum[] = [];
+  let resolvedWriterWorks: WriterWork[] = [];
+
         
-        if (isOwnProfile) {
-          if (!user) {
-            // Si no hay usuario autenticado, redirigir al login
-            navigate('/login');
-            return;
-          }
-          // Aquí llamarías a una API que devuelva el perfil del usuario autenticado
-          profileData = await fetchProfile('me');
-        } else {
-          // Perfil de otro usuario
-          profileData = await fetchProfile(username);
+      if (isOwnProfile) {
+        if (!user) {
+          navigate('/login');
+          return;
         }
 
+  const mockProfile = await fetchProfile('me');
+  const apiProfile = await fetchMyProfileFromApi();
+
+  let apiPosts = null;
+
+  try {
+    apiPosts = await fetchPostsByAuthorFromApi(apiProfile.id);
+    console.log("apiPosts", apiPosts);
+  } catch (postsErr: any) {
+    console.error("fetchPostsByAuthorFromApi error:", postsErr);
+    console.error("posts response data:", postsErr?.response?.data);
+    console.error("posts response status:", postsErr?.response?.status);
+
+    nextPostsError =
+      postsErr?.response?.data?.message ||
+      "No se pudieron cargar las publicaciones.";
+  }
+
+  const rawPosts = Array.isArray(apiPosts?.items)
+    ? apiPosts.items
+    : Array.isArray(apiPosts)
+      ? apiPosts
+      : [];
+
+  const resolvedPosts = normalizeApiPosts(
+    rawPosts,
+    apiProfile.displayName || apiProfile.username
+  );
+
+      function normalizeApiPosts(apiPosts: ApiPost[], displayName: string): Post[] {
+  return apiPosts.map((post) => {
+    const hasAudio = post.media.some((m) => m.mimeType.startsWith("audio"));
+    const hasImage = post.media.some((m) => m.mimeType.startsWith("image"));
+
+    return {
+      id: Number.NaN,
+      userPostId: Number.NaN,
+      type: hasAudio
+        ? PostType.AUDIO
+        : hasImage
+          ? PostType.IMAGE
+          : PostType.LINK,
+      title: post.title,
+      content: post.content,
+      isWork: post.media.some((m) => m.isWorkMedia),
+      isDeleted: false,
+      isLocal: true,
+      postRepliedTo: null,
+      postRepostOf: null,
+      createdAt: post.createdAt,
+      updatedAt: post.createdAt,
+      author: {
+        id: post.userId,
+        name: displayName,
+        handle: post.authorUsername,
+        avatar: undefined,
+        isVerified: true,
+      },
+      media: post.media.map((m) => ({
+        postId: Number.NaN,
+        mediaId: m.id,
+        isWorkMedia: m.isWorkMedia,
+        media: {
+          id: m.id,
+          originalFileName: m.fileName,
+          fileName: m.fileName,
+          mimeType: m.mimeType,
+          path: m.url,
+          uploadedAt: post.createdAt,
+        },
+      })),
+      likesCount: 0,
+      favoritesCount: 0,
+      replies: [],
+    };
+  });
+}
+
+  resolvedVisualPortfolioItems = mapPostsToVisualPortfolioItems(resolvedPosts);
+  resolvedMusicSongs = mapPostsToMusicSongs(resolvedPosts);
+  resolvedMusicAlbums = [];
+  resolvedWriterWorks = mapPostsToWriterWorks(resolvedPosts);
+
+  profileData = {
+    ...mockProfile,
+    user: {
+      ...mockProfile.user,
+      id: apiProfile.id,
+      name: apiProfile.displayName || apiProfile.username,
+      handle: apiProfile.username,
+    },
+    bio: apiProfile.biography ?? "",
+    followersCount: 0,
+    followingCount: 0,
+    posts: resolvedPosts,
+  };
+
+  } else {
+    profileData = await fetchProfile(username);
+  }
+
         setProfile(profileData);
+        setVisualPortfolioItems(resolvedVisualPortfolioItems);
+        setMusicSongs(resolvedMusicSongs);
+        setMusicAlbums(resolvedMusicAlbums);
+        setWriterWorks(resolvedWriterWorks);
         setIsFollowing(profileData.isFollowing || false);
         setIsSubscribed(profileData.isSubscribed || false);
+        setPostsError(nextPostsError);
         setError(null);
       } catch (err: any) {
-        setError(err.message);
+        console.error("loadProfile error:", err);
+        console.error("response data:", err?.response?.data);
+        console.error("response status:", err?.response?.status);
+        setVisualPortfolioItems([]);
+        setMusicSongs([]);
+        setMusicAlbums([]);
+        setWriterWorks([]);
+        setError(err?.response?.data?.message || err.message);
       } finally {
         setLoading(false);
       }
@@ -773,24 +1024,48 @@ const isOwnProfile = username === "me";
   void loadPortfolioSettings();
 }, []);
 
-  const handleFollow = async () => {
-    if (!user) {
-      message.warning(t('profile.auth_required'));
-      navigate('/login');
-      return;
+const handleFollow = async () => {
+  if (!user) {
+    message.warning(t('profile.auth_required'));
+    navigate('/login');
+    return;
+  }
+
+  const targetId = profile?.user.id;
+  if (!targetId) {
+    message.error('Este perfil no tiene un ID válido para seguir/dejar de seguir.');
+    return;
+  }
+
+  const previous = isFollowing;
+  setIsFollowing(!previous);
+
+  try {
+    if (previous) {
+      await unfollowUser(targetId);
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              followersCount: Math.max(0, prev.followersCount - 1),
+            }
+          : prev
+      );
+    } else {
+      await followUser(targetId);
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              followersCount: prev.followersCount + 1,
+            }
+          : prev
+      );
     }
-    const previous = isFollowing;
-    setIsFollowing(!previous);
-    try {
-      if (previous) {
-        await unfollowUser(username!);
-      } else {
-        await followUser(username!);
-      }
-    } catch {
-      setIsFollowing(previous);
-    }
-  };
+  } catch {
+    setIsFollowing(previous);
+  }
+};
 
   const handleSubscribe = async () => {
     if (!user) {
@@ -847,9 +1122,7 @@ const effectivePortfolioTab =
 const getFilteredPosts = () => {
   let posts = profile.posts;
 
-  if (activeMainTab === "publications") {
-    posts = posts.filter((p) => p.isWork === false);
-  } else if (activeMainTab === "members") {
+ if (activeMainTab === "members") {
     posts = [];
   } else if (activeMainTab === "portfolio") {
     posts = [];
@@ -881,15 +1154,16 @@ const getFilteredPosts = () => {
 
 const handleUpdatePortfolioClick = () => {
   if (activePortfolioSubTab === "images") {
-    setPortfolioModalType("image");
+    setPortfolioModalType(PortfolioPostType.IMAGE);
   } else if (activePortfolioSubTab === "literature") {
-    setPortfolioModalType("text");
+    setPortfolioModalType(PortfolioPostType.TEXT);
   } else if (activePortfolioSubTab === "music") {
-    setPortfolioModalType("music");
+    setPortfolioModalType(PortfolioPostType.MUSIC);
   }
 
   setModalVisible(true);
 };
+
 
 const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
   
@@ -1026,37 +1300,45 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
 
           {activeMainTab === "portfolio" && effectivePortfolioTab === "images" && (
            <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-          <DigitalPortfolio items={digitalPortfolioMock} />
+          <DigitalPortfolio items={visualPortfolioItems} />
            </div>
           )}
 
           {activeMainTab === "portfolio" && effectivePortfolioTab === "music" && (
             <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
-              <MusicPortfolio />
+              <MusicPortfolio songs={musicSongs} albums={musicAlbums} error={postsError} />
             </div>
           )}
           
           {activeMainTab === "portfolio" && effectivePortfolioTab === "literature" && (
             <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
-              <WriterPortfolio />
+              <WriterPortfolio works={writerWorks} error={postsError} />
             </div>
           )}
 
             {activeMainTab !== "portfolio" && (
-              <div className="space-y-8 px-[70px]">
-                {filteredPosts.map((post) => (
-                  <div key={post.id}>
-                    <PostCard post={post} />
-                    <div className="w-[868px] h-px bg-[#8F8E8A] my-4 -ml-[70px]" />
-                  </div>
-                ))}
-                {filteredPosts.length === 0 && (
-                  <div className="text-center text-gray-500 py-8 ">
-                    {t("profile.no_posts")}
-                  </div>
-                )}
-              </div>
-            )}
+            <div className="space-y-8 px-[70px]">
+              {activeMainTab === "publications" && postsError ? (
+                <div className="text-center text-red-500 py-8">
+                  {postsError}
+                </div>
+              ) : (
+                <>
+                  {filteredPosts.map((post) => (
+                    <div key={post.id}>
+                      <PostCard post={post} />
+                      <div className="w-[868px] h-px bg-[#8F8E8A] my-4 -ml-[70px]" />
+                    </div>
+                  ))}
+                  {filteredPosts.length === 0 && (
+                    <div className="text-center text-gray-500 py-8 ">
+                      {t("profile.no_posts")}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
             </div>
                   <CreatePortfolioPostModal
         visible={modalVisible}
@@ -1069,6 +1351,5 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
         </div>
   </div>
 );
-};
-
+}
 export default Profile;
