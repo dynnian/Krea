@@ -555,7 +555,7 @@ interface MoreButtonProps {
 const MoreButton: React.FC<MoreButtonProps> = ({ onClick }) => (
   <button
     onClick={onClick}
-    className="w-7 h-7 rounded-full bg-[#F3F3F1] border border-[#1B1C1E] flex items-center justify-center"
+    className="text-[#1B1C1E] flex items-center justify-center"
   >
     <MoreHorizontal size={16} />
   </button>
@@ -716,17 +716,17 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           className="bg-white border border-gray-800 flex-shrink-0"
         />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2 flex-wrap min-w-0">
             <span className="font-medium text-gray-900">{post.author.name}</span>
-            {post.author.isVerified && (
-              <Check size={14} className="text-[#0B5107]" />
-            )}
             <span className="text-gray-500">·</span>
             <span className="text-gray-500">@{post.author.handle}</span>
             <span className="text-gray-500">·</span>
             <span className="text-gray-500">{formatDate(post.createdAt)}</span>
-            <MoreButton onClick={() => {}} />
           </div>
+
+          <MoreButton variant="plain" onClick={() => {}} />
+        </div>
 
           <p className="text-gray-800 mt-1 text-sm text-justify">{post.content}</p>
 
@@ -811,7 +811,6 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               icon={<Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />}
               onClick={handleBookmark}
               active={bookmarked}
-              count={bookmarksCount}
             />
           </div>
         </div>
