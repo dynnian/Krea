@@ -18,4 +18,18 @@
       <PackageReference Include="AutoMapper" Version="16.0.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Features\Commissions\AcceptCommissionRequest\" />
+      <Folder Include="Features\Commissions\AddSubmissionFeedback\" />
+      <Folder Include="Features\Commissions\AddSubmission\" />
+      <Folder Include="Features\Commissions\ApproveCommission\" />
+      <Folder Include="Features\Commissions\CancelCommission\" />
+      <Folder Include="Features\Commissions\CreateCommissionOffering\" />
+      <Folder Include="Features\Commissions\CreateCommissionRequest\" />
+      <Folder Include="Features\Commissions\CreatePaymentForCommission\" />
+      <Folder Include="Features\Commissions\DeliverCommission\" />
+      <Folder Include="Features\Commissions\EditSubmissionFeedback\" />
+      <Folder Include="Features\Commissions\RequestChanges\" />
+    </ItemGroup>
+
 </Project>

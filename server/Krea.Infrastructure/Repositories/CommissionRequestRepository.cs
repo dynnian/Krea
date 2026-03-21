@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Krea.Infrastructure.Repositories;
 
 public sealed class CommissionRequestRepository(AppDbContext context) 
-    : ICommissionRequestRepository {
-    
+    : ICommissionRequestRepository 
+{
     public async Task<CommissionRequest?> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default)
@@ -19,16 +19,47 @@ public sealed class CommissionRequestRepository(AppDbContext context)
             .FirstOrDefaultAsync(cr => cr.Id == id, cancellationToken);
     }
 
+    public async Task<CommissionRequest?> GetByIdWithAllAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        return await context.CommissionRequests
+            .Include(cr => cr.Bidder)
+            .Include(cr => cr.Offering)
+            .Include(cr => cr.Payments)
+                .ThenInclude(p => p.Payer)
+            .Include(cr => cr.Submissions)
+                .ThenInclude(s => s.Media)
+            .Include(cr => cr.Submissions)
+                .ThenInclude(s => s.Feedback)
+                    .ThenInclude(f => f.Author)
+            .FirstOrDefaultAsync(cr => cr.Id == id, cancellationToken);
+    }
+
     public async Task<CommissionRequest?> GetByIdWithPaymentsAsync(
         Guid id,
         CancellationToken cancellationToken = default)
     {
         return await context.CommissionRequests
-            .AsNoTracking()
             .Include(cr => cr.Bidder)
             .Include(cr => cr.Offering)
             .Include(cr => cr.Payments)
                 .ThenInclude(p => p.Payer)
+            .FirstOrDefaultAsync(cr => cr.Id == id, cancellationToken);
+    }
+
+    public async Task<CommissionRequest?> GetByIdWithSubmissionsAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        return await context.CommissionRequests
+            .Include(cr => cr.Bidder)
+            .Include(cr => cr.Offering)
+            .Include(cr => cr.Submissions)
+                .ThenInclude(s => s.Media)
+            .Include(cr => cr.Submissions)
+                .ThenInclude(s => s.Feedback)
+                    .ThenInclude(f => f.Author)
             .FirstOrDefaultAsync(cr => cr.Id == id, cancellationToken);
     }
 

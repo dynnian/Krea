@@ -4,6 +4,7 @@ namespace Krea.Domain.ValueObjects {
         Accepted = 1,
         InProgress = 2,
         Delivered = 3,
-        Canceled = 4
+        Completed = 4,
+        Cancelled = 5
     }
 }
