@@ -78,5 +78,40 @@ namespace Krea.Infrastructure.Repositories {
                                  .Take(take)
                                  .ToListAsync(cancellationToken);
         }
+        
+        public async Task<(IReadOnlyList<Post>, int)> GetRepliesAsync(
+            Guid postId,
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.Posts
+                .AsNoTracking()
+                .Where(p => p.RepliedToId == postId && !p.IsDeleted);
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var posts = await query
+                .Include(p => p.AuthorPost)
+                .OrderByDescending(p => p.UploadedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return (posts, totalCount);
+        }
+
+        public async Task<List<Post>> GetRepliesTreeAsync(
+            Guid postId,
+            CancellationToken cancellationToken = default)
+        {
+            // Se traen los replies y se arma el "arbol" en memoria
+            return await _context.Posts
+                .AsNoTracking()
+                .Where(p => !p.IsDeleted && p.RepliedToId != null)
+                .Include(p => p.AuthorPost)
+                .OrderBy(p => p.UploadedAt)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

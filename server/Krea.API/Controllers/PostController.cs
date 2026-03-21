@@ -1,4 +1,5 @@
 namespace Krea.API.Controllers {
+    using Application.Abstractions;
     using Application.Features.Genres;
     using Application.Features.Posts.CreatePost;
     using Application.Features.Posts.DeletePost;
@@ -10,6 +11,7 @@ namespace Krea.API.Controllers {
     using Application.Features.Posts.Hashtag;
     using Application.Features.Posts.Like;
     using Application.Features.Posts.ReplyPost;
+    using Application.Features.Posts.ReplyPost.GetReplies;
     using Application.Features.Posts.Repost;
     using Application.Features.PostUploads.CreatePostUpload;
     using Contracts;
@@ -180,6 +182,30 @@ namespace Krea.API.Controllers {
                 nameof(GetById),
                 new { id = replyId },
                 new { ReplyPostId = replyId });
+        }
+        
+        /// <summary>
+        /// Obtiene los comentarios (replies) de un post.
+        /// </summary>
+        /// <param name="postId">ID del post</param>
+        /// <param name="mode">Flat | Tree</param>
+        /// <param name="page">Página (solo flat)</param>
+        /// <param name="pageSize">Tamaño de página (solo flat)</param>
+        /// <param name="cancellationToken">Token used to cancel the request.</param>
+        [HttpGet("{postId:guid}/replies")]
+        public async Task<IActionResult> GetReplies(
+            Guid postId,
+            [FromQuery] ReplyMode? mode,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            CancellationToken cancellationToken = default)
+        {
+            var finalMode = mode ?? ReplyMode.Flat;
+            var result = await _sender.Send(
+                new GetRepliesQuery(postId, page, pageSize, finalMode),
+                cancellationToken);
+
+            return Ok(result);
         }
 
         /// <summary>
