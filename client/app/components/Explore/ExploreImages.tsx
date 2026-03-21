@@ -46,7 +46,7 @@ export default function ExploreImages({
   selectedArtist,
 }: ExploreImagesProps) {
   return (
-    <div className="pt-[22px] pb-[1px]">
+    <div className="pb-[1px]">
       {(selectedTag || selectedArtist) && (
         <div className="max-w-[1200px] mx-auto mb-4 text-[#1B1C1E] text-sm px-2 md:px-4">
           {selectedTag && <span>Tag: {selectedTag}</span>}
