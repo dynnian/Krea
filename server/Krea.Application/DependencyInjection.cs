@@ -46,6 +46,17 @@ namespace Krea.Application {
     using Features.Favorites.TogglePostFavorite;
     using Features.Genres;
     using Features.Genres.GetAllGenres;
+    using Features.Commissions.AcceptCommissionRequest;
+    using Features.Commissions.AddSubmission;
+    using Features.Commissions.AddSubmissionFeedback;
+    using Features.Commissions.ApproveCommission;
+    using Features.Commissions.CancelCommission;
+    using Features.Commissions.CreateCommissionOffering;
+    using Features.Commissions.CreateCommissionRequest;
+    using Features.Commissions.CreatePaymentForCommission;
+    using Features.Commissions.DeliverCommission;
+    using Features.Commissions.EditSubmissionFeedback;
+    using Features.Commissions.RequestChanges;
     using Features.Posts.CreatePost;
     using Features.Posts.DeletePost;
     using Features.Posts.Explore;
@@ -192,7 +203,24 @@ namespace Krea.Application {
             
             // Payments
             services.AddScoped<IRequestHandler<ConfirmPaymentCommand, Unit>, ConfirmPaymentCommandHandler>();
+            
+            // Donations
             services.AddScoped<IRequestHandler<CreateDonationCommand, CreateDonationResponse>, CreateDonationCommandHandler>();
+            
+            // Commissions
+            services.AddScoped<IRequestHandler<CreateCommissionOfferingCommand, CreateCommissionOfferingResponse>, CreateCommissionOfferingCommandHandler>();
+            services.AddScoped<IRequestHandler<CreateCommissionRequestCommand, CreateCommissionRequestResponse>, CreateCommissionRequestCommandHandler>();
+            services.AddScoped<IRequestHandler<AcceptCommissionRequestCommand, Unit>, AcceptCommissionRequestCommandHandler>();
+            services.AddScoped<IRequestHandler<CreatePaymentForCommissionCommand, CreatePaymentForCommissionResponse>, CreatePaymentForCommissionCommandHandler>();
+            services.AddScoped<IRequestHandler<AddSubmissionCommand, Unit>, AddSubmissionCommandHandler>();
+            services.AddScoped<IRequestHandler<DeliverCommissionCommand, Unit>, DeliverCommissionCommandHandler>();
+            services.AddScoped<IRequestHandler<ApproveCommissionCommand, Unit>, ApproveCommissionCommandHandler>();
+            services.AddScoped<IRequestHandler<RequestChangesCommand, Unit>, RequestChangesCommandHandler>();
+            services.AddScoped<IRequestHandler<CancelCommissionCommand, Unit>, CancelCommissionCommandHandler>();
+            
+            // Submissions
+            services.AddScoped<IRequestHandler<AddSubmissionFeedbackCommand, Unit>, AddSubmissionFeedbackCommandHandler>();
+            services.AddScoped<IRequestHandler<EditSubmissionFeedbackCommand, Unit>, EditSubmissionFeedbackCommandHandler>();
             
             services.AddScoped<ISender, Sender>();
             
