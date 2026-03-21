@@ -113,5 +113,18 @@ namespace Krea.Infrastructure.Repositories {
                 .OrderBy(p => p.UploadedAt)
                 .ToListAsync(cancellationToken);
         }
+        
+        public async Task<bool> ExistsRepostAsync(
+            Guid originalPostId,
+            Guid userId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.Posts
+                .AnyAsync(p =>
+                        p.RepostOfId == originalPostId &&
+                        p.AuthorPostId == userId &&
+                        !p.IsDeleted,
+                    cancellationToken);
+        }
     }
 }

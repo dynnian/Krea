@@ -102,8 +102,15 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> GetById(
             Guid id,
             CancellationToken cancellationToken = default) {
+            Guid? currentUserId = null;
+
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                currentUserId = GetCurrentUserId();
+            }
+
             GetPostByIdResponse? result = await _sender.Send(
-                new GetPostByIdCommand(id),
+                new GetPostByIdCommand(id, currentUserId),
                 cancellationToken);
 
             if (result is null)

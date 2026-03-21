@@ -34,5 +34,10 @@ namespace Krea.Domain.Repositories {
         Task<List<Post>> GetRepliesTreeAsync(
             Guid postId,
             CancellationToken cancellationToken = default);
+
+        Task<bool> ExistsRepostAsync(
+            Guid originalPostId,
+            Guid userId,
+            CancellationToken cancellationToken = default);
     }
 }
