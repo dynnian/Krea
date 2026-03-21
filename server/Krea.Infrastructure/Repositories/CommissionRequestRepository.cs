@@ -26,13 +26,14 @@ public sealed class CommissionRequestRepository(AppDbContext context)
         return await context.CommissionRequests
             .Include(cr => cr.Bidder)
             .Include(cr => cr.Offering)
+            .ThenInclude(o => o.Artist)  
             .Include(cr => cr.Payments)
-                .ThenInclude(p => p.Payer)
+            .ThenInclude(p => p.Payer)
             .Include(cr => cr.Submissions)
-                .ThenInclude(s => s.Media)
+            .ThenInclude(s => s.Media)
             .Include(cr => cr.Submissions)
-                .ThenInclude(s => s.Feedback)
-                    .ThenInclude(f => f.Author)
+            .ThenInclude(s => s.Feedback)
+            .ThenInclude(f => f.Author)
             .FirstOrDefaultAsync(cr => cr.Id == id, cancellationToken);
     }
 
@@ -83,6 +84,41 @@ public sealed class CommissionRequestRepository(AppDbContext context)
             .Include(cr => cr.Bidder)
             .Where(cr => cr.Offering.Id == offeringId)
             .ToListAsync(cancellationToken);
+    }
+    
+    public async Task<CommissionRequest?> GetBySubmissionIdAsync(Guid submissionId, CancellationToken cancellationToken)
+    {
+        return await context.CommissionRequests
+            .Include(cr => cr.Bidder)
+            .Include(cr => cr.Offering)
+            .ThenInclude(o => o.Artist)
+            .Include(cr => cr.Submissions)
+            .ThenInclude(s => s.Feedback)
+            .ThenInclude(f => f.Author)
+            .Where(cr => cr.Submissions.Any(s => s.Id == submissionId))
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<CommissionRequest?> GetByFeedbackIdAsync(Guid feedbackId, CancellationToken cancellationToken)
+    {
+        return await context.CommissionRequests
+            .Include(cr => cr.Bidder)
+            .Include(cr => cr.Offering)
+            .ThenInclude(o => o.Artist)
+            .Include(cr => cr.Submissions)
+            .ThenInclude(s => s.Feedback)
+            .ThenInclude(f => f.Author)
+            .Where(cr => cr.Submissions.Any(s => s.Feedback.Any(f => f.Id == feedbackId)))
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+    
+    public async Task<CommissionRequest?> GetByIdWithOfferingForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await context.CommissionRequests
+            .Include(cr => cr.Bidder)
+            .Include(cr => cr.Offering)
+            .ThenInclude(o => o.Artist)
+            .FirstOrDefaultAsync(cr => cr.Id == id, cancellationToken);
     }
 
     public async Task AddAsync(
