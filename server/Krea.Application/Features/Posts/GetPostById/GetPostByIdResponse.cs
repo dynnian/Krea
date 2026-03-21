@@ -1,4 +1,6 @@
 namespace Krea.Application.Features.Posts.GetPostById {
+    using Dto;
+
     public sealed record GetPostByIdResponse(
         Guid Id,
         Guid AuthorPostId,
@@ -8,6 +10,13 @@ namespace Krea.Application.Features.Posts.GetPostById {
         bool IsLocal,
         int UploadCount,
         int LikesCount,
-        DateTime UploadedAt
+        DateTime UploadedAt,
+
+        IReadOnlyList<PostMediaDto> Media,
+
+        bool IsLikedByCurrentUser,
+        bool IsRetweetedByCurrentUser,
+
+        IReadOnlyList<ReplyDto> Replies
     );
 }
