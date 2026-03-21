@@ -26,22 +26,20 @@ const Explore: React.FC = () => {
   const [searchParams] = useSearchParams();
   const selectedTag = searchParams.get('tag');
   const selectedArtist = searchParams.get('artist');
+  const [activeTab, setActiveTab] = useState('images');
 
   const items = [
     {
       key: 'images',
       label: t('explore.tabs.images'),
-      children: <ExploreImages selectedTag={selectedTag} selectedArtist={selectedArtist} />,
     },
     {
       key: 'music',
       label: t('explore.tabs.music'),
-      children: <ExploreMusic selectedTag={selectedTag} selectedArtist={selectedArtist} />
     },
     {
       key: 'literature',
       label: t('explore.tabs.literature'),
-      children: <ExploreLiterature selectedTag={selectedTag} selectedArtist={selectedArtist} />,
     },
   ];
 
@@ -50,6 +48,8 @@ const Explore: React.FC = () => {
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: isMobile ? 0 : '0 16px' }}>
         <Tabs 
           items={items}
+          activeKey={activeTab}
+          onChange={setActiveTab}
           centered={!isMobile}
           className="krea-tabs"
           tabBarStyle={{
@@ -61,6 +61,24 @@ const Explore: React.FC = () => {
           style={{ width: '100%' }}
         />
       </div>
+
+      {activeTab === 'images' && (
+        <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+          <ExploreImages selectedTag={selectedTag} selectedArtist={selectedArtist} />
+        </div>
+      )}
+
+      {activeTab === 'music' && (
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: isMobile ? '8px' : '0 16px' }}>
+          <ExploreMusic selectedTag={selectedTag} selectedArtist={selectedArtist} />
+        </div>
+      )}
+
+      {activeTab === 'literature' && (
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: isMobile ? '8px' : '0 16px' }}>
+          <ExploreLiterature selectedTag={selectedTag} selectedArtist={selectedArtist} />
+        </div>
+      )}
     </div>
   );
 };
