@@ -44,6 +44,7 @@ namespace Krea.Application {
     using Features.Posts.Hashtag;
     using Features.Posts.Like;
     using Features.Posts.ReplyPost;
+    using Features.Posts.ReplyPost.GetReplies;
     using Features.Posts.Repost;
 
     public static class DependencyInjection {
@@ -98,6 +99,7 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<DeletePostCommand, DeletePostResponse>, DeletePostHandler>();
             services.AddScoped<IRequestHandler<GetPostByIdCommand, GetPostByIdResponse?>, GetPostByIdHandler>();
             services.AddScoped<IRequestHandler<ReplyPostCommand, Guid>, ReplyPostHandler>();
+            services.AddScoped<IRequestHandler<GetRepliesQuery, RepliesResponse>, GetRepliesHandler>();
             services.AddScoped<IRequestHandler<RepostPostCommand, Guid>, RepostHandler>();
             services.AddScoped<IRequestHandler<LikePostCommand, Unit>, LikePostHandler>();
             services.AddScoped<IRequestHandler<UnlikePostCommand, Unit>, UnlikePostHandler>();
