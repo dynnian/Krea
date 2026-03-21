@@ -16,69 +16,41 @@ export interface PostsQuery {
 }
 
 export const postsApi = {
-  // GET /api/Posts?page&pageSize
-  getPosts: async (query: PostsQuery = {}) => {
-    const params = {
-      page: query.page ?? 1,
-      pageSize: query.pageSize ?? 20,
-    };
-    const res = await axiosClient.get<ApiPost[]>("/Posts", { params });
-    return res.data;
-  },
+  // Obtener todos los posts (paginado)
+  getPosts: (page = 1, pageSize = 20) =>
+    axiosClient.get<PostDto[]>("/api/Posts", { params: { page, pageSize } }),
 
-  // GET /api/Posts/{id}
-  getPost: async (id: string) => {
-    const res = await axiosClient.get<ApiPost>(`/Posts/${id}`);
-    return res.data;
-  },
+  // Obtener un post por ID
+  getPost: (id: string) => axiosClient.get<PostDto>(`/api/Posts/${id}`),
 
-  // POST /api/Posts
-  createPost: async (data: CreatePostData) => {
-    const res = await axiosClient.post<ApiPost>("/Posts", data);
-    return res.data;
-  },
+  // Crear un post
+  createPost: (data: CreatePostCommand) =>
+    axiosClient.post<{ postId: string }>("/api/Posts", data),
 
-  // DELETE /api/Posts/{id}
-  deletePost: async (id: string) => {
-    await axiosClient.delete(`/Posts/${id}`);
-  },
+  // Eliminar post
+  deletePost: (postId: string) => axiosClient.delete(`/api/Posts/${postId}`),
 
-  // GET /api/Posts/user/{authorId}
-  getUserPosts: async (authorId: string, query: PostsQuery = {}) => {
-    const params = {
-      page: query.page ?? 1,
-      pageSize: query.pageSize ?? 20,
-    };
-    const res = await axiosClient.get<ApiPost[]>(`/Posts/user/${authorId}`, {
-      params,
-    });
-    return res.data;
-  },
+  // Obtener posts de un usuario
+  getUserPosts: (authorId: string, page = 1, pageSize = 20) =>
+    axiosClient.get<PostDto[]>(`/api/Posts/user/${authorId}`, {
+      params: { page, pageSize },
+    }),
 
-  // POST /api/Posts/{postId}/reply
-  replyToPost: async (postId: string, data: ReplyData) => {
-    const res = await axiosClient.post(`/Posts/${postId}/reply`, data);
-    return res.data; // probablemente devuelve el nuevo post (reply)
-  },
+  // Responder (comentar)
+  replyToPost: (postId: string, data: ReplyPostCommand) =>
+    axiosClient.post<{ postId: string }>(`/api/Posts/${postId}/reply`, data),
 
-  // POST /api/Posts/{postId}/repost
-  repost: async (postId: string, data: RepostData) => {
-    const res = await axiosClient.post(`/Posts/${postId}/repost`, data);
-    return res.data;
-  },
+  // Repostear
+  repost: (postId: string, data: RepostPostCommand) =>
+    axiosClient.post(`/api/Posts/${postId}/repost`, data),
 
-  // POST /api/Posts/{postId}/like
-  like: async (postId: string, data: LikeData) => {
-    const res = await axiosClient.post(`/Posts/${postId}/like`, data);
-    return res.data;
-  },
+  // Like
+  like: (postId: string, data: LikePostCommand) =>
+    axiosClient.post(`/api/Posts/${postId}/like`, data),
 
-  // DELETE /api/Posts/{postId}/like
-  unlike: async (postId: string, data: LikeData) => {
-    // Nota: DELETE con body no es estándar, pero lo implementamos como pide la API
-    const res = await axiosClient.delete(`/Posts/${postId}/like`, { data });
-    return res.data;
-  },
+  // Unlike
+  unlike: (postId: string, data: LikePostCommand) =>
+    axiosClient.delete(`/api/Posts/${postId}/unlike`, { data }),
 
   // POST /api/Posts/{postId} (subida de medios)
   uploadMedia: async (postId: string, data: UploadMediaData) => {
@@ -123,6 +95,21 @@ export const postsApi = {
     });
     return res.data;
   },
+  // Obtener comentarios (replies) de un post – ¡NUEVO!
+  getReplies: (postId: string, page = 1, pageSize = 20) =>
+    axiosClient.get<PostDto[]>(`/api/Posts/${postId}/replies`, {
+      params: { page, pageSize },
+    }),
+
+  // Explorar contenido
+  explore: (params: {
+    category?: string;
+    genres?: string[];
+    tags?: string[];
+    sortBy?: string;
+    page?: number;
+    pageSize?: number;
+  }) => axiosClient.get<PostDto[]>("/api/Posts/explore", { params }),
 };
 
 export const feedApi = {
