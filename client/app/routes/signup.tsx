@@ -79,7 +79,7 @@ export default function SignUpRoute() {
       };
       await register(registerData, rememberMe);
       // Redirigir a confirmación (puedes pasar el email en state)
-      navigate("/confirmAccount", { replace: true, state: { email: data.email } });
+      navigate("/login", { replace: true, state: { email: data.email } });
     } catch (error: any) {
       setAuthError(error.message || "Registration failed. Please try again.");
     }
