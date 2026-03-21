@@ -295,8 +295,7 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> CreateUpload(
             Guid postId,
             [FromForm] CreatePostUploadRequest request,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             await using Stream stream = request.File.OpenReadStream();
 
             var command = new CreatePostUploadCommand(
@@ -308,16 +307,21 @@ namespace Krea.API.Controllers {
                 request.Type,
                 request.Title,
                 request.Description,
-                request.CoverUrl,
                 request.GenreIds,
+                request.Width,
+                request.Height,
+                request.FileSize,
+                request.Format,
+                request.BitrateKbps,
+                request.DurationSec,
+                request.WordCount,
                 request.LanguageCode,
                 request.SortTitle,
                 request.Subtitle,
                 request.IsWorkMedia
             );
 
-            CreatePostUploadResponse result =
-                await _sender.Send(command, cancellationToken);
+            CreatePostUploadResponse result = await _sender.Send(command, cancellationToken);
 
             return Ok(result);
         }

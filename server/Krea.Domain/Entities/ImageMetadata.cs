@@ -18,13 +18,12 @@ namespace Krea.Domain.Entities {
             Guid uploadId,
             string title,
             string? description,
-            string? coverUrl,
             int width,
             int height,
             long fileSize,
             string format,
             IEnumerable<Genre>? genres = null)
-            : base(uploadId, title, description, coverUrl, genres) {
+            : base(uploadId, title, description, genres) {
             if (string.IsNullOrWhiteSpace(format))
                 throw new ArgumentException("Format is required.");
 
@@ -39,7 +38,6 @@ namespace Krea.Domain.Entities {
             Guid uploadId,
             string title,
             string? description,
-            string? coverUrl,
             int width,
             int height,
             long fileSize,
@@ -50,7 +48,6 @@ namespace Krea.Domain.Entities {
                 UploadId = uploadId,
                 Title = title,
                 Description = description,
-                CoverUrl = coverUrl,
                 Width = width,
                 Height = height,
                 FileSize = fileSize,

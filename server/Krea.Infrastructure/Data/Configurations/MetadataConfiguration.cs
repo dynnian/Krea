@@ -21,9 +21,6 @@ namespace Krea.Infrastructure.Data.Configurations {
             builder.Property(m => m.Description)
                    .HasMaxLength(1000);
 
-            builder.Property(x => x.CoverUrl)
-                .HasMaxLength(500);
-            
             // Discriminador para TPH
             builder
                 .HasDiscriminator<string>("metadata_type")

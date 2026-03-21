@@ -508,10 +508,6 @@ namespace Krea.Infrastructure.Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("CoverUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
@@ -582,7 +578,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
                     b.ToTable("payments", null, t =>
                         {
-                            t.HasCheckConstraint("CK_Payment_SingleTarget", "\r\n            (CASE WHEN \"SubscriptionId\" IS NOT NULL THEN 1 ELSE 0 END +\r\n             CASE WHEN \"DonationId\" IS NOT NULL THEN 1 ELSE 0 END +\r\n             CASE WHEN \"CommissionRequestId\" IS NOT NULL THEN 1 ELSE 0 END) = 1\r\n        ");
+                            t.HasCheckConstraint("CK_Payment_SingleTarget", "\n            (CASE WHEN \"SubscriptionId\" IS NOT NULL THEN 1 ELSE 0 END +\n             CASE WHEN \"DonationId\" IS NOT NULL THEN 1 ELSE 0 END +\n             CASE WHEN \"CommissionRequestId\" IS NOT NULL THEN 1 ELSE 0 END) = 1\n        ");
                         });
                 });
 
