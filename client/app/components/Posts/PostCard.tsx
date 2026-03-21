@@ -3,12 +3,11 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 import { Avatar, message, Modal } from 'antd';
-import { Heart, MessageCircle, Repeat2, Bookmark, Link2, MoreHorizontal, User } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext.tsx';
-import AudioWaveform from '../WaveSurfer/AudioWaveform.tsx';
-import { postsApi } from '../../services/postsService.ts';
-import type { Post } from '../../types/post.ts';
-import { PostType } from '../../types/common.ts';
+import { Heart, MessageCircle, Repeat2, Bookmark, MoreHorizontal, User } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import AudioWaveform from '../WaveSurfer/AudioWaveform';
+import { postsApi } from '../../services/postsService';
+import type { PostDto } from '../../types/api';
 
 interface PostCardProps {
   post: PostDto;
