@@ -3,7 +3,8 @@ namespace Krea.Application.Features.Posts.Hashtag {
     using Domain.Repositories;
     using Dto;
 
-    public sealed class RemoveHashtagHandler
+    public sealed class RemoveHashtagHandler 
+        : IRequestHandler<RemoveHashtagCommand, Unit>
     {
         private readonly IPostRepository _postRepository;
         private readonly IUnitOfWork _unitOfWork;
@@ -16,7 +17,7 @@ namespace Krea.Application.Features.Posts.Hashtag {
             _unitOfWork = unitOfWork;
         }
 
-        public async Task Handle(RemoveHashtagCommand command, CancellationToken ct)
+        public async Task<Unit> Handle(RemoveHashtagCommand command, CancellationToken ct)
         {
             var post = await _postRepository
                 .GetFullPostAsync(command.PostId, ct);
@@ -25,7 +26,10 @@ namespace Krea.Application.Features.Posts.Hashtag {
                 throw new InvalidOperationException("Post not found");
 
             post.RemoveHashtag(command.HashtagId);
+
             await _unitOfWork.SaveChangesAsync(ct);
+
+            return Unit.Value;
         }
     }
 }

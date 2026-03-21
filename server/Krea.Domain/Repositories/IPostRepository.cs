@@ -24,5 +24,15 @@ namespace Krea.Domain.Repositories {
         Task<int> CountAsync(CancellationToken cancellationToken = default);
 
         Task<IReadOnlyList<Post>> GetRecentAsync(int take, CancellationToken cancellationToken = default);
+        
+        Task<(IReadOnlyList<Post> Posts, int TotalCount)> GetRepliesAsync(
+            Guid postId,
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken = default);
+
+        Task<List<Post>> GetRepliesTreeAsync(
+            Guid postId,
+            CancellationToken cancellationToken = default);
     }
 }

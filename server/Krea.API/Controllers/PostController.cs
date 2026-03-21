@@ -1,4 +1,6 @@
 namespace Krea.API.Controllers {
+    using Application.Abstractions;
+    using Application.Features.Genres;
     using Application.Features.Posts.CreatePost;
     using Application.Features.Posts.DeletePost;
     using Application.Features.Posts.Dto;
@@ -6,14 +8,17 @@ namespace Krea.API.Controllers {
     using Application.Features.Posts.GetAllPosts;
     using Application.Features.Posts.GetPostById;
     using Application.Features.Posts.GetPostsByUser;
+    using Application.Features.Posts.Hashtag;
     using Application.Features.Posts.Like;
     using Application.Features.Posts.ReplyPost;
+    using Application.Features.Posts.ReplyPost.GetReplies;
     using Application.Features.Posts.Repost;
     using Application.Features.PostUploads.CreatePostUpload;
     using Contracts;
     using Domain.Abstractions;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
+    using System.Security.Claims;
 
 
     /// <summary>
@@ -26,7 +31,6 @@ namespace Krea.API.Controllers {
     /// All endpoints require authentication.
     /// </remarks>
     [ApiController]
-    [Authorize]
     [Route("api/[controller]")]
     public sealed class PostsController : ControllerBase {
         private readonly ISender _sender;
@@ -49,6 +53,7 @@ namespace Krea.API.Controllers {
         /// A list of <see cref="PostDto"/> representing the posts for the requested page.
         /// </returns>
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
@@ -71,6 +76,7 @@ namespace Krea.API.Controllers {
         /// A paginated collection of posts authored by the specified user.
         /// </returns>
         [HttpGet("user/{authorId:guid}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetByUser(
             Guid authorId,
             [FromQuery] int page = 1,
@@ -92,6 +98,7 @@ namespace Krea.API.Controllers {
         /// The post details if found; otherwise, a <c>404 Not Found</c> response.
         /// </returns>
         [HttpGet("{id:guid}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetById(
             Guid id,
             CancellationToken cancellationToken = default) {
@@ -116,9 +123,14 @@ namespace Krea.API.Controllers {
         /// Returns the identifier of the newly created post.
         /// </returns>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Create(
             [FromBody] CreatePostCommand command,
             CancellationToken cancellationToken = default) {
+            Guid authorPostId = GetCurrentUserId();
+            if (command.AuthorPostId != authorPostId)
+                return Unauthorized();
+            
             CreatePostResponse result = await _sender.Send(command, cancellationToken);
 
             return CreatedAtAction(
@@ -126,22 +138,6 @@ namespace Krea.API.Controllers {
                 new { id = result.PostId },
                 result);
         }
-
-        // POST: api/posts/{postId}/upload
-        // [HttpPost("{postId:guid}/upload")]
-        // public async Task<IActionResult> AddUpload(
-        //     Guid postId,
-        //     [FromBody] AddUploadRequest request,
-        //     CancellationToken cancellationToken) {
-        //     AddUpload.Response response = await _sender.Send(
-        //         new AddUpload.Request(
-        //             postId,
-        //             request.MediaId,
-        //             request.IsWorkMedia),
-        //         cancellationToken);
-        //
-        //     return Ok(response);
-        // }
 
         /// <summary>
         /// Deletes an existing post.
@@ -152,6 +148,7 @@ namespace Krea.API.Controllers {
         /// A <c>204 No Content</c> response if the deletion was successful.
         /// </returns>
         [HttpDelete("{postId:guid}")]
+        [Authorize]
         public async Task<IActionResult> DeletePost(
             Guid postId,
             CancellationToken cancellationToken) {
@@ -172,6 +169,7 @@ namespace Krea.API.Controllers {
         /// Returns the identifier of the created reply post.
         /// </returns>
         [HttpPost("{postId:guid}/reply")]
+        [Authorize]
         public async Task<IActionResult> Reply(
             Guid postId,
             [FromBody] ReplyPostCommand command,
@@ -185,6 +183,30 @@ namespace Krea.API.Controllers {
                 new { id = replyId },
                 new { ReplyPostId = replyId });
         }
+        
+        /// <summary>
+        /// Obtiene los comentarios (replies) de un post.
+        /// </summary>
+        /// <param name="postId">ID del post</param>
+        /// <param name="mode">Flat | Tree</param>
+        /// <param name="page">Página (solo flat)</param>
+        /// <param name="pageSize">Tamaño de página (solo flat)</param>
+        /// <param name="cancellationToken">Token used to cancel the request.</param>
+        [HttpGet("{postId:guid}/replies")]
+        public async Task<IActionResult> GetReplies(
+            Guid postId,
+            [FromQuery] ReplyMode? mode,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            CancellationToken cancellationToken = default)
+        {
+            var finalMode = mode ?? ReplyMode.Flat;
+            var result = await _sender.Send(
+                new GetRepliesQuery(postId, page, pageSize, finalMode),
+                cancellationToken);
+
+            return Ok(result);
+        }
 
         /// <summary>
         /// Creates a repost of an existing post.
@@ -196,6 +218,7 @@ namespace Krea.API.Controllers {
         /// Returns the identifier of the newly created repost.
         /// </returns>
         [HttpPost("{postId:guid}/repost")]
+        [Authorize]
         public async Task<IActionResult> Repost(
             Guid postId,
             [FromBody] RepostPostCommand command,
@@ -220,6 +243,7 @@ namespace Krea.API.Controllers {
         /// A <c>204 No Content</c> response if the like operation succeeds.
         /// </returns>
         [HttpPost("{postId:guid}/like")]
+        [Authorize]
         public async Task<IActionResult> Like(
             Guid postId,
             [FromBody] LikePostCommand command,
@@ -241,6 +265,7 @@ namespace Krea.API.Controllers {
         /// A <c>204 No Content</c> response if the unlike operation succeeds.
         /// </returns>
         [HttpDelete("{postId:guid}/unlike")]
+        [Authorize]
         public async Task<IActionResult> Unlike(
             Guid postId,
             [FromBody] UnlikePostCommand command,
@@ -262,6 +287,7 @@ namespace Krea.API.Controllers {
         /// Returns the result of the upload operation, including metadata about the uploaded media.
         /// </returns>
         [HttpPost("{postId:guid}/uploads")]
+        [Authorize]
         public async Task<IActionResult> CreateUpload(
             Guid postId,
             [FromForm] CreatePostUploadRequest request,
@@ -303,12 +329,82 @@ namespace Krea.API.Controllers {
         /// <param name="cancellationToken"></param>
         /// <returns>Listado paginado de publicaciones</returns>
         [HttpGet("explore")]
+        [AllowAnonymous]
         public async Task<IActionResult> Explore(
             [FromQuery] ExploreQuery query,
             CancellationToken cancellationToken)
         {
             var result = await _sender.Send(query, cancellationToken);
             return Ok(result);
+        }
+        
+        /// <summary>
+        /// Asigna géneros a un upload de un post.
+        /// </summary>
+        /// <param name="uploadId">Command containing uploaded media information.</param>
+        /// <param name="request">Command containing list of genres.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>
+        /// A <c>204 No Content</c> response if the assignGenres operation succeeds.
+        /// </returns>
+        [HttpPost("uploads/{uploadId:guid}/genres")]
+        [Authorize]
+        public async Task<IActionResult> AssignGenres(
+            Guid uploadId,
+            [FromBody] AssignGenresRequest request,
+            CancellationToken cancellationToken)
+        {
+            await _sender.Send(
+                new AssignGenresToUploadCommand(uploadId, request.GenreIds),
+                cancellationToken);
+        
+            return NoContent();
+        }
+        
+        /// <summary>
+        /// Añade un hashtag a un post.
+        /// </summary>
+        [HttpPost("{postId:guid}/hashtags")]
+        [Authorize]
+        public async Task<IActionResult> AddHashtag(
+            Guid postId,
+            [FromBody] AddHashtagRequest request,
+            CancellationToken cancellationToken)
+        {
+            await _sender.Send(
+                new AddHashtagCommand(postId, request.Name),
+                cancellationToken);
+
+            return NoContent();
+        }
+        
+        /// <summary>
+        /// Elimina un hashtag de un post.
+        /// </summary>
+        /// <param name="postId">Command containing the post reference.</param>
+        /// <param name="hashtagId">Command containing the hashtag removed.</param>>
+        /// <param name="cancellationToken"></param>
+        [HttpDelete("{postId:guid}/hashtags/{hashtagId:guid}")]
+        [Authorize]
+        public async Task<IActionResult> RemoveHashtag(
+            Guid postId,
+            Guid hashtagId,
+            CancellationToken cancellationToken)
+        {
+            await _sender.Send(
+                new RemoveHashtagCommand(postId, hashtagId),
+                cancellationToken);
+
+            return NoContent();
+        }
+        
+        private Guid GetCurrentUserId() {
+            string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid userId)) {
+                throw new UnauthorizedAccessException("User ID not found in claims.");
+            }
+
+            return userId;
         }
     }
 }
