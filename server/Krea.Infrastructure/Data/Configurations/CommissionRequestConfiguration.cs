@@ -38,13 +38,25 @@ namespace Krea.Infrastructure.Data.Configurations {
                    .HasForeignKey("OfferingId")
                    .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasMany(s => s.Payments)
+            builder.HasMany(cr => cr.Payments)
                    .WithOne(p => p.CommissionRequest)
                    .HasForeignKey("CommissionRequestId")
                    .OnDelete(DeleteBehavior.Restrict);
+            
+            builder.HasMany(cr => cr.Submissions)
+                .WithOne(s => s.Request)
+                .HasForeignKey(s => s.RequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Metadata.FindNavigation(nameof(CommissionRequest.Submissions))
+                ?.SetPropertyAccessMode(PropertyAccessMode.Field);
 
             builder.Metadata.FindNavigation(nameof(CommissionRequest.Payments))
                    ?.SetPropertyAccessMode(PropertyAccessMode.Field);
+            
+            builder.HasIndex("BidderId");
+            builder.HasIndex("OfferingId");
+            builder.HasIndex(cr => cr.Status);
         }
     }
 }

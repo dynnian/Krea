@@ -8,10 +8,18 @@ public interface ICommissionRequestRepository
         Guid id,
         CancellationToken cancellationToken = default);
 
+    Task<CommissionRequest?> GetByIdWithAllAsync(
+        Guid id, 
+        CancellationToken cancellationToken = default);
+    
     Task<CommissionRequest?> GetByIdWithPaymentsAsync(
         Guid id,
         CancellationToken cancellationToken = default);
-
+    
+    Task<CommissionRequest?> GetByIdWithSubmissionsAsync(
+        Guid id, 
+        CancellationToken cancellationToken = default);
+    
     Task<IReadOnlyList<CommissionRequest>> GetByBidderAsync(
         Guid bidderId,
         CancellationToken cancellationToken = default);
