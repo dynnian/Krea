@@ -36,10 +36,12 @@ namespace Krea.Application {
     using Features.Admin.Reports;
     using Features.Admin.Users;
     using Features.Collections.UploadCollectionCover;
+    using Features.Genres;
     using Features.Posts.CreatePost;
     using Features.Posts.DeletePost;
     using Features.Posts.Explore;
     using Features.Posts.GetPostById;
+    using Features.Posts.Hashtag;
     using Features.Posts.Like;
     using Features.Posts.ReplyPost;
     using Features.Posts.Repost;
@@ -101,6 +103,9 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<UnlikePostCommand, Unit>, UnlikePostHandler>();
             services.AddScoped<IRequestHandler<CreatePostUploadCommand, CreatePostUploadResponse>, CreatePostUploadHandler>();
             services.AddScoped<IRequestHandler<ExploreQuery, PagedResult<ExplorePostDto>>, ExploreHandler>();
+            services.AddScoped<IRequestHandler<AssignGenresToUploadCommand, Unit>, AssignGenresToUploadHandler>();
+            services.AddScoped<IRequestHandler<AddHashtagCommand, Unit>, AddHashtagHandler>();
+            services.AddScoped<IRequestHandler<RemoveHashtagCommand, Unit>, RemoveHashtagHandler>();
             
             services.AddScoped<ISender, Sender>();
             
