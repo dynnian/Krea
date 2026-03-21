@@ -1,14 +1,9 @@
-export interface Comment {
-  id: number;
-  author: {
-    name: string;
-    handle: string;
-    avatar?: string;
-  };
+export interface ReplyDto {
+  id: string;
+  authorId: string;
+  authorName: string;
   content: string;
   createdAt: string;
-  likes: number;
-  isLikedByUser?: boolean; // opcional, para UI
 }
 
 export async function fetchComments(postId: number): Promise<Comment[]> {

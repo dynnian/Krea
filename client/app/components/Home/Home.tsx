@@ -8,8 +8,8 @@ import FeedTabs from "../FeedTabs";
 import PostCard from "../Posts/PostCard";
 import TagsSidebar from "./TagsSidebar";
 import { feedApi } from "../../services/postsService";
-import { feedPostToPost } from "../../utils/postMappers";
-import type { Post } from "../../types/post";
+import { feedItemToPostDto } from "../../utils/postMappers";
+import type { PostDto } from "../../types/api";
 
 const { useBreakpoint } = Grid;
 
@@ -20,7 +20,7 @@ export default function Home() {
   const isMobile = !screens.md;
 
   const [activeTab, setActiveTab] = useState<"forYou" | "following">("forYou");
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,17 +29,19 @@ export default function Home() {
       setLoading(true);
       setError(null);
       try {
-        let feedPosts;
+        let feedItems;
         if (activeTab === "forYou") {
-          feedPosts = await feedApi.getRecent(user?.id);
+          const res = await feedApi.getRecent(user?.id);
+          feedItems = res.data;
         } else {
           if (!user) {
             setActiveTab("forYou");
             return;
           }
-          feedPosts = await feedApi.getFollowing(user.id);
+          const res = await feedApi.getFollowing(user.id);
+          feedItems = res.data;
         }
-        const mapped = feedPosts.map(feedPostToPost);
+        const mapped = feedItems.map(feedItemToPostDto);
         setPosts(mapped);
       } catch (err) {
         console.error("Error loading feed:", err);
@@ -61,16 +63,16 @@ export default function Home() {
     }
   }, [activeTab, user, t]);
 
-  const handleNewPost = (newPost: Post) => {
+  const handleNewPost = (newPost: PostDto) => {
     setPosts([newPost, ...posts]);
   };
 
-  const handleLike = async (postId: string | number) => {
+  const handleLike = async (postId: string) => {
     console.log("Like", postId);
     // Llamada real con postsApi.like / unlike
   };
 
-  const handleRepost = async (postId: string | number) => {
+  const handleRepost = async (postId: string) => {
     console.log("Repost", postId);
     // Llamada real con postsApi.repost
   };
@@ -78,11 +80,14 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#E3E2DE]">
       <main className="flex justify-center px-2 sm:px-4 gap-6">
-        {/* Columna principal: feed - ahora ocupa todo el espacio disponible */}
+        {/* Columna principal: feed */}
         <div
-          className={`
-            flex-1 min-w-0 max-w-5xl
-            ${!isMobile ? "bg-[#E8F1FC] border-l-2 border-r-2 border-[#8F8E8A] px-6 py-6" : "px-2"}
+         className={`
+            flex-1
+            ${!isMobile
+              ? "min-w-[400px] max-w-7xl bg-[#E8F1FC] border-l-2 border-r-2 border-[#8F8E8A] px-6 py-6"
+              : "px-2 w-full"
+            }
           `}
         >
           {user && <Composer onPost={handleNewPost} />}

@@ -3,10 +3,12 @@ import {
   type UserDto,
   type CreatePostData,
   type FeedPost,
+  type PostDto,
 } from "../types/api";
 import { type Post } from "../types/post";
 import { type AuthUser } from "../contexts/AuthContext";
 import { PostType } from "../types/common";
+import type { FeedItem } from "../types/feed.ts";
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:5101";
 // Mapeo de números a enum PostType
 export function postTypeFromApi(apiType: number): PostType {
@@ -138,5 +140,40 @@ export function feedPostToPost(feedPost: FeedPost): Post {
     media: media,
     likesCount: feedPost.likeCount,
     favoritesCount: feedPost.repostCount,
+  };
+}
+export function feedItemToPostDto(item: FeedItem): PostDto {
+  const media =
+    item.mediaPreviewUrl && item.mediaMimeType
+      ? [
+          {
+            id: "",
+            fileName: item.mediaPreviewUrl.split("/").pop() || "",
+            mimeType: item.mediaMimeType,
+            url: item.mediaPreviewUrl,
+            isWorkMedia: false,
+          },
+        ]
+      : [];
+
+  return {
+    id: item.id,
+    authorPostId: item.authorId,
+    author: {
+      id: item.authorId,
+      username: item.authorUsername,
+      displayName: item.authorUsername, // fallback
+    },
+    title: item.title,
+    content: item.content,
+    isWork: false,
+    isLocal: false,
+    uploadCount: media.length,
+    likesCount: item.likeCount,
+    uploadedAt: item.uploadedAt,
+    media,
+    isLikedByCurrentUser: item.isLikedByCurrentUser,
+    isRetweetedByCurrentUser: false, // not in feed
+    replies: [],
   };
 }
