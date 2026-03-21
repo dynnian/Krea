@@ -1,4 +1,5 @@
 import bigFeelings from "../../assets/Album/b i g f e e l i n g s.mp3";
+import sympton from "../../assets/Album/symptom of life.mp3";
 
 export type ExploreFeaturedTrack = {
   artist: string;
@@ -27,9 +28,9 @@ export type ExploreSong = {
 
 export const featuredTrackMock: ExploreFeaturedTrack = {
   artist: "Willow",
-  title: "b i g f e e l i n g s",
-  coverUrl: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=900&q=80",
-  audioUrl: bigFeelings,
+  title: "symptom of life",
+  coverUrl: "https://upload.wikimedia.org/wikipedia/en/1/12/Empathogen_%28album%29.jpg",
+  audioUrl: sympton,
   genre: ["Jazz", "Rock"],
   duration: "3:42"
 };
@@ -37,9 +38,9 @@ export const featuredTrackMock: ExploreFeaturedTrack = {
 export const newAlbumsMock: ExploreAlbum[] = [
   {
     id: "1",
-    title: "Empathogen",
-    artist: "Willow",
-    coverUrl: "https://upload.wikimedia.org/wikipedia/en/1/12/Empathogen_%28album%29.jpg",
+    title: "Atrocity Exhibition",
+    artist: "Danny Brown",
+    coverUrl: "https://upload.wikimedia.org/wikipedia/en/b/ba/AtrocityExhibition.jpg",
   },
   {
     id: "2",
@@ -72,9 +73,9 @@ export const latestSongsMock: ExploreSong[] = [
   },
   {
     id: "2",
-    title: "Flowers and You",
-    artist: "Touché Amoré",
-    coverUrl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=900&q=80",
+    title: "this is what autumn feels like",
+    artist: "JVKE",
+    coverUrl: "https://images.genius.com/02e5f0a271f47c34d7e0619cf38d77fa.1000x1000x1.png",
     audioUrl: bigFeelings,
     genre: "Post-Hardcore, Emo",
   },
@@ -88,7 +89,7 @@ export const latestSongsMock: ExploreSong[] = [
   },
   {
     id: "4",
-    title: "Usseewa",
+    title: "Nukegara",
     artist: "Ado",
     coverUrl: "https://upload.wikimedia.org/wikipedia/en/d/da/Ado_-_Zanmu.png",
     audioUrl: bigFeelings,

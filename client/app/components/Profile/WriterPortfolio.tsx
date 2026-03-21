@@ -68,9 +68,9 @@ useEffect(() => {
 					<div className="mt-auto pt-[0px] flex items-center gap-3">
 						<button
 							type="button"
-							className="px-[33px] py-[1px] rounded-full bg-[#0B5107] border border-[#1B1C1E]"
+							className="px-[33px] py-[1px] cursor-pointer hover:bg-[#093B05] rounded-full bg-[#0B5107] border border-[#1B1C1E]"
 						>
-							<span className="text-[11px] cursor-pointer font-medium leading-5 text-[#E3E2DE]">
+							<span className="text-[11px] font-medium leading-5 text-[#E3E2DE]">
 								Leer
 							</span>
 						</button>

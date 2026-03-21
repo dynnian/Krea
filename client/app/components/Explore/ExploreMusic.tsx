@@ -145,7 +145,7 @@ function ExploreSongCard({
               <div className="flex flex-row items-start pt-[17px] justify-between gap-6">
                 <div className="self-start">
                   <div className="flex items-baseline gap-[23px]">
-                    <p className="text-[#6B6B6B] text-[16px] md:text-[18px] leading-none m-0">
+                    <p className="text-[#6B6B6B] hover:underline cursor-pointer text-[16px] md:text-[18px] leading-none m-0">
                       {featuredTrackMock.artist}
                     </p>
 
@@ -156,9 +156,9 @@ function ExploreSongCard({
                     </button>
                   </div>     
                   <div className="pb-[10px]">
-                    <h3 className="text-[#1B1C1E] text-[30px] font-semibold">
+                    <span className="text-[#1B1C1E] hover:underline cursor-pointer text-[30px] font-semibold  ">
                     {featuredTrackMock.title}
-                    </h3>
+                    </span>
                   </div>
                 </div>
 
@@ -222,7 +222,7 @@ function ExploreSongCard({
       </section>
 
 {/* Main content container */}
-    <div className="mt-6 flex flex-col lg:flex-row gap-6">
+    <div className="mt-6 flex flex-col lg:flex-row gap-6 pb-[20px]">
     {/* Left column */}
     <div className="flex-1 min-w-0">
       <div className="flex flex-col gap-8">
