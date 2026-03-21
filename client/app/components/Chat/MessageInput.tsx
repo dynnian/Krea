@@ -18,7 +18,7 @@ export default function MessageInput({ onSend }: Props) {
   };
 
   return (
-    <div className="p-6 border-t border-[#8F8E8A]">
+    <div className="p-2">
       <Space.Compact className="w-full bg-[#E3E2DE] rounded-full px-6 py-3 border border-[#8F8E8A]">
         
         <Input
