@@ -94,6 +94,37 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
                     throw new ValidationException("One or more genres are invalid for this content type.");
             }
 
+<<<<<<< HEAD
+            // Validar metadata antes de usarla
+            ValidateMetadata(command);
+=======
+            // Géneros
+            var genres = new List<Genre>();
+
+            if (command.GenreIds is not null && command.GenreIds.Any())
+            {
+                genres = (await _genreRepository
+                        .GetByIdsAsync(command.GenreIds, cancellationToken))
+                    .ToList();
+
+                // Validar si existe
+                if (genres.Count != command.GenreIds.Count)
+                    throw new ValidationException("Some genres were not found.");
+
+                // Validar por tipo
+                var expectedType = command.Type.ToLower() switch
+                {
+                    "image" => GenreType.Image,
+                    "music" => GenreType.Music,
+                    "text" => GenreType.Text,
+                    _ => throw new ValidationException("Invalid type for genre validation.")
+                };
+
+                if (genres.Any(g => g.Type != expectedType))
+                    throw new ValidationException("One or more genres are invalid for this content type.");
+            }
+>>>>>>> bf5d5df (fix/back to main)
+
             // Validar metadata antes de usarla
             ValidateMetadata(command);
 
