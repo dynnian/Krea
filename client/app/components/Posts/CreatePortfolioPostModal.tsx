@@ -117,10 +117,16 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
         isLocal: false,
       };
 
-      const newPost = await postsApi.createPost(createData);
-      console.log("Respuesta createPost:", newPost); // Depuración
-      const postId = newPost.postId; // ¿Existe newPost.id?
+      const response = await postsApi.createPost(createData);
+      console.log("Respuesta createPost:", response.data); // Para depurar
 
+      // Obtener el ID del post (puede ser 'postId' o 'id')
+      const postId = response.data?.postId || response.data?.id;
+      if (!postId) {
+        throw new Error('No se recibió el ID del post');
+      }
+
+      // Subir cada archivo al post creado
       for (const file of fileList) {
         await handleUpload(postId, file);
       }
