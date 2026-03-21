@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Bookmark, Heart } from "lucide-react";
-import { writerPortfolioMock, type WriterWork } from "../../data/writerPortfolioMock";
+// import { writerPortfolioMock, type WriterWork } from "../../data/writerPortfolioMock";
+import type { WriterWork } from "../../data/writerPortfolioMock.ts";
 
 const WriterCard: React.FC<{ work: WriterWork }> = ({ work }) => {
   const descriptionRef = useRef<HTMLParagraphElement | null>(null);
@@ -94,25 +95,41 @@ useEffect(() => {
 	);
 };
 
-export default function WriterPortfolio() {
-  const leftColumn = writerPortfolioMock.filter((_, index) => index % 2 === 0);
-  const rightColumn = writerPortfolioMock.filter((_, index) => index % 2 !== 0);
+type WriterPortfolioProps = {
+  works?: WriterWork[];
+  error?: string | null;
+};
+
+export default function WriterPortfolio({
+  works = [],
+  error = null,
+}: WriterPortfolioProps) {
+  const leftColumn = works.filter((_, index) => index % 2 === 0);
+  const rightColumn = works.filter((_, index) => index % 2 !== 0);
 
   return (
     <div className="w-full max-w-[1388px] mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-[14px]">
-        <div className="flex flex-col gap-[14px]">
-          {leftColumn.map((work) => (
-            <WriterCard key={work.id} work={work} />
-          ))}
-        </div>
+      {works.length > 0 ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-[14px]">
+          <div className="flex flex-col gap-[14px]">
+            {leftColumn.map((work) => (
+              <WriterCard key={work.id} work={work} />
+            ))}
+          </div>
 
-        <div className="flex flex-col gap-[14px]">
-          {rightColumn.map((work) => (
-            <WriterCard key={work.id} work={work} />
-          ))}
+          <div className="flex flex-col gap-[14px]">
+            {rightColumn.map((work) => (
+              <WriterCard key={work.id} work={work} />
+            ))}
+          </div>
         </div>
-      </div>
+      ) : error ? (
+        <div className="text-center text-red-500 py-8">{error}</div>
+      ) : (
+        <div className="text-center text-gray-500 py-8">
+          No hay obras literarias disponibles.
+        </div>
+      )}
     </div>
   );
 }
