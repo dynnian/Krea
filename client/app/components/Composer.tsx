@@ -6,9 +6,7 @@ import { Avatar, Button, Input, message } from "antd";
 import { User } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { postsApi } from "../services/postsService";
-import { apiPostToPost } from "../utils/postMappers";
-import type { Post } from "../types/post";
-import { PostType } from "../types/common";
+import type { PostDto } from "../types/api";
 
 const { TextArea } = Input;
 
@@ -17,7 +15,7 @@ interface ComposerForm {
 }
 
 interface ComposerProps {
-  onPost: (newPost: Post) => void;
+  onPost: (newPost: PostDto) => void;
 }
 
 export default function Composer({ onPost }: ComposerProps) {
@@ -44,10 +42,9 @@ export default function Composer({ onPost }: ComposerProps) {
 
     setSubmitting(true);
     try {
-      // Generar un título a partir del contenido o usar uno por defecto
       const title = data.content.substring(0, 50).trim() || "Sin título";
 
-      const createdApiPost = await postsApi.createPost({
+      const response = await postsApi.createPost({
         authorPostId: user.id,
         type: 1, // PostType.TEXT
         title: title,
@@ -56,7 +53,26 @@ export default function Composer({ onPost }: ComposerProps) {
         isLocal: true,
       });
 
-      const newPost = apiPostToPost(createdApiPost);
+      const newPost: PostDto = {
+        id: response.data.postId,
+        authorPostId: user.id,
+        author: {
+          id: user.id,
+          username: user.handle || user.email.split('@')[0],
+          displayName: user.name || user.handle || user.email.split('@')[0],
+          avatar: undefined, // no tenemos avatar aún
+        },
+        title: title,
+        content: data.content,
+        isWork: false,
+        isLocal: true,
+        uploadCount: 0,
+        likesCount: 0,
+        uploadedAt: new Date().toISOString(),
+        media: [],
+        isLikedByCurrentUser: false,
+        isRetweetedByCurrentUser: false,
+      };
       onPost(newPost);
       reset();
       message.success(t("home.post_success"));
@@ -74,8 +90,7 @@ export default function Composer({ onPost }: ComposerProps) {
     <div className="flex gap-3 mb-6 p- border-black-200">
       
       <Avatar
-        src={user.avatar}
-        icon={!user.avatar && <User />}
+        icon={<User />}
         size={48}
         className="bg-[#E8F1FC] border border-gray-800"
       />

@@ -21,7 +21,7 @@ export default function Home() {
   const isMobile = !screens.md;
 
   const [activeTab, setActiveTab] = useState<"forYou" | "following">("forYou");
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,17 +30,19 @@ export default function Home() {
       setLoading(true);
       setError(null);
       try {
-        let feedPosts;
+        let feedItems;
         if (activeTab === "forYou") {
-          feedPosts = await feedApi.getRecent(user?.id);
+          const res = await feedApi.getRecent(user?.id);
+          feedItems = res.data;
         } else {
           if (!user) {
             setActiveTab("forYou");
             return;
           }
-          feedPosts = await feedApi.getFollowing(user.id);
+          const res = await feedApi.getFollowing(user.id);
+          feedItems = res.data;
         }
-        const mapped = feedPosts.map(feedPostToPost);
+        const mapped = feedItems.map(feedItemToPostDto);
         setPosts(mapped);
       } catch (err) {
         console.error("Error loading feed:", err);
@@ -62,16 +64,16 @@ export default function Home() {
     }
   }, [activeTab, user, t]);
 
-  const handleNewPost = (newPost: Post) => {
+  const handleNewPost = (newPost: PostDto) => {
     setPosts([newPost, ...posts]);
   };
 
-  const handleLike = async (postId: string | number) => {
+  const handleLike = async (postId: string) => {
     console.log("Like", postId);
     // Llamada real con postsApi.like / unlike
   };
 
-  const handleRepost = async (postId: string | number) => {
+  const handleRepost = async (postId: string) => {
     console.log("Repost", postId);
     // Llamada real con postsApi.repost
   };
@@ -79,7 +81,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <main className="flex justify-center px-2 sm:px-4 gap-6">
-        {/* Columna principal: feed - ahora ocupa todo el espacio disponible */}
+        {/* Columna principal: feed */}
         <div
           className={`
             flex-1 min-w-0 max-w-5xl

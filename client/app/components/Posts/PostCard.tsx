@@ -1,31 +1,49 @@
+// components/Posts/PostCard.tsx
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 import { Avatar, message, Modal } from 'antd';
+<<<<<<< HEAD
 import { Heart, MessageCircle, Repeat2, Bookmark, Link2, MoreHorizontal, User } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext.tsx';
 import AudioWaveform from '../WaveSurfer/AudioWaveform.tsx';
 import { postsApi } from '../../services/postsService.ts';
 import type { Post } from '../../types/post.ts';
 import { PostType } from '../../types/common.ts';
+=======
+import { Heart, MessageCircle, Repeat2, Bookmark, MoreHorizontal, User } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import AudioWaveform from '../WaveSurfer/AudioWaveform';
+import { postsApi } from '../../services/postsService';
+import type { PostDto } from '../../types/api';
+>>>>>>> d0685e5 (Fix: postService updated to match new API. Integration of PostDetail)
 
 interface PostCardProps {
-  post: Post;
-  onLike?: () => void;
-  onRepost?: () => void;
+  post: PostDto;
+  onLike?: (postId: string) => void;
+  onRepost?: (postId: string) => void;
   onComment?: () => void;
   onBookmark?: () => void;
 }
+
+// Helper to determine media type from mimeType
+const getMediaType = (mimeType?: string): 'image' | 'audio' | 'text' => {
+  if (!mimeType) return 'text';
+  if (mimeType.startsWith('image/')) return 'image';
+  if (mimeType.startsWith('audio/')) return 'audio';
+  return 'text';
+};
 
 export default function PostCard({ post, onLike, onRepost, onComment, onBookmark }: PostCardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [liked, setLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(post.likesCount || 0);
-  const [reposted, setReposted] = useState(false);
-  const [repostsCount, setRepostsCount] = useState(post.repostsCount || 0);
+  // UI state based on API data
+  const [liked, setLiked] = useState(post.isLikedByCurrentUser);
+  const [likesCount, setLikesCount] = useState(post.likesCount);
+  const [reposted, setReposted] = useState(post.isRetweetedByCurrentUser);
+  const [repostsCount, setRepostsCount] = useState(post.isRetweetedByCurrentUser ? 1 : 0); // placeholder
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
@@ -42,18 +60,21 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
     if (!requireAuth() || actionLoading) return;
     setActionLoading('like');
     const wasLiked = liked;
+    // Optimistic update
     setLiked(!wasLiked);
-    setLikesCount(prev => wasLiked ? prev - 1 : prev + 1);
+    setLikesCount(prev => (wasLiked ? prev - 1 : prev + 1));
     try {
       if (wasLiked) {
         await postsApi.unlike(post.id, { postId: post.id, userId: user!.id });
       } else {
         await postsApi.like(post.id, { postId: post.id, userId: user!.id });
       }
-      onLike?.();
+      // Notify parent if needed
+      onLike?.(post.id);
     } catch {
+      // Revert on error
       setLiked(wasLiked);
-      setLikesCount(prev => wasLiked ? prev + 1 : prev - 1);
+      setLikesCount(prev => (wasLiked ? prev + 1 : prev - 1));
       message.error(t('post.like_error'));
     } finally {
       setActionLoading(null);
@@ -65,14 +86,14 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
     setActionLoading('repost');
     const wasReposted = reposted;
     setReposted(!wasReposted);
-    setRepostsCount(prev => wasReposted ? prev - 1 : prev + 1);
+    setRepostsCount(prev => (wasReposted ? prev - 1 : prev + 1));
     try {
       await postsApi.repost(post.id, { authorId: user!.id, originalPostId: post.id });
-      onRepost?.();
       message.success(t('post.reposted'));
+      onRepost?.(post.id);
     } catch {
       setReposted(wasReposted);
-      setRepostsCount(prev => wasReposted ? prev + 1 : prev - 1);
+      setRepostsCount(prev => (wasReposted ? prev + 1 : prev - 1));
       message.error(t('post.repost_error'));
     } finally {
       setActionLoading(null);
@@ -85,25 +106,34 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
     else navigate(`/post/${post.id}`);
   };
 
-  const handleBookmark = () => {
+  const handleBookmarkClick = () => {
     if (!requireAuth()) return;
-    // TODO: integrar colecciones (bookmarks)
-    message.info(t('post.bookmark_not_implemented'));
+    if (onBookmark) onBookmark();
+    else message.info(t('post.bookmark_not_implemented'));
   };
 
-  const firstMedia = post.media?.[0]?.media;
-  const mediaUrl = firstMedia?.path;
-  const mediaType = post.type;
+  // Media handling
+  const firstMedia = post.media?.[0];
+  const mediaUrl = firstMedia?.url;
+  const mediaType = getMediaType(firstMedia?.mimeType);
 
-  const formattedDate = post.created_at
-    ? new Date(post.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+  const formattedDate = post.uploadedAt
+    ? new Date(post.uploadedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
     : '';
 
+  // Author info
+  const authorName = post.author?.displayName || `Usuario ${post.authorPostId.slice(0, 8)}`;
+  const authorHandle = post.author?.username || post.authorPostId.slice(0, 8);
+
   return (
+<<<<<<< HEAD
 
     <article className="flex flex-col w-ful gap-3 px-4">
       <div className="w-[734px] h-px bg-gray-300 -mx-[40px]"></div>
       {/* Cabecera con enlace al detalle (avatar, nombre, contenido, fecha) */}
+=======
+    <article className="flex flex-col w-full gap-3 p-4 bg-[#E8F1FC] border-t border-gray-300">
+>>>>>>> d0685e5 (Fix: postService updated to match new API. Integration of PostDetail)
       <div className="flex gap-3">
         <Link to={`/post/${post.id}`} className="flex gap-3 flex-1">
           <Avatar
@@ -114,10 +144,12 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
           />
           <div className="flex-1">
             <div className="flex items-center flex-wrap gap-2">
-              <span className="font-medium text-gray-900">{post.author?.name || post.author?.displayName}</span>
+              <Link to={`/user/${post.authorPostId}`} className="font-medium text-gray-900 hover:text-[#1351AA]">
+                {authorName}
+              </Link>
               <span className="text-gray-500">·</span>
-              <Link to={`/user/${post.author?.id}`} className="text-gray-500 hover:text-[#1351AA] hover:underline">
-                @{post.author?.handle}
+              <Link to={`/user/${post.authorPostId}`} className="text-gray-500 hover:text-[#1351AA] hover:underline">
+                @{authorHandle}
               </Link>
               <span className="text-gray-500">·</span>
               <span className="text-gray-500">{formattedDate}</span>
@@ -130,10 +162,9 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
         </button>
       </div>
 
-      {/* Media */}
       {firstMedia && mediaUrl && (
         <div className="ml-0 sm:ml-[60px] mt-2">
-          {mediaType === PostType.IMAGE && (
+          {mediaType === 'image' && (
             <>
               <img
                 src={mediaUrl}
@@ -141,21 +172,26 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
                 className="w-full max-h-80 object-cover rounded-lg border border-gray-200 cursor-pointer"
                 onClick={() => setIsImageModalOpen(true)}
               />
-              <Modal open={isImageModalOpen} footer={null} onCancel={() => setIsImageModalOpen(false)} centered width="fit-content" styles={{ body: { padding: 0 } }}>
+              <Modal
+                open={isImageModalOpen}
+                footer={null}
+                onCancel={() => setIsImageModalOpen(false)}
+                centered
+                width="fit-content"
+                styles={{ body: { padding: 0 } }}
+              >
                 <img src={mediaUrl} alt="Full size" className="max-w-full max-h-screen" />
               </Modal>
             </>
           )}
-          {mediaType === PostType.MUSIC && (
+          {mediaType === 'audio' && (
             <div className="bg-[#F3F3F1] p-4 rounded-lg border border-[#8F8E8A]">
               <AudioWaveform audioUrl={mediaUrl} />
             </div>
           )}
-          {/* Para enlaces (texto) podrías mostrar el enlace, pero normalmente no habrá media */}
         </div>
       )}
 
-      {/* Botones */}
       <div className="flex items-center gap-6 ml-0 sm:ml-[60px] mt-2 text-gray-600">
         <button
           className={`flex items-center gap-1 hover:text-blue-600 transition ${actionLoading === 'like' ? 'opacity-50 cursor-wait' : ''}`}
@@ -165,9 +201,12 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
           <Heart size={18} className={liked ? 'fill-red-500 text-red-500' : ''} />
           <span className="text-sm">{likesCount}</span>
         </button>
-        <button className="flex items-center gap-1 hover:text-blue-600" onClick={handleComment}>
+        <button
+          className="flex items-center gap-1 hover:text-blue-600"
+          onClick={handleComment}
+        >
           <MessageCircle size={18} />
-          <span className="text-sm">{post.replies?.length || 0}</span>
+          <span className="text-sm">{post.replies?.length ?? 0}</span>
         </button>
         <button
           className={`flex items-center gap-1 hover:text-blue-600 ${actionLoading === 'repost' ? 'opacity-50 cursor-wait' : ''}`}
@@ -177,7 +216,10 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
           <Repeat2 size={18} className={reposted ? 'text-green-600' : ''} />
           <span className="text-sm">{repostsCount}</span>
         </button>
-        <button className="flex items-center gap-1 hover:text-blue-600" onClick={handleBookmark}>
+        <button
+          className="flex items-center gap-1 hover:text-blue-600"
+          onClick={handleBookmarkClick}
+        >
           <Bookmark size={18} />
         </button>
       </div>
