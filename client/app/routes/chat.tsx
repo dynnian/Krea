@@ -33,11 +33,15 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-[#E3E2DE] overflow-hidden justify-center">
-      {/* Contenedor con ancho máximo y centrado */}
-      <div className="w-full max-w-7xl flex overflow-hidden">
-        {/* Sidebar para desktop: 30% en desktop, oculto en móvil */}
-        <div className="hidden md:block w-[40%] bg-[#E8F1FC] border-r border-[#646360] overflow-hidden">
+    /* AJUSTE CLAVE: 
+       Cambiamos 'flex' por 'fixed inset-0 top-[64px] z-10' para ignorar el max-width del padre.
+       Mantenemos el 'justify-center' para que el max-w-7xl interno funcione. 
+    */
+    <div className="fixed inset-0 top-14.5 z-10 bg-[#E3E2DE] overflow-hidden flex justify-center">
+      {/* Contenedor con ancho máximo y centrado - Tu código base */}
+      <div className="w-full max-w-8xl flex overflow-hidden">
+        {/* Sidebar para desktop: 40% en desktop, oculto en móvil */}
+        <div className="hidden md:block w-[20%] bg-[#E8F1FC] border-r border-[#646360] overflow-hidden">
           <div className="h-full overflow-y-auto">
             <ConversationList
               conversations={conversations}
@@ -107,7 +111,7 @@ export default function ChatPage() {
           ) : (
             /* Cuando no hay conversación seleccionada */
             <div className="flex-1 flex flex-col overflow-hidden">
-              {/* Header con botón de menú solo en móvil (para poder abrir el drawer) */}
+              {/* Header con botón de menú solo en móvil */}
               <div className="p-4 border-b border-[#646360] bg-[#E8F1FC] flex items-center md:hidden">
                 <Button
                   type="text"

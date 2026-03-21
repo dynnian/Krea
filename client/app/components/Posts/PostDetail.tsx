@@ -1,104 +1,100 @@
-import { useState } from "react";
-import { useNavigate } from "react-router";
-import { useTranslation } from "react-i18next";
-import { Grid, message } from "antd";
-import { ArrowLeft, Heart, Link2, MessageCircle, Repeat2, User } from "lucide-react";
-import { useAuth } from "../../contexts/AuthContext";
-import TagsSidebar from "../Home/TagsSidebar";
-import PostImageDetail from "./PostImageDetail";
-import PostAudioDetail from "./PostAudioDetail";
-import CommentSection from "./CommentSection";
-import { PostType } from "../../types/common";
-import type { Post } from "../../types/post";
-import { postsApi } from "~/services/postsService";
+// components/Posts/PostDetail.tsx
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
+import { Grid, message, Spin, Alert, Avatar } from 'antd';
+import { ArrowLeft, Heart, MessageCircle, Repeat2, User } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import TagsSidebar from '../Home/TagsSidebar';
+import PostImageDetail from './PostImageDetail';
+import PostAudioDetail from './PostAudioDetail';
+import CommentSection from './CommentSection';
+import { postsApi } from '../../services/postsService';
+import type { Post } from '../../types/post';
+import { PostType } from '../../types/common';
 
 const { useBreakpoint } = Grid;
 
-interface PostDetailProps {
-  post: Post;
-}
-
-export default function PostDetail({ post }: PostDetailProps) {
+export default function PostDetail() {
+  const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const screens = useBreakpoint();
   const isMobile = !screens.md;
 
-  // Estados locales para interacciones
+  const [post, setPost] = useState<Post | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [liked, setLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(post.likesCount || 0);
+  const [likesCount, setLikesCount] = useState(0);
   const [reposted, setReposted] = useState(false);
-  const [repostsCount, setRepostsCount] = useState(post.favoritesCount || 0);
+  const [repostsCount, setRepostsCount] = useState(0);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const formattedDate = post.created_at
-    ? new Date(post.created_at).toLocaleDateString("es-ES", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      })
-    : "";
-
-  const formattedTime = post.created_at
-    ? new Date(post.created_at).toLocaleTimeString("es-ES", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "";
+  useEffect(() => {
+    if (!id) return;
+    const fetchPost = async () => {
+      setLoading(true);
+      try {
+        const data = await postsApi.getPost(id);
+        setPost(data);
+        setLikesCount(data.likesCount || 0);
+        setRepostsCount(data.repostsCount || 0);
+        // TODO: determinar si el usuario ya ha dado like/repost (si la API lo devuelve)
+      } catch (err) {
+        console.error(err);
+        setError(t('post.load_error'));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPost();
+  }, [id, t]);
 
   const requireAuth = () => {
     if (!user) {
-      message.warning(t("post.auth_required"));
-      navigate("/login");
+      message.warning(t('post.auth_required'));
+      navigate('/login');
       return false;
     }
     return true;
   };
 
   const handleLike = async () => {
-    if (!requireAuth() || actionLoading) return;
-
+    if (!requireAuth() || actionLoading || !post) return;
+    setActionLoading('like');
     const wasLiked = liked;
-    // Optimistic update
     setLiked(!wasLiked);
-    setLikesCount((prev) => (wasLiked ? prev - 1 : prev + 1));
-    setActionLoading("like");
-
+    setLikesCount(prev => wasLiked ? prev - 1 : prev + 1);
     try {
       if (wasLiked) {
         await postsApi.unlike(post.id, { postId: post.id, userId: user!.id });
       } else {
         await postsApi.like(post.id, { postId: post.id, userId: user!.id });
       }
-    } catch (error) {
-      // Revertir en caso de error
+    } catch {
       setLiked(wasLiked);
-      setLikesCount((prev) => (wasLiked ? prev + 1 : prev - 1));
-      message.error(t("post.like_error"));
+      setLikesCount(prev => wasLiked ? prev + 1 : prev - 1);
+      message.error(t('post.like_error'));
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleRepost = async () => {
-    if (!requireAuth() || actionLoading) return;
-
+    if (!requireAuth() || actionLoading || !post) return;
+    setActionLoading('repost');
     const wasReposted = reposted;
     setReposted(!wasReposted);
-    setRepostsCount((prev) => (wasReposted ? prev - 1 : prev + 1));
-    setActionLoading("repost");
-
+    setRepostsCount(prev => wasReposted ? prev - 1 : prev + 1);
     try {
-      await postsApi.repost(post.id, {
-        authorId: user!.id,
-        originalPostId: post.id,
-      });
-      message.success(t("post.reposted"));
-    } catch (error) {
+      await postsApi.repost(post.id, { authorId: user!.id, originalPostId: post.id });
+      message.success(t('post.reposted'));
+    } catch {
       setReposted(wasReposted);
-      setRepostsCount((prev) => (wasReposted ? prev + 1 : prev - 1));
-      message.error(t("post.repost_error"));
+      setRepostsCount(prev => wasReposted ? prev + 1 : prev - 1);
+      message.error(t('post.repost_error'));
     } finally {
       setActionLoading(null);
     }
@@ -106,133 +102,78 @@ export default function PostDetail({ post }: PostDetailProps) {
 
   const handleComment = () => {
     if (!requireAuth()) return;
-    // Ya existe un CommentSection separado, pero podrías enfocar el input si quisieras
+    // Si quieres enfocar el input, podrías usar una referencia
   };
 
-  const handleBookmark = () => {
-    if (!requireAuth()) return;
-    // Endpoint no disponible en la API actual. Podrías implementar una simulación local
-    message.info("Función de guardado no disponible en el backend aún");
-  };
+  if (loading) return <div className="flex justify-center py-12"><Spin size="large" /></div>;
+  if (error) return <Alert message={error} type="error" className="mx-4" />;
+  if (!post) return <div className="text-center py-12">{t('post.not_found')}</div>;
+
+  const formattedDate = new Date(post.created_at).toLocaleDateString('es-ES', {
+    day: 'numeric', month: 'short', year: 'numeric',
+  });
+  const formattedTime = new Date(post.created_at).toLocaleTimeString('es-ES', {
+    hour: '2-digit', minute: '2-digit',
+  });
 
   return (
     <div className="min-h-screen bg-[#E3E2DE]">
       <main className="flex justify-center px-2 sm:px-4">
         <div className="flex flex-col md:flex-row gap-6 max-w-7xl w-full">
-          {/* Columna principal */}
           <div className="w-full md:w-[740px]">
             <div className="bg-[#E8F1FC] border-l-2 border-r-2 border-[#8F8E8A] px-6 py-6">
-              {/* Cabecera con botón de retroceso */}
               <div className="flex items-center gap-4 mb-6">
-                <button
-                  onClick={() => navigate(-1)}
-                  className="p-2 hover:bg-gray-200 rounded-full transition"
-                >
+                <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-200 rounded-full transition">
                   <ArrowLeft size={24} className="text-gray-800" />
                 </button>
-                <h1 className="text-xl font-medium text-gray-800">
-                  {t("post.publication")}
-                </h1>
+                <h1 className="text-xl font-medium text-gray-800">{t('post.publication')}</h1>
               </div>
 
-              {/* Información del autor */}
+              {/* Autor */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex gap-3">
-                  <div className="w-12 h-12 bg-white rounded-full border border-gray-800 flex items-center justify-center text-2xl">
-                    {post.author?.avatar ? (
-                      <img
-                        src={post.author.avatar}
-                        alt={post.author.name}
-                        className="w-full h-full rounded-full object-cover"
-                      />
-                    ) : (
-                      <User size={24} className="text-gray-500" />
-                    )}
-                  </div>
+                  <Avatar src={post.author?.avatar} icon={<User />} size={48} className="bg-white border border-gray-800" />
                   <div>
-                    <div className="font-medium text-gray-900">
-                      {post.author?.name || "Usuario"}
-                    </div>
-                    <div className="text-gray-500 text-sm">
-                      @{post.author?.handle || "usuario"}
-                    </div>
+                    <div className="font-medium text-gray-900">{post.author?.name || post.author?.displayName}</div>
+                    <div className="text-gray-500 text-sm">@{post.author?.handle}</div>
                   </div>
                 </div>
-                <button className="text-gray-500 hover:text-gray-700">
-                  <span className="text-2xl">⋯</span>
-                </button>
+                <button className="text-gray-500 hover:text-gray-700">⋯</button>
               </div>
 
-              {/* Contenido del post */}
-              <div className="mb-6">
-                <p className="text-gray-800 text-justify">{post.content}</p>
-              </div>
+              <p className="text-gray-800 text-justify mb-6">{post.content}</p>
 
               {/* Media según tipo */}
               {post.type === PostType.IMAGE && <PostImageDetail post={post} />}
               {post.type === PostType.MUSIC && <PostAudioDetail post={post} />}
-              {post.type === PostType.TEXT && (
-                <div className="mb-6">{/* Solo texto */}</div>
-              )}
 
-              {/* Fecha y hora */}
               <div className="flex items-center gap-2 text-sm text-gray-600 mb-6">
-                <span>{formattedTime}</span>
-                <span>·</span>
-                <span>{formattedDate}</span>
+                <span>{formattedTime}</span> <span>·</span> <span>{formattedDate}</span>
               </div>
 
-              {/* Barra de interacciones */}
+              {/* Interacciones */}
               <div className="flex items-center justify-around py-4 border-t border-b border-[#8F8E8A] mb-6">
-                <button
-                  className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 ${
-                    actionLoading === "like" ? "opacity-50 cursor-wait" : ""
-                  }`}
-                  onClick={handleLike}
-                  disabled={actionLoading !== null}
-                >
-                  <Heart size={18} className={liked ? "fill-red-500 text-red-500" : ""} />
+                <button onClick={handleLike} disabled={actionLoading !== null}
+                  className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 ${actionLoading === 'like' ? 'opacity-50' : ''}`}>
+                  <Heart size={18} className={liked ? 'fill-red-500 text-red-500' : ''} />
                   <span>{likesCount}</span>
                 </button>
-
-                <button
-                  className="flex items-center gap-2 text-gray-700 hover:text-blue-600"
-                  onClick={handleComment}
-                >
+                <button onClick={handleComment} className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
                   <MessageCircle size={18} />
                   <span>{post.replies?.length || 0}</span>
                 </button>
-
-                <button
-                  className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 ${
-                    actionLoading === "repost" ? "opacity-50 cursor-wait" : ""
-                  }`}
-                  onClick={handleRepost}
-                  disabled={actionLoading !== null}
-                >
-                  <Repeat2 size={18} className={reposted ? "text-green-600" : ""} />
+                <button onClick={handleRepost} disabled={actionLoading !== null}
+                  className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 ${actionLoading === 'repost' ? 'opacity-50' : ''}`}>
+                  <Repeat2 size={18} className={reposted ? 'text-green-600' : ''} />
                   <span>{repostsCount}</span>
-                </button>
-
-                <button
-                  className="flex items-center gap-2 text-gray-700 hover:text-blue-600"
-                  onClick={handleBookmark}
-                >
-                  <Link2 size={18} />
                 </button>
               </div>
 
-              {/* Sección de comentarios */}
               <CommentSection postId={post.id} />
             </div>
           </div>
 
-          {/* Sidebar de tags (solo en desktop) */}
-          {!isMobile && (
-            <div className="w-full md:w-64 flex-shrink-0">
-              <TagsSidebar />
-            </div>
-          )}
+          {!isMobile && <div className="w-full md:w-64"><TagsSidebar /></div>}
         </div>
       </main>
     </div>
