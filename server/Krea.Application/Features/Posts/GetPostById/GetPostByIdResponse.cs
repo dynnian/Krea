@@ -4,6 +4,7 @@ namespace Krea.Application.Features.Posts.GetPostById {
     public sealed record GetPostByIdResponse(
         Guid Id,
         Guid AuthorPostId,
+        string AuthorName,
         string Title,
         string? Content,
         bool IsWork,
