@@ -70,6 +70,7 @@ namespace Krea.Application.Features.Posts.GetPostById {
             return new GetPostByIdResponse(
                 post.Id,
                 post.AuthorPostId,
+                post.AuthorPost.DisplayName,
                 post.Title,
                 post.Content,
                 post.IsWork,

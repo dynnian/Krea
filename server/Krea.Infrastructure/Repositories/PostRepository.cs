@@ -18,8 +18,9 @@ namespace Krea.Infrastructure.Repositories {
             .Include(p => p.Uploads)
                 .ThenInclude(u => u.Metadata)
                     .ThenInclude(m => m.Genres)
+            .Include(p => p.AuthorPost)
             .Include(p => p.Uploads)
-                .ThenInclude(u => u.Media) // <--- Fix 1: Added missing Media entity
+                .ThenInclude(u => u.Media)
             .Include(p => p.Hashtags)
             .Include(p => p.Likes)
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
