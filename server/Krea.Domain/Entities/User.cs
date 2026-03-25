@@ -48,6 +48,8 @@ namespace Krea.Domain.Entities {
         
         private readonly List<ConversationParticipant> _conversations = new();
         public IReadOnlyCollection<ConversationParticipant> Conversations => _conversations;
+        
+        public ICollection<PostFavorite> Favorites { get; set; } = new List<PostFavorite>();
 
         #pragma warning disable CS8618
         private User() { }
