@@ -2,6 +2,7 @@ namespace Krea.Application {
     using Abstractions;
     using Abstractions.Feed;
     using Domain.Abstractions;
+    using Domain.Entities;
     using Features.Auth;
     using Features.Auth.ChangePassword;
     using Features.Auth.Register;
@@ -36,6 +37,10 @@ namespace Krea.Application {
     using Features.Admin.Reports;
     using Features.Admin.Users;
     using Features.Collections.UploadCollectionCover;
+    using Features.Favorites.AddPostToFavorites;
+    using Features.Favorites.GetUserFavorites;
+    using Features.Favorites.RemovePostFromFavorites;
+    using Features.Favorites.TogglePostFavorite;
     using Features.Genres;
     using Features.Posts.CreatePost;
     using Features.Posts.DeletePost;
@@ -108,6 +113,11 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<AssignGenresToUploadCommand, Unit>, AssignGenresToUploadHandler>();
             services.AddScoped<IRequestHandler<AddHashtagCommand, Unit>, AddHashtagHandler>();
             services.AddScoped<IRequestHandler<RemoveHashtagCommand, Unit>, RemoveHashtagHandler>();
+            services.AddScoped<IRequestHandler<AddPostToFavoritesCommand, bool>, AddPostToFavoritesHandler>();
+            services.AddScoped<IRequestHandler<RemovePostFromFavoritesCommand, bool>, RemovePostFromFavoritesHandler>();
+            services.AddScoped<IRequestHandler<GetUserFavoritesQuery, PaginatedList<Post>>, GetUserFavoritesHandler>();
+            services.AddScoped<IRequestHandler<TogglePostFavoriteCommand, bool>, TogglePostFavoriteHandler>();
+
             
             services.AddScoped<ISender, Sender>();
             
