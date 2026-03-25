@@ -43,6 +43,7 @@ namespace Krea.Infrastructure.Services {
                     LikeCount = p.Likes.Count(),
                     IsLikedByCurrentUser =
                         p.Likes.Any(l => l.UserId == currentUserId),
+                    IsFavorite = currentUserId != null && p.Favorites.Any(f => f.UserId == currentUserId),
                     ReplyCount =
                         _context.Posts.Count(r => r.RepliedToId == p.Id),
                     RepostCount =
