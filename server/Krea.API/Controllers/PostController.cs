@@ -1,5 +1,9 @@
 namespace Krea.API.Controllers {
     using Application.Abstractions;
+    using Application.Features.Favorites.AddPostToFavorites;
+    using Application.Features.Favorites.GetUserFavorites;
+    using Application.Features.Favorites.RemovePostFromFavorites;
+    using Application.Features.Favorites.TogglePostFavorite;
     using Application.Features.Genres;
     using Application.Features.Posts.CreatePost;
     using Application.Features.Posts.DeletePost;
@@ -396,6 +400,62 @@ namespace Krea.API.Controllers {
                 cancellationToken);
 
             return NoContent();
+        }
+        
+        [HttpPost("{postId}/favorite")]
+        [Authorize]
+        public async Task<IActionResult> AddToFavorites(Guid postId)
+        {
+            var userId = GetCurrentUserId();
+
+            var result = await _sender.Send(
+                new AddPostToFavoritesCommand(userId, postId));
+
+            if (!result)
+                return BadRequest("Post already in favorites.");
+
+            return Ok();
+        }
+        
+        [HttpDelete("{postId}/favorite")]
+        [Authorize]
+        public async Task<IActionResult> RemoveFromFavorites(Guid postId)
+        {
+            var userId = GetCurrentUserId();
+        
+            var result = await _sender.Send(
+                new RemovePostFromFavoritesCommand(userId, postId));
+        
+            if (!result)
+                return NotFound();
+        
+            return NoContent();
+        }
+        
+        [HttpGet("me/favorites")] 
+        [Authorize]
+        public async Task<IActionResult> GetFavorites(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var userId = GetCurrentUserId();
+
+            var result = await _sender.Send(
+                new GetUserFavoritesQuery(userId, page, pageSize));
+
+            return Ok(result);
+        }
+        
+        [HttpPost("{postId}/favorite/toggle")]
+        [Authorize]
+        public async Task<IActionResult> ToggleFavorite(Guid postId)
+        {
+            var userId = GetCurrentUserId();
+
+            var isFavorite = await _sender.Send(
+                new TogglePostFavoriteCommand(userId, postId));
+
+            return Ok(new { isFavorite });
         }
         
         private Guid GetCurrentUserId() {

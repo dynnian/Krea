@@ -4,7 +4,7 @@ namespace Krea.Application.Abstractions.Feed {
     public interface IFeedQueryService
     {
         Task<IReadOnlyList<PostFeedResponse>> GetRecentAsync(
-            Guid currentUserId,
+            Guid? currentUserId,
             int page,
             int pageSize,
             CancellationToken ct);

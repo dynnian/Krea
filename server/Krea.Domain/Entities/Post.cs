@@ -44,6 +44,8 @@ namespace Krea.Domain.Entities {
 
         private readonly List<Collection> _collections = new();
         public IReadOnlyCollection<Collection> Collections => _collections.AsReadOnly();
+        
+        public ICollection<PostFavorite> Favorites { get; set; } = new List<PostFavorite>();
 
         #pragma warning disable CS8618
         private Post() { }

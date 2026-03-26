@@ -24,7 +24,7 @@ namespace Krea.Infrastructure.Data {
 
         public DbSet<PostUpload> PostUploads => Set<PostUpload>();
 
-        // public DbSet<PostFavorite> PostFavorites => Set<PostFavorite>();
+        public DbSet<PostFavorite> PostFavorites => Set<PostFavorite>();
         public DbSet<Like> Likes => Set<Like>();
         public DbSet<Hashtag> Hashtags => Set<Hashtag>();
 

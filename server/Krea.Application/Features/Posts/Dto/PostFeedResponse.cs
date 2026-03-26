@@ -19,6 +19,8 @@ namespace Krea.Application.Features.Posts.Dto {
     public int LikeCount { get; init; }
 
     public bool IsLikedByCurrentUser { get; init; }
+    
+    public bool IsFavorite { get; set; }
 
     public int ReplyCount { get; init; }
 

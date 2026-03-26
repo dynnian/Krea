@@ -71,6 +71,7 @@ public static class DependencyInjection
         services.AddScoped<IPostRepository, PostRepository>();
         services.AddScoped<IPostUploadRepository, PostUploadRepository>();
         services.AddScoped<IPostReadRepository, PostReadRepository>();
+        services.AddScoped<IPostFavoriteRepository, PostFavoriteRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
         services.AddScoped<ICollectionRepository, CollectionRepository>();
         services.AddScoped<IMediaRepository, MediaRepository>();
