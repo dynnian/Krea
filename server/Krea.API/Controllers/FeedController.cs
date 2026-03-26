@@ -45,10 +45,12 @@ namespace Krea.API.Controllers {
 
         [HttpGet("trending")]
         public async Task<IActionResult> GetTrending(
-            [FromQuery] Guid currentUserId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             CancellationToken ct = default) {
+            
+            var currentUserId = GetCurrentUserId();
+
             var query = new GetTrendingFeedQuery(currentUserId, page, pageSize);
 
             IReadOnlyList<PostFeedResponse> result = await _trendingHandler.Handle(query, ct);
@@ -57,11 +59,14 @@ namespace Krea.API.Controllers {
         }
 
         [HttpGet("following")]
+        [Authorize]
         public async Task<IActionResult> GetFollowing(
-            [FromQuery] Guid currentUserId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            CancellationToken ct = default) {
+            CancellationToken ct = default)
+        {
+            var currentUserId = GetCurrentUserId();
+
             var query = new GetFollowingFeedQuery(currentUserId, page, pageSize);
 
             IReadOnlyList<PostFeedResponse> result = await _followingHandler.Handle(query, ct);
