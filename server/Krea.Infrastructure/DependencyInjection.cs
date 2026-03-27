@@ -15,6 +15,7 @@ using Application.Abstractions.Feed;
 using Application.Abstractions.FileStorage;
 using Application.Abstractions.Filter;
 using Application.Abstractions.Identity;
+using Application.Abstractions.Metadata;
 using Configuration;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -120,6 +121,10 @@ public static class DependencyInjection
 
             return new MinioFileStorage(minioClient, baseUrl);
         });
+        
+        //MetadataExtractor
+        services.AddScoped<IMetadataExtractor, MetadataExtractor>();
+        
         services.AddScoped<IFeedQueryService, FeedQueryService>();
         //services.AddScoped<IFileStorage, LocalFileStorage>();
         services.AddScoped<ICollectionQueries, CollectionQueries>();

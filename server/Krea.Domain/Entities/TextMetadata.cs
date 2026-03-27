@@ -19,12 +19,13 @@ namespace Krea.Domain.Entities {
             Guid uploadId,
             string title,
             string? description,
+            string? coverUrl,
             string? sortTitle,
             string? subtitle,
             string languageCode,
             int wordCount,
             IEnumerable<Genre>? genres = null)
-            : base(uploadId, title, description, genres) {
+            : base(uploadId, title, description, coverUrl, genres) {
             SortTitle = sortTitle;
             Subtitle = subtitle;
             LanguageCode = languageCode;
@@ -41,6 +42,7 @@ namespace Krea.Domain.Entities {
             Guid uploadId,
             string title,
             string? description,
+            string? coverUrl,
             int wordCount,
             string languageCode,
             IEnumerable<Genre> genres) {
@@ -49,6 +51,7 @@ namespace Krea.Domain.Entities {
                 UploadId = uploadId,
                 Title = title,
                 Description = description,
+                CoverUrl = coverUrl,
                 WordCount = wordCount,
                 LanguageCode = languageCode
             };

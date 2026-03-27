@@ -15,10 +15,11 @@ namespace Krea.Domain.Entities {
             Guid uploadId,
             string title,
             string? description,
+            string? coverUrl,
             int bitrateKbps,
             int durationSec,
             IEnumerable<Genre>? genres = null)
-            : base(uploadId, title, description, genres) {
+            : base(uploadId, title, description, coverUrl, genres) {
             BitrateKbps = bitrateKbps;
             DurationSec = durationSec;
         }
@@ -28,6 +29,7 @@ namespace Krea.Domain.Entities {
             Guid uploadId,
             string title,
             string? description,
+            string? coverUrl,
             int bitrateKbps,
             int durationSec,
             IEnumerable<Genre> genres) {
@@ -35,6 +37,7 @@ namespace Krea.Domain.Entities {
                 uploadId,
                 title,
                 description,
+                coverUrl,
                 bitrateKbps,
                 durationSec,
                 genres

@@ -3,6 +3,7 @@ using System;
 using Krea.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Krea.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260321083230_RefactorMetadata")]
+    partial class RefactorMetadata
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -679,31 +682,6 @@ namespace Krea.Infrastructure.Data.Migrations
                     b.HasIndex("UploadedAt");
 
                     b.ToTable("posts", (string)null);
-                });
-
-            modelBuilder.Entity("Krea.Domain.Entities.PostFavorite", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("PostId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PostId");
-
-                    b.HasIndex("UserId", "PostId")
-                        .IsUnique();
-
-                    b.ToTable("post_favorites", (string)null);
                 });
 
             modelBuilder.Entity("Krea.Domain.Entities.PostModerationReport", b =>
@@ -1596,25 +1574,6 @@ namespace Krea.Infrastructure.Data.Migrations
                     b.Navigation("RepostOf");
                 });
 
-            modelBuilder.Entity("Krea.Domain.Entities.PostFavorite", b =>
-                {
-                    b.HasOne("Krea.Domain.Entities.Post", "Post")
-                        .WithMany("Favorites")
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Krea.Domain.Entities.User", "User")
-                        .WithMany("Favorites")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Post");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Krea.Domain.Entities.PostModerationReport", b =>
                 {
                     b.HasOne("Krea.Domain.Entities.Post", "Post")
@@ -1844,8 +1803,6 @@ namespace Krea.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Krea.Domain.Entities.Post", b =>
                 {
-                    b.Navigation("Favorites");
-
                     b.Navigation("Likes");
 
                     b.Navigation("Uploads");
@@ -1878,8 +1835,6 @@ namespace Krea.Infrastructure.Data.Migrations
                     b.Navigation("Collections");
 
                     b.Navigation("Conversations");
-
-                    b.Navigation("Favorites");
 
                     b.Navigation("Likes");
 

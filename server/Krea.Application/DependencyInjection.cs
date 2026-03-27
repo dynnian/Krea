@@ -117,8 +117,6 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<RemovePostFromFavoritesCommand, bool>, RemovePostFromFavoritesHandler>();
             services.AddScoped<IRequestHandler<GetUserFavoritesQuery, PaginatedList<Post>>, GetUserFavoritesHandler>();
             services.AddScoped<IRequestHandler<TogglePostFavoriteCommand, bool>, TogglePostFavoriteHandler>();
-
-            
             services.AddScoped<ISender, Sender>();
             
             // Messaging

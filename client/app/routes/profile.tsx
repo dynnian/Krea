@@ -1112,7 +1112,7 @@ const handleFollow = async () => {
 
   const mainTabItems  = [
     { key: 'portfolio', label: t('Portafolio') },
-    { key: 'publications', label: t('Publicatciones') },
+    { key: 'publications', label: t('Publicaciones') },
     { key: 'members', label: t('Miembros') },
   ];
 
@@ -1296,7 +1296,7 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
         
          {/*LINEA DEL DIABLO*/}
         {!isPortfolioView && (
-          <div className="w-[868px] h-px bg-[#8F8E8A] my-4 self-center" />
+          <div className="w-[868px] h-px bg-[#8F8E8A] mb-8 self-center" />
         )}
 
         <div className={` ${
@@ -1333,9 +1333,9 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
               ) : (
                 <>
                   {filteredPosts.map((post) => (
-                    <div key={post.id}>
+                    <div key={post.id} className="-mt-4">
                       <PostCard post={post} />
-                      <div className="w-[868px] h-px bg-[#8F8E8A] my-4 -ml-[70px]" />
+                      <div className="w-[868px] h-px bg-[#8F8E8A] mt-4 -ml-[70px]" />
                     </div>
                   ))}
                   {filteredPosts.length === 0 && (

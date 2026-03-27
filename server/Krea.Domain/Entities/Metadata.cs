@@ -14,6 +14,8 @@ namespace Krea.Domain.Entities {
         public string Title { get; protected set; } = null!;
 
         public string? Description { get; protected set; }
+        
+        public string? CoverUrl { get; protected set;} 
 
         #pragma warning disable CS8618
         protected Metadata() { }
@@ -23,11 +25,13 @@ namespace Krea.Domain.Entities {
             Guid uploadId,
             string title,
             string? description,
+            string? coverUrl,
             IEnumerable<Genre>? genres = null) {
             Id = Guid.NewGuid();
             UploadId = uploadId;
             Title = title;
             Description = description;
+            CoverUrl = coverUrl;
 
             if (genres != null)
                 _genres.AddRange(genres);

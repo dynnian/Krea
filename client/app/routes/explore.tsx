@@ -49,7 +49,7 @@ const Explore: React.FC = () => {
     <div className="w-full min-h-screen bg-[#E3E2DE]">
 
       {/* Tabs container */}
-      <div className="max-w-[1200px] mx-auto md:px-4 pb-[22px]">
+      <div className="max-w-[1200px] mx-auto md:px-4 pt-[10px] pb-[20px]">
         <Tabs
           items={items}
           activeKey={activeTab}
