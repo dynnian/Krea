@@ -1,20 +1,20 @@
-import { useState } from "react";
-import { Modal } from "antd";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import type { Post } from "../../types/post";
+// components/Posts/PostImageDetail.tsx
+import { useState } from 'react';
+import { Modal } from 'antd';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import type { PostDto } from '../../types/api';
 
 interface PostImageDetailProps {
-  post: Post;
+  post: PostDto;
 }
 
 export default function PostImageDetail({ post }: PostImageDetailProps) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  // Extraer todas las imágenes de los media
   const images = post.media
-    ?.filter((upload) => upload.media?.mime_type.startsWith("image/"))
-    .map((upload) => upload.media!.path) || [];
+    .filter(m => m.mimeType.startsWith('image/'))
+    .map(m => m.url);
 
   if (images.length === 0) return null;
 
@@ -28,7 +28,6 @@ export default function PostImageDetail({ post }: PostImageDetailProps) {
 
   return (
     <div className="mb-6">
-      {/* Grid de imágenes según el mockup */}
       <div className="flex gap-2">
         {images.length === 1 && (
           <img
@@ -98,14 +97,13 @@ export default function PostImageDetail({ post }: PostImageDetailProps) {
         )}
       </div>
 
-      {/* Modal de visualización de imágenes */}
       <Modal
         open={modalVisible}
         footer={null}
         onCancel={() => setModalVisible(false)}
         centered
         width="90vw"
-        styles={{ body: { padding: 0, height: "80vh" } }}
+        styles={{ body: { padding: 0, height: '80vh' } }}
         closeIcon={<X className="text-white" />}
       >
         <div className="relative h-full flex items-center justify-center bg-black">

@@ -14,13 +14,16 @@ namespace Krea.Infrastructure.Repositories {
                           .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
 
         public async Task<Post?> GetFullPostAsync(Guid id, CancellationToken cancellationToken = default) =>
-            await _context.Posts
-                          .Include(p => p.Uploads)
-                          .ThenInclude(u => u.Metadata)
-                          .ThenInclude(m => m.Genres)
-                          .Include(p => p.Hashtags)
-                          .Include(p => p.Likes)
-                          .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
+        await _context.Posts
+            .Include(p => p.Uploads)
+                .ThenInclude(u => u.Metadata)
+                    .ThenInclude(m => m.Genres)
+            .Include(p => p.AuthorPost)
+            .Include(p => p.Uploads)
+                .ThenInclude(u => u.Media)
+            .Include(p => p.Hashtags)
+            .Include(p => p.Likes)
+            .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
 
         public async Task AddAsync(Post post, CancellationToken cancellationToken = default) =>
             await _context.Posts.AddAsync(post, cancellationToken);
@@ -79,21 +82,20 @@ namespace Krea.Infrastructure.Repositories {
                                  .ToListAsync(cancellationToken);
         }
         
-        public async Task<(IReadOnlyList<Post>, int)> GetRepliesAsync(
-            Guid postId,
-            int page,
-            int pageSize,
-            CancellationToken cancellationToken = default)
+        public async Task<(IReadOnlyList<Post> Posts, int TotalCount)> GetRepliesAsync(
+        Guid postId, 
+        int page, 
+        int pageSize, 
+        CancellationToken cancellationToken = default)
         {
             var query = _context.Posts
-                .AsNoTracking()
-                .Where(p => p.RepliedToId == postId && !p.IsDeleted);
+                .Include(p => p.AuthorPost) 
+                .Where(p => p.RepliedToId == postId && !p.IsDeleted)
+                .OrderByDescending(p => p.UploadedAt);
 
-            var totalCount = await query.CountAsync(cancellationToken);
+            int totalCount = await query.CountAsync(cancellationToken);
 
             var posts = await query
-                .Include(p => p.AuthorPost)
-                .OrderByDescending(p => p.UploadedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
@@ -112,6 +114,17 @@ namespace Krea.Infrastructure.Repositories {
                 .Include(p => p.AuthorPost)
                 .OrderBy(p => p.UploadedAt)
                 .ToListAsync(cancellationToken);
+        }
+        
+       public async Task<bool> ExistsRepostAsync(
+        Guid originalPostId, 
+        Guid userId, 
+        CancellationToken cancellationToken = default)
+        {
+            return await _context.Posts
+                .AnyAsync(p => p.RepostOfId == originalPostId && 
+                            p.AuthorPostId == userId && 
+                            !p.IsDeleted, cancellationToken);
         }
     }
 }

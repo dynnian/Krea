@@ -8,7 +8,10 @@ import {
   type LikeData,
   type UploadMediaData,
   type FeedPost,
+  type PostDto,
 } from "../types/api.ts";
+import type { FeedItem } from "../types/feed.ts";
+import type { ReplyDto } from "./comments.ts";
 
 export interface PostsQuery {
   page?: number;
@@ -16,138 +19,107 @@ export interface PostsQuery {
 }
 
 export const postsApi = {
-  // GET /api/Posts?page&pageSize
-  getPosts: async (query: PostsQuery = {}) => {
-    const params = {
-      page: query.page ?? 1,
-      pageSize: query.pageSize ?? 20,
-    };
-    const res = await axiosClient.get<ApiPost[]>("/Posts", { params });
-    return res.data;
-  },
+  // Obtener todos los posts (paginado)
+  getPosts: (page = 1, pageSize = 20) =>
+    axiosClient.get<PostDto[]>("/Posts", { params: { page, pageSize } }),
 
-  // GET /api/Posts/{id}
-  getPost: async (id: string) => {
-    const res = await axiosClient.get<ApiPost>(`/Posts/${id}`);
-    return res.data;
-  },
+  // Obtener un post por ID
+  getPost: (id: string) => axiosClient.get<PostDto>(`/Posts/${id}`),
 
-  // POST /api/Posts
-  createPost: async (data: CreatePostData) => {
-    const res = await axiosClient.post<ApiPost>("/Posts", data);
-    return res.data;
-  },
+  // Crear un post
+  createPost: (
+    data: any, // usamos any por simplicidad, pero puedes tipar
+  ) => axiosClient.post<{ postId: string }>("/Posts", data),
 
-  // DELETE /api/Posts/{id}
-  deletePost: async (id: string) => {
-    await axiosClient.delete(`/Posts/${id}`);
-  },
+  // Eliminar post
+  deletePost: (postId: string) => axiosClient.delete(`/Posts/${postId}`),
 
-  // GET /api/Posts/user/{authorId}
-  getUserPosts: async (authorId: string, query: PostsQuery = {}) => {
-    const params = {
-      page: query.page ?? 1,
-      pageSize: query.pageSize ?? 20,
-    };
-    const res = await axiosClient.get<ApiPost[]>(`/Posts/user/${authorId}`, {
-      params,
-    });
-    return res.data;
-  },
+  // Obtener posts de un usuario
+  getUserPosts: (authorId: string, page = 1, pageSize = 20) =>
+    axiosClient.get<PostDto[]>(`/Posts/user/${authorId}`, {
+      params: { page, pageSize },
+    }),
 
-  // POST /api/Posts/{postId}/reply
-  replyToPost: async (postId: string, data: ReplyData) => {
-    const res = await axiosClient.post(`/Posts/${postId}/reply`, data);
-    return res.data; // probablemente devuelve el nuevo post (reply)
-  },
+  // Responder (comentar)
+  replyToPost: (
+    postId: string,
+    data: {
+      authorId: string;
+      replyToPostId: string;
+      title: string;
+      content: string;
+    },
+  ) => axiosClient.post<{ postId: string }>(`/Posts/${postId}/reply`, data),
 
-  // POST /api/Posts/{postId}/repost
-  repost: async (postId: string, data: RepostData) => {
-    const res = await axiosClient.post(`/Posts/${postId}/repost`, data);
-    return res.data;
-  },
+  // Repostear
+  repost: (
+    postId: string,
+    data: { authorId: string; originalPostId: string },
+  ) => axiosClient.post(`/Posts/${postId}/repost`, data),
 
-  // POST /api/Posts/{postId}/like
-  like: async (postId: string, data: LikeData) => {
-    const res = await axiosClient.post(`/Posts/${postId}/like`, data);
-    return res.data;
-  },
+  // Like
+  like: (postId: string, data: { postId: string; userId: string }) =>
+    axiosClient.post(`/Posts/${postId}/like`, data),
 
-  // DELETE /api/Posts/{postId}/like
-  unlike: async (postId: string, data: LikeData) => {
-    // Nota: DELETE con body no es estándar, pero lo implementamos como pide la API
-    const res = await axiosClient.delete(`/Posts/${postId}/like`, { data });
-    return res.data;
-  },
+  // Unlike
+  unlike: (postId: string, data: { postId: string; userId: string }) =>
+    axiosClient.delete(`/Posts/${postId}/unlike`, { data }),
 
-  // POST /api/Posts/{postId} (subida de medios)
-  uploadMedia: async (postId: string, data: UploadMediaData) => {
+  // Subir archivo multimedia – ya está bien
+  uploadMedia: (postId: string, data: any) => {
     const formData = new FormData();
-    formData.append("File", data.File);
-    formData.append("Type", data.Type);
-    formData.append("Title", data.Title);
-
-    if (data.Description) formData.append("Description", data.Description);
-    if (data.IsWorkMedia !== undefined)
-      formData.append("IsWorkMedia", data.IsWorkMedia.toString());
-
-    // Imagen
-    if (data.Width !== undefined)
-      formData.append("Width", data.Width.toString());
-    if (data.Height !== undefined)
-      formData.append("Height", data.Height.toString());
-    if (data.Format) formData.append("Format", data.Format);
-
-    // Música
-    if (data.BitrateKbps !== undefined)
-      formData.append("BitrateKbps", data.BitrateKbps.toString());
-    if (data.DurationSec !== undefined)
-      formData.append("DurationSec", data.DurationSec.toString());
-
-    // Texto
-    if (data.WordCount !== undefined)
-      formData.append("WordCount", data.WordCount.toString());
-    if (data.SortTitle) formData.append("SortTitle", data.SortTitle);
-    if (data.Subtitle) formData.append("Subtitle", data.Subtitle);
-    if (data.LanguageCode) formData.append("LanguageCode", data.LanguageCode); // seguro porque verificamos
-
-    // Comunes
-    if (data.FileSize !== undefined)
-      formData.append("FileSize", data.FileSize.toString());
-    if (data.GenreIds?.length) {
-      data.GenreIds.forEach((id) => formData.append("GenreIds", id));
-    }
-
-    const res = await axiosClient.post(`/Posts/${postId}/uploads`, formData, {
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (key === "File") formData.append(key, value as File);
+        else if (Array.isArray(value))
+          value.forEach((v) => formData.append(key, v));
+        else formData.append(key, String(value));
+      }
+    });
+    return axiosClient.post(`/Posts/${postId}/uploads`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return res.data;
   },
+
+  // Obtener comentarios (replies)
+  getReplies: (postId: string, page = 1, pageSize = 20) =>
+    axiosClient.get<ReplyDto[]>(`/Posts/${postId}/replies`, {
+      params: { page, pageSize },
+    }),
+
+  // Responder (comentar) – asumimos que la respuesta devuelve el nuevo ReplyDto
+  replyToPost: (
+    postId: string,
+    data: {
+      authorId: string;
+      replyToPostId: string;
+      title: string;
+      content: string;
+    },
+  ) => axiosClient.post<ReplyDto>(`/Posts/${postId}/reply`, data),
+
+  // Explorar contenido
+  explore: (params: {
+    category?: string;
+    genres?: string[];
+    tags?: string[];
+    sortBy?: string;
+    page?: number;
+    pageSize?: number;
+  }) => axiosClient.get<PostDto[]>("/Posts/explore", { params }),
 };
 
 export const feedApi = {
-  // GET /api/feed/recent?currentUserId&page&pageSize
-  getRecent: async (
-    currentUserId?: string,
-    page: number = 1,
-    pageSize: number = 20,
-  ) => {
-    const params: any = { page, pageSize };
-    if (currentUserId) params.currentUserId = currentUserId;
-    const res = await axiosClient.get<FeedPost[]>("/feed/recent", { params });
-    return res.data;
-  },
-
-  // GET /api/feed/following?currentUserId&page&pageSize
-  getFollowing: async (
-    currentUserId: string,
-    page: number = 1,
-    pageSize: number = 20,
-  ) => {
-    const params = { currentUserId, page, pageSize };
-    const res = await axiosClient.get<FeedPost[]>("/feed/following", {
-      params,
-    });
-    return res.data;
-  },
+  getRecent: (currentUserId?: string, page = 1, pageSize = 20) =>
+    axiosClient.get<FeedItem[]>("/feed/recent", {
+      params: { currentUserId, page, pageSize },
+    }),
+  getFollowing: (currentUserId: string, page = 1, pageSize = 20) =>
+    axiosClient.get<FeedItem[]>("/feed/following", {
+      params: { currentUserId, page, pageSize },
+    }),
+  getTrending: (currentUserId?: string, page = 1, pageSize = 20) =>
+    axiosClient.get<FeedItem[]>("/feed/trending", {
+      params: { currentUserId, page, pageSize },
+    }),
 };

@@ -7,8 +7,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import { postsApi } from '../../services/postsService';
 import { PostType } from '../../types/common';
 import type { CreatePostData, UploadMediaData } from '../../types/api';
-import type { UploadMediaType } from '../../types/api';
-
 
 const { Dragger } = Upload;
 const { TextArea } = Input;
@@ -16,10 +14,18 @@ const { Option } = Select;
 
 interface CreatePortfolioPostModalProps {
   visible: boolean;
-  initialPostType?: UploadMediaType;
+  initialPostType?: PostType;
   onClose: () => void;
   onSuccess?: () => void;
 }
+
+// Los valores de PostType son strings: 'image', 'music', 'text'
+const ACCEPTED_MIME_TYPES: Record<PostType, string[]> = {
+  [PostType.PLAIN]: [],
+  [PostType.IMAGE]: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+  [PostType.MUSIC]: ['audio/mpeg', 'audio/wav'], // permitir ambos
+  [PostType.TEXT]: ['application/pdf', 'application/epub+zip', 'text/plain'],
+};
 
 const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
   visible,
@@ -33,16 +39,20 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [postType, setPostType] = useState<UploadMediaType>(initialPostType);
+  const [postType, setPostType] = useState<PostType>(initialPostType);
   const [belongsToAlbum, setBelongsToAlbum] = useState(false);
+
   useEffect(() => {
     if (visible) {
       setPostType(initialPostType);
+      setFileList([]);
+      setTitle('');
+      setDescription('');
+      setBelongsToAlbum(false);
     }
   }, [visible, initialPostType]);
-  
 
-  // Mapeo de PostType (string) al número que espera el backend
+  // Mapeo de PostType al número que espera el backend para el campo 'type' del post
   const postTypeToNumber: Record<PostType, number> = {
     [PostType.PLAIN]: 0,
     [PostType.TEXT]: 1,
@@ -50,47 +60,116 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
     [PostType.MUSIC]: 3,
   };
 
+  const getAcceptType = () => {
+    switch (postType) {
+      case PostType.MUSIC:
+        return 'audio/mpeg,audio/wav'; // permitir ambos en el input
+      case PostType.IMAGE:
+        return 'image/*';
+      case PostType.TEXT:
+        return '.pdf,.epub,.txt,application/pdf,application/epub+zip,text/plain';
+      default:
+        return '*/*';
+    }
+  };
+
+  const beforeUpload = (file: File) => {
+    const allowedTypes = ACCEPTED_MIME_TYPES[postType];
+    if (allowedTypes && allowedTypes.length && !allowedTypes.includes(file.type)) {
+      message.error(t('createPost.invalidFileType', { type: getTitleText() }));
+      return Upload.LIST_IGNORE;
+    }
+    return false; // don't upload automatically
+  };
+
+  const uploadProps: UploadProps = {
+    name: 'file',
+    multiple: true,
+    fileList,
+    onChange(info) {
+      setFileList(info.fileList);
+    },
+    beforeUpload,
+    accept: getAcceptType(),
+  };
+
+  const getTitleText = () => {
+    switch (postType) {
+      case PostType.MUSIC:
+        return t('createPost.music');
+      case PostType.IMAGE:
+        return t('createPost.image');
+      case PostType.TEXT:
+        return t('createPost.literature');
+      default:
+        return t('createPost.content');
+    }
+  };
+
   const handleUpload = async (postId: string, file: UploadFile) => {
-    const fileObj = file.originFileObj as File;
+    let fileObj = file.originFileObj as File;
+
+    if (postType === PostType.MUSIC) {
+    if (fileObj.type === 'audio/mpeg') {
+      const arrayBuffer = await fileObj.arrayBuffer();
+      const newBlob = new Blob([arrayBuffer], { type: 'music/mpeg' });
+      fileObj = new File([newBlob], fileObj.name, { type: 'music/mpeg' });
+    } else if (fileObj.type === 'audio/wav') {
+      const arrayBuffer = await fileObj.arrayBuffer();
+      const newBlob = new Blob([arrayBuffer], { type: 'music/wav' });
+      fileObj = new File([newBlob], fileObj.name, { type: 'music/wav' });
+    }
+  }
+
+    // LanguageCode: usar string; si no está disponible, usar 'es'
+    const languageCode = user?.languageCode && typeof user.languageCode === 'string'
+      ? user.languageCode
+      : 'es';
+
+    // Crear el objeto UploadMediaData con el Type directamente desde postType
     const uploadData: UploadMediaData = {
-        File: fileObj,
-        Type: postType,           // ahora es "image" | "music" | "text"
-        Title: title,
-        Description: description || '',
-        IsWorkMedia: true,
-        LanguageCode: user?.languageCode || 'es', // Siempre enviar
+      File: fileObj,
+      Type: postType as any, // postType es 'image' | 'music' | 'text' (string)
+      Title: title,
+      Description: description || '',
+      IsWorkMedia: true,
+      LanguageCode: languageCode,
     };
 
-    // Metadatos según tipo
     if (postType === PostType.IMAGE) {
-        const img = new Image();
-        img.src = URL.createObjectURL(fileObj);
-        await new Promise((resolve) => { img.onload = resolve; });
-        uploadData.Width = img.width;
-        uploadData.Height = img.height;
-        uploadData.Format = file.name.split('.').pop() || 'jpg';
-        uploadData.FileSize = fileObj.size;
-        URL.revokeObjectURL(img.src);
+      const img = new Image();
+      img.src = URL.createObjectURL(fileObj);
+      await new Promise((resolve) => { img.onload = resolve; });
+      uploadData.Width = img.width;
+      uploadData.Height = img.height;
+      uploadData.Format = file.name.split('.').pop() || 'jpg';
+      uploadData.FileSize = fileObj.size;
+      URL.revokeObjectURL(img.src);
     } else if (postType === PostType.MUSIC) {
-        // Aquí podrías extraer metadatos reales con una librería
-        uploadData.BitrateKbps = 128;        // ejemplo
-        uploadData.DurationSec = 180;        // ejemplo
-        uploadData.Format = file.name.split('.').pop() || 'mp3';
-        uploadData.FileSize = fileObj.size;
+      uploadData.BitrateKbps = 128;        // placeholder
+      uploadData.DurationSec = 180;        // placeholder
+      uploadData.Format = file.name.split('.').pop() || 'mp3';
+      uploadData.FileSize = fileObj.size;
     } else if (postType === PostType.TEXT) {
-        // Para archivos de texto, puedes leer el contenido
-        const text = await fileObj.text();
-        const words = text.split(/\s+/).length;
-        uploadData.WordCount = words;
-        uploadData.LanguageCode = user?.languageCode || 'es';
-        uploadData.SortTitle = title;
-        uploadData.Subtitle = '';
-        uploadData.Format = file.name.split('.').pop() || 'txt';
-        uploadData.FileSize = fileObj.size;
+      const text = await fileObj.text();
+      const words = text.split(/\s+/).length;
+      uploadData.WordCount = words;
+      uploadData.SortTitle = title;
+      uploadData.Subtitle = '';
+      uploadData.Format = file.name.split('.').pop() || 'txt';
+      uploadData.FileSize = fileObj.size;
     }
 
     await postsApi.uploadMedia(postId, uploadData);
-    };
+  };
+
+  const resetForm = () => {
+    setFileList([]);
+    setTitle('');
+    setDescription('');
+    setPostType(PostType.IMAGE);
+    setBelongsToAlbum(false);
+  };
 
   const handleSubmit = async () => {
     if (!user) {
@@ -117,9 +196,9 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
         isLocal: false,
       };
 
-      const newPost = await postsApi.createPost(createData);
-      console.log("Respuesta createPost:", newPost); // Depuración
-      const postId = newPost.postId; // ¿Existe newPost.id?
+      const response = await postsApi.createPost(createData);
+      const postId = response.data?.postId || response.data?.id;
+      if (!postId) throw new Error('No se recibió el ID del post');
 
       for (const file of fileList) {
         await handleUpload(postId, file);
@@ -129,57 +208,13 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
       onSuccess?.();
       resetForm();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al crear post:', error);
-      message.error(t('createPost.error'));
+      const errorMessage = error?.response?.data?.title || error?.message || t('createPost.error');
+      message.error(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
-
-  const resetForm = () => {
-    setFileList([]);
-    setTitle('');
-    setDescription('');
-    setPostType(PostType.IMAGE);
-    setBelongsToAlbum(false);
-  };
-
-  const getAcceptType = () => {
-    switch (postType) {
-      case PostType.MUSIC:
-        return 'audio/*';
-      case PostType.IMAGE:
-        return 'image/*';
-      case PostType.TEXT:
-        return 'application/pdf,application/epub+zip,.epub';
-      default:
-        return '*/*';
-    }
-  };
-
-  const getTitleText = () => {
-    switch (postType) {
-      case PostType.MUSIC:
-        return t('createPost.music');
-      case PostType.IMAGE:
-        return t('createPost.image');
-      case PostType.TEXT:
-        return t('createPost.literature');
-      default:
-        return t('createPost.content');
-    }
-  };
-
-  const uploadProps: UploadProps = {
-    name: 'file',
-    multiple: true,
-    fileList,
-    onChange(info) {
-      setFileList(info.fileList);
-    },
-    beforeUpload: () => false,
-    accept: getAcceptType(),
   };
 
   return (
@@ -199,19 +234,19 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
         </h2>
 
         <div className="space-y-4">
-          {/* Tipo de contenido */}
+          {/* Content type selector */}
           <div>
             <label className="block text-sm font-medium text-[#1B1C1E] mb-2">
               {t('createPost.contentType')}
             </label>
             <Select value={postType} onChange={setPostType} className="w-full" size="large">
-                <Option value={PostType.IMAGE}>Imagen</Option>
-                <Option value={PostType.MUSIC}>Música</Option>
-                <Option value={PostType.TEXT}>Literatura</Option>
+              <Option value={PostType.IMAGE}>Imagen</Option>
+              <Option value={PostType.MUSIC}>Música</Option>
+              <Option value={PostType.TEXT}>Literatura</Option>
             </Select>
           </div>
 
-          {/* Subida de archivos */}
+          {/* File upload */}
           <div>
             <label className="block text-sm font-medium text-[#1B1C1E] mb-2">
               {t('createPost.uploadLabel')}
@@ -227,9 +262,12 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
                 {t('createPost.uploadText')}
               </p>
             </Dragger>
+            <p className="text-xs text-[#8F8E8A] mt-2">
+              {t('createPost.acceptedFormats', { formats: getAcceptType() })}
+            </p>
           </div>
 
-          {/* Checkbox "Álbum" solo para música */}
+          {/* Album checkbox (only for music) */}
           {postType === PostType.MUSIC && (
             <div className="flex items-center gap-3">
               <Checkbox
@@ -242,7 +280,7 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
             </div>
           )}
 
-          {/* Título */}
+          {/* Title */}
           <div>
             <label className="block text-sm font-medium text-[#1B1C1E] mb-2">
               {t('createPost.titleField')}
@@ -255,7 +293,7 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
             />
           </div>
 
-          {/* Descripción */}
+          {/* Description */}
           <div>
             <label className="block text-sm font-medium text-[#1B1C1E] mb-2">
               {t('createPost.description')}
@@ -269,7 +307,7 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
             />
           </div>
 
-          {/* Botones */}
+          {/* Buttons */}
           <div className="flex justify-end gap-4 mt-6">
             <button
               onClick={onClose}

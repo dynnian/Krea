@@ -103,3 +103,35 @@ export interface FeedPost {
   replyCount: number;
   repostCount: number;
 }
+
+
+export interface MediaDto {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  url: string;
+  isWorkMedia: boolean;
+  // otros campos opcionales si los hubiera
+}
+
+export interface PostDto {
+  id: string;
+  authorPostId: string; // ID del autor (string)
+  author?: {
+    id: string;
+    username: string;
+    displayName: string;
+    avatar?: string;
+  };
+  title: string | null;
+  content: string | null;
+  isWork: boolean;
+  isLocal: boolean;
+  uploadCount: number;
+  likesCount: number;
+  uploadedAt: string; // ISO 8601
+  media: MediaDto[];
+  isLikedByCurrentUser: boolean;
+  isRetweetedByCurrentUser: boolean;
+  replies?: PostDto[];
+}
