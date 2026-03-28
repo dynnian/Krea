@@ -17,6 +17,12 @@ import '../../app.css'
 const { Dragger } = Upload;
 const { TextArea } = Input;
 const { Option } = Select;
+const ACCEPTED_MIME_TYPES: Record<PostType, string[]> = {
+  [PostType.PLAIN]: [],
+  [PostType.IMAGE]: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+  [PostType.MUSIC]: ['audio/mpeg', 'audio/wav'],
+  [PostType.TEXT]: ['application/pdf', 'application/epub+zip', 'text/plain'],
+};
 
 interface CreatePortfolioPostModalProps {
   visible: boolean;
@@ -24,6 +30,8 @@ interface CreatePortfolioPostModalProps {
   onClose: () => void;
   onSuccess?: () => void;
 }
+
+
 
 const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
   visible,
@@ -44,6 +52,15 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | undefined>(undefined);
   const [collections, setCollections] = useState<UserCollectionDto[]>([]);
   const [collectionsLoading, setCollectionsLoading] = useState(false);
+  const beforeUpload = (file: File) => {
+  const allowedTypes = ACCEPTED_MIME_TYPES[postType as PostType];
+  if (allowedTypes && allowedTypes.length && !allowedTypes.includes(file.type)) {
+    message.error(t('createPost.invalidFileType', { type: getTitleText() }));
+    return Upload.LIST_IGNORE;
+  }
+  return false;
+};
+
   useEffect(() => {
     if (!visible) return;
 
@@ -132,7 +149,23 @@ const getGenreLabel = () => {
   };
 
   const handleUpload = async (postId: string, file: UploadFile) => {
-    const fileObj = file.originFileObj as File;
+    const origin = file.originFileObj;
+    if (!origin) {
+      throw new Error('No se encontró el archivo original para subir.');
+    }
+
+    let fileObj = origin as File;
+    if (postType === PostType.MUSIC) {
+      if (fileObj.type === 'audio/mpeg') {
+        const arrayBuffer = await fileObj.arrayBuffer();
+        const newBlob = new Blob([arrayBuffer], { type: 'music/mpeg' });
+        fileObj = new File([newBlob], fileObj.name, { type: 'music/mpeg' });
+      } else if (fileObj.type === 'audio/wav') {
+        const arrayBuffer = await fileObj.arrayBuffer();
+        const newBlob = new Blob([arrayBuffer], { type: 'music/wav' });
+        fileObj = new File([newBlob], fileObj.name, { type: 'music/wav' });
+      }
+    }
     const uploadData: UploadMediaData = {
         File: fileObj,
         Type: postType,
@@ -140,7 +173,7 @@ const getGenreLabel = () => {
         Description: description || '',
         IsWorkMedia: true,
         LanguageCode: user?.languageCode || 'es',
-        GenreIds: selectedGenreIds,
+        // GenreIds: selectedGenreIds,
     };
 
     // Metadatos según tipo
@@ -160,16 +193,14 @@ const getGenreLabel = () => {
         uploadData.Format = file.name.split('.').pop() || 'mp3';
         uploadData.FileSize = fileObj.size;
     } else if (postType === PostType.TEXT) {
-        // Para archivos de texto, puedes leer el contenido
-        const text = await fileObj.text();
-        const words = text.split(/\s+/).length;
-        uploadData.WordCount = words;
-        uploadData.LanguageCode = user?.languageCode || 'es';
-        uploadData.SortTitle = title;
-        uploadData.Subtitle = '';
-        uploadData.Format = file.name.split('.').pop() || 'txt';
-        uploadData.FileSize = fileObj.size;
-    }
+  const text = await fileObj.text();
+  const words = text.split(/\s+/).length;
+  uploadData.WordCount = words;
+  uploadData.SortTitle = title;
+  uploadData.Subtitle = '';
+  uploadData.Format = file.name.split('.').pop() || 'txt';
+  uploadData.FileSize = fileObj.size;
+}
 
     await postsApi.uploadMedia(postId, uploadData);
     };
@@ -199,16 +230,20 @@ const getGenreLabel = () => {
         isLocal: false,
       };
 
-      const response = await postsApi.createPost(createData);
-      console.log("Respuesta createPost:", response.data); // Para depurar
+      const response: any = await postsApi.createPost(createData);
+      console.log("Respuesta createPost:", response);
 
-      // Obtener el ID del post (puede ser 'postId' o 'id')
-      const postId = response.data?.postId || response.data?.id;
+      const postId =
+        response?.data?.postId ||
+        response?.data?.id ||
+        response?.postId ||
+        response?.id;
+
       if (!postId) {
+        console.error("Respuesta createPost sin ID:", response);
         throw new Error('No se recibió el ID del post');
       }
 
-      // Subir cada archivo al post creado
       for (const file of fileList) {
         await handleUpload(postId, file);
       }
@@ -243,11 +278,11 @@ const resetForm = () => {
   const getAcceptType = () => {
     switch (postType) {
       case PostType.MUSIC:
-        return 'audio/*';
+        return 'audio/mpeg,audio/wav';
       case PostType.IMAGE:
         return 'image/*';
       case PostType.TEXT:
-        return 'application/pdf,application/epub+zip,.epub';
+        return '.pdf,.epub,.txt,application/pdf,application/epub+zip,text/plain';
       default:
         return '*/*';
     }
@@ -273,7 +308,7 @@ const resetForm = () => {
     onChange(info) {
       setFileList(info.fileList);
     },
-    beforeUpload: () => false,
+    beforeUpload,
     accept: getAcceptType(),
   };
 
@@ -341,7 +376,6 @@ const resetForm = () => {
             </Dragger>
           </div>
 
-
           {/* Título */}
           <div>
             <label className="block text-[16px] font-medium text-[#1B1C1E] mb-2">
@@ -370,7 +404,7 @@ const resetForm = () => {
                     setGenres((options as { label: string; value: string }[]).map((option) => option.label));
                   }}
                   className="w-full"
-                  rootClassName="krea-modal-multi-select"
+                  rootClassName="w-full h-[56px]"
                   size="large"
                   showSearch
                   placeholder="Escribe y busca un género."
@@ -400,7 +434,7 @@ const resetForm = () => {
               onChange={setSelectedCollectionId}
               placeholder="Seleccionar Colección"
               className="w-full"
-              rootClassName="krea-modal-single-select"
+              rootClassName="w-full h-[56px]"
               size="large"
               allowClear
               showSearch

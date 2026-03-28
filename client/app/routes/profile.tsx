@@ -3,13 +3,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Avatar, Tabs, Typography, Grid, message, Spin } from 'antd';
+import { Avatar, Tabs, Typography, Grid, message, Spin, Dropdown } from 'antd';
+import type { MenuProps } from 'antd';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import DigitalPortfolio from "../components/Profile/DigitalPortfolio.tsx";
 import MusicPortfolio from "../components/Profile/MusicPortfolio.tsx";
 import type { MusicAlbum, MusicSong } from "../data/musicPortfolioMock.ts";
 // import { digitalPortfolioMock } from "../data/digitalPortfolioMock.ts";
 import WriterPortfolio from "../components/Profile/WriterPortfolio.tsx";
+import { postsApi } from "../services/postsService.ts";
 import type { WriterWork } from "../data/writerPortfolioMock.ts";
 import { settingsRepository } from "../services/settingsRepository.ts";
 import CreatePortfolioPostModal from "../components/Posts/CreatePortfolioPostModal.tsx";
@@ -83,6 +85,7 @@ interface Post {
   likesCount: number;
   favoritesCount: number;
   replies: any[];
+  backendId?: string;
 }
 
 interface ProfileData {
@@ -110,7 +113,8 @@ interface ApiPostMedia {
 }
 
 interface ApiPost {
-  id: string;
+  id?: string;
+  postId?: string;
   userId: string;
   authorUsername: string;
   title: string | null;
@@ -118,6 +122,8 @@ interface ApiPost {
   createdAt: string;
   media: ApiPostMedia[];
 }
+
+
 
 // ---------- Funciones API (debes implementar) ----------
 async function fetchProfile(username: string): Promise<ProfileData> {
@@ -303,10 +309,13 @@ async function fetchMyProfileFromApi() {
 }
 
 async function fetchPostsByAuthorFromApi(authorId: string) {
-  const res = await axiosClient.get(`/posts/user/${authorId}`);
+  const res = await axiosClient.get(`/posts/user/${authorId}?page=1&pageSize=100`);
   return res.data;
 }
 
+async function deletePostFromApi(postId: string) {
+  await postsApi.deletePost(postId);
+}
 async function followUser(targetId: string) {
   await axiosClient.post(`/users/${targetId}/follow`);
 }
@@ -352,14 +361,14 @@ async function unbookmarkPost(postId: number) {
 function mapPostsToVisualPortfolioItems(posts: Post[]): VisualPortfolioItem[] {
   return posts
     .filter((post) => {
-      const hasImage = post.media?.some((m) =>
-        m.media?.mimeType?.startsWith('image')
-      );
+     const hasImage = post.media?.some((m) =>
+      isImageMime(m.media?.mimeType)
+    );
       return post.isWork && hasImage;
     })
     .map((post) => {
       const firstImage = post.media.find((m) =>
-        m.media?.mimeType?.startsWith('image')
+        isImageMime(m.media?.mimeType)
       );
 
       return {
@@ -371,21 +380,33 @@ function mapPostsToVisualPortfolioItems(posts: Post[]): VisualPortfolioItem[] {
     .filter((item) => item.imageUrl);
 }
 
+const isImageMime = (mime?: string) => !!mime && mime.startsWith("image/");
+const isAudioMime = (mime?: string) =>
+  !!mime && (mime.startsWith("audio/") || mime.startsWith("music/"));
+const isDocumentMime = (mime?: string) =>
+  !!mime && (
+    mime === "application/pdf" ||
+    mime === "application/epub+zip" ||
+    mime === "text/plain"
+  );
+
+
+  
 function mapPostsToMusicSongs(posts: Post[]): MusicSong[] {
   return posts
     .filter((post) => {
       const hasAudio = post.media?.some((m) =>
-        m.media?.mimeType?.startsWith("audio")
+        isAudioMime(m.media?.mimeType)
       );
       return post.isWork && post.type === PostType.AUDIO && hasAudio;
     })
     .map((post) => {
       const audioMedia = post.media.find((m) =>
-        m.media?.mimeType?.startsWith("audio")
+        isAudioMime(m.media?.mimeType)
       );
 
       const coverMedia = post.media.find((m) =>
-        m.media?.mimeType?.startsWith("image")
+        isImageMime(m.media?.mimeType)
       );
 
       if (!audioMedia) return null;
@@ -403,30 +424,23 @@ function mapPostsToMusicSongs(posts: Post[]): MusicSong[] {
     .filter((song): song is MusicSong => song !== null);
 }
 
+
 function mapPostsToWriterWorks(posts: Post[]): WriterWork[] {
   return posts
     .filter((post) => {
-      const hasDocument = post.media?.some((m) => {
-        const mime = m.media?.mimeType ?? "";
-        return (
-          mime === "application/pdf" ||
-          mime === "application/epub+zip"
-        );
-      });
+      const hasDocument = post.media?.some((m) =>
+        isDocumentMime(m.media?.mimeType)
+      );
 
       return post.isWork && post.type === PostType.LINK && hasDocument;
     })
     .map((post) => {
-      const documentMedia = post.media.find((m) => {
-        const mime = m.media?.mimeType ?? "";
-        return (
-          mime === "application/pdf" ||
-          mime === "application/epub+zip"
-        );
-      });
+      const documentMedia = post.media.find((m) =>
+        isDocumentMime(m.media?.mimeType)
+      );
 
       const coverMedia = post.media.find((m) =>
-        m.media?.mimeType?.startsWith("image")
+        isImageMime(m.media?.mimeType)
       );
 
       return {
@@ -562,7 +576,7 @@ const MoreButton: React.FC<MoreButtonProps> = ({
     className={
       variant === "circle"
         ? "w-7 h-7 rounded-full bg-[#F3F3F1] border border-[#1B1C1E] flex items-center justify-center"
-        : "text-[#1B1C1E] flex items-center justify-center"
+        : "text-[#1B1C1E] flex items-center justify-center cursor-pointer rounded-full p-[4px] hover:bg-[#C0CFE4] ring-inset hover:bosrder-[1px] hover:border-[#000000]"
     }
   >
     <MoreHorizontal size={16} />
@@ -629,9 +643,13 @@ const WaveformPlayer: React.FC<WaveformPlayerProps> = ({ audioUrl, coverUrl }) =
 // ---------- PostCard ----------
 interface PostCardProps {
   post: Post;
+  canDelete?: boolean;
+  onDelete?: (post: Post) => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post }) => {
+
+
+const PostCard: React.FC<PostCardProps> = ({ post, canDelete = false, onDelete }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -641,7 +659,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const [repostsCount, setRepostsCount] = useState(post.favoritesCount);
   const [bookmarked, setBookmarked] = useState(false);
   const [bookmarksCount, setBookmarksCount] = useState(0);
-
+  
 
 
   const requireAuth = () => {
@@ -711,8 +729,40 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
   };
 
-  const imageMedia = post.media.find(m => m.media.mimeType.startsWith('image'));
-  const audioMedia = post.media.find(m => m.media.mimeType.startsWith('audio'));
+  const imageMedia = post.media.find(m => isImageMime(m.media?.mimeType));
+  const audioMedia = post.media.find(m => isAudioMime(m.media?.mimeType));
+
+    const handleDeletePost = async () => {
+    if (!post.backendId) {
+      message.error('Esta publicación no tiene un ID válido de backend.');
+      return;
+    }
+
+    try {
+      await deletePostFromApi(post.backendId);
+      message.success('Publicación eliminada.');
+      onDelete?.(post);
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      message.error('No se pudo eliminar la publicación.');
+    }
+  };
+
+  const postMenuItems: MenuProps["items"] = canDelete
+    ? [
+        {
+          key: "delete",
+          label: "Eliminar publicación",
+          danger: true,
+        },
+      ]
+    : [];
+
+  const handlePostMenuClick: MenuProps["onClick"] = ({ key }) => {
+    if (key === "delete") {
+      void handleDeletePost();
+    }
+  };
 
   return (
     <div className="w-full">
@@ -733,15 +783,20 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             <span className="text-gray-500">{formatDate(post.createdAt)}</span>
           </div>
 
-          <MoreButton variant="plain" onClick={() => {}} />
+          <Dropdown
+            menu={{ items: postMenuItems, onClick: handlePostMenuClick }}
+            trigger={["click"]}
+            placement="bottomRight"
+          >
+            <div>
+              <MoreButton variant="plain" onClick={() => {}} />
+            </div>
+          </Dropdown>
         </div>
 
-          <p className="text-gray-800 mt-1 text-sm text-justify">{post.content}</p>
-
-
-
+          <p className="text-gray-800 mt-1 text-sm text-justify pr-[20px] pt-[5px]">{post.content}</p>
           {post.type === PostType.IMAGE && post.media.length > 0 && (
-            <div className="mt-3">
+            <div className="mt-3 pr-[20px]">
               {post.media.length === 1 ? (
                 <img
                   src={post.media[0].media.path}
@@ -826,6 +881,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     </div>
   );
 };
+
 
 // ---------- Componente principal Profile ----------
 const Profile: React.FC = () => {
@@ -923,21 +979,30 @@ setLoading(true);
   const resolvedPosts = normalizeApiPosts(
     rawPosts,
     apiProfile.displayName || apiProfile.username
+    
   );
 
-      function normalizeApiPosts(apiPosts: ApiPost[], displayName: string): Post[] {
-  return apiPosts.map((post) => {
-    const hasAudio = post.media.some((m) => m.mimeType.startsWith("audio"));
-    const hasImage = post.media.some((m) => m.mimeType.startsWith("image"));
+function normalizeApiPosts(apiPosts: ApiPost[], displayName: string): Post[] {
+  return apiPosts.map((post, index) => {
+    const hasAudio = post.media.some((m) => isAudioMime(m.mimeType));
+    const hasImage = post.media.some((m) => isImageMime(m.mimeType));
+    const hasDocument = post.media.some((m) => isDocumentMime(m.mimeType));
 
     return {
-      id: Number.NaN,
-      userPostId: Number.NaN,
+      backendId: post.postId ?? post.id,
+      id: Number.isFinite(Number(post.postId ?? post.id))
+        ? Number(post.postId ?? post.id)
+        : index + 1,
+      userPostId: Number.isFinite(Number(post.postId ?? post.id))
+        ? Number(post.postId ?? post.id)
+        : index + 1,
       type: hasAudio
         ? PostType.AUDIO
-        : hasImage
-          ? PostType.IMAGE
-          : PostType.LINK,
+        : hasDocument
+          ? PostType.LINK
+          : hasImage
+            ? PostType.IMAGE
+            : PostType.LINK,
       title: post.title,
       content: post.content,
       isWork: post.media.some((m) => m.isWorkMedia),
@@ -1274,7 +1339,7 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
 
     {shouldShowUpdatePortfolioButton && (
       <div className="px-[70px] mt-[-6px] mb-[10px] flex justify-end">
-       <div className="ml-[500px] mmt-[30px] relative z-20"> 
+       <div className="ml-[500px] -mt-[30px] relative z-20 "> 
           <button
             type="button"
             onClick={handleUpdatePortfolioClick}
@@ -1329,7 +1394,24 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
                 <>
                   {filteredPosts.map((post) => (
                     <div key={post.id} className="mt-[15px] bg-[#E9F1FC] p-[22px] w-full border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]  AAAAAAAAAAAAAAAA">
-                      <PostCard post={post} />
+                      <PostCard
+                        post={post}
+                        canDelete={isOwnProfile && activeMainTab === "publications"}
+                        onDelete={(deletedPost) => {
+                          setProfile((prev) =>
+                            prev
+                              ? {
+                                  ...prev,
+                                  posts: prev.posts.filter((p) =>
+                                    deletedPost.backendId
+                                      ? p.backendId !== deletedPost.backendId
+                                      : p.id !== deletedPost.id
+                                  ),
+                                }
+                              : prev
+                          );
+                        }}
+                      />
                       
                     </div>
                   ))}

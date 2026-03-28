@@ -3,20 +3,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 import { Avatar, message, Modal } from 'antd';
-<<<<<<< HEAD
 import { Heart, MessageCircle, Repeat2, Bookmark, Link2, MoreHorizontal, User } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext.tsx';
 import AudioWaveform from '../WaveSurfer/AudioWaveform.tsx';
 import { postsApi } from '../../services/postsService.ts';
 import type { Post } from '../../types/post.ts';
 import { PostType } from '../../types/common.ts';
-=======
-import { Heart, MessageCircle, Repeat2, Bookmark, MoreHorizontal, User } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import AudioWaveform from '../WaveSurfer/AudioWaveform';
-import { postsApi } from '../../services/postsService';
-import type { PostDto } from '../../types/api';
->>>>>>> d0685e5 (Fix: postService updated to match new API. Integration of PostDetail)
 
 interface PostCardProps {
   post: PostDto;
@@ -126,14 +118,10 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
   const authorHandle = post.author?.username || post.authorPostId.slice(0, 8);
 
   return (
-<<<<<<< HEAD
 
     <article className="flex flex-col w-ful gap-3 px-4">
       <div className="w-[734px] h-px bg-gray-300 -mx-[40px]"></div>
       {/* Cabecera con enlace al detalle (avatar, nombre, contenido, fecha) */}
-=======
-    <article className="flex flex-col w-full gap-3 p-4 bg-[#E8F1FC] border-t border-gray-300">
->>>>>>> d0685e5 (Fix: postService updated to match new API. Integration of PostDetail)
       <div className="flex gap-3">
         <Link to={`/post/${post.id}`} className="flex gap-3 flex-1">
           <Avatar
