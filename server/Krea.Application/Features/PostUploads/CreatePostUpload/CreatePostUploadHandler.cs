@@ -95,6 +95,7 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
             }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
             // Validar metadata antes de usarla
             ValidateMetadata(command);
 =======
@@ -125,6 +126,8 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
             }
 >>>>>>> bf5d5df (fix/back to main)
 
+=======
+>>>>>>> 2050d53 (fix/update portfolio modal and portfolio integration errors.)
             // Validar metadata antes de usarla
             ValidateMetadata(command);
 
