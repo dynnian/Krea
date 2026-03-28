@@ -1,13 +1,17 @@
+// deno-lint-ignore-file no-sloppy-imports jsx-button-has-type no-unused-vars
 import React, { useEffect, useState } from 'react';
-import { Modal, Upload, Input, Checkbox, message, Select } from 'antd';
+import { Modal, Upload, Input, Checkbox, message, Select, ConfigProvider } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import type { UploadFile, UploadProps } from 'antd/es/upload/interface';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { postsApi } from '../../services/postsService';
+import { collectionsApi, type UserCollectionDto } from '../../services/collectionsService';
 import { PostType } from '../../types/common';
 import type { CreatePostData, UploadMediaData } from '../../types/api';
 import type { UploadMediaType } from '../../types/api';
+import '../../app.css'
+
 
 
 const { Dragger } = Upload;
@@ -34,12 +38,89 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [postType, setPostType] = useState<UploadMediaType>(initialPostType);
-  const [belongsToAlbum, setBelongsToAlbum] = useState(false);
+
+  const [genres, setGenres] = useState<string[]>([]);
+  const [selectedGenreIds, setSelectedGenreIds] = useState<string[]>([]);
+  const [selectedCollectionId, setSelectedCollectionId] = useState<string | undefined>(undefined);
+  const [collections, setCollections] = useState<UserCollectionDto[]>([]);
+  const [collectionsLoading, setCollectionsLoading] = useState(false);
   useEffect(() => {
-    if (visible) {
-      setPostType(initialPostType);
-    }
-  }, [visible, initialPostType]);
+    if (!visible) return;
+
+    setPostType(initialPostType);
+
+    const loadCollections = async () => {
+      if (!user?.id) return;
+
+      try {
+        setCollectionsLoading(true);
+        const data = await collectionsApi.getUserCollections(user.id);
+        setCollections(data);
+      } catch (error) {
+        console.error('Error loading collections:', error);
+        message.error('No se pudieron cargar las colecciones.');
+      } finally {
+        setCollectionsLoading(false);
+      }
+    };
+
+    loadCollections();
+  }, [visible, initialPostType, user?.id]);
+
+
+const showGenresSection = postType === PostType.MUSIC || postType === PostType.TEXT;
+
+
+const removeGenre = (genreToRemove: string) => {
+  setGenres((prev) => prev.filter((genre) => genre !== genreToRemove));
+};
+
+const getInsertLabel = () => {
+  return showGenresSection ? 'Inserte elemento' : 'Inserte 1 o varios elementos';
+};
+
+const getTitleLabel = () => {
+  switch (postType) {
+    case PostType.MUSIC:
+      return 'Titulo de la cancion';
+    case PostType.TEXT:
+      return 'Titulo de la obra';
+    case PostType.IMAGE:
+      return 'Titulo de la obra';
+    default:
+      return 'Titulo';
+  }
+};
+
+const getTitlePlaceholder = () => {
+  switch (postType) {
+    case PostType.MUSIC:
+      return 'Titulo de la cancion';
+    case PostType.TEXT:
+      return 'Titulo de la obra';
+    case PostType.IMAGE:
+      return 'Titulo de la obra';
+    default:
+      return 'Titulo';
+  }
+};
+
+const getModalTitle = () => {
+  switch (postType) {
+    case PostType.MUSIC:
+      return 'Añadir canción al portafolio';
+    case PostType.TEXT:
+      return 'Añadir obra al portafolio';
+    case PostType.IMAGE:
+      return 'Añadir obra al portafolio';
+    default:
+      return 'Añadir contenido al portafolio';
+  }
+};
+
+const getGenreLabel = () => {
+  return postType === PostType.MUSIC ? 'Añadir Genero/s' : 'Añadir Genero';
+};
   
 
   // Mapeo de PostType (string) al número que espera el backend
@@ -54,11 +135,12 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
     const fileObj = file.originFileObj as File;
     const uploadData: UploadMediaData = {
         File: fileObj,
-        Type: postType,           // ahora es "image" | "music" | "text"
+        Type: postType,
         Title: title,
         Description: description || '',
         IsWorkMedia: true,
-        LanguageCode: user?.languageCode || 'es', // Siempre enviar
+        LanguageCode: user?.languageCode || 'es',
+        GenreIds: selectedGenreIds,
     };
 
     // Metadatos según tipo
@@ -125,10 +207,15 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
         await handleUpload(postId, file);
       }
 
+      if (selectedCollectionId) {
+        await collectionsApi.addPostToCollection(selectedCollectionId, postId);
+      }
+
       message.success(t('createPost.success'));
       onSuccess?.();
       resetForm();
       onClose();
+
     } catch (error) {
       console.error('Error al crear post:', error);
       message.error(t('createPost.error'));
@@ -137,12 +224,14 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
     }
   };
 
-  const resetForm = () => {
-    setFileList([]);
-    setTitle('');
-    setDescription('');
-    setPostType(PostType.IMAGE);
-    setBelongsToAlbum(false);
+const resetForm = () => {
+  setFileList([]);
+  setTitle('');
+  setDescription('');
+  setPostType(PostType.IMAGE);
+  setGenres([]);
+  setSelectedGenreIds([]);
+  setSelectedCollectionId(undefined);
   };
 
   const getAcceptType = () => {
@@ -183,6 +272,17 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
   };
 
   return (
+    <ConfigProvider
+  theme={{
+    components: {
+      Modal: {
+        contentBg: 'transparent',
+        headerBg: 'transparent',
+        footerBg: 'transparent',
+      },
+    },
+  }}
+>
     <Modal
       open={visible}
       title={null}
@@ -190,82 +290,136 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
       onCancel={onClose}
       width={650}
       centered
-      className="custom-modal"
+      rootClassName="custom-modal"
       styles={{ body: { padding: 0 } }}
     >
       <div className="p-6 bg-[#E8F1FC] rounded-lg outline outline-2 outline-[#8F8E8A]">
-        <h2 className="text-2xl font-medium text-[#1B1C1E] mb-6">
-          {t('createPost.title', { type: getTitleText() })}
+        <h2 className="text-[24px] font-medium text-[#1B1C1E] mb-8">
+          {getModalTitle()}
         </h2>
 
+
+
         <div className="space-y-4">
-          {/* Tipo de contenido */}
           <div>
-            <label className="block text-sm font-medium text-[#1B1C1E] mb-2">
-              {t('createPost.contentType')}
-            </label>
-            <Select value={postType} onChange={setPostType} className="w-full" size="large">
-                <Option value={PostType.IMAGE}>Imagen</Option>
-                <Option value={PostType.MUSIC}>Música</Option>
-                <Option value={PostType.TEXT}>Literatura</Option>
-            </Select>
-          </div>
+          <label className="block text-[16px] font-medium text-[#1B1C1E] mb-2">
+            Tipo de contenido
+          </label>
+          <Select
+            value={postType}
+            onChange={setPostType}
+            className="w-full"
+            size="large"
+          >
+            <Option value={PostType.IMAGE}>Imagen</Option>
+            <Option value={PostType.MUSIC}>Música</Option>
+            <Option value={PostType.TEXT}>Literatura</Option>
+          </Select>
+        </div>            
 
           {/* Subida de archivos */}
           <div>
-            <label className="block text-sm font-medium text-[#1B1C1E] mb-2">
-              {t('createPost.uploadLabel')}
+            <label className="block text-[16px] font-medium text-[#1B1C1E] mb-2">
+              {getInsertLabel()}
             </label>
             <Dragger
               {...uploadProps}
-              className="bg-[#F3F3F1] border-2 border-[#1B1C1E] rounded-lg hover:border-[#1351AA]"
+              className="bg-transparent rounded-[14px] min-h-[170px]"
             >
               <p className="ant-upload-drag-icon">
-                <InboxOutlined className="text-[#1B1C1E] text-3xl" />
+                <InboxOutlined className="text-[#1351AA] text-[42px]" />
               </p>
-              <p className="ant-upload-text text-[#1B1C1E] font-medium">
-                {t('createPost.uploadText')}
+              <p className="ant-upload-text text-[#1B1C1E] text-[16px] font-medium">
+                Adjuntar archivo/s
               </p>
             </Dragger>
           </div>
 
-          {/* Checkbox "Álbum" solo para música */}
-          {postType === PostType.MUSIC && (
-            <div className="flex items-center gap-3">
-              <Checkbox
-                checked={belongsToAlbum}
-                onChange={(e) => setBelongsToAlbum(e.target.checked)}
-                className="text-[#1B1C1E] font-medium"
-              >
-                <span className="text-base">{t('createPost.belongsToAlbum')}</span>
-              </Checkbox>
-            </div>
-          )}
 
           {/* Título */}
           <div>
-            <label className="block text-sm font-medium text-[#1B1C1E] mb-2">
-              {t('createPost.titleField')}
+            <label className="block text-[16px] font-medium text-[#1B1C1E] mb-2">
+              {getTitleLabel()}
             </label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={t('createPost.titlePlaceholder', { type: getTitleText() })}
+              placeholder={getTitlePlaceholder()}
               className="h-14 bg-[#F3F3F1] border-2 border-[#1B1C1E] rounded-lg px-4 text-base placeholder:text-[#8F8E8A]"
             />
           </div>
 
+          {/* Géneros */}
+          {showGenresSection && (
+            <>
+              <div>
+                <label className="block text-[16px] font-medium text-[#1B1C1E] mb-2">
+                  {getGenreLabel()}
+                </label>
+                <Select
+                  mode="multiple"
+                  value={selectedGenreIds}
+                  onChange={(values, options) => {
+                    setSelectedGenreIds(values);
+                    setGenres((options as { label: string; value: string }[]).map((option) => option.label));
+                  }}
+                  className="w-full"
+                  rootClassName="krea-modal-multi-select"
+                  size="large"
+                  showSearch
+                  placeholder="Escribe y busca un género."
+                  options={[
+                    { value: '11111111-1111-1111-1111-111111111111', label: 'Rock' },
+                    { value: '22222222-2222-2222-2222-222222222222', label: 'Pop' },
+                    { value: '33333333-3333-3333-3333-333333333333', label: 'Jazz' },
+                    { value: '44444444-4444-4444-4444-444444444444', label: 'EDM' },
+                    { value: '55555555-5555-5555-5555-555555555555', label: 'Indie' },
+                    { value: '66666666-6666-6666-6666-666666666666', label: 'Fantasía' },
+                    { value: '77777777-7777-7777-7777-777777777777', label: 'Romance' },
+                    { value: '88888888-8888-8888-8888-888888888888', label: 'Ciencia ficción' },
+                  ]}
+                />
+              </div>
+
+            </>
+          )}
+
+          {/* Añadir a colección */}
+          <div>
+            <label className="block text-[16px] font-medium text-[#1B1C1E] mb-2">
+              {postType === PostType.MUSIC ? '¿Añadir a álbum?' : '¿Añadir a colección?'}
+            </label>
+            <Select
+              value={selectedCollectionId}
+              onChange={setSelectedCollectionId}
+              placeholder="Seleccionar Colección"
+              className="w-full"
+              rootClassName="krea-modal-single-select"
+              size="large"
+              allowClear
+              showSearch
+              loading={collectionsLoading}
+              optionFilterProp="children"
+            >
+              {collections.map((collection) => (
+                <Option key={collection.id} value={collection.id}>
+                  {collection.title}
+                </Option>
+              ))}
+            </Select>
+          </div>
+
           {/* Descripción */}
           <div>
-            <label className="block text-sm font-medium text-[#1B1C1E] mb-2">
-              {t('createPost.description')}
+            <label className="block text-[16px] font-medium text-[#1B1C1E] mb-2
+            ">
+              Descripción (opcional)
             </label>
             <TextArea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={t('createPost.descriptionPlaceholder')}
-              rows={4}
-              className="bg-[#F3F3F1] border-2 border-[#1B1C1E] rounded-lg p-3 text-base placeholder:text-[#8F8E8A]"
+              rows={5}
+              className="bg-[#F3F3F1] border-2 border-[#1B1C1E] rounded-[14px] p-4 text-[16px] placeholder:text-[#8F8E8A]"
             />
           </div>
 
@@ -273,14 +427,14 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
           <div className="flex justify-end gap-4 mt-6">
             <button
               onClick={onClose}
-              className="px-5 py-2 bg-[#E3E2DE] text-[#1B1C1E] rounded-lg border border-[#1B1C1E] text-sm font-medium hover:bg-opacity-80 transition"
+              className="krea-cancel-button px-5 py-2 rounded-lg border border-[#1B1C1E] font-medium transition"
             >
               {t('common.cancel')}
             </button>
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="px-5 py-2 bg-[#0B5107] text-white rounded-lg border border-[#1B1C1E] text-sm font-medium hover:bg-green-700 transition disabled:opacity-50"
+              className="krea-save-button px-5 py-2 rounded-lg border border-[#1B1C1E] font-medium transition disabled:opacity-50"
             >
               {loading ? t('common.saving') : t('common.save')}
             </button>
@@ -288,6 +442,7 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
         </div>
       </div>
     </Modal>
+    </ConfigProvider>
   );
 };
 

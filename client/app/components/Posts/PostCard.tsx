@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 import { Avatar, message, Modal } from 'antd';
 import { Heart, MessageCircle, Repeat2, Bookmark, Link2, MoreHorizontal, User } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import AudioWaveform from '../WaveSurfer/AudioWaveform';
-import { postsApi } from '../../services/postsService';
-import type { Post } from '../../types/post';
-import { PostType } from '../../types/common';
+import { useAuth } from '../../contexts/AuthContext.tsx';
+import AudioWaveform from '../WaveSurfer/AudioWaveform.tsx';
+import { postsApi } from '../../services/postsService.ts';
+import type { Post } from '../../types/post.ts';
+import { PostType } from '../../types/common.ts';
 
 interface PostCardProps {
   post: Post;
@@ -102,7 +102,7 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
   return (
 
     <article className="flex flex-col w-ful gap-3 px-4">
-      <div className="max-w-[734px] h-px bg-gray-300 -mx-[40px]"></div>
+      <div className="w-[734px] h-px bg-gray-300 -mx-[40px]"></div>
       {/* Cabecera con enlace al detalle (avatar, nombre, contenido, fecha) */}
       <div className="flex gap-3">
         <Link to={`/post/${post.id}`} className="flex gap-3 flex-1">

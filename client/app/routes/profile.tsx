@@ -1176,20 +1176,17 @@ const handleUpdatePortfolioClick = () => {
 const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
   
  return (
-  <div className="w-full max-w-[870px] h-full min-h-screen">
+  <div className="w-[870px] flex flex-col items-center-safe h-full min-h-screen">
     <div
     className={`w-full h-full ${
       isPortfolioView
         ? "bg-transparent border-none"
-        : "bg-[#E8F1FC] border-l-2 border-r-2 border-[#8F8E8A]"
+        : "bg-transparent "
     }`}
   >
       <div className=" pt-6 ">
         {/* Perfil header */}
-        <div className="flex flex-col md:flex-row gap-6 px-[70px]" >
-          
-
-          
+        <div className="flex flex-col md:flex-row gap-6 px-[70px] BBBBBBBB" >
           <div className="flex justify-center md:justify-start">
             <Avatar
               src={profile.user.avatar}
@@ -1277,7 +1274,7 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
 
     {shouldShowUpdatePortfolioButton && (
       <div className="px-[70px] mt-[-6px] mb-[10px] flex justify-end">
-       <div className="ml-[500px] -mt-[30px] relative z-20"> 
+       <div className="ml-[500px] mmt-[30px] relative z-20"> 
           <button
             type="button"
             onClick={handleUpdatePortfolioClick}
@@ -1295,9 +1292,7 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
     </div>
         
          {/*LINEA DEL DIABLO*/}
-        {!isPortfolioView && (
-          <div className="w-[868px] h-px bg-[#8F8E8A] mb-8 self-center" />
-        )}
+   
 
         <div className={` ${
             isPortfolioView
@@ -1325,7 +1320,7 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
           )}
 
             {activeMainTab !== "portfolio" && (
-            <div className="space-y-8 px-[70px]">
+            <div className="space-y-[] ">
               {activeMainTab === "publications" && postsError ? (
                 <div className="text-center text-red-500 py-8">
                   {postsError}
@@ -1333,9 +1328,9 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
               ) : (
                 <>
                   {filteredPosts.map((post) => (
-                    <div key={post.id} className="-mt-4">
+                    <div key={post.id} className="mt-[15px] bg-[#E9F1FC] p-[22px] w-full border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]  AAAAAAAAAAAAAAAA">
                       <PostCard post={post} />
-                      <div className="w-[868px] h-px bg-[#8F8E8A] mt-4 -ml-[70px]" />
+                      
                     </div>
                   ))}
                   {filteredPosts.length === 0 && (
