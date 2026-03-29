@@ -46,7 +46,8 @@ namespace Krea.API.Controllers {
                 new CreateCollectionCommand(
                     request.OwnerId, 
                     request.Title, 
-                    request.Description), 
+                    request.Description,
+                    request.Type), 
                 ct);
             
             return Ok(result); 
