@@ -409,6 +409,14 @@ namespace Krea.API.Controllers {
             return NoContent();
         }
         
+        [HttpGet("hashtags")]
+        [Authorize]
+        public async Task<IActionResult> GetAllHashtags()
+        {
+            var result = await _sender.Send(new GetAllHashtagsQuery());
+            return Ok(result);
+        }
+        
         [HttpPost("{postId}/favorite")]
         [Authorize]
         public async Task<IActionResult> AddToFavorites(Guid postId)
