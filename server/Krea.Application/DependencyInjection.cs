@@ -113,6 +113,7 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<AssignGenresToUploadCommand, Unit>, AssignGenresToUploadHandler>();
             services.AddScoped<IRequestHandler<AddHashtagCommand, Unit>, AddHashtagHandler>();
             services.AddScoped<IRequestHandler<RemoveHashtagCommand, Unit>, RemoveHashtagHandler>();
+            services.AddScoped<IRequestHandler<GetAllHashtagsQuery, IReadOnlyList<Hashtag>>, GetAllHashtagsHandler>();
             services.AddScoped<IRequestHandler<AddPostToFavoritesCommand, bool>, AddPostToFavoritesHandler>();
             services.AddScoped<IRequestHandler<RemovePostFromFavoritesCommand, bool>, RemovePostFromFavoritesHandler>();
             services.AddScoped<IRequestHandler<GetUserFavoritesQuery, PaginatedList<Post>>, GetUserFavoritesHandler>();
