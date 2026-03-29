@@ -1,4 +1,5 @@
 namespace Krea.Application.Features.Posts.CreatePost {
+    using Common;
     using Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;
@@ -34,27 +35,36 @@ namespace Krea.Application.Features.Posts.CreatePost {
                 request.IsLocal
             );
 
-            if (request.Hashtags is not null && request.Hashtags.Any())
+            // Extraer hashtags solo desde el contenido
+            var hashtagNames = HashtagParser.Extract(post.Content)
+                .Select(tag => tag.Trim().ToLowerInvariant().Replace("#", ""))
+                .Distinct()
+                .ToList();
+
+            if (hashtagNames.Any())
             {
-                foreach (var tag in request.Hashtags)
+                // Buscar existentes (una query)
+                var existingHashtags = await _hashtagRepository
+                    .GetByNamesAsync(hashtagNames, cancellationToken);
+
+                var existingNames = existingHashtags
+                    .Select(h => h.Name)
+                    .ToHashSet();
+
+                // Crear nuevos
+                var newHashtags = hashtagNames
+                    .Where(name => !existingNames.Contains(name))
+                    .Select(name => new Hashtag(name))
+                    .ToList();
+
+                foreach (var hashtag in newHashtags)
                 {
-                    if (string.IsNullOrWhiteSpace(tag))
-                        continue;
+                    await _hashtagRepository.AddAsync(hashtag, cancellationToken);
+                }
 
-                    var normalized = tag
-                        .Trim()
-                        .ToLowerInvariant()
-                        .Replace("#", ""); // opcional
-
-                    var hashtag = await _hashtagRepository
-                        .GetByNameAsync(normalized, cancellationToken);
-
-                    if (hashtag is null)
-                    {
-                        hashtag = new Hashtag(normalized);
-                        await _hashtagRepository.AddAsync(hashtag, cancellationToken);
-                    }
-
+                // Asociar al post
+                foreach (var hashtag in existingHashtags.Concat(newHashtags))
+                {
                     post.AddHashtag(hashtag);
                 }
             }
