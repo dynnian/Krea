@@ -1,4 +1,6 @@
 namespace Krea.Application.Features.Collections.Dto {
+    using Domain.ValueObjects;
+
     public sealed class CreateCollectionRequest
     {
         public Guid OwnerId { get; init; }
@@ -6,5 +8,7 @@ namespace Krea.Application.Features.Collections.Dto {
         public string Title { get; init; } = string.Empty;
 
         public string? Description { get; init; }
+        
+        public CollectionType Type { get; init; }    
     }
 }

@@ -24,7 +24,8 @@ namespace Krea.Application.Features.Collections.CreateCollection {
             var collection = new Collection(
                 request.OwnerId,
                 request.Title,
-                request.Description
+                request.Description,
+                request.Type
             );
 
             await _collections.AddAsync(collection, cancellationToken);
@@ -35,7 +36,8 @@ namespace Krea.Application.Features.Collections.CreateCollection {
                 collection.Id,
                 collection.Title,
                 collection.Description,
-                collection.ItemCount
+                collection.ItemCount,
+                collection.Type
             );
         }
     }
