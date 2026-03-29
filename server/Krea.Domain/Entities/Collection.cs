@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Krea.Domain.Entities {
+    using ValueObjects;
+
     public sealed class Collection {
         [Key] public Guid Id { get; private set; }
 
@@ -12,6 +14,8 @@ namespace Krea.Domain.Entities {
         public string? Description { get; private set; }
 
         public int ItemCount { get; private set; }
+        
+        public CollectionType  Type { get; private set; }
 
         public User Owner { get; private set; }
         public Guid OwnerId { get; private set; }
@@ -30,13 +34,15 @@ namespace Krea.Domain.Entities {
         public Collection(
             Guid ownerId,
             string title,
-            string? description
+            string? description,
+            CollectionType type
         ) {
             Id = Guid.NewGuid();
             OwnerId = ownerId;
             Title = title;
             Description = description ?? string.Empty;
             ItemCount = 0;
+            Type = type;
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
         }
@@ -46,6 +52,7 @@ namespace Krea.Domain.Entities {
             Guid ownerId,
             string title,
             string? description,
+            CollectionType type,
             Guid? mediaId,
             DateTime createdAt,
             DateTime updatedAt
@@ -53,7 +60,8 @@ namespace Krea.Domain.Entities {
             var collection = new Collection(
                 ownerId,
                 title,
-                description);
+                description,
+                type);
 
             collection.Id = id;
             collection.MediaId = mediaId;
