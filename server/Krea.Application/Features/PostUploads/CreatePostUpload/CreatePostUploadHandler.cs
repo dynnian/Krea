@@ -1,5 +1,6 @@
 namespace Krea.Application.Features.PostUploads.CreatePostUpload {
     using Abstractions;
+    using Abstractions.Files;
     using Abstractions.FileStorage;
     using Common;
     using Domain.Abstractions;
@@ -17,6 +18,7 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFileStorage _fileStorage;
         private readonly IFileMetadataReader _fileMetadataReader;
+        private readonly IFileCoverExtractor _fileCoverExtractor;
 
         public CreatePostUploadHandler(
             IPostRepository postRepository,
@@ -25,7 +27,8 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
             IGenreRepository genreRepository,
             IUnitOfWork unitOfWork,
             IFileStorage fileStorage,
-            IFileMetadataReader fileMetadataReader) {
+            IFileMetadataReader fileMetadataReader,
+            IFileCoverExtractor fileCoverExtractor) {
             _postRepository = postRepository;
             _mediaRepository = mediaRepository;
             _uploadRepository = uploadRepository;
@@ -33,6 +36,7 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
             _unitOfWork = unitOfWork;
             _fileStorage = fileStorage;
             _fileMetadataReader = fileMetadataReader;
+            _fileCoverExtractor = fileCoverExtractor;
         }
 
         public async Task<CreatePostUploadResponse> Handle(
@@ -48,12 +52,18 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
             if (post is null)
                 throw new ValidationException("Post not found.");
 
-            var parsedMetadata = await _fileMetadataReader.ReadAsync(
-                command.FileStream,
-                command.FileName,
-                command.ContentType,
-                command.Type,
-                cancellationToken);
+            ParsedUploadMetadata parsedMetadata;
+            try {
+                parsedMetadata = await _fileMetadataReader.ReadAsync(
+                    command.FileStream,
+                    command.FileName,
+                    command.ContentType,
+                    command.Type,
+                    cancellationToken);
+            }
+            catch (Exception ex) {
+                throw new ValidationException($"Could not extract file metadata: {ex.Message}");
+            }
 
             ResetStream(command.FileStream);
 
@@ -78,23 +88,13 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
             Media? coverMedia = null;
 
             if (command.CoverStream is not null) {
-                ValidateCover(command);
+                coverMedia = await SaveCoverFromRequestAsync(command, cancellationToken);
+            }
+            else {
+                coverMedia = await TrySaveAutomaticCoverAsync(command, cancellationToken);
+            }
 
-                coverMedia = new Media(
-                    command.CoverFileName!,
-                    command.CoverContentType!);
-
-                var coverStorageResult = await _fileStorage.SaveAsync(
-                    command.CoverStream,
-                    coverMedia.FileName,
-                    command.CoverContentType!,
-                    command.CoverSize!.Value,
-                    cancellationToken);
-
-                coverMedia.SetPath(coverStorageResult.Url);
-
-                await _mediaRepository.AddAsync(coverMedia, cancellationToken);
-
+            if (coverMedia is not null) {
                 upload.SetCover(coverMedia.Id);
             }
 
@@ -220,6 +220,70 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
                 default:
                     throw new ValidationException("Invalid metadata type.");
             }
+        }
+
+        private async Task<Media> SaveCoverFromRequestAsync(
+            CreatePostUploadCommand command,
+            CancellationToken cancellationToken) {
+            ValidateCover(command);
+
+            var coverMedia = new Media(
+                command.CoverFileName!,
+                command.CoverContentType!);
+
+            var coverStorageResult = await _fileStorage.SaveAsync(
+                command.CoverStream!,
+                coverMedia.FileName,
+                command.CoverContentType!,
+                command.CoverSize!.Value,
+                cancellationToken);
+
+            coverMedia.SetPath(coverStorageResult.Url);
+
+            await _mediaRepository.AddAsync(coverMedia, cancellationToken);
+
+            return coverMedia;
+        }
+
+        private async Task<Media?> TrySaveAutomaticCoverAsync(
+            CreatePostUploadCommand command,
+            CancellationToken cancellationToken) {
+            ResetStream(command.FileStream);
+
+            ExtractedCoverResult? extractedCover = await _fileCoverExtractor.TryExtractAsync(
+                command.FileStream,
+                command.FileName,
+                command.ContentType,
+                command.Type,
+                cancellationToken);
+
+            if (extractedCover is null)
+                return null;
+
+            FileValidator.Validate(
+                "image",
+                extractedCover.FileName,
+                extractedCover.ContentType,
+                extractedCover.Size);
+
+            ResetStream(extractedCover.Stream);
+
+            var coverMedia = new Media(
+                extractedCover.FileName,
+                extractedCover.ContentType);
+
+            var coverStorageResult = await _fileStorage.SaveAsync(
+                extractedCover.Stream,
+                coverMedia.FileName,
+                extractedCover.ContentType,
+                extractedCover.Size,
+                cancellationToken);
+
+            coverMedia.SetPath(coverStorageResult.Url);
+
+            await _mediaRepository.AddAsync(coverMedia, cancellationToken);
+
+            return coverMedia;
         }
 
         private static void ValidateCover(CreatePostUploadCommand command) {

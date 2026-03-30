@@ -20,7 +20,7 @@ namespace Krea.Application.Common {
             ["text"] = new Rule(
                 15 * 1024 * 1024,
                 new[] { "application/pdf", "text/plain", "application/epub+zip" },
-                new[] { ".pdf", ".txt", ".epub" } 
+                new[] { ".pdf", ".txt", ".epub" }
             )
         };
 
