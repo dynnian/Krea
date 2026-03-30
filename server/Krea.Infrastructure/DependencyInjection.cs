@@ -123,6 +123,7 @@ public static class DependencyInjection
         services.AddScoped<IFeedQueryService, FeedQueryService>();
         //services.AddScoped<IFileStorage, LocalFileStorage>();
         services.AddScoped<ICollectionQueries, CollectionQueries>();
+        services.AddScoped<IFileMetadataReader, FileMetadataReader>();
         services.AddScoped<ISender, Sender>();
         
         return services;
