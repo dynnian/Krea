@@ -1,4 +1,5 @@
 namespace Krea.Application.Features.PostUploads.CreatePostUpload {
+    using Abstractions;
     using Abstractions.FileStorage;
     using Common;
     using Domain.Abstractions;
@@ -8,163 +9,241 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
     using System.ComponentModel.DataAnnotations;
 
     public sealed class CreatePostUploadHandler
-    : IRequestHandler<CreatePostUploadCommand, CreatePostUploadResponse> {
+        : IRequestHandler<CreatePostUploadCommand, CreatePostUploadResponse> {
         private readonly IPostRepository _postRepository;
         private readonly IMediaRepository _mediaRepository;
         private readonly IPostUploadRepository _uploadRepository;
         private readonly IGenreRepository _genreRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFileStorage _fileStorage;
-        
+        private readonly IFileMetadataReader _fileMetadataReader;
+
         public CreatePostUploadHandler(
             IPostRepository postRepository,
             IMediaRepository mediaRepository,
             IPostUploadRepository uploadRepository,
             IGenreRepository genreRepository,
             IUnitOfWork unitOfWork,
-            IFileStorage fileStorage)
-        {
+            IFileStorage fileStorage,
+            IFileMetadataReader fileMetadataReader) {
             _postRepository = postRepository;
             _mediaRepository = mediaRepository;
             _uploadRepository = uploadRepository;
             _genreRepository = genreRepository;
             _unitOfWork = unitOfWork;
             _fileStorage = fileStorage;
+            _fileMetadataReader = fileMetadataReader;
         }
-        
+
         public async Task<CreatePostUploadResponse> Handle(
             CreatePostUploadCommand command,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             FileValidator.Validate(
                 command.Type,
                 command.FileName,
                 command.ContentType,
                 command.Size);
-            
+
             var post = await _postRepository.GetByIdAsync(command.PostId, cancellationToken);
             if (post is null)
                 throw new ValidationException("Post not found.");
 
-            // Crear Media
-            var media = new Media(
-            command.FileName,
-            command.ContentType
-            );
+            var parsedMetadata = await _fileMetadataReader.ReadAsync(
+                command.FileStream,
+                command.FileName,
+                command.ContentType,
+                command.Type,
+                cancellationToken);
 
-            // Subir archivo
+            ResetStream(command.FileStream);
+
+            var media = new Media(
+                command.FileName,
+                command.ContentType);
+
             var storageResult = await _fileStorage.SaveAsync(
                 command.FileStream,
                 media.FileName,
                 command.ContentType,
                 command.Size,
                 cancellationToken);
-            
+
             media.SetPath(storageResult.Url);
-            
+
             await _mediaRepository.AddAsync(media, cancellationToken);
-            
-            // Crear Upload
+
             var upload = new PostUpload(command.PostId, media.Id, command.IsWorkMedia);
             await _uploadRepository.AddAsync(upload, cancellationToken);
-            
-            // Géneros
-            var genres = new List<Genre>();
 
-            if (command.GenreIds is not null && command.GenreIds.Any())
-            {
-                genres = (await _genreRepository
-                        .GetByIdsAsync(command.GenreIds, cancellationToken))
-                    .ToList();
+            Media? coverMedia = null;
 
-                // Validar si existe
-                if (genres.Count != command.GenreIds.Count)
-                    throw new ValidationException("Some genres were not found.");
+            if (command.CoverStream is not null) {
+                ValidateCover(command);
 
-                // Validar por tipo
-                var expectedType = command.Type.ToLower() switch
-                {
-                    "image" => GenreType.Image,
-                    "music" => GenreType.Music,
-                    "text" => GenreType.Text,
-                    _ => throw new ValidationException("Invalid type for genre validation.")
-                };
+                coverMedia = new Media(
+                    command.CoverFileName!,
+                    command.CoverContentType!);
 
-                if (genres.Any(g => g.Type != expectedType))
-                    throw new ValidationException("One or more genres are invalid for this content type.");
+                var coverStorageResult = await _fileStorage.SaveAsync(
+                    command.CoverStream,
+                    coverMedia.FileName,
+                    command.CoverContentType!,
+                    command.CoverSize!.Value,
+                    cancellationToken);
+
+                coverMedia.SetPath(coverStorageResult.Url);
+
+                await _mediaRepository.AddAsync(coverMedia, cancellationToken);
+
+                upload.SetCover(coverMedia.Id);
             }
 
-            // Validar metadata antes de usarla
-            ValidateMetadata(command);
+            List<Genre> genres = await ResolveGenresAsync(command, cancellationToken);
 
-            // Metadata
-            Metadata metadata = command.Type.ToLower() switch {
+            Metadata metadata = BuildMetadata(
+                command,
+                upload.Id,
+                parsedMetadata,
+                genres);
+
+            upload.SetMetadata(metadata);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return new CreatePostUploadResponse {
+                UploadId = upload.Id,
+                MediaId = media.Id,
+                Url = media.Path,
+                Type = command.Type,
+                CoverUrl = coverMedia?.Path,
+                CoverMediaId = coverMedia?.Id
+            };
+        }
+
+        private async Task<List<Genre>> ResolveGenresAsync(
+            CreatePostUploadCommand command,
+            CancellationToken cancellationToken) {
+            var genres = new List<Genre>();
+
+            if (command.GenreIds is null || !command.GenreIds.Any())
+                return genres;
+
+            genres = (await _genreRepository
+                    .GetByIdsAsync(command.GenreIds.ToList(), cancellationToken))
+                .ToList();
+
+            if (genres.Count != command.GenreIds.Count)
+                throw new ValidationException("Some genres were not found.");
+
+            GenreType expectedType = command.Type.ToLowerInvariant() switch {
+                "image" => GenreType.Image,
+                "music" => GenreType.Music,
+                "text" => GenreType.Text,
+                _ => throw new ValidationException("Invalid type for genre validation.")
+            };
+
+            if (genres.Any(g => g.Type != expectedType))
+                throw new ValidationException("One or more genres are invalid for this content type.");
+
+            return genres;
+        }
+
+        private static Metadata BuildMetadata(
+            CreatePostUploadCommand command,
+            Guid uploadId,
+            ParsedUploadMetadata parsedMetadata,
+            List<Genre> genres) {
+            ValidateParsedMetadata(command.Type, parsedMetadata);
+
+            return command.Type.ToLowerInvariant() switch {
                 "image" => new ImageMetadata(
-                    upload.Id,
+                    uploadId,
                     command.Title,
                     command.Description,
-                    command.Width!.Value,
-                    command.Height!.Value,
-                    command.FileSize!.Value,
-                    command.Format!,
+                    parsedMetadata.Width!.Value,
+                    parsedMetadata.Height!.Value,
+                    parsedMetadata.FileSize!.Value,
+                    parsedMetadata.Format!,
                     genres),
-                
+
                 "music" => new MusicMetadata(
-                    upload.Id,
+                    uploadId,
                     command.Title,
                     command.Description,
-                    command.BitrateKbps!.Value,
-                    command.DurationSec!.Value,
+                    parsedMetadata.BitrateKbps!.Value,
+                    parsedMetadata.DurationSec!.Value,
                     genres),
-                
+
                 "text" => new TextMetadata(
-                    upload.Id,
+                    uploadId,
                     command.Title,
                     command.Description,
                     command.SortTitle,
                     command.Subtitle,
                     command.LanguageCode,
-                    command.WordCount!.Value,
+                    parsedMetadata.WordCount!.Value,
                     genres),
-                
+
                 _ => throw new ValidationException("Invalid metadata type.")
             };
-            
-            upload.SetMetadata(metadata);
-            
-            // Guardar todo
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            
-            return new CreatePostUploadResponse {
-                UploadId = upload.Id,
-                MediaId = media.Id,
-                Url = media.Path,
-                Type = command.Type
-            };
         }
-        
-        private static void ValidateMetadata(CreatePostUploadCommand command) {
-            switch (command.Type.ToLower())
-            {
-                case "image": 
-                    if (command.Width is null || 
-                        command.Height is null || 
-                        command.FileSize is null || 
-                        command.Format is null) 
-                        throw new ValidationException("Invalid image metadata."); 
+
+        private static void ValidateParsedMetadata(
+            string type,
+            ParsedUploadMetadata metadata) {
+            switch (type.ToLowerInvariant()) {
+                case "image":
+                    if (metadata.Width is null ||
+                        metadata.Height is null ||
+                        metadata.FileSize is null ||
+                        string.IsNullOrWhiteSpace(metadata.Format)) {
+                        throw new ValidationException("Invalid image metadata.");
+                    }
+
                     break;
-                
-                case "music": 
-                    if (command.BitrateKbps is null || 
-                        command.DurationSec is null) 
-                        throw new ValidationException("Invalid music metadata."); 
+
+                case "music":
+                    if (metadata.BitrateKbps is null ||
+                        metadata.DurationSec is null) {
+                        throw new ValidationException("Invalid music metadata.");
+                    }
+
                     break;
-                
-                case "text": 
-                    if (command.WordCount is null) 
-                        throw new ValidationException("Invalid text metadata."); 
-                    break; 
+
+                case "text":
+                    if (metadata.WordCount is null) {
+                        throw new ValidationException("Invalid text metadata.");
+                    }
+
+                    break;
+
+                default:
+                    throw new ValidationException("Invalid metadata type.");
             }
+        }
+
+        private static void ValidateCover(CreatePostUploadCommand command) {
+            if (command.CoverStream is null ||
+                string.IsNullOrWhiteSpace(command.CoverFileName) ||
+                string.IsNullOrWhiteSpace(command.CoverContentType) ||
+                command.CoverSize is null) {
+                throw new ValidationException("Invalid cover file.");
+            }
+
+            FileValidator.Validate(
+                "image",
+                command.CoverFileName,
+                command.CoverContentType,
+                command.CoverSize.Value);
+
+            ResetStream(command.CoverStream);
+        }
+
+        private static void ResetStream(Stream stream) {
+            if (!stream.CanSeek)
+                throw new ValidationException("The provided stream must support seeking.");
+
+            stream.Position = 0;
         }
     }
 }
