@@ -117,10 +117,7 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
   const authorHandle = post.author?.username || post.authorPostId.slice(0, 8);
 
   return (
-
-    <article className="flex flex-col w-ful gap-3 px-4">
-      <div className="w-[734px] h-px bg-gray-300 -mx-[40px]"></div>
-      {/* Cabecera con enlace al detalle (avatar, nombre, contenido, fecha) */}
+    <article className="flex flex-col w-full gap-3 p-4 bg-[#E8F1FC] border-t border-gray-300">
       <div className="flex gap-3">
         <Link to={`/post/${post.id}`} className="flex gap-3 flex-1">
           <Avatar

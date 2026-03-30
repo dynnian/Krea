@@ -1,16 +1,15 @@
 // components/Home/Home.tsx
-// deno-lint-ignore-file require-await
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Grid, message } from "antd";
-import { useAuth } from "../../contexts/AuthContext.tsx";
-import Composer from "../Composer.tsx";
-import FeedTabs from "../FeedTabs.tsx";
-import PostCard from "../Posts/PostCard.tsx";
-import TagsSidebar from "./TagsSidebar.tsx";
-import { feedApi } from "../../services/postsService.ts";
-import { feedPostToPost } from "../../utils/postMappers.ts";
-import type { Post } from "../../types/post.ts";
+import { useAuth } from "../../contexts/AuthContext";
+import Composer from "../Composer";
+import FeedTabs from "../FeedTabs";
+import PostCard from "../Posts/PostCard";
+import TagsSidebar from "./TagsSidebar";
+import { feedApi } from "../../services/postsService";
+import { feedItemToPostDto } from "../../utils/postMappers";
+import type { PostDto } from "../../types/api";
 
 const { useBreakpoint } = Grid;
 
@@ -79,13 +78,16 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#E3E2DE]">
       <main className="flex justify-center px-2 sm:px-4 gap-6">
         {/* Columna principal: feed */}
         <div
-          className={`
-            flex-1 min-w-0 max-w-5xl
-            ${!isMobile ? "bg-[#E8F1FC] max-w-[738px] border-l-2 border-r-2 border-[#8F8E8A] px-6 py-6" : "px-2"}
+         className={`
+            flex-1
+            ${!isMobile
+              ? "min-w-[400px] max-w-7xl bg-[#E8F1FC] border-l-2 border-r-2 border-[#8F8E8A] px-6 py-6"
+              : "px-2 w-full"
+            }
           `}
         >
           {user && <Composer onPost={handleNewPost} />}
@@ -103,7 +105,7 @@ export default function Home() {
             <div className="text-center py-8 text-red-500">{error}</div>
           )}
           {!loading && !error && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {posts.map((post) => (
                 <PostCard
                   key={post.id}
