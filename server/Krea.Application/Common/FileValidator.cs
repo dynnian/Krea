@@ -13,7 +13,7 @@ namespace Krea.Application.Common {
 
             ["music"] = new Rule(
                 20 * 1024 * 1024,
-                new[] { "music/mpeg", "music/wav" },
+                new[] { "audio/mpeg", "audio/wav", "audio/x-wav" },
                 new[] { ".mp3", ".wav" }
             ),
 
