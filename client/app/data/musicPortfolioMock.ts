@@ -11,6 +11,7 @@ import run from "../../assets/Album/run!.mp3";
 import symptomOfLife from "../../assets/Album/symptom of life.mp3";
 import theFearIsNotReal from "../../assets/Album/the fear is not real.mp3";
 
+
 export type MusicSong = {
   id: string;
   title: string;

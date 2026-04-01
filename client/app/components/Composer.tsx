@@ -87,7 +87,8 @@ export default function Composer({ onPost }: ComposerProps) {
   if (!user) return null;
 
   return (
-    <div className="flex gap-3 mb-6 p-4 bg-[#E8F1FC] border-y border-black-200">
+    <div className="flex gap-3 mb-6 p- border-black-200">
+      
       <Avatar
         icon={<User />}
         size={48}
@@ -119,5 +120,6 @@ export default function Composer({ onPost }: ComposerProps) {
         </div>
       </div>
     </div>
+    
   );
 }
