@@ -39,7 +39,7 @@ export default function TagsSidebar() {
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col gap-6">
+    <aside className="sticky top-[80px] h-fit flex flex-col gap-6 w-[300px]">
       <CategoryBlock
         title={t("tags.latest_illustration", "Lo último en Ilustración")}
         tags={categoryTags.illustration}
@@ -55,6 +55,6 @@ export default function TagsSidebar() {
         tags={categoryTags.literature}
         seeMoreLink="/explore?category=literature"
       />
-    </div>
+    </aside>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router";
 import { Grid, Input, Avatar, Drawer, Popover } from "antd";
@@ -23,18 +23,12 @@ export default function UserNavbar() {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const { unreadCount } = useNotifications();
   const [isMounted, setIsMounted] = useState(false);
   const screens = useBreakpoint();
 
-  // Refs
-  const navbarRef = useRef<HTMLDivElement>(null);
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  
-  // States
-  const [isSticky, setIsSticky] = useState(false);
-  const [navbarHeight, setNavbarHeight] = useState(0);
+  // Mobile specific state
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -42,39 +36,13 @@ export default function UserNavbar() {
     setIsMounted(true);
   }, []);
 
-  // 1. Measure height to prevent content "jumping"
-  useEffect(() => {
-    const updateHeight = () => {
-      if (navbarRef.current) {
-        setNavbarHeight(navbarRef.current.offsetHeight);
-      }
-    };
-    updateHeight();
-    window.addEventListener("resize", updateHeight);
-    return () => window.removeEventListener("resize", updateHeight);
-  }, []);
-
-  // 2. Observe the SENTINEL, not the navbar itself
-  useEffect(() => {
-    if (!sentinelRef.current) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // If sentinel is NOT intersecting, the user has scrolled past the top
-        setIsSticky(!entry.isIntersecting);
-      },
-      { threshold: 0 }
-    );
-
-    observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, []);
-
   const isMobile = isMounted && !screens.sm;
+
+  // Active route detection
   const isHomeActive = location.pathname === "/";
   const isExploreActive = location.pathname === "/explore";
-  const isProfileActive = location.pathname === "/profile";
-  const isMessagesActive = location.pathname === "/messages";
+  const isProfileActive = location.pathname.startsWith("/profile") || location.pathname.startsWith("/user");
+  const isMessagesActive = location.pathname.startsWith("/messages");
 
   const handleLogout = async () => {
     await logout();
@@ -82,115 +50,197 @@ export default function UserNavbar() {
     navigate("/");
   };
 
-  if (!isMounted) return <div className="h-16 bg-[#1351AA] animate-pulse" />;
+  if (!isMounted) {
+    return <div className="h-16 bg-[#1351AA] w-full" />;
+  }
 
   return (
-    <>
-      {/* THE SENTINEL: Sits at the very top of the document flow */}
-      <div ref={sentinelRef} className="h-px w-full absolute top-0" />
+    <nav className="bg-[#1351AA] border-b-2 border-[#8F8E8A] sticky top-0 z-[1000] w-full ">
+      <div className="max-w-screen-2xl mx-auto">
+        {isMobile ? (
+          /* 📱 MOBILE LAYOUT */
+          <div className="flex items-center justify-between px-4 py-2">
+            <Link to="/">
+              <img src={logoImage} alt="Logo" className="h-10 w-auto" />
+            </Link>
 
-      {/* THE PLACEHOLDER: Prevents layout shift */}
-      {isSticky && <div style={{ height: navbarHeight }} />}
+            <div className="flex items-center gap-4">
+              <button
+                className="text-white p-1"
+                onClick={() => setShowMobileSearch(!showMobileSearch)}
+              >
+                {showMobileSearch ? <X size={20} /> : <Search size={20} />}
+              </button>
 
-      <div
-        ref={navbarRef}
-        className={`bg-[#1351AA] border-b-2 border-[#8F8E8A] transition-all duration-200 ${
-          isSticky ? "fixed top-0 left-0 right-0 z-50 shadow-lg" : "relative"
-        }`}
-      >
-        <div className="max-w-screen-2xl mx-auto">
-          {isMobile ? (
-            /* MOBILE VERSION */
-            <div className="flex items-center justify-between px-4 py-2">
-              <Link to="/"><img src={logoImage} alt="Logo" className="h-10 w-auto" /></Link>
-              <div className="flex items-center gap-4">
-                <button onClick={() => setShowMobileSearch(!showMobileSearch)} className="text-white">
-                  {showMobileSearch ? <X size={20} /> : <Search size={20} />}
-                </button>
-                {isAuthenticated && (
-                  <Link to="/messages" className="text-white"><MessageCircle size={20} /></Link>
-                )}
-                {isAuthenticated ? (
-                  <Link to="/profile">
-                    <Avatar icon={<User size={18} />} className="bg-white text-gray-800" size={32} />
-                  </Link>
-                ) : (
-                  <Link to="/login" className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm">{t("login.sign_in_button")}</Link>
-                )}
-                <button className="text-white" onClick={() => setDrawerOpen(true)}><Menu size={24} /></button>
-              </div>
-              {showMobileSearch && (
-                <div className="absolute top-full left-0 right-0 bg-[#1351AA] p-2 border-t border-[#8F8E8A]">
-                  <Input placeholder={t("navbar.search_placeholder")} className="w-full h-10" prefix={<Search size={18} />} autoFocus />
-                </div>
+              {isAuthenticated && (
+                <Link to="/messages" className="text-white p-1">
+                  <MessageCircle size={20} />
+                </Link>
               )}
+
+              <button
+                className="text-white p-1"
+                onClick={() => setDrawerOpen(true)}
+              >
+                <Menu size={24} />
+              </button>
             </div>
-          ) : (
-            /* DESKTOP VERSION */
-            <div className="flex items-center justify-between px-6 py-2">
-              <div className="flex items-center gap-8">
-                <Link to="/"><img src={logoImage} alt="Logo" className="h-10 w-auto" /></Link>
-                <nav className="flex gap-6">
-                  <div className="flex flex-col items-center">
-                    <Link to="/" className={`flex items-center gap-1 ${isHomeActive ? "text-[#8FB78E]" : "text-[#E3E2DE]"}`}>
-                      <span className="text-lg font-medium">{t("navbar.home")}</span>
-                      <Home size={20} />
-                    </Link>
-                    {isHomeActive && <div className="w-full h-0.5 bg-[#8FB78E] mt-1" />}
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <Link to="/explore" className={`flex items-center gap-1 ${isExploreActive ? "text-[#8FB78E]" : "text-[#E3E2DE]"}`}>
-                      <span className="text-lg font-medium">{t("navbar.explore")}</span>
-                      <Search size={20} />
-                    </Link>
-                    {isExploreActive && <div className="w-full h-0.5 bg-[#8FB78E] mt-1" />}
-                  </div>
-                </nav>
+
+            {/* Mobile Search Overlay */}
+            {showMobileSearch && (
+              <div className="absolute top-full left-0 right-0 bg-[#1351AA] p-2 border-t border-[#8F8E8A] z-50">
+                <Input
+                  placeholder={t("navbar.search_placeholder")}
+                  className="w-full h-10 bg-[#F3F3F1] border-2 border-[#8F8E8A] rounded-lg px-4"
+                  prefix={<Search size={18} className="text-gray-400" />}
+                  allowClear
+                  autoFocus
+                />
               </div>
-              <div className="flex-1 max-w-2xl mx-8">
-                <Input placeholder={t("navbar.search_placeholder")} className="h-10 rounded-lg" prefix={<Search size={18} />} />
-              </div>
-              {isAuthenticated ? (
-                <div className="flex items-center gap-6">
-                  <Link to="/messages" className="text-[#E3E2DE]"><MessageCircle size={22} /></Link>
-                  <Popover content={<NotificationCenter />} trigger="click" placement="bottomRight" arrow={false}>
-                    <div className="relative cursor-pointer text-[#E3E2DE]">
-                      <Bell size={22} />
-                      {unreadCount > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                          {unreadCount}
-                        </span>
-                      )}
-                    </div>
-                  </Popover>
-                  <Link to="/profile" className={`flex items-center gap-1 ${isProfileActive ? "text-[#8FB78E]" : "text-[#E3E2DE]"}`}>
-                    <span className="text-lg font-medium">{t("navbar.profile")}</span>
-                    <User size={20} />
-                  </Link>
-                </div>
-              ) : (
-                <Link to="/login" className="bg-blue-600 text-white px-5 py-2 rounded-lg font-medium">{t("login.sign_in_button")}</Link>
-              )}
+            )}
+          </div>
+        ) : (
+          /* 💻 DESKTOP LAYOUT */
+          <div className="flex items-center justify-between px-6 py-2">
+            {/* Left: Logo & Nav */}
+            <div className="flex items-center gap-8">
+              <Link to="/">
+                <img src={logoImage} alt="Logo" className="h-10 w-auto" />
+              </Link>
+
+              <nav className="flex items-center gap-6">
+                <Link to="/" className="group flex flex-col items-center">
+                  <div className="flex items-center gap-1">
+                    <span className={`text-lg font-medium transition-colors ${isHomeActive ? "text-[#8FB78E]" : "text-[#E3E2DE] group-hover:text-white"}`}>
+                      {t("navbar.home")}
+                    </span>
+                    <Home size={20} className={isHomeActive ? "text-[#8FB78E]" : "text-[#E3E2DE] group-hover:text-white"} />
+                  </div>
+                  {isHomeActive && <div className="w-full h-0.5 bg-[#8FB78E] mt-1" />}
+                </Link>
+
+                <Link to="/explore" className="group flex flex-col items-center">
+                  <div className="flex items-center gap-1">
+                    <span className={`text-lg font-medium transition-colors ${isExploreActive ? "text-[#8FB78E]" : "text-[#E3E2DE] group-hover:text-white"}`}>
+                      {t("navbar.explore")}
+                    </span>
+                    <Search size={20} className={isExploreActive ? "text-[#8FB78E]" : "text-[#E3E2DE] group-hover:text-white"} />
+                  </div>
+                  {isExploreActive && <div className="w-full h-0.5 bg-[#8FB78E] mt-1" />}
+                </Link>
+              </nav>
             </div>
-          )}
-        </div>
+
+            {/* Center: Search */}
+            <div className="flex-1 max-w-2xl mx-8">
+              <Input
+                placeholder={t("navbar.search_placeholder")}
+                className="h-10 bg-[#F3F3F1] border-2 border-[#8F8E8A] rounded-lg px-4"
+                prefix={<Search size={18} className="text-gray-400" />}
+                allowClear
+              />
+            </div>
+
+            {/* Right: Actions */}
+            {isAuthenticated ? (
+              <div className="flex items-center gap-6">
+                <Link to="/messages" className={`transition-colors ${isMessagesActive ? "text-[#8FB78E]" : "text-[#E3E2DE] hover:text-white"}`}>
+                  <MessageCircle size={22} />
+                </Link>
+
+                <Popover
+                  content={<NotificationCenter />}
+                  trigger="click"
+                  placement="bottomRight"
+                  arrow={false}
+                >
+                  <div className="relative cursor-pointer text-[#E3E2DE] hover:text-white">
+                    <Bell size={22} />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </div>
+                </Popover>
+
+                <Link to="/profile" className="group flex flex-col items-center">
+                  <div className="flex items-center gap-1">
+                    <span className={`text-lg font-medium transition-colors ${isProfileActive ? "text-[#8FB78E]" : "text-[#E3E2DE] group-hover:text-white"}`}>
+                      {t("navbar.profile")}
+                    </span>
+                    <User size={20} className={isProfileActive ? "text-[#8FB78E]" : "text-[#E3E2DE] group-hover:text-white"} />
+                  </div>
+                  {isProfileActive && <div className="w-full h-0.5 bg-[#8FB78E] mt-1" />}
+                </Link>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                {t("login.sign_in_button")}
+              </Link>
+            )}
+          </div>
+        )}
       </div>
 
+      {/* MOBILE DRAWER */}
       <Drawer
         title={<span className="text-[#F3F3F1]">Menú</span>}
         placement="right"
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
-        styles={{ header: { backgroundColor: "#1351AA" }, body: { backgroundColor: "#1351AA", padding: 0 } }}
+        styles={{
+          header: { backgroundColor: "#1351AA", borderBottom: "2px solid #8F8E8A" },
+          body: { backgroundColor: "#1351AA", padding: 0 },
+        }}
+        closeIcon={<X size={20} className="text-[#F3F3F1]" />}
       >
         <div className="flex flex-col">
-          <Link to="/" className="px-6 py-4 text-[#F3F3F1] border-b border-[#8F8E8A]" onClick={() => setDrawerOpen(false)}>{t("navbar.home")}</Link>
-          <Link to="/explore" className="px-6 py-4 text-[#F3F3F1] border-b border-[#8F8E8A]" onClick={() => setDrawerOpen(false)}>{t("navbar.explore")}</Link>
-          {isAuthenticated && (
-            <button className="px-6 py-4 text-red-300 w-full text-left" onClick={handleLogout}><LogOut size={20} className="inline mr-2" />{t("navbar.logout")}</button>
+          <Link
+            to="/"
+            className={`flex items-center gap-4 px-6 py-4 text-lg border-b border-[#8F8E8A] ${isHomeActive ? "bg-blue-800 text-[#8FB78E]" : "text-[#F3F3F1]"}`}
+            onClick={() => setDrawerOpen(false)}
+          >
+            <Home size={20} /> {t("navbar.home")}
+          </Link>
+          <Link
+            to="/explore"
+            className={`flex items-center gap-4 px-6 py-4 text-lg border-b border-[#8F8E8A] ${isExploreActive ? "bg-blue-800 text-[#8FB78E]" : "text-[#F3F3F1]"}`}
+            onClick={() => setDrawerOpen(false)}
+          >
+            <Search size={20} /> {t("navbar.explore")}
+          </Link>
+
+          {isAuthenticated ? (
+            <>
+              <Link
+                to="/profile"
+                className={`flex items-center gap-4 px-6 py-4 text-lg border-b border-[#8F8E8A] ${isProfileActive ? "bg-blue-800 text-[#8FB78E]" : "text-[#F3F3F1]"}`}
+                onClick={() => setDrawerOpen(false)}
+              >
+                <User size={20} /> {t("navbar.profile")}
+              </Link>
+              <button
+                className="flex items-center gap-4 px-6 py-4 text-lg text-red-300 w-full text-left"
+                onClick={handleLogout}
+              >
+                <LogOut size={20} /> {t("navbar.logout")}
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="flex items-center gap-4 px-6 py-4 text-lg text-[#F3F3F1]"
+              onClick={() => setDrawerOpen(false)}
+            >
+              <User size={20} /> {t("login.sign_in_button")}
+            </Link>
           )}
         </div>
       </Drawer>
-    </>
+    </nav>
   );
 }
