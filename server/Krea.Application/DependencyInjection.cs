@@ -51,6 +51,8 @@ namespace Krea.Application {
     using Features.Posts.ReplyPost;
     using Features.Posts.ReplyPost.GetReplies;
     using Features.Posts.Repost;
+    using Features.Posts.UserReports;
+    using Features.User.GetReportsByUser;
 
     public static class DependencyInjection {
         public static IServiceCollection AddApplication(this IServiceCollection services) {
@@ -118,6 +120,11 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<RemovePostFromFavoritesCommand, bool>, RemovePostFromFavoritesHandler>();
             services.AddScoped<IRequestHandler<GetUserFavoritesQuery, PaginatedList<Post>>, GetUserFavoritesHandler>();
             services.AddScoped<IRequestHandler<TogglePostFavoriteCommand, bool>, TogglePostFavoriteHandler>();
+
+            // Reports
+            services.AddScoped<IRequestHandler<CreatePostModerationReportCommand, CreatePostModerationReportResponse>, CreatePostModerationReportHandler>();
+            services.AddScoped< IRequestHandler<GetMyPostModerationReportsQuery, GetMyPostModerationReportsResponse>, GetMyPostModerationReportsHandler>();
+            
             services.AddScoped<ISender, Sender>();
             
             // Messaging

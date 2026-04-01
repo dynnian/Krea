@@ -12,6 +12,7 @@ using Application.Abstractions.Auth;
 using Application.Abstractions.Collection;
 using Application.Abstractions.Email;
 using Application.Abstractions.Feed;
+using Application.Abstractions.Files;
 using Application.Abstractions.FileStorage;
 using Application.Abstractions.Filter;
 using Application.Abstractions.Identity;
@@ -123,6 +124,8 @@ public static class DependencyInjection
         services.AddScoped<IFeedQueryService, FeedQueryService>();
         //services.AddScoped<IFileStorage, LocalFileStorage>();
         services.AddScoped<ICollectionQueries, CollectionQueries>();
+        services.AddScoped<IFileMetadataReader, FileMetadataReader>();
+        services.AddScoped<IFileCoverExtractor, FileCoverExtractor>();
         services.AddScoped<ISender, Sender>();
         
         return services;

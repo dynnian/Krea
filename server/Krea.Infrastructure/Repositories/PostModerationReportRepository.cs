@@ -48,12 +48,51 @@ namespace Krea.Infrastructure.Repositories {
             return query.CountAsync(cancellationToken);
         }
 
-        public async Task AddAsync(PostModerationReport report, CancellationToken cancellationToken = default) =>
-            await _context.Set<PostModerationReport>().AddAsync(report, cancellationToken);
+        public async Task AddAsync(PostModerationReport report, CancellationToken cancellationToken = default) {
+            await _context.PostModerationReports.AddAsync(report, cancellationToken);
+        }
 
         public Task UpdateAsync(PostModerationReport report, CancellationToken cancellationToken = default) {
             _context.Set<PostModerationReport>().Update(report);
             return Task.CompletedTask;
+        }
+        
+        public async Task<bool> ExistsPendingByPostAndReporterAsync(
+            Guid postId,
+            Guid reporterUserId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.PostModerationReports
+                .AsNoTracking()
+                .AnyAsync(r =>
+                        r.PostId == postId &&
+                        r.ReporterUserId == reporterUserId &&
+                        r.Status == PostModerationReportStatus.Pending,
+                    cancellationToken);
+        }
+        
+        public async Task<IReadOnlyList<PostModerationReport>> GetByReporterPagedAsync(
+            Guid reporterUserId,
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.PostModerationReports
+                .AsNoTracking()
+                .Where(r => r.ReporterUserId == reporterUserId)
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<int> CountByReporterAsync(
+            Guid reporterUserId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.PostModerationReports
+                .AsNoTracking()
+                .CountAsync(r => r.ReporterUserId == reporterUserId, cancellationToken);
         }
     }
 }
