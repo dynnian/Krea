@@ -142,27 +142,24 @@ export function feedPostToPost(feedPost: FeedPost): Post {
     favoritesCount: feedPost.repostCount,
   };
 }
+// utils/postMappers.ts
 export function feedItemToPostDto(item: FeedItem): PostDto {
-  const media =
-    item.mediaPreviewUrl && item.mediaMimeType
-      ? [
-          {
-            id: "",
-            fileName: item.mediaPreviewUrl.split("/").pop() || "",
-            mimeType: item.mediaMimeType,
-            url: item.mediaPreviewUrl,
-            isWorkMedia: false,
-          },
-        ]
-      : [];
+  const media = item.mediaPreviewUrl ? [{
+    id: "",
+    fileName: item.mediaPreviewUrl.split("/").pop() || "",
+    mimeType: item.mediaMimeType || "",
+    url: item.mediaPreviewUrl,
+    isWorkMedia: false,
+  }] : [];
 
   return {
     id: item.id,
-    authorPostId: item.authorId,
+    authorPostId: item.authorId,                 // ← usar authorId
+    authorName: item.authorUsername,             // ← añadir authorName
     author: {
       id: item.authorId,
       username: item.authorUsername,
-      displayName: item.authorUsername, // fallback
+      displayName: item.authorUsername,          // fallback
     },
     title: item.title,
     content: item.content,
@@ -173,7 +170,8 @@ export function feedItemToPostDto(item: FeedItem): PostDto {
     uploadedAt: item.uploadedAt,
     media,
     isLikedByCurrentUser: item.isLikedByCurrentUser,
-    isRetweetedByCurrentUser: false, // not in feed
+    isRetweetedByCurrentUser: false,
+    isFavoritedByCurrentUser: item.isFavorite ?? false, // ← para bookmark
     replies: [],
   };
 }

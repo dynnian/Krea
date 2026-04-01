@@ -71,7 +71,11 @@
     "repost_error": "No se pudo republicar. Intenta de nuevo.",
     "link_copied": "Enlace copiado al portapapeles",
     "publication": "Publicación",
-    "reply_placeholder": "Responde!"
+    "reply_placeholder": "Responde!",
+    "comment_success": "Comentario publicado exitosamente",
+    "comment_error": "Error al publicar el comentario. Por favor, inténtalo de nuevo.",
+    "bookmark_toggled": "Marcado como favorito / Eliminado de favoritos",
+    "bookmark_error": "Error al guardar en favoritos"
   },
   "tags": {
     "latest_illustration": "Lo último en Ilustración",
@@ -98,7 +102,8 @@
     "results": "resultados",
     "fromLastMonth": "del mes pasado",
     "saveChanges": "Guardar Cambios",
-    "saveSettings": "Guardar Configuracion"
+    "saveSettings": "Guardar Configuracion",
+    "loading": "Cargando..."
   },
   "explore": {
     "tabs": {

@@ -9,6 +9,7 @@ import {
   type UploadMediaData,
   type FeedPost,
   type PostDto,
+  type PaginatedReplies,
 } from "../types/api.ts";
 import type { FeedItem } from "../types/feed.ts";
 import type { ReplyDto } from "./comments.ts";
@@ -39,17 +40,6 @@ export const postsApi = {
     axiosClient.get<PostDto[]>(`/Posts/user/${authorId}`, {
       params: { page, pageSize },
     }),
-
-  // Responder (comentar)
-  replyToPost: (
-    postId: string,
-    data: {
-      authorId: string;
-      replyToPostId: string;
-      title: string;
-      content: string;
-    },
-  ) => axiosClient.post<{ postId: string }>(`/Posts/${postId}/reply`, data),
 
   // Repostear
   repost: (
@@ -83,7 +73,7 @@ export const postsApi = {
 
   // Obtener comentarios (replies)
   getReplies: (postId: string, page = 1, pageSize = 20) =>
-    axiosClient.get<ReplyDto[]>(`/Posts/${postId}/replies`, {
+    axiosClient.get<PaginatedReplies>(`/Posts/${postId}/replies`, {
       params: { page, pageSize },
     }),
 
@@ -96,8 +86,7 @@ export const postsApi = {
       title: string;
       content: string;
     },
-  ) => axiosClient.post<ReplyDto>(`/Posts/${postId}/reply`, data),
-
+  ) => axiosClient.post<{ postId: string }>(`/Posts/${postId}/reply`, data),
   // Explorar contenido
   explore: (params: {
     category?: string;
@@ -107,6 +96,8 @@ export const postsApi = {
     page?: number;
     pageSize?: number;
   }) => axiosClient.get<PostDto[]>("/Posts/explore", { params }),
+  toggleFavorite: (postId: string) =>
+    axiosClient.post(`/Posts/${postId}/favorite/toggle`),
 };
 
 export const feedApi = {

@@ -5,47 +5,41 @@ import { useNavigate } from 'react-router';
 import { Avatar, Input, Button, message } from 'antd';
 import { Heart, MessageCircle, Repeat2, Share2, MoreHorizontal, User } from 'lucide-react';
 import { postsApi } from '../../services/postsService';
-import type { ReplyDto } from "../../services/comments.ts";
+import type { ReplyDto } from '../../services/comments';
 
 const { TextArea } = Input;
 
 interface CommentSectionProps {
   postId: string;
-  initialReplies?: ReplyDto[];
-  onNewReply?: () => void;
+  onCommentPosted?: () => void;
 }
 
-export default function CommentSection({ postId, initialReplies = [], onNewReply }: CommentSectionProps) {
+export default function CommentSection({ postId, onCommentPosted }: CommentSectionProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Asegurar que initialReplies sea un array
-  const safeInitialReplies = Array.isArray(initialReplies) ? initialReplies : [];
-  const [comments, setComments] = useState<ReplyDto[]>(safeInitialReplies);
+  const [comments, setComments] = useState<ReplyDto[]>([]);
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [loading, setLoading] = useState(safeInitialReplies.length === 0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (safeInitialReplies.length === 0) {
-      const fetchReplies = async () => {
-        try {
-          const res = await postsApi.getReplies(postId);
-          const data = Array.isArray(res.data) ? res.data : [];
-          setComments(data);
-        } catch (err) {
-          console.error(err);
-          message.error(t('post.comment_load_error'));
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchReplies();
-    } else {
-      setLoading(false);
-    }
-  }, [postId, safeInitialReplies, t]);
+    const fetchReplies = async () => {
+      try {
+        const res = await postsApi.getReplies(postId);
+        // Acceder a la propiedad 'flat' del objeto retornado por la API
+        const data = res.data?.flat?.items ?? [];
+        setComments(data);
+      } catch (err) {
+        console.error(err);
+        message.error(t('post.comment_load_error'));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReplies();
+  }, [postId, t]);
 
   const handleSubmit = async () => {
     if (!user) {
@@ -56,6 +50,7 @@ export default function CommentSection({ postId, initialReplies = [], onNewReply
     if (!newComment.trim()) return;
 
     setSubmitting(true);
+    const title = newComment.trim().slice(0, 50) || 'Comentario';
     const optimisticComment: ReplyDto = {
       id: `temp-${Date.now()}`,
       authorId: user.id,
@@ -68,19 +63,16 @@ export default function CommentSection({ postId, initialReplies = [], onNewReply
     setNewComment('');
 
     try {
-      const response = await postsApi.replyToPost(postId, {
+      await postsApi.replyToPost(postId, {
         authorId: user.id,
         replyToPostId: postId,
-        title: '',
+        title: title,
         content: originalContent,
       });
-      // Reemplazar el comentario optimista por el real
-      const newReply = response.data;
-      setComments(prev => prev.map(c => c.id === optimisticComment.id ? newReply : c));
       message.success(t('post.comment_success'));
-      onNewReply?.();
+      onCommentPosted?.();
     } catch (err) {
-      // Revertir si falla
+      // Revertir optimismo
       setComments(prev => prev.filter(c => c.id !== optimisticComment.id));
       message.error(t('post.comment_error'));
     } finally {

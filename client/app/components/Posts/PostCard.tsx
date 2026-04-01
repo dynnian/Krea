@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 import { Avatar, message, Modal } from 'antd';
-import { Heart, MessageCircle, Repeat2, Bookmark, MoreHorizontal, User } from 'lucide-react';
+import { Heart, MessageCircle, Repeat2, Bookmark, MoreHorizontal, User, FileText } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import AudioWaveform from '../WaveSurfer/AudioWaveform';
 import { postsApi } from '../../services/postsService';
@@ -17,11 +17,11 @@ interface PostCardProps {
   onBookmark?: () => void;
 }
 
-// Helper to determine media type from mimeType
-const getMediaType = (mimeType?: string): 'image' | 'audio' | 'text' => {
+const getMediaType = (mimeType?: string): 'image' | 'audio' | 'pdf' | 'text' => {
   if (!mimeType) return 'text';
   if (mimeType.startsWith('image/')) return 'image';
-  if (mimeType.startsWith('audio/')) return 'audio';
+  if (mimeType === 'music/mpeg' || mimeType === 'audio/mpeg' || mimeType === 'audio/mp3') return 'audio';
+  if (mimeType === 'application/pdf') return 'pdf';
   return 'text';
 };
 
@@ -30,13 +30,13 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // UI state based on API data
   const [liked, setLiked] = useState(post.isLikedByCurrentUser);
   const [likesCount, setLikesCount] = useState(post.likesCount);
   const [reposted, setReposted] = useState(post.isRetweetedByCurrentUser);
-  const [repostsCount, setRepostsCount] = useState(post.isRetweetedByCurrentUser ? 1 : 0); // placeholder
+  const [repostsCount, setRepostsCount] = useState(post.isRetweetedByCurrentUser ? 1 : 0);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(post.isFavoritedByCurrentUser ?? false);
 
   const requireAuth = () => {
     if (!user) {
@@ -51,7 +51,6 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
     if (!requireAuth() || actionLoading) return;
     setActionLoading('like');
     const wasLiked = liked;
-    // Optimistic update
     setLiked(!wasLiked);
     setLikesCount(prev => (wasLiked ? prev - 1 : prev + 1));
     try {
@@ -60,10 +59,8 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
       } else {
         await postsApi.like(post.id, { postId: post.id, userId: user!.id });
       }
-      // Notify parent if needed
       onLike?.(post.id);
     } catch {
-      // Revert on error
       setLiked(wasLiked);
       setLikesCount(prev => (wasLiked ? prev + 1 : prev - 1));
       message.error(t('post.like_error'));
@@ -97,48 +94,54 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
     else navigate(`/post/${post.id}`);
   };
 
-  const handleBookmarkClick = () => {
+  const handleBookmarkClick = async () => {
     if (!requireAuth()) return;
-    if (onBookmark) onBookmark();
-    else message.info(t('post.bookmark_not_implemented'));
+    try {
+      await postsApi.toggleFavorite(post.id);
+      setIsBookmarked(prev => !prev);
+      message.success(t('post.bookmark_toggled'));
+      onBookmark?.();
+    } catch {
+      message.error(t('post.bookmark_error'));
+    }
   };
 
-  // Media handling
   const firstMedia = post.media?.[0];
   const mediaUrl = firstMedia?.url;
-  const mediaType = getMediaType(firstMedia?.mimeType);
+  const mediaMime = firstMedia?.mimeType;
+  const mediaType = getMediaType(mediaMime);
 
   const formattedDate = post.uploadedAt
     ? new Date(post.uploadedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
     : '';
 
-  // Author info
-  const authorName = post.author?.displayName || `Usuario ${post.authorPostId.slice(0, 8)}`;
-  const authorHandle = post.author?.username || post.authorPostId.slice(0, 8);
+  // Usar authorName si existe, sino el ID truncado
+  const authorName = post.authorName || `Usuario ${post.authorPostId.slice(0, 8)}`;
+  const authorHandle = post.authorName ? `@${post.authorName}` : post.authorPostId.slice(0, 8);
 
   return (
-    <article className="flex flex-col w-full gap-3 p-4 bg-[#E8F1FC] border-t border-gray-300">
+    <article className="bg-[#E8F1FC] rounded-[15px] outline outline-[1.5px] outline-[#95ACCC] p-[22px] shadow-[4px_4px_12.6px_rgba(0,0,0,0.25)] w-full">
       <div className="flex gap-3">
         <Link to={`/post/${post.id}`} className="flex gap-3 flex-1">
           <Avatar
             src={post.author?.avatar}
             icon={!post.author?.avatar && <User />}
             size={48}
-            className="bg-white border border-gray-800"
+            className="bg-white border border-black rounded-full"
           />
           <div className="flex-1">
-            <div className="flex items-center flex-wrap gap-2">
-              <Link to={`/user/${post.authorPostId}`} className="font-medium text-gray-900 hover:text-[#1351AA]">
+            <div className="flex items-center flex-wrap gap-2 text-sm">
+              <Link to={`/user/${post.authorPostId}`} className="font-bold text-[#1B1C1E] hover:text-[#1351AA]">
                 {authorName}
               </Link>
-              <span className="text-gray-500">·</span>
-              <Link to={`/user/${post.authorPostId}`} className="text-gray-500 hover:text-[#1351AA] hover:underline">
-                @{authorHandle}
+              <span className="text-[#1B1C1E]">·</span>
+              <Link to={`/user/${post.authorPostId}`} className="text-[#1B1C1E] hover:text-[#1351AA]">
+                {authorHandle}
               </Link>
-              <span className="text-gray-500">·</span>
-              <span className="text-gray-500">{formattedDate}</span>
+              <span className="text-[#1B1C1E]">·</span>
+              <span className="text-[#1B1C1E]">{formattedDate}</span>
             </div>
-            <p className="text-gray-800 mt-1">{post.content}</p>
+            <p className="text-[#1B1C1E] text-justify text-[13px] leading-7 mt-1">{post.content}</p>
           </div>
         </Link>
         <button className="p-1 hover:bg-gray-200 rounded-full self-start">
@@ -152,7 +155,7 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
             <>
               <img
                 src={mediaUrl}
-                alt="Image"
+                alt="Imagen"
                 className="w-full max-h-80 object-cover rounded-lg border border-gray-200 cursor-pointer"
                 onClick={() => setIsImageModalOpen(true)}
               />
@@ -164,7 +167,7 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
                 width="fit-content"
                 styles={{ body: { padding: 0 } }}
               >
-                <img src={mediaUrl} alt="Full size" className="max-w-full max-h-screen" />
+                <img src={mediaUrl} alt="Imagen completa" className="max-w-full max-h-screen" />
               </Modal>
             </>
           )}
@@ -173,10 +176,23 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
               <AudioWaveform audioUrl={mediaUrl} />
             </div>
           )}
+          {mediaType === 'pdf' && (
+            <div className="bg-[#F3F3F1] p-4 rounded-lg border border-[#8F8E8A] flex items-center gap-2">
+              <FileText size={18} className="text-[#1351AA]" />
+              <a
+                href={mediaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#1351AA] underline hover:text-[#0B5107]"
+              >
+                {t('post.view_document') || 'Ver documento'}
+              </a>
+            </div>
+          )}
         </div>
       )}
 
-      <div className="flex items-center gap-6 ml-0 sm:ml-[60px] mt-2 text-gray-600">
+      <div className="flex items-center gap-6 ml-0 sm:ml-[60px] mt-4 text-gray-600">
         <button
           className={`flex items-center gap-1 hover:text-blue-600 transition ${actionLoading === 'like' ? 'opacity-50 cursor-wait' : ''}`}
           onClick={handleLike}
@@ -204,7 +220,7 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
           className="flex items-center gap-1 hover:text-blue-600"
           onClick={handleBookmarkClick}
         >
-          <Bookmark size={18} />
+          <Bookmark size={18} className={isBookmarked ? 'fill-green-500 text-green-500' : ''} />
         </button>
       </div>
     </article>

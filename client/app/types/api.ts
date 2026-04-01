@@ -1,5 +1,6 @@
 // app/types/api.ts
 
+import type { ReplyDto } from "../services/comments.ts";
 import type { PostType } from "./common";
 
 // Respuesta de login/register (ya existente)
@@ -104,7 +105,6 @@ export interface FeedPost {
   repostCount: number;
 }
 
-
 export interface MediaDto {
   id: string;
   fileName: string;
@@ -117,6 +117,7 @@ export interface MediaDto {
 export interface PostDto {
   id: string;
   authorPostId: string; // ID del autor (string)
+  authorName?: string;
   author?: {
     id: string;
     username: string;
@@ -134,4 +135,15 @@ export interface PostDto {
   isLikedByCurrentUser: boolean;
   isRetweetedByCurrentUser: boolean;
   replies?: PostDto[];
+}
+
+export interface PaginatedReplies {
+  mode: "flat" | "tree";
+  flat: {
+    items: ReplyDto[];
+    page: number;
+    pageSize: number;
+    totalCount: number;
+  };
+  tree: any | null;
 }
