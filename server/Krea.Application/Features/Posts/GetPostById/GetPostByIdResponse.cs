@@ -18,6 +18,9 @@ namespace Krea.Application.Features.Posts.GetPostById {
         bool IsLikedByCurrentUser,
         bool IsRetweetedByCurrentUser,
 
-        IReadOnlyList<ReplyDto> Replies
+        IReadOnlyList<ReplyDto> Replies,
+
+        Guid? RepostOfId,
+        RepostReferenceDto? RepostOf
     );
 }

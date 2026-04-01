@@ -128,7 +128,17 @@ namespace Krea.Domain.Entities {
         }
 
 
-        public void Repost(Guid postId) {
+        public void Repost(Guid postId)
+        {
+            if (IsDeleted)
+                throw new InvalidOperationException("Cannot repost a deleted post");
+
+            if (RepostOfId.HasValue)
+                throw new InvalidOperationException("Post is already a repost");
+
+            if (postId == Id)
+                throw new InvalidOperationException("A post cannot repost itself");
+
             RepostOfId = postId;
             UpdatedAt = DateTime.UtcNow;
         }

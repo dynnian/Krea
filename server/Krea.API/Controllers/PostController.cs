@@ -234,8 +234,13 @@ namespace Krea.API.Controllers {
             Guid postId,
             [FromBody] RepostPostCommand command,
             CancellationToken cancellationToken) {
+            Guid currentUserId = GetCurrentUserId();
+
             Guid repostId = await _sender.Send(
-                command with { OriginalPostId = postId },
+                command with {
+                    OriginalPostId = postId,
+                    AuthorId = currentUserId
+                },
                 cancellationToken);
 
             return CreatedAtAction(
