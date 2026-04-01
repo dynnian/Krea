@@ -147,3 +147,12 @@ export interface PaginatedReplies {
   };
   tree: any | null;
 }
+
+export interface PublicUserProfile {
+  id: string;
+  username: string;
+  displayName: string;
+  biography: string | null;
+  languageCode: string;
+  timeZoneId: string;
+}

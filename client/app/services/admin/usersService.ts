@@ -4,6 +4,7 @@ import type {
   UpdateUserStatusRequest,
   UpdateUserRoleRequest,
 } from "@/types/admin";
+import type { PublicUserProfile } from "../../types/api.ts";
 
 export interface UsersQueryParams {
   search?: string;
@@ -46,3 +47,12 @@ export async function updateUserRole(
 export async function deleteUser(userId: string): Promise<void> {
   await axiosClient.delete(`/admin/users/${userId}`);
 }
+
+export const userApi = {
+  getProfile: (userId: string) =>
+    axiosClient.get<PublicUserProfile>(`/users/${userId}/profile`),
+
+  follow: (userId: string) => axiosClient.post(`/users/${userId}/follow`),
+
+  unfollow: (userId: string) => axiosClient.delete(`/users/${userId}/unfollow`),
+};
