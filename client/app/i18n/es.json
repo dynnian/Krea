@@ -241,7 +241,8 @@
     "offline": "Desconectado",
     "select_conversation": "Selecciona una conversación para empezar a chatear",
     "start_messaging": "Start messaging...",
-    "conversations": "Conversations"
+    "conversations": "Conversaciones",
+    "search_placeholder":"Buscar"
   },
 
   "createPost": {

@@ -241,7 +241,8 @@
     "offline": "Offline",
     "select_conversation": "Select a conversation to start chatting",
     "start_messaging": "Start messaging...",
-    "conversations": "Conversations"
+    "conversations": "Conversations",
+    "search_placeholder": "Search..."
   },
   "createPost": {
     "authRequired": "You must be logged in",
