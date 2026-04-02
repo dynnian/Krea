@@ -11,19 +11,34 @@ namespace Krea.Infrastructure.Repositories {
 
         public async Task<Post?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
             await _context.Posts
-                          .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
+                .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
 
         public async Task<Post?> GetFullPostAsync(Guid id, CancellationToken cancellationToken = default) =>
-        await _context.Posts
-            .Include(p => p.Uploads)
+            await _context.Posts
+                .Include(p => p.AuthorPost)
+                .Include(p => p.Uploads) 
                 .ThenInclude(u => u.Metadata)
-                    .ThenInclude(m => m.Genres)
-            .Include(p => p.AuthorPost)
-            .Include(p => p.Uploads)
+                .ThenInclude(m => m.Genres)
+                .Include(p => p.Uploads)
                 .ThenInclude(u => u.Media)
-            .Include(p => p.Hashtags)
-            .Include(p => p.Likes)
-            .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
+                .Include(p => p.Hashtags)
+                .Include(p => p.Likes)
+
+                .Include(p => p.RepostOf)
+                .ThenInclude(r => r.AuthorPost)
+                .Include(p => p.RepostOf)
+                .ThenInclude(r => r.Uploads)
+                .ThenInclude(u => u.Metadata)
+                .ThenInclude(m => m.Genres)
+                .Include(p => p.RepostOf)
+                .ThenInclude(r => r.Uploads)
+                .ThenInclude(u => u.Media)
+                .Include(p => p.RepostOf)
+                .ThenInclude(r => r.Hashtags)
+                .Include(p => p.RepostOf)
+                .ThenInclude(r => r.Likes)
+
+                .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
 
         public async Task AddAsync(Post post, CancellationToken cancellationToken = default) =>
             await _context.Posts.AddAsync(post, cancellationToken);

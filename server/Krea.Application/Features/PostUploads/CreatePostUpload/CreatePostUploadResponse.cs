@@ -3,7 +3,9 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
     {
         public Guid UploadId { get; init; }
         public Guid MediaId { get; init; }
-        public string Url { get; init; } = null!;
-        public string Type { get; init; } = null!;
+        public string Url { get; init; } = default!;
+        public string Type { get; init; } = default!;
+        public string? CoverUrl { get; init; }
+        public Guid? CoverMediaId { get; init; }
     }
 }

@@ -1,29 +1,18 @@
 namespace Krea.API.Contracts {
-    public sealed class CreatePostUploadRequest {
-        public IFormFile File { get; init; } = null!;
+    public sealed class CreatePostUploadRequest
+    {
+        public IFormFile File { get; set; } = default!;
+        public IFormFile? Cover { get; set; }
 
-        public string Type { get; init; } = null!;
-        public string Title { get; init; } = null!;
-        public string? Description { get; init; }
+        public string Type { get; set; } = default!;
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public IReadOnlyCollection<Guid>? GenreIds { get; set; }
 
-        public List<Guid>? GenreIds { get; init; }
+        public string? SortTitle { get; set; }
+        public string? Subtitle { get; set; }
+        public string? LanguageCode { get; set; }
 
-        public bool IsWorkMedia { get; init; }
-
-        // Image
-        public int? Width { get; init; }
-        public int? Height { get; init; }
-        public long? FileSize { get; init; }
-        public string? Format { get; init; }
-
-        // Music
-        public int? BitrateKbps { get; init; }
-        public int? DurationSec { get; init; }
-
-        // Text
-        public string? SortTitle { get; init; }
-        public string? Subtitle { get; init; }
-        public string LanguageCode { get; init; }
-        public int? WordCount { get; init; }
+        public bool IsWorkMedia { get; set; }
     }
 }

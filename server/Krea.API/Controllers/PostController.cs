@@ -234,8 +234,13 @@ namespace Krea.API.Controllers {
             Guid postId,
             [FromBody] RepostPostCommand command,
             CancellationToken cancellationToken) {
+            Guid currentUserId = GetCurrentUserId();
+
             Guid repostId = await _sender.Send(
-                command with { OriginalPostId = postId },
+                command with {
+                    OriginalPostId = postId,
+                    AuthorId = currentUserId
+                },
                 cancellationToken);
 
             return CreatedAtAction(
@@ -292,7 +297,7 @@ namespace Krea.API.Controllers {
         /// Uploads media content associated with a post.
         /// </summary>
         /// <param name="postId">Identifier of the post where the media will be attached.</param>
-        /// <param name="request">Request containing file and metadata information.</param>
+        /// <param name="request">Request containing file and editorial metadata information.</param>
         /// <param name="cancellationToken">Token used to cancel the request.</param>
         /// <returns>
         /// Returns the result of the upload operation, including metadata about the uploaded media.
@@ -302,12 +307,14 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> CreateUpload(
             Guid postId,
             [FromForm] CreatePostUploadRequest request,
-            CancellationToken cancellationToken) {
-            await using Stream stream = request.File.OpenReadStream();
+            CancellationToken cancellationToken)
+        {
+            await using Stream fileStream = request.File.OpenReadStream();
+            await using Stream? coverStream = request.Cover?.OpenReadStream();
 
             var command = new CreatePostUploadCommand(
                 postId,
-                stream,
+                fileStream,
                 request.File.FileName,
                 request.File.ContentType,
                 request.File.Length,
@@ -315,17 +322,14 @@ namespace Krea.API.Controllers {
                 request.Title,
                 request.Description,
                 request.GenreIds,
-                request.Width,
-                request.Height,
-                request.FileSize,
-                request.Format,
-                request.BitrateKbps,
-                request.DurationSec,
-                request.WordCount,
-                request.LanguageCode,
                 request.SortTitle,
                 request.Subtitle,
-                request.IsWorkMedia
+                request.LanguageCode,
+                request.IsWorkMedia,
+                coverStream,
+                request.Cover?.FileName,
+                request.Cover?.ContentType,
+                request.Cover?.Length
             );
 
             CreatePostUploadResponse result = await _sender.Send(command, cancellationToken);
@@ -407,6 +411,14 @@ namespace Krea.API.Controllers {
                 cancellationToken);
 
             return NoContent();
+        }
+        
+        [HttpGet("hashtags")]
+        [Authorize]
+        public async Task<IActionResult> GetAllHashtags()
+        {
+            var result = await _sender.Send(new GetAllHashtagsQuery());
+            return Ok(result);
         }
         
         [HttpPost("{postId}/favorite")]

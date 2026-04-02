@@ -16,5 +16,20 @@ namespace Krea.Domain.Repositories {
         Task AddAsync(PostModerationReport report, CancellationToken cancellationToken = default);
 
         Task UpdateAsync(PostModerationReport report, CancellationToken cancellationToken = default);
+
+        Task<bool> ExistsPendingByPostAndReporterAsync(
+            Guid postId,
+            Guid reporterUserId,
+            CancellationToken cancellationToken = default);
+        
+        Task<IReadOnlyList<PostModerationReport>> GetByReporterPagedAsync(
+            Guid reporterUserId,
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken = default);
+
+        Task<int> CountByReporterAsync(
+            Guid reporterUserId,
+            CancellationToken cancellationToken = default);
     }
 }

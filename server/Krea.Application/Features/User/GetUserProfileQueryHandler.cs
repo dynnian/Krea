@@ -4,29 +4,42 @@ namespace Krea.Application.Features.User {
     using Domain.Abstractions;
     using Domain.Repositories;
 
-    public sealed class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, UserDto?> {
+    public sealed class GetUserProfileQueryHandler
+        : IRequestHandler<GetUserProfileQuery, UserProfileDto?> {
         private readonly IUserRepository _userRepository;
+        private readonly IFollowRepository _followRepository;
         private readonly IIdentityService _identityService;
 
         public GetUserProfileQueryHandler(
             IUserRepository userRepository,
+            IFollowRepository followRepository,
             IIdentityService identityService) {
             _userRepository = userRepository;
+            _followRepository = followRepository;
             _identityService = identityService;
         }
 
-        public async Task<UserDto?> Handle(
+        public async Task<UserProfileDto?> Handle(
             GetUserProfileQuery request,
             CancellationToken cancellationToken) {
-            Domain.Entities.User? domainUser = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
+            Domain.Entities.User? domainUser = await _userRepository
+                .GetByIdWithPicturesAsync(request.UserId, cancellationToken);
+
             if (domainUser is null)
                 return null;
 
             UserIdentity? identityUser = await _identityService.FindByIdAsync(request.UserId);
+
             if (identityUser is null)
                 return null;
 
-            return new UserDto(
+            int followersCount = await _followRepository
+                .GetFollowersCountAsync(request.UserId, cancellationToken);
+
+            int followingCount = await _followRepository
+                .GetFollowingCountAsync(request.UserId, cancellationToken);
+
+            return new UserProfileDto(
                 domainUser.Id,
                 identityUser.UserName,
                 identityUser.Email,
@@ -34,7 +47,11 @@ namespace Krea.Application.Features.User {
                 domainUser.Biography,
                 domainUser.LanguageCode,
                 domainUser.TimeZoneId,
-                GetRoleInt(identityUser.Roles)
+                GetRoleInt(identityUser.Roles),
+                followersCount,
+                followingCount,
+                domainUser.ProfilePicture?.Path,
+                domainUser.BannerPicture?.Path
             );
         }
     }

@@ -13,14 +13,14 @@ namespace Krea.Application.Common {
 
             ["music"] = new Rule(
                 20 * 1024 * 1024,
-                new[] { "music/mpeg", "music/wav" },
+                new[] { "audio/mpeg", "audio/wav", "audio/x-wav" },
                 new[] { ".mp3", ".wav" }
             ),
 
             ["text"] = new Rule(
                 15 * 1024 * 1024,
                 new[] { "application/pdf", "text/plain", "application/epub+zip" },
-                new[] { ".pdf", ".txt", ".epub" } 
+                new[] { ".pdf", ".txt", ".epub" }
             )
         };
 

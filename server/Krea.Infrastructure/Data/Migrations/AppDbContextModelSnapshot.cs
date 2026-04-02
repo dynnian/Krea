@@ -48,6 +48,9 @@ namespace Krea.Infrastructure.Data.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -578,7 +581,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
                     b.ToTable("payments", null, t =>
                         {
-                            t.HasCheckConstraint("CK_Payment_SingleTarget", "\r\n            (CASE WHEN \"SubscriptionId\" IS NOT NULL THEN 1 ELSE 0 END +\r\n             CASE WHEN \"DonationId\" IS NOT NULL THEN 1 ELSE 0 END +\r\n             CASE WHEN \"CommissionRequestId\" IS NOT NULL THEN 1 ELSE 0 END) = 1\r\n        ");
+                            t.HasCheckConstraint("CK_Payment_SingleTarget", "\n            (CASE WHEN \"SubscriptionId\" IS NOT NULL THEN 1 ELSE 0 END +\n             CASE WHEN \"DonationId\" IS NOT NULL THEN 1 ELSE 0 END +\n             CASE WHEN \"CommissionRequestId\" IS NOT NULL THEN 1 ELSE 0 END) = 1\n        ");
                         });
                 });
 
@@ -762,6 +765,9 @@ namespace Krea.Infrastructure.Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("CoverMediaId")
+                        .HasColumnType("uuid");
+
                     b.Property<bool>("IsWorkMedia")
                         .HasColumnType("boolean");
 
@@ -772,6 +778,8 @@ namespace Krea.Infrastructure.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CoverMediaId");
 
                     b.HasIndex("MediaId");
 
@@ -1632,6 +1640,11 @@ namespace Krea.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Krea.Domain.Entities.PostUpload", b =>
                 {
+                    b.HasOne("Krea.Domain.Entities.Media", "CoverMedia")
+                        .WithMany()
+                        .HasForeignKey("CoverMediaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Krea.Domain.Entities.Media", "Media")
                         .WithMany()
                         .HasForeignKey("MediaId")
@@ -1643,6 +1656,8 @@ namespace Krea.Infrastructure.Data.Migrations
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("CoverMedia");
 
                     b.Navigation("Media");
 

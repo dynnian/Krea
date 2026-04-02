@@ -21,6 +21,27 @@ html, body, #root {
   overflow-x: hidden;
   background-color: #E3E2DE;
 }
+.custom-modal .ant-modal-content {
+  background: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+.custom-modal .ant-modal-header {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.custom-modal .ant-modal-body {
+  padding: 0 !important;
+}
+
+.custom-modal .ant-modal-footer {
+  display: none !important;
+}
 
 .krea-tabs .ant-tabs-nav {
   margin-bottom: 0 !important;
@@ -39,6 +60,45 @@ html, body, #root {
   border-top: 0 !important;
 }
 
+.krea-cancel-button {
+  border-color: #e19494;
+  color: #7e2929;
+  background: #f3f3f1;
+  cursor: pointer;
+}
+
+.krea-cancel-button:hover {
+  border-color: #000000 !important; 
+  color: #f3f3f1 !important;
+  background: #AB1313 !important;
+}
+
+.krea-cancel-button:active {
+  border-color: #AB1313 !important;
+  background: #f3f3f1 !important;
+  color: #AB1313 !important;
+  transition: background 1.0s ease;
+}
+
+.krea-save-button {
+  border-color: #1b1c1e;
+  background: #0b5107;
+  color: #f3f3f1;
+  cursor: pointer;
+}
+
+.krea-save-button:hover {
+  background: #093B05 !important;
+  color: #f3f3f1 !important;
+  border-color: #000000 !important
+}
+
+.krea-save-button:active {
+  border-color: #0b5107 !important;
+  background: #f3f3f1 !important;
+  color: #0b5107 !important;
+  transition: background 0.0s ease;
+}
 
 
 /* 3. NO modifiques clases de Ant Design aquí */

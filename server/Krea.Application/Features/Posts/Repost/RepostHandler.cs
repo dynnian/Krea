@@ -2,9 +2,8 @@ namespace Krea.Application.Features.Posts.Repost {
     using Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;
-    using Dto;
 
-    public sealed class RepostHandler 
+    public sealed class RepostHandler
         : IRequestHandler<RepostPostCommand, Guid>
     {
         private readonly IPostRepository _postRepository;
@@ -26,18 +25,37 @@ namespace Krea.Application.Features.Posts.Repost {
                 .GetByIdAsync(command.OriginalPostId, cancellationToken);
 
             if (original is null)
-                throw new Exception("Post not found");
+                throw new InvalidOperationException("Original post not found");
+
+            if (original.IsDeleted)
+                throw new InvalidOperationException("Cannot repost a deleted post");
+
+            if (original.RepostOfId.HasValue)
+                throw new InvalidOperationException("Cannot repost a repost");
+
+            if (original.AuthorPostId == command.AuthorId)
+                throw new InvalidOperationException("You cannot repost your own post");
+
+            Guid repostTargetId = original.RepostOfId ?? original.Id;
+
+            bool alreadyReposted = await _postRepository.ExistsRepostAsync(
+                repostTargetId,
+                command.AuthorId,
+                cancellationToken);
+
+            if (alreadyReposted)
+                throw new InvalidOperationException("You have already reposted this post");
 
             var repost = new Post(
                 command.AuthorId,
                 original.Type,
                 original.Title,
-                original.Content ?? "",
+                original.Content ?? string.Empty,
                 original.IsWork,
-                true
+                original.IsLocal
             );
 
-            repost.Repost(original.Id);
+            repost.Repost(repostTargetId);
 
             await _postRepository.AddAsync(repost, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

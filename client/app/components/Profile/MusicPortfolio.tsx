@@ -8,7 +8,7 @@ import {
   type MusicAlbum,
   type MusicSong,
   type AlbumTrack,
-} from "../../data/musicPortfolioMock";
+} from "../../data/musicPortfolioMock.ts";
 
 type MusicPortfolioProps = {
   initialTab?: "songs" | "albums";

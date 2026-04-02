@@ -21,9 +21,16 @@ namespace Krea.Infrastructure.Repositories {
                 .FirstOrDefaultAsync(h => h.Id == id, ct);
         }
 
-        public async Task<Hashtag?> GetByNameAsync(
-            string name,
+        public async Task<List<Hashtag>> GetByNamesAsync(
+            IEnumerable<string> names,
             CancellationToken ct = default)
+        {
+            return await _context.Hashtags
+                .Where(h => names.Contains(h.Name))
+                .ToListAsync(ct);
+        }
+        
+        public async Task<Hashtag?> GetBySingleNameAsync(string name, CancellationToken ct)
         {
             return await _context.Hashtags
                 .FirstOrDefaultAsync(h => h.Name == name, ct);
@@ -35,6 +42,15 @@ namespace Krea.Infrastructure.Repositories {
         {
             await _context.Hashtags.AddAsync(hashtag, ct);
         } 
+        
+        public async Task<IReadOnlyList<Hashtag>> GetAllAsync(
+            CancellationToken ct = default)
+        {
+            return await _context.Hashtags
+                .AsNoTracking()
+                .OrderBy(h => h.Name)
+                .ToListAsync(ct);
+        }
     } 
 }
     

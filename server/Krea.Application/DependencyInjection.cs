@@ -51,6 +51,8 @@ namespace Krea.Application {
     using Features.Posts.ReplyPost;
     using Features.Posts.ReplyPost.GetReplies;
     using Features.Posts.Repost;
+    using Features.Posts.UserReports;
+    using Features.User.GetReportsByUser;
 
     public static class DependencyInjection {
         public static IServiceCollection AddApplication(this IServiceCollection services) {
@@ -68,8 +70,12 @@ namespace Krea.Application {
             //User
             services.AddScoped<IRequestHandler<FollowUserCommand, Unit>, FollowUserHandler>();
             services.AddScoped<IRequestHandler<UnfollowUserCommand, Unit>, UnfollowUserHandler>();
-            services.AddScoped<IRequestHandler<GetUserProfileQuery, UserDto?>, GetUserProfileQueryHandler>();
+            services.AddScoped<IRequestHandler<GetUserProfileQuery, UserProfileDto?>, GetUserProfileQueryHandler>();
+            services.AddScoped<IRequestHandler<GetPublicUserProfileQuery, PublicUserProfileResponse?>, GetPublicUserProfileQueryHandler>();
             services.AddScoped<IRequestHandler<UpdateUserProfileCommand, UserDto>, UpdateUserProfileCommandHandler>();
+            services.AddScoped<IRequestHandler<GetPublicUserProfileQuery, PublicUserProfileResponse?>, GetPublicUserProfileQueryHandler>();
+            services.AddScoped<IRequestHandler<GetFollowersQuery, FollowListResponse>, GetFollowersQueryHandler>();
+            services.AddScoped<IRequestHandler<GetFollowingUsersQuery, FollowListResponse>, GetFollowingUsersQueryHandler>();
 
             // Admin
             services.AddScoped<IRequestHandler<GetAdminUsersQuery, AdminUsersPageDto>, GetAdminUsersHandler>();
@@ -113,11 +119,15 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<AssignGenresToUploadCommand, Unit>, AssignGenresToUploadHandler>();
             services.AddScoped<IRequestHandler<AddHashtagCommand, Unit>, AddHashtagHandler>();
             services.AddScoped<IRequestHandler<RemoveHashtagCommand, Unit>, RemoveHashtagHandler>();
+            services.AddScoped<IRequestHandler<GetAllHashtagsQuery, IReadOnlyList<Hashtag>>, GetAllHashtagsHandler>();
             services.AddScoped<IRequestHandler<AddPostToFavoritesCommand, bool>, AddPostToFavoritesHandler>();
             services.AddScoped<IRequestHandler<RemovePostFromFavoritesCommand, bool>, RemovePostFromFavoritesHandler>();
             services.AddScoped<IRequestHandler<GetUserFavoritesQuery, PaginatedList<Post>>, GetUserFavoritesHandler>();
             services.AddScoped<IRequestHandler<TogglePostFavoriteCommand, bool>, TogglePostFavoriteHandler>();
 
+            // Reports
+            services.AddScoped<IRequestHandler<CreatePostModerationReportCommand, CreatePostModerationReportResponse>, CreatePostModerationReportHandler>();
+            services.AddScoped< IRequestHandler<GetMyPostModerationReportsQuery, GetMyPostModerationReportsResponse>, GetMyPostModerationReportsHandler>();
             
             services.AddScoped<ISender, Sender>();
             

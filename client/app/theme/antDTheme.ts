@@ -15,7 +15,7 @@ export const antdTheme: ThemeConfig = {
     colorTextDisabled: "#9CA3AF",
 
     // Backgrounds
-    colorBgBase: "#E3E2DE",
+    colorBgBase: "#E8F1FC",
     colorBgLayout: "#F5F5F5",
     colorBgContainer: "#FFFFFF",
 

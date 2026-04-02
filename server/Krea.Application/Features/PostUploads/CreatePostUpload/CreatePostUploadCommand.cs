@@ -8,18 +8,16 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
         string ContentType,
         long Size,
         string Type,
-        string Title,
+        string? Title,
         string? Description,
-        List<Guid>? GenreIds,
-        int? Width,
-        int? Height,
-        long? FileSize,
-        string? Format,
-        int? BitrateKbps,
-        int? DurationSec,
-        int? WordCount,
-        string? LanguageCode,
+        IReadOnlyCollection<Guid>? GenreIds,
         string? SortTitle,
         string? Subtitle,
-        bool IsWorkMedia
-    ) : IRequest<CreatePostUploadResponse>;}
+        string? LanguageCode,
+        bool IsWorkMedia,
+        Stream? CoverStream,
+        string? CoverFileName,
+        string? CoverContentType,
+        long? CoverSize
+    ) : IRequest<CreatePostUploadResponse>;
+}

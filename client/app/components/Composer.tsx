@@ -8,7 +8,7 @@ import { User, Image, Music, FileText } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { postsApi } from "../services/postsService";
 import type { PostDto } from "../types/api";
-import CreatePortfolioPostModal from "@/components/Posts/CreatePortfolioPostModal.tsx"; // asegurar la ruta correcta
+import CreatePortfolioPostModal from "@/components/Posts/CreatePortfolioPostModal.tsx"; 
 import { PostType } from "../types/common";
 
 const { TextArea } = Input;
@@ -115,6 +115,7 @@ export default function Composer({ onPost }: ComposerProps) {
             <div className="flex justify-between items-center mt-4">
               <div className="flex gap-2">
                 <button
+                  type="button"
                   onClick={() => setModalVisible(true)}
                   className="p-2 hover:bg-[#E3E2DE] rounded-full transition"
                   title={t("createPost.image")}
@@ -122,6 +123,7 @@ export default function Composer({ onPost }: ComposerProps) {
                   <Image size={20} className="text-[#1B1C1E]" />
                 </button>
                 <button
+                  type="button"
                   onClick={() => setModalVisible(true)}
                   className="p-2 hover:bg-[#E3E2DE] rounded-full transition"
                   title={t("createPost.music")}
@@ -129,6 +131,7 @@ export default function Composer({ onPost }: ComposerProps) {
                   <Music size={20} className="text-[#1B1C1E]" />
                 </button>
                 <button
+                  type="button"
                   onClick={() => setModalVisible(true)}
                   className="p-2 hover:bg-[#E3E2DE] rounded-full transition"
                   title={t("createPost.literature")}
@@ -153,7 +156,6 @@ export default function Composer({ onPost }: ComposerProps) {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onSuccess={() => {
-          // Opcional: refrescar feed
           setModalVisible(false);
         }}
       />

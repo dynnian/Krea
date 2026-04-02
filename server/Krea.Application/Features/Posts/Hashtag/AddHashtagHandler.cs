@@ -35,7 +35,7 @@ namespace Krea.Application.Features.Posts.Hashtag {
                 throw new InvalidOperationException("Post not found");
 
             var hashtag = await _hashtagRepository
-                .GetByNameAsync(normalizedName, ct);
+                .GetBySingleNameAsync(normalizedName, ct);
 
             if (hashtag is null)
             {

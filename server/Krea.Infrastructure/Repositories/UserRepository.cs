@@ -71,5 +71,28 @@ namespace Krea.Infrastructure.Repositories {
             _context.DomainUsers.Remove(user);
             return Task.CompletedTask;
         }
+        
+        public async Task<User?> GetByIdWithPicturesAsync(
+            Guid userId,
+            CancellationToken cancellationToken = default) =>
+            await _context.DomainUsers
+                .AsNoTracking()
+                .Include(u => u.ProfilePicture)
+                .Include(u => u.BannerPicture)
+                .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+
+        public async Task<int> GetFollowersCountAsync(
+            Guid userId,
+            CancellationToken cancellationToken = default) =>
+            await _context.Set<Follow>()
+                .AsNoTracking()
+                .CountAsync(f => f.TargetId == userId, cancellationToken);
+
+        public async Task<int> GetFollowingCountAsync(
+            Guid userId,
+            CancellationToken cancellationToken = default) =>
+            await _context.Set<Follow>()
+                .AsNoTracking()
+                .CountAsync(f => f.SourceId == userId, cancellationToken);
     }
 }
