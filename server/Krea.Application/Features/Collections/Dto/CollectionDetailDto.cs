@@ -1,4 +1,6 @@
 namespace Krea.Application.Features.Collections.Dto {
+    using Domain.ValueObjects;
+
     public sealed class CollectionDetailDto
     {
         public Guid Id { get; init; }
@@ -10,6 +12,8 @@ namespace Krea.Application.Features.Collections.Dto {
         public Guid OwnerId { get; init; }
 
         public int ItemCount { get; init; }
+        
+        public CollectionType Type { get; init; }
 
         public DateTime CreatedAt { get; init; }
 

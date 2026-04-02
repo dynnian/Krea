@@ -29,6 +29,7 @@ namespace Krea.Infrastructure.Services {
                     Description = c.Description,
                     OwnerId = c.OwnerId,
                     ItemCount = c.ItemCount,
+                    Type = c.Type,
                     CreatedAt = c.CreatedAt,
                     Posts = c.Posts
                         .OrderByDescending(p => p.UploadedAt)
@@ -59,6 +60,7 @@ namespace Krea.Infrastructure.Services {
                     Id = c.Id,
                     Title = c.Title,
                     ItemCount = c.ItemCount,
+                    Type = c.Type,
                     UpdatedAt = c.UpdatedAt
                 })
                 .ToListAsync(cancellationToken);
