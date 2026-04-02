@@ -63,7 +63,8 @@
     "post_error": "Failed to create post",
     "errorLoadingFeed": "Error loading feed",
     "loginToSeeFollowing": "Log in to see who you follow",
-    "noPosts": "No posts to show"
+    "noPosts": "No posts to show",
+    "no_more_posts": "No more posts"
   },
   "post": {
     "auth_required": "You need to log in to perform this action",

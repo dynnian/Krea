@@ -63,7 +63,8 @@
     "post_error": "Error al crear la publicación",
     "errorLoadingFeed": "Error al cargar el feed",
     "loginToSeeFollowing": "Inicia sesión para ver a quienes sigues",
-    "noPosts": "No hay publicaciones para mostrar"
+    "noPosts": "No hay publicaciones para mostrar",
+    "no_more_posts": "No hay más publicaciones"
   },
   "post": {
     "auth_required": "Necesitas iniciar sesión para realizar esta acción",
