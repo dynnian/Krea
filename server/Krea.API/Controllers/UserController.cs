@@ -37,9 +37,33 @@ namespace Krea.API.Controllers {
             return NoContent();
         }
 
+        /// <summary>
+        /// Gets the profile information of the currently authenticated user.
+        /// </summary>
+        /// <remarks>
+        /// Returns the complete profile data for the authenticated user, including:
+        /// <list type="bullet">
+        /// <item><description>Username and email</description></item>
+        /// <item><description>Display name and biography</description></item>
+        /// <item><description>Language and time zone preferences</description></item>
+        /// <item><description>User role identifier</description></item>
+        /// <item><description>Followers count</description></item>
+        /// <item><description>Following count</description></item>
+        /// <item><description>Profile picture URL</description></item>
+        /// <item><description>Banner picture URL</description></item>
+        /// </list>
+        /// This endpoint is intended for the owner of the profile.
+        /// </remarks>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>Returns the authenticated user's profile information.</returns>
+        /// <response code="200">The profile was retrieved successfully.</response>
+        /// <response code="401">The request is unauthorized.</response>
+        /// <response code="404">The profile could not be found.</response>
         [HttpGet("me/profile")]
-        public async Task<ActionResult<UserDto>> GetMyProfile(CancellationToken cancellationToken) {
-            UserDto? profile = await _sender.Send(
+        public async Task<ActionResult<UserProfileDto>> GetMyProfile(
+            CancellationToken cancellationToken)
+        {
+            var profile = await _sender.Send(
                 new GetUserProfileQuery(GetCurrentUserId()),
                 cancellationToken);
 
@@ -49,22 +73,43 @@ namespace Krea.API.Controllers {
             return Ok(profile);
         }
 
+        /// <summary>
+        /// Gets the public profile information of a specific user.
+        /// </summary>
+        /// <remarks>
+        /// Returns the public profile data of the requested user, including:
+        /// <list type="bullet">
+        /// <item><description>Username</description></item>
+        /// <item><description>Display name</description></item>
+        /// <item><description>Biography</description></item>
+        /// <item><description>Language code</description></item>
+        /// <item><description>Time zone identifier</description></item>
+        /// <item><description>Followers count</description></item>
+        /// <item><description>Following count</description></item>
+        /// <item><description>Profile picture URL</description></item>
+        /// </list>
+        /// This endpoint is publicly accessible and only exposes information intended
+        /// to be visible to other users or anonymous visitors.
+        /// </remarks>
+        /// <param name="userId">The unique identifier of the user whose public profile will be retrieved.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>Returns the public profile information of the specified user.</returns>
+        /// <response code="200">The public profile was retrieved successfully.</response>
+        /// <response code="404">The specified user profile could not be found.</response>
         [AllowAnonymous]
         [HttpGet("{userId:guid}/profile")]
         public async Task<ActionResult<PublicUserProfileResponse>> GetPublicProfile(
             Guid userId,
-            CancellationToken cancellationToken) {
-            UserDto? profile = await _sender.Send(new GetUserProfileQuery(userId), cancellationToken);
+            CancellationToken cancellationToken)
+        {
+            PublicUserProfileResponse? profile = await _sender.Send(
+                new GetPublicUserProfileQuery(userId),
+                cancellationToken);
+
             if (profile is null)
                 return NotFound();
 
-            return Ok(new PublicUserProfileResponse(
-                profile.Id,
-                profile.Username,
-                profile.DisplayName,
-                profile.Biography,
-                profile.LanguageCode,
-                profile.TimeZoneId));
+            return Ok(profile);
         }
 
         [HttpPatch("me/profile")]
@@ -98,6 +143,140 @@ namespace Krea.API.Controllers {
                 return NotFound(new { error = ex.Message });
             }
         }
+        
+        /// <summary>
+        /// Gets the list of followers of the currently authenticated user.
+        /// </summary>
+        /// <remarks>
+        /// Returns a paginated list of users who follow the currently authenticated user.
+        /// Each item includes basic public profile information and whether the current user
+        /// follows that user back.
+        /// </remarks>
+        /// <param name="page">The page number to retrieve.</param>
+        /// <param name="pageSize">The number of items to retrieve per page.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>Returns a paginated list of followers for the authenticated user.</returns>
+        /// <response code="200">The followers list was retrieved successfully.</response>
+        /// <response code="401">The request is unauthorized.</response>
+        [Authorize]
+        [HttpGet("me/followers")]
+        public async Task<ActionResult<FollowListResponse>> GetMyFollowers(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            CancellationToken cancellationToken = default)
+        {
+            var currentUserId = GetCurrentUserId();
+
+            var response = await _sender.Send(
+                new GetFollowersQuery(currentUserId, currentUserId, page, pageSize),
+                cancellationToken);
+
+            return Ok(response);
+        }
+        
+        /// <summary>
+        /// Gets the list of users followed by the currently authenticated user.
+        /// </summary>
+        /// <remarks>
+        /// Returns a paginated list of users that the currently authenticated user follows.
+        /// Each item includes basic public profile information and whether the current user
+        /// follows that user.
+        /// </remarks>
+        /// <param name="page">The page number to retrieve.</param>
+        /// <param name="pageSize">The number of items to retrieve per page.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>Returns a paginated list of users followed by the authenticated user.</returns>
+        /// <response code="200">The following list was retrieved successfully.</response>
+        /// <response code="401">The request is unauthorized.</response>
+        [Authorize]
+        [HttpGet("me/following")]
+        public async Task<ActionResult<FollowListResponse>> GetMyFollowing(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            CancellationToken cancellationToken = default)
+        {
+            var currentUserId = GetCurrentUserId();
+
+            var response = await _sender.Send(
+                new GetFollowingUsersQuery(currentUserId, currentUserId, page, pageSize),
+                cancellationToken);
+
+            return Ok(response);
+        }
+        
+        /// <summary>
+        /// Gets the list of followers of a specific user.
+        /// </summary>
+        /// <remarks>
+        /// Returns a paginated list of users who follow the specified user.
+        /// This endpoint is publicly accessible. If the requester is authenticated,
+        /// each item also indicates whether the requester is following that user.
+        /// </remarks>
+        /// <param name="userId">The unique identifier of the user whose followers will be retrieved.</param>
+        /// <param name="page">The page number to retrieve.</param>
+        /// <param name="pageSize">The number of items to retrieve per page.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>Returns a paginated list of followers for the specified user.</returns>
+        /// <response code="200">The followers list was retrieved successfully.</response>
+        /// <response code="404">The specified user could not be found.</response>
+        [AllowAnonymous]
+        [HttpGet("{userId:guid}/followers")]
+        public async Task<ActionResult<FollowListResponse>> GetUserFollowers(
+            Guid userId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            CancellationToken cancellationToken = default)
+        {
+            PublicUserProfileResponse? user = await _sender.Send(
+                new GetPublicUserProfileQuery(userId),
+                cancellationToken);
+
+            if (user is null)
+                return NotFound();
+
+            var response = await _sender.Send(
+                new GetFollowersQuery(userId, TryGetCurrentUserId(), page, pageSize),
+                cancellationToken);
+
+            return Ok(response);
+        }
+        
+        /// <summary>
+        /// Gets the list of users followed by a specific user.
+        /// </summary>
+        /// <remarks>
+        /// Returns a paginated list of users that the specified user follows.
+        /// This endpoint is publicly accessible. If the requester is authenticated,
+        /// each item also indicates whether the requester is following that user.
+        /// </remarks>
+        /// <param name="userId">The unique identifier of the user whose following list will be retrieved.</param>
+        /// <param name="page">The page number to retrieve.</param>
+        /// <param name="pageSize">The number of items to retrieve per page.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>Returns a paginated list of users followed by the specified user.</returns>
+        /// <response code="200">The following list was retrieved successfully.</response>
+        /// <response code="404">The specified user could not be found.</response>
+        [AllowAnonymous]
+        [HttpGet("{userId:guid}/following")]
+        public async Task<ActionResult<FollowListResponse>> GetUserFollowing(
+            Guid userId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            CancellationToken cancellationToken = default)
+        {
+            PublicUserProfileResponse? user = await _sender.Send(
+                new GetPublicUserProfileQuery(userId),
+                cancellationToken);
+
+            if (user is null)
+                return NotFound();
+
+            var response = await _sender.Send(
+                new GetFollowingUsersQuery(userId, TryGetCurrentUserId(), page, pageSize),
+                cancellationToken);
+
+            return Ok(response);
+        }
 
         private Guid GetCurrentUserId() {
             string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -105,6 +284,15 @@ namespace Krea.API.Controllers {
                 throw new UnauthorizedAccessException("User ID not found in claims.");
 
             return userId;
+        }
+        
+        private Guid? TryGetCurrentUserId() {
+            string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (Guid.TryParse(userIdClaim, out Guid userId))
+                return userId;
+
+            return null;
         }
     }
 }

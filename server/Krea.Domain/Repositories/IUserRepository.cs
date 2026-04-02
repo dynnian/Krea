@@ -13,5 +13,9 @@ namespace Krea.Domain.Repositories {
         Task AddAsync(User user, CancellationToken cancellationToken = default);
         Task UpdateAsync(User user, CancellationToken cancellationToken = default);
         Task RemoveAsync(User user, CancellationToken cancellationToken = default);
+        Task<User?> GetByIdWithPicturesAsync(Guid userId, CancellationToken cancellationToken = default);
+        Task<int> GetFollowersCountAsync(Guid userId, CancellationToken cancellationToken = default);
+        Task<int> GetFollowingCountAsync(Guid userId, CancellationToken cancellationToken = default);
+        
     }
 }

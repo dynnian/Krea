@@ -1,27 +1,29 @@
 namespace Krea.Application.Features.User {
     using Abstractions.Identity;
-    using static Common.RoleHelper;
     using Domain.Abstractions;
     using Domain.Repositories;
 
-    public sealed class GetUserProfileQueryHandler
-        : IRequestHandler<GetUserProfileQuery, UserProfileDto?> {
+    public sealed class GetPublicUserProfileQueryHandler
+        : IRequestHandler<GetPublicUserProfileQuery, PublicUserProfileResponse?>
+    {
         private readonly IUserRepository _userRepository;
         private readonly IFollowRepository _followRepository;
         private readonly IIdentityService _identityService;
 
-        public GetUserProfileQueryHandler(
+        public GetPublicUserProfileQueryHandler(
             IUserRepository userRepository,
             IFollowRepository followRepository,
-            IIdentityService identityService) {
+            IIdentityService identityService)
+        {
             _userRepository = userRepository;
             _followRepository = followRepository;
             _identityService = identityService;
         }
 
-        public async Task<UserProfileDto?> Handle(
-            GetUserProfileQuery request,
-            CancellationToken cancellationToken) {
+        public async Task<PublicUserProfileResponse?> Handle(
+            GetPublicUserProfileQuery request,
+            CancellationToken cancellationToken)
+        {
             Domain.Entities.User? domainUser = await _userRepository
                 .GetByIdWithPicturesAsync(request.UserId, cancellationToken);
 
@@ -39,19 +41,16 @@ namespace Krea.Application.Features.User {
             int followingCount = await _followRepository
                 .GetFollowingCountAsync(request.UserId, cancellationToken);
 
-            return new UserProfileDto(
+            return new PublicUserProfileResponse(
                 domainUser.Id,
-                identityUser.UserName,
-                identityUser.Email,
+                identityUser.UserName!,
                 domainUser.DisplayName,
                 domainUser.Biography,
                 domainUser.LanguageCode,
                 domainUser.TimeZoneId,
-                GetRoleInt(identityUser.Roles),
                 followersCount,
                 followingCount,
-                domainUser.ProfilePicture?.Path,
-                domainUser.BannerPicture?.Path
+                domainUser.ProfilePicture?.Path
             );
         }
     }
