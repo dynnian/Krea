@@ -70,8 +70,12 @@ namespace Krea.Application {
             //User
             services.AddScoped<IRequestHandler<FollowUserCommand, Unit>, FollowUserHandler>();
             services.AddScoped<IRequestHandler<UnfollowUserCommand, Unit>, UnfollowUserHandler>();
-            services.AddScoped<IRequestHandler<GetUserProfileQuery, UserDto?>, GetUserProfileQueryHandler>();
+            services.AddScoped<IRequestHandler<GetUserProfileQuery, UserProfileDto?>, GetUserProfileQueryHandler>();
+            services.AddScoped<IRequestHandler<GetPublicUserProfileQuery, PublicUserProfileResponse?>, GetPublicUserProfileQueryHandler>();
             services.AddScoped<IRequestHandler<UpdateUserProfileCommand, UserDto>, UpdateUserProfileCommandHandler>();
+            services.AddScoped<IRequestHandler<GetPublicUserProfileQuery, PublicUserProfileResponse?>, GetPublicUserProfileQueryHandler>();
+            services.AddScoped<IRequestHandler<GetFollowersQuery, FollowListResponse>, GetFollowersQueryHandler>();
+            services.AddScoped<IRequestHandler<GetFollowingUsersQuery, FollowListResponse>, GetFollowingUsersQueryHandler>();
 
             // Admin
             services.AddScoped<IRequestHandler<GetAdminUsersQuery, AdminUsersPageDto>, GetAdminUsersHandler>();
