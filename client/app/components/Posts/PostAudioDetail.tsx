@@ -1,4 +1,3 @@
-// components/Posts/PostAudioDetail.tsx
 import { useRef, useEffect, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { Play, Pause } from 'lucide-react';
@@ -12,14 +11,19 @@ export default function PostAudioDetail({ post }: PostAudioDetailProps) {
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const audioMedia = post.media.find(m => m.mimeType.startsWith('audio/'));
+  // Incluye "music/mpeg" además de "audio/"
+  const audioMedia = post.media.find(
+    m => m.mimeType.startsWith('audio/') || m.mimeType === 'music/mpeg'
+  );
   const audioUrl = audioMedia?.url;
   const albumArt = post.media.find(m => m.mimeType.startsWith('image/'))?.url;
 
   useEffect(() => {
     if (!waveformRef.current || !audioUrl) return;
 
+    setError(null);
     wavesurferRef.current = WaveSurfer.create({
       container: waveformRef.current,
       waveColor: '#1351AA',
@@ -34,6 +38,7 @@ export default function PostAudioDetail({ post }: PostAudioDetailProps) {
     wavesurferRef.current.on('finish', () => setIsPlaying(false));
     wavesurferRef.current.on('error', (err) => {
       console.error('WaveSurfer error:', err);
+      setError('No se pudo cargar el audio');
     });
 
     return () => {
@@ -42,13 +47,14 @@ export default function PostAudioDetail({ post }: PostAudioDetailProps) {
   }, [audioUrl]);
 
   const togglePlay = () => {
-    if (wavesurferRef.current) {
+    if (wavesurferRef.current && !error) {
       wavesurferRef.current.playPause();
       setIsPlaying(!isPlaying);
     }
   };
 
   if (!audioUrl) return null;
+  if (error) return <div className="text-red-500 p-4 text-center">{error}</div>;
 
   return (
     <div className="mb-6">
@@ -73,7 +79,7 @@ export default function PostAudioDetail({ post }: PostAudioDetailProps) {
                 {post.title || 'Título de la canción'}
               </h2>
               <p className="text-gray-600">
-                {`Usuario ${post.authorPostId.slice(0, 8)}`}
+                {post.authorName || `Usuario ${post.authorPostId.slice(0, 8)}`}
               </p>
             </div>
           </div>

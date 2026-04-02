@@ -22,8 +22,6 @@ export const sendMessageViaHub = async (
   content: string,
 ) => {
   const connection = await startConnection();
-  console.log("🔌 sendMessageViaHub: connection state =", connection.state);
 
   await connection.invoke("SendMessage", { senderId, receiverId, content });
-  console.log("✅ invoke completed");
 };

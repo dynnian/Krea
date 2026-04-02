@@ -1,60 +1,15 @@
 import { useEffect, useCallback, useRef, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext.tsx";
-import { useChatStore, type ChatState } from "@/store/chatStore.ts"; // Asegúrate de importar ChatState
-import type {
-  ConversationDto,
-  DirectMessageDto,
-  UIConversation,
-  UIMessage,
-} from "@/types/chat.ts";
-import dayjs from "../dayjs.ts";
-
-
-const mapConversationToUI = (dto: ConversationDto): UIConversation => {
-  let lastMessageTime = '';
-  if (dto.lastMessageAt) {
-    const date = dayjs(dto.lastMessageAt);
-    if (date.isToday()) {
-      lastMessageTime = date.format('HH:mm'); // 14:30
-    } else if (date.isYesterday()) {
-      // Usar el texto según el idioma actual de dayjs
-      lastMessageTime = dayjs.locale() === 'es' ? 'Ayer' : 'Yesterday';
-    } else {
-      lastMessageTime = date.format('DD/MM/YY'); // 15/03/26
-    }
-  }
-
-  return {
-    id: dto.conversationId,
-    user: {
-      id: dto.otherParticipantId,
-      name: dto.otherParticipantName,
-      avatar: dto.otherParticipantAvatar,
-      online: false, // pendiente del backend
-    },
-    lastMessage: dto.lastMessage?.content,
-    lastMessageTime,
-  };
-};
-
-const mapMessageToUI = (
-  dto: DirectMessageDto,
-  conversationId: string,
-): UIMessage => ({
-  id: dto.id,
-  conversationId,
-  senderId: dto.senderId,
-  text: dto.content,
-  timestamp: dto.sentAt,
-  avatar: dto.senderAvatarUrl,
-});
+import { useChatStore, type ChatState } from "@/store/chatStore.ts";
+import type { UIConversation } from "@/types/chat.ts";
 
 export function useChat() {
   const { user } = useAuth();
   const lastUserId = useRef<string | null>(null);
 
-  // 1. SELECTORES ATÓMICOS (Evitan el error de getSnapshot)
-  const conversationsDto = useChatStore(
+  // 1. SELECTORES ATÓMICOS
+  // Ahora el Store ya devuelve UIConversation y UIMessage directamente
+  const conversationsMap = useChatStore(
     (state: ChatState) => state.conversations,
   );
   const conversationIds = useChatStore(
@@ -63,7 +18,7 @@ export function useChat() {
   const currentConversationId = useChatStore(
     (state: ChatState) => state.currentConversationId,
   );
-  const allMessages = useChatStore((state: ChatState) => state.messages);
+  const allMessagesMap = useChatStore((state: ChatState) => state.messages);
   const loadingConversations = useChatStore(
     (state: ChatState) => state.loadingConversations,
   );
@@ -71,7 +26,7 @@ export function useChat() {
     (state: ChatState) => state.loadingMessages,
   );
 
-  // Acciones estables de Zustand
+  // Acciones del Store
   const setCurrentUser = useChatStore(
     (state: ChatState) => state.setCurrentUser,
   );
@@ -86,7 +41,7 @@ export function useChat() {
     (state: ChatState) => state.sendMessage,
   );
 
-  // 2. EFECTO DE CARGA CONTROLADO (Solo por ID)
+  // 2. EFECTO DE CARGA INICIAL
   useEffect(() => {
     const userId = user?.id;
     if (userId && userId !== lastUserId.current) {
@@ -96,30 +51,28 @@ export function useChat() {
     }
   }, [user?.id, setCurrentUser, loadConversations]);
 
-  // 3. MEMORIZACIÓN DE DATOS UI
+  // 3. DATOS PREPARADOS PARA LA UI
+  // Ya no necesitamos funciones de mapeo aquí, el Store ya lo hizo.
   const conversationsUI = useMemo(() => {
-    return conversationIds
-      .map((id) => conversationsDto[id])
-      .filter(Boolean)
-      .map(mapConversationToUI);
-  }, [conversationIds, conversationsDto]);
+    return conversationIds.map((id) => conversationsMap[id]).filter(Boolean);
+  }, [conversationIds, conversationsMap]);
 
   const currentConversationUI = useMemo(() => {
-    return currentConversationId && conversationsDto[currentConversationId]
-      ? mapConversationToUI(conversationsDto[currentConversationId])
+    return currentConversationId
+      ? conversationsMap[currentConversationId] || null
       : null;
-  }, [currentConversationId, conversationsDto]);
+  }, [currentConversationId, conversationsMap]);
 
   const messagesUI = useMemo(() => {
-    const currentMessagesMap = currentConversationId
-      ? allMessages[currentConversationId]
-      : null;
-    if (!currentConversationId || !currentMessagesMap) return [];
+    if (!currentConversationId) return [];
+    const currentMessages = allMessagesMap[currentConversationId] || {};
 
-    return Object.values(currentMessagesMap)
-      .sort((a, b) => a.sentAt.localeCompare(b.sentAt))
-      .map((dto) => mapMessageToUI(dto, currentConversationId));
-  }, [currentConversationId, allMessages]);
+    // Convertimos el Record a Array y ordenamos por fecha (timestamp)
+    return Object.values(currentMessages).sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    );
+  }, [currentConversationId, allMessagesMap]);
 
   const loading = useMemo(() => {
     const isMsgLoading = currentConversationId
@@ -128,7 +81,7 @@ export function useChat() {
     return loadingConversations || isMsgLoading;
   }, [loadingConversations, loadingMessagesMap, currentConversationId]);
 
-  // 4. CALLBACKS MEMORIZADOS
+  // 4. CALLBACKS
   const selectConversation = useCallback(
     async (conversation: UIConversation) => {
       setCurrentConversation(conversation.id);
@@ -140,13 +93,13 @@ export function useChat() {
   const sendMessage = useCallback(
     async (text: string) => {
       if (!currentConversationUI || !user) return;
+      // Enviamos al ID del otro participante
       await sendMessageStore(currentConversationUI.user.id, text);
-      console.log("sendMessage called with text:", text);
     },
     [currentConversationUI, user, sendMessageStore],
   );
 
-  // 5. RETURN TOTALMENTE ESTABLE
+  // 5. RETURN ESTABLE
   return useMemo(
     () => ({
       conversations: conversationsUI,
@@ -155,7 +108,7 @@ export function useChat() {
       loading,
       selectConversation,
       sendMessage,
-      loadConversations, // Lo añadimos por si ChatPage lo necesita llamar manualmente
+      loadConversations,
     }),
     [
       conversationsUI,

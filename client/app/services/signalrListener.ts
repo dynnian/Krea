@@ -27,8 +27,9 @@ export const initSignalR = (userId: string) => {
         ? message.receiverId
         : message.senderId;
 
+    // CAMBIO AQUÍ: Buscar en conv.user.id
     const conversationEntry = Object.entries(conversations).find(
-      ([_, conv]) => conv.otherParticipantId === otherId,
+      ([_, conv]) => conv.user.id === otherId,
     );
 
     if (conversationEntry) {

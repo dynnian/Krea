@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Grid, message } from "antd";
+import InfiniteScroll from "react-infinite-scroll-component";
 import { useAuth } from "../../contexts/AuthContext";
 import Composer from "../Composer";
 import FeedTabs from "../FeedTabs";
@@ -23,39 +24,58 @@ export default function Home() {
   const [posts, setPosts] = useState<PostDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  const loadMore = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      let res;
+      if (activeTab === "forYou") {
+        res = await feedApi.getRecent(user?.id, page, 10);
+      } else {
+        if (!user) {
+          setActiveTab("forYou");
+          return;
+        }
+        res = await feedApi.getFollowing(user.id, page, 10);
+      }
+      const newItems = res.data.map(feedItemToPostDto);
+      if (newItems.length === 0) {
+        setHasMore(false);
+      } else {
+        setPosts((prev) => [...prev, ...newItems]);
+        setPage((prev) => prev + 1);
+        setHasMore(newItems.length === 10);
+      }
+    } catch (err) {
+      console.error("Error loading feed:", err);
+      setError(t("home.errorLoadingFeed"));
+      message.error(t("home.errorLoadingFeed"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Recargar al cambiar de pestaña
+  const refresh = () => {
+    setPosts([]);
+    setPage(1);
+    setHasMore(true);
+    setInitialLoading(true);
+    loadMore().finally(() => setInitialLoading(false));
+  };
 
   useEffect(() => {
-    const loadFeed = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        let feedItems;
-        if (activeTab === "forYou") {
-          const res = await feedApi.getRecent(user?.id);
-          feedItems = res.data;
-        } else {
-          if (!user) {
-            setActiveTab("forYou");
-            return;
-          }
-          const res = await feedApi.getFollowing(user.id);
-          feedItems = res.data;
-        }
-        const mapped = feedItems.map(feedItemToPostDto);
-        setPosts(mapped);
-      } catch (err) {
-        console.error("Error loading feed:", err);
-        setError(t("home.errorLoadingFeed"));
-        message.error(t("home.errorLoadingFeed"));
-      } finally {
-        setLoading(false);
-      }
-    };
+    setPosts([]);
+    setPage(1);
+    setHasMore(true);
+    setInitialLoading(true);
+    loadMore().finally(() => setInitialLoading(false));
+  }, [activeTab, user]);
 
-    loadFeed();
-  }, [activeTab, user, t]);
-
-  // Si no hay usuario y la pestaña es "following", cambiar a "forYou"
   useEffect(() => {
     if (activeTab === "following" && !user) {
       setActiveTab("forYou");
@@ -69,43 +89,35 @@ export default function Home() {
 
   const handleLike = async (postId: string) => {
     console.log("Like", postId);
-    // Llamada real con postsApi.like / unlike
   };
 
   const handleRepost = async (postId: string) => {
     console.log("Repost", postId);
-    // Llamada real con postsApi.repost
   };
+
+  if (initialLoading && posts.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#E3E2DE] flex justify-center items-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1351AA]" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#E3E2DE]">
       <main className="flex justify-center px-2 sm:px-4 gap-6">
-        {/* Columna principal: feed */}
-        <div
-         className={`
-            flex-1
-            ${!isMobile
-              ? "min-w-[400px] max-w-7xl bg-[#E8F1FC] border-l-2 border-r-2 border-[#8F8E8A] px-6 py-6"
-              : "px-2 w-full"
-            }
-          `}
-        >
+        <div className={`flex-1 ${!isMobile ? "max-w-7xl mx-auto" : "w-full"} py-4`}>
           {user && <Composer onPost={handleNewPost} />}
-          <FeedTabs
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            isMobile={isMobile}
-          />
-          {loading && (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1351AA]" />
-            </div>
-          )}
-          {error && (
-            <div className="text-center py-8 text-red-500">{error}</div>
-          )}
-          {!loading && !error && (
-            <div className="space-y-4 sm:space-y-6">
+          <FeedTabs activeTab={activeTab} onTabChange={setActiveTab} />
+          <InfiniteScroll
+            dataLength={posts.length}
+            next={loadMore}
+            hasMore={hasMore}
+            loader={<div className="flex justify-center py-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#1351AA]" /></div>}
+            endMessage={<p className="text-center py-4 text-gray-500">{t("home.no_more_posts")}</p>}
+            style={{ overflow: "visible" }} // evita scroll interno conflictivo
+          >
+            <div className="space-y-6 pb-20"> {/* ← Aquí agregamos pb-20 para evitar clipping */}
               {posts.map((post) => (
                 <PostCard
                   key={post.id}
@@ -114,16 +126,9 @@ export default function Home() {
                   onRepost={handleRepost}
                 />
               ))}
-              {posts.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  {t("home.noPosts")}
-                </div>
-              )}
             </div>
-          )}
+          </InfiniteScroll>
         </div>
-
-        {/* Sidebar de tags (solo en desktop) */}
         {!isMobile && (
           <div className="w-64 shrink-0 py-2">
             <TagsSidebar />

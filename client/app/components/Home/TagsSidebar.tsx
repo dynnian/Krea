@@ -1,50 +1,18 @@
-// components/TagsSidebar.tsx
+// components/Home/TagsSidebar.tsx
 import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
-import { PostType } from "../../types/common";
 
-// Datos mock de tags por categoría (pueden venir de una API)
 const categoryTags = {
-  illustration: [
-    "#Fantasía",
-    "#Animación",
-    "#Fanart",
-    "#ConceptArt",
-    "#Inktober",
-    "#Sketch",
-  ],
-  music: [
-    "#Rock",
-    "#Pop",
-    "#Electrónica",
-    "#Jazz",
-    "#Clásica",
-    "#Indie",
-  ],
-  literature: [
-    "#Novela",
-    "#Poesía",
-    "#Cuento",
-    "#Ensayo",
-    "#Ficción",
-    "#Historia",
-  ],
+  illustration: ["#Fantasía", "#Animación", "#Fanart", "#ConceptArt", "#Inktober", "#Sketch"],
+  music: ["#Rock", "#Pop", "#Electrónica", "#Jazz", "#Clásica", "#Indie"],
+  literature: ["#Novela", "#Poesía", "#Cuento", "#Ensayo", "#Ficción", "#Historia"],
 };
 
-// Componente interno para un bloque de categoría
-const CategoryBlock = ({ 
-  title, 
-  tags, 
-  seeMoreLink 
-}: { 
-  title: string; 
-  tags: string[]; 
-  seeMoreLink: string; 
-}) => {
+const CategoryBlock = ({ title, tags, seeMoreLink }: { title: string; tags: string[]; seeMoreLink: string }) => {
   const { t } = useTranslation();
 
   return (
-    <div className="bg-[#E8F1FC] border-2 border-[#8F8E8A] rounded-lg p-4">
+    <div className="bg-[#E8F1FC] rounded-[15px] outline outline-[1.5px] outline-[#95ACCC] p-4 shadow-md">
       <h3 className="text-base font-medium text-gray-900 mb-3">{title}</h3>
       <div className="flex flex-col gap-1">
         {tags.map((tag) => (
@@ -71,7 +39,7 @@ export default function TagsSidebar() {
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col gap-6">
+    <aside className="sticky top-[80px] h-fit flex flex-col gap-6 w-[300px]">
       <CategoryBlock
         title={t("tags.latest_illustration", "Lo último en Ilustración")}
         tags={categoryTags.illustration}
@@ -87,6 +55,6 @@ export default function TagsSidebar() {
         tags={categoryTags.literature}
         seeMoreLink="/explore?category=literature"
       />
-    </div>
+    </aside>
   );
 }

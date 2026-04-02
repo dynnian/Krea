@@ -12,4 +12,5 @@ export interface FeedItem {
   isLikedByCurrentUser: boolean;
   replyCount: number;
   repostCount: number;
+  isFavorite: boolean;
 }

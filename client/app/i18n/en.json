@@ -63,7 +63,8 @@
     "post_error": "Failed to create post",
     "errorLoadingFeed": "Error loading feed",
     "loginToSeeFollowing": "Log in to see who you follow",
-    "noPosts": "No posts to show"
+    "noPosts": "No posts to show",
+    "no_more_posts": "No more posts"
   },
   "post": {
     "auth_required": "You need to log in to perform this action",
@@ -71,7 +72,11 @@
     "repost_error": "Failed to repost. Please try again.",
     "link_copied": "Link copied to clipboard",
     "publication": "Publication",
-    "reply_placeholder": "Reply!"
+    "reply_placeholder": "Reply!",
+    "comment_success": "Comment posted successfully",
+    "comment_error": "Failed to post comment. Please try again.",
+    "bookmark_toggled": "Marcado como favorito / Eliminado de favoritos",
+    "bookmark_error": "Error al guardar en favoritos"
   },
   "tags": {
     "latest_illustration": "Latest in Illustration",
@@ -98,7 +103,8 @@
     "results": "results",
     "fromLastMonth": "from last month",
     "saveChanges": "Save Changes",
-    "saveSettings": "Save Settings"
+    "saveSettings": "Save Settings",
+    "loading": "Loading..."
   },
   "explore": {
     "tabs": {
@@ -236,7 +242,8 @@
     "offline": "Offline",
     "select_conversation": "Select a conversation to start chatting",
     "start_messaging": "Start messaging...",
-    "conversations": "Conversations"
+    "conversations": "Conversations",
+    "search_placeholder": "Search..."
   },
   "createPost": {
     "authRequired": "You must be logged in",

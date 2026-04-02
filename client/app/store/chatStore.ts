@@ -1,17 +1,18 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import type { ConversationDto, DirectMessageDto } from "../types/chat";
+import type { ConversationDto, DirectMessageDto, UIConversation, UIMessage } from "../types/chat";
 import {
   fetchConversations,
   fetchMessages,
   sendMessageRest,
 } from "../services/conversations";
 import { sendMessageViaHub } from "../services/signalr/chatHub";
+import { mapConversationToUI, mapMessageToUI } from "../utils/DMMapper.ts";
 
 export interface ChatState {
-  conversations: Record<string, ConversationDto>;
+  conversations: Record<string, UIConversation>;
   conversationIds: string[];
-  messages: Record<string, Record<string, DirectMessageDto>>;
+  messages: Record<string, Record<string, UIMessage>>;
   currentConversationId: string | null;
   currentUserId: string | null;
   loadingConversations: boolean;
@@ -41,58 +42,57 @@ export const useChatStore = create<ChatState>()(
 
       addConversation: (conversation: ConversationDto) => {
         set((state) => {
-          if (state.conversations[conversation.conversationId]) return state;
+          const uiConv = mapConversationToUI(conversation);
+          if (state.conversations[uiConv.id]) return state;
+
           return {
-            conversations: {
-              ...state.conversations,
-              [conversation.conversationId]: conversation,
-            },
-            conversationIds: [
-              conversation.conversationId,
-              ...state.conversationIds,
-            ],
+            conversations: { ...state.conversations, [uiConv.id]: uiConv },
+            conversationIds: [uiConv.id, ...state.conversationIds],
           };
         });
       },
 
       loadConversations: async () => {
-        console.log("🟡 loadConversations started");
         set({ loadingConversations: true });
         try {
           const data = await fetchConversations();
-          console.log("🟢 fetchConversations succeeded", data);
-          const entities: Record<string, ConversationDto> = {};
+          const entities: Record<string, UIConversation> = {};
           const ids: string[] = [];
-          data.forEach((conv) => {
-            entities[conv.conversationId] = conv;
-            ids.push(conv.conversationId);
+
+          data.forEach((dto) => {
+            // USAR EL MAPPER AQUÍ
+            const uiConv = mapConversationToUI(dto);
+            entities[uiConv.id] = uiConv;
+            ids.push(uiConv.id);
           });
-          ids.sort((a, b) =>
-            (entities[b].lastMessageAt || "").localeCompare(
-              entities[a].lastMessageAt || "",
-            ),
-          );
+
           set({ conversations: entities, conversationIds: ids });
-        } catch (error) {
-          console.error("🔴 fetchConversations failed", error);
         } finally {
-          console.log("🔵 finally: setting loadingConversations = false");
           set({ loadingConversations: false });
         }
       },
 
-      loadMessages: async (conversationId) => {
+      loadMessages: async (conversationId: string) => {
         set((state) => ({
           loadingMessages: { ...state.loadingMessages, [conversationId]: true },
         }));
         try {
-          const msgs = await fetchMessages(conversationId);
-          const messageMap: Record<string, DirectMessageDto> = {};
-          msgs.forEach((msg) => {
-            messageMap[msg.id] = msg;
-          });
+          const apiMessages = await fetchMessages(conversationId);
+
+          // MAPEO AQUÍ
+          const uiMessages = apiMessages.reduce(
+            (acc, msg) => {
+              acc[msg.id] = mapMessageToUI(msg, conversationId);
+              return acc;
+            },
+            {} as Record<string, UIMessage>,
+          );
+
           set((state) => ({
-            messages: { ...state.messages, [conversationId]: messageMap },
+            messages: {
+              ...state.messages,
+              [conversationId]: uiMessages,
+            },
           }));
         } finally {
           set((state) => ({
@@ -104,23 +104,31 @@ export const useChatStore = create<ChatState>()(
         }
       },
 
-      addMessage: (conversationId, message) => {
+      addMessage: (conversationId: string, message: DirectMessageDto) => {
         set((state) => {
-          if (state.messages[conversationId]?.[message.id]) return state;
+          const uiMessage = mapMessageToUI(message, conversationId);
+          const conversationMessages = state.messages[conversationId] || {};
+
           const newMessages = {
             ...state.messages,
             [conversationId]: {
-              ...(state.messages[conversationId] || {}),
-              [message.id]: message,
+              ...conversationMessages,
+              [uiMessage.id]: uiMessage,
             },
           };
+
           const conversation = state.conversations[conversationId];
           if (conversation) {
-            const updatedConversation = {
+            // Actualizamos el objeto UIConversation
+            const updatedConversation: UIConversation = {
               ...conversation,
-              lastMessage: message,
-              lastMessageAt: message.sentAt,
+              lastMessage: uiMessage.text,
+              lastMessageTime: new Date(message.sentAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
             };
+
             return {
               messages: newMessages,
               conversations: {
@@ -147,7 +155,6 @@ export const useChatStore = create<ChatState>()(
           await sendMessageViaHub(currentUserId, receiverId, content);
           // No agregamos mensaje optimista; el real vendrá por SignalR
         } catch (error) {
-          console.warn("SignalR failed, falling back to REST", error);
           try {
             const sent = await sendMessageRest(receiverId, content);
             // Si usas REST como fallback, agregas el mensaje devuelto

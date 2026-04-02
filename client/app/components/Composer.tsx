@@ -1,12 +1,15 @@
+// components/Composer.tsx
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router";
 import { Avatar, Button, Input, message } from "antd";
-import { User } from "lucide-react";
+import { User, Image, Music, FileText } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { postsApi } from "../services/postsService";
 import type { PostDto } from "../types/api";
+import CreatePortfolioPostModal from "@/components/Posts/CreatePortfolioPostModal.tsx"; 
+import { PostType } from "../types/common";
 
 const { TextArea } = Input;
 
@@ -23,6 +26,7 @@ export default function Composer({ onPost }: ComposerProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const { control, handleSubmit, reset } = useForm<ComposerForm>({
     defaultValues: { content: "" },
@@ -58,9 +62,9 @@ export default function Composer({ onPost }: ComposerProps) {
         authorPostId: user.id,
         author: {
           id: user.id,
-          username: user.handle || user.email.split('@')[0],
-          displayName: user.name || user.handle || user.email.split('@')[0],
-          avatar: undefined, // no tenemos avatar aún
+          username: user.handle || user.email.split("@")[0],
+          displayName: user.name || user.handle || user.email.split("@")[0],
+          avatar: undefined,
         },
         title: title,
         content: data.content,
@@ -87,39 +91,74 @@ export default function Composer({ onPost }: ComposerProps) {
   if (!user) return null;
 
   return (
-    <div className="flex gap-3 mb-6 p- border-black-200">
-      
-      <Avatar
-        icon={<User />}
-        size={48}
-        className="bg-[#E8F1FC] border border-gray-800"
-      />
-      <div className="flex-1">
-        <Controller
-          name="content"
-          control={control}
-          render={({ field }) => (
-            <TextArea
-              {...field}
-              placeholder={t("home.composer_placeholder")}
-              autoSize={{ minRows: 2, maxRows: 6 }}
-              bordered={false}
-              className="text-base bg-gray-50 rounded-lg p-3"
+    <>
+      <div className="bg-[#E8F1FC] rounded-[15px] outline outline-[1.5px] outline-[#95ACCC] p-[22px] shadow-md mb-6 min-h-[140px]">
+        <div className="flex items-start gap-6">
+          <Avatar
+            icon={<User />}
+            size={48}
+            className="bg-white border border-black rounded-full"
+          />
+          <div className="flex-1">
+            <Controller
+              name="content"
+              control={control}
+              render={({ field }) => (
+                <TextArea
+                  {...field}
+                  placeholder={t("home.composer_placeholder") || "¿Qué piensas?"}
+                  autoSize={{ minRows: 2, maxRows: 6 }}
+                  className="bg-[#F3F3F1] rounded-[15px] p-3 text-base border-0"
+                />
+              )}
             />
-          )}
-        />
-        <div className="flex justify-end mt-3">
-          <Button
-            type="primary"
-            onClick={handleSubmit(onSubmit)}
-            loading={submitting}
-            className="bg-[#1351AA]"
-          >
-            {t("home.post_button")}
-          </Button>
+            <div className="flex justify-between items-center mt-4">
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setModalVisible(true)}
+                  className="p-2 hover:bg-[#E3E2DE] rounded-full transition"
+                  title={t("createPost.image")}
+                >
+                  <Image size={20} className="text-[#1B1C1E]" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalVisible(true)}
+                  className="p-2 hover:bg-[#E3E2DE] rounded-full transition"
+                  title={t("createPost.music")}
+                >
+                  <Music size={20} className="text-[#1B1C1E]" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalVisible(true)}
+                  className="p-2 hover:bg-[#E3E2DE] rounded-full transition"
+                  title={t("createPost.literature")}
+                >
+                  <FileText size={20} className="text-[#1B1C1E]" />
+                </button>
+              </div>
+              <Button
+                type="primary"
+                onClick={handleSubmit(onSubmit)}
+                loading={submitting}
+                className="bg-[#0B5107] hover:bg-green-700 border border-black rounded-[55px] px-6 py-2 text-white"
+              >
+                {t("home.post_button")}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-    
+
+      <CreatePortfolioPostModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSuccess={() => {
+          setModalVisible(false);
+        }}
+      />
+    </>
   );
 }

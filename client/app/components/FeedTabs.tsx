@@ -3,57 +3,31 @@ import { useTranslation } from "react-i18next";
 interface FeedTabsProps {
   activeTab: "forYou" | "following";
   onTabChange: (tab: "forYou" | "following") => void;
-  isMobile?: boolean;
+  isMobile?: boolean; // ya no se usa en el diseño, pero se mantiene por compatibilidad
 }
 
-export default function FeedTabs({ activeTab, onTabChange, isMobile }: FeedTabsProps) {
+export default function FeedTabs({ activeTab, onTabChange }: FeedTabsProps) {
   const { t } = useTranslation();
 
-  if (isMobile) {
-    return (
-      <div className="flex border-b border-gray-200 mb-4">
-        <button
-          onClick={() => onTabChange("forYou")}
-          className={`flex-1 py-2 text-center font-medium ${
-            activeTab === "forYou"
-              ? "text-[#0B5107] border-b-2 border-[#0B5107]"
-              : "text-gray-600"
-          }`}
-        >
-          {t("home.for_you")}
-        </button>
-        <button
-          onClick={() => onTabChange("following")}
-          className={`flex-1 py-2 text-center font-medium ${
-            activeTab === "following"
-              ? "text-[#0B5107] border-b-2 border-[#0B5107]"
-              : "text-gray-600"
-          }`}
-        >
-          {t("home.following")}
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex items-center justify-center gap-12 mb-2 pb-2">
+    <div className="flex justify-center items-center gap-8 mb-6">
       <button
         onClick={() => onTabChange("forYou")}
-        className={`relative pb-2 text-base font-medium ${
+        className={`pb-1 text-base font-medium ${
           activeTab === "forYou"
-            ? "text-[#0B5107] after:absolute after:bottom-[-2px] after:left-0 after:w-full after:h-0.5 after:bg-[#0B5107]"
-            : "text-gray-700"
+            ? "text-[#0B5107] border-b-2 border-[#0B5107]"
+            : "text-[#1B1C1E]"
         }`}
       >
         {t("home.for_you")}
       </button>
+      <div className="w-px h-5 bg-[#8F8E8A]" />
       <button
         onClick={() => onTabChange("following")}
-        className={`text-base font-medium ${
+        className={`pb-1 text-base font-medium ${
           activeTab === "following"
-            ? "text-[#0B5107] border-b-2 border-[#0B5107] pb-2"
-            : "text-gray-700"
+            ? "text-[#0B5107] border-b-2 border-[#0B5107]"
+            : "text-[#1B1C1E]"
         }`}
       >
         {t("home.following")}

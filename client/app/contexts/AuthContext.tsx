@@ -119,10 +119,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setLoading(false);
   }, []);
-  useEffect(() => {
-  console.log('🟢 AuthProvider MOUNTED');
-  return () => console.log('🔴 AuthProvider UNMOUNTED');
-  }, []);
 
   const login = async (credentials: LoginDTO, rememberMe = false) => {
     try {
@@ -225,7 +221,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     stopSignalR();
 
   };
-  console.log('AuthProvider render, user reference:', user);
     const value = useMemo(() => ({
     user,
     login,

@@ -63,7 +63,8 @@
     "post_error": "Error al crear la publicación",
     "errorLoadingFeed": "Error al cargar el feed",
     "loginToSeeFollowing": "Inicia sesión para ver a quienes sigues",
-    "noPosts": "No hay publicaciones para mostrar"
+    "noPosts": "No hay publicaciones para mostrar",
+    "no_more_posts": "No hay más publicaciones"
   },
   "post": {
     "auth_required": "Necesitas iniciar sesión para realizar esta acción",
@@ -71,7 +72,11 @@
     "repost_error": "No se pudo republicar. Intenta de nuevo.",
     "link_copied": "Enlace copiado al portapapeles",
     "publication": "Publicación",
-    "reply_placeholder": "Responde!"
+    "reply_placeholder": "Responde!",
+    "comment_success": "Comentario publicado exitosamente",
+    "comment_error": "Error al publicar el comentario. Por favor, inténtalo de nuevo.",
+    "bookmark_toggled": "Marcado como favorito / Eliminado de favoritos",
+    "bookmark_error": "Error al guardar en favoritos"
   },
   "tags": {
     "latest_illustration": "Lo último en Ilustración",
@@ -98,7 +103,8 @@
     "results": "resultados",
     "fromLastMonth": "del mes pasado",
     "saveChanges": "Guardar Cambios",
-    "saveSettings": "Guardar Configuracion"
+    "saveSettings": "Guardar Configuracion",
+    "loading": "Cargando..."
   },
   "explore": {
     "tabs": {
@@ -236,7 +242,8 @@
     "offline": "Desconectado",
     "select_conversation": "Selecciona una conversación para empezar a chatear",
     "start_messaging": "Start messaging...",
-    "conversations": "Conversations"
+    "conversations": "Conversaciones",
+    "search_placeholder":"Buscar"
   },
 
   "createPost": {
