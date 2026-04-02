@@ -11,14 +11,12 @@ export const getConnection = () => {
       .withUrl(hubUrl, {
         accessTokenFactory: () => {
           const token = storage.getToken();
-          console.log('🔑 SignalR accessTokenFactory returning:', token ? 'token present' : 'NO TOKEN');
           return token ?? "";
         },
       })
       .withAutomaticReconnect()
       .build();
   }
-  console.log("Getting SignalR connection",hubUrl, connection);
   return connection;
 };
 
@@ -26,7 +24,6 @@ export const startConnection = async () => {
   const conn = getConnection();
   if (conn.state === signalR.HubConnectionState.Disconnected) {
     await conn.start();
-    console.log("SignalR connected");
   }
   return conn;
 };
