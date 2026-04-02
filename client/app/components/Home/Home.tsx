@@ -104,9 +104,9 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#E3E2DE]">
+    <div className="min-h-screen ">
       <main className="flex justify-center px-2 sm:px-4 gap-6">
-        <div className={`flex-1 ${!isMobile ? "max-w-7xl mx-auto" : "w-full"} py-4`}>
+        <div className={`flex-1 ${!isMobile ? "max-w-[870px] mx-auto" : "w-full"} py-4`}>
           {user && <Composer onPost={handleNewPost} />}
           <FeedTabs activeTab={activeTab} onTabChange={setActiveTab} />
           <InfiniteScroll
@@ -117,7 +117,7 @@ export default function Home() {
             endMessage={<p className="text-center py-4 text-gray-500">{t("home.no_more_posts")}</p>}
             style={{ overflow: "visible" }} // evita scroll interno conflictivo
           >
-            <div className="space-y-6 pb-20"> {/* ← Aquí agregamos pb-20 para evitar clipping */}
+            <div className="space-y-6 pb-6"> {/* ← Aquí agregamos pb-20 para evitar clipping */}
               {posts.map((post) => (
                 <PostCard
                   key={post.id}

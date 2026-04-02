@@ -119,7 +119,7 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
   const authorHandle = post.authorName ? `@${post.authorName}` : post.authorPostId.slice(0, 8);
 
   return (
-    <article className="bg-[#E8F1FC] rounded-[15px] outline outline-[1.5px] outline-[#95ACCC] p-[22px] shadow-[4px_4px_12.6px_rgba(0,0,0,0.25)] w-full">
+    <article className="w-full min-w-0 bg-[#E8F1FC] rounded-[15px] outline outline-[1.5px] outline-[#95ACCC] p-[22px] shadow-[4px_4px_12.6px_rgba(0,0,0,0.25)] ">
       <div className="flex gap-3">
         <Link to={`/post/${post.id}`} className="flex gap-3 flex-1">
           <Avatar
