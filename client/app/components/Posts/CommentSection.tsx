@@ -84,7 +84,7 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
 
   return (
     <div>
-      <div className="flex gap-3 mb-6">
+      <div className="flex gap-3 mb-6 bg-[#E8F1FC] px-[22px] py-[15px] border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
         <Avatar icon={<User />} size={40} className="bg-white border border-gray-800" />
         <div className="flex-1">
           <TextArea
@@ -92,9 +92,9 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
             onChange={(e) => setNewComment(e.target.value)}
             placeholder={t('post.reply_placeholder') || 'Escribe tu comentario...'}
             autoSize={{ minRows: 2, maxRows: 4 }}
-            className="bg-gray-50 rounded-lg p-3"
+            className="!bg-transparent !border-none !shadow-none !resize-none "
           />
-          <div className="flex justify-end mt-2">
+          <div className="flex justify-end mt-2 ">
             <Button type="primary" onClick={handleSubmit} loading={submitting} className="bg-[#1351AA]">
               {t('home.post_button')}
             </Button>
@@ -104,7 +104,7 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
 
       <div className="space-y-4">
         {comments.map((comment) => (
-          <div key={comment.id} className="flex gap-3">
+          <div key={comment.id} className="flex gap-3 bg-[#E8F1FC] p-[22px] border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
             <Avatar icon={<User />} size={40} className="bg-white border border-gray-800" />
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">

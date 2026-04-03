@@ -108,7 +108,7 @@ export default function Composer({ onPost }: ComposerProps) {
                   {...field}
                   placeholder={t("home.composer_placeholder") || "¿Qué piensas?"}
                   autoSize={{ minRows: 2, maxRows: 6 }}
-                  className="bg-[#F3F3F1] rounded-[15px] p-3 text-base border-0"
+                  className="!bg-transparent !border-none !shadow-none !resize-none"
                 />
               )}
             />

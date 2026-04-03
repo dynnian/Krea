@@ -731,6 +731,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, canDelete = false, onDelete }
 
   const imageMedia = post.media.find(m => isImageMime(m.media?.mimeType));
   const audioMedia = post.media.find(m => isAudioMime(m.media?.mimeType));
+  const openPostDetail = () => {
+  const targetId = post.backendId ?? String(post.id);
+    navigate(`/post/${targetId}`);
+  };
 
     const handleDeletePost = async () => {
     if (!post.backendId) {
@@ -775,13 +779,16 @@ const PostCard: React.FC<PostCardProps> = ({ post, canDelete = false, onDelete }
         />
         <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2 flex-wrap min-w-0">
-            <span className="font-medium text-gray-900">{post.author.name}</span>
-            <span className="text-gray-500">·</span>
-            <span className="text-gray-500">@{post.author.handle}</span>
-            <span className="text-gray-500">·</span>
-            <span className="text-gray-500">{formatDate(post.createdAt)}</span>
-          </div>
+        <div
+          className="flex items-center gap-2 flex-wrap min-w-0 cursor-pointer"
+          onClick={openPostDetail}
+        >
+          <span className="font-medium text-gray-900">{post.author.name}</span>
+          <span className="text-gray-500">·</span>
+          <span className="text-gray-500">@{post.author.handle}</span>
+          <span className="text-gray-500">·</span>
+          <span className="text-gray-500">{formatDate(post.createdAt)}</span>
+        </div>
 
           <Dropdown
             menu={{ items: postMenuItems, onClick: handlePostMenuClick }}

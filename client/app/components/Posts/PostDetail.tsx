@@ -167,22 +167,27 @@ export default function PostDetail() {
   const authorHandle = post.authorName ? `@${post.authorName}` : post.authorPostId.slice(0, 8);
 
   return (
-    <div className="min-h-screen bg-[#E3E2DE] py-8">
-      <main className="flex justify-center px-4">
-        <div className="flex flex-col lg:flex-row gap-6 max-w-7xl w-full">
-          <div className="w-full lg:flex-1 lg:min-w-[740px]">
-            <div className="flex items-center gap-4 mb-6">
-              <button
-                onClick={() => navigate(-1)}
-                className="p-2 hover:bg-gray-200 rounded-full transition"
-              >
-                <ArrowLeft size={24} className="text-gray-800" />
-              </button>
-              <h1 className="text-xl font-medium text-gray-800">{t('post.publication')}</h1>
-            </div>
+    <div className="min-h-screen bg-[#E3E2DE]">
+      <div className="flex items-center gap-3 my-[11px]">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center justify-center w-[32px] h-[32px] hover:bg-gray-200 rounded-full transition cursor-pointer"
+        >
+        <ArrowLeft size={24} className="text-gray-800" />
+        </button>
+        <div className="pt-[10px]">
+          <h1 className="text-xl font-medium text-gray-800 leading-none">
+            {t('post.publication')}
+          </h1>
+        </div>
+      </div>
+      <main className="flex justify-center px-0">
+        <div className="flex flex-col lg:flex-row gap-6 max-w-7xl w-full mx-auto">
+         <div className="w-full xl:w-[870px] xl:flex-none min-w-0">
+ 
 
             <div className="bg-[#E8F1FC] rounded-[15px] outline outline-[1.5px] outline-[#95ACCC] p-[22px] shadow-[4px_4px_13px_rgba(0,0,0,0.25)] mb-6">
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-start mb-[20px] ml">
                 <div className="flex gap-3">
                   <Avatar
                     icon={<User />}
@@ -196,12 +201,12 @@ export default function PostDetail() {
                     </Link>
                   </div>
                 </div>
-                <button className="p-1 hover:bg-gray-200 rounded-full">
+                <button className="hover:bg-gray-200 rounded-full">
                   <MoreHorizontal size={20} className="text-gray-500" />
                 </button>
               </div>
 
-              <p className="text-[#1B1C1E] text-justify text-[13px] leading-7 mt-4 mb-6">
+              <p className="text-[#1B1C1E] text-justify text-[16px] leading-[28px] mt-4 mb-6">
                 {post.content}
               </p>
 
@@ -224,48 +229,50 @@ export default function PostDetail() {
                 </div>
               )}
 
-              <div className="flex items-center gap-2 text-sm text-gray-600 mt-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
                 <span>{formattedTime}</span>
                 <span>·</span>
                 <span>{formattedDate}</span>
               </div>
 
-              <div className="flex items-center justify-around py-4 border-t border-b border-[#8F8E8A] mt-4">
+              
+            </div>
+
+            <div className="flex items-center justify-around py-4 border-[#8F8E8A] mb-6 bg-[#E8F1FC] px-[22px] py-[24px] border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
                 <button
                   onClick={handleLike}
                   disabled={actionLoading !== null}
-                  className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 ${
+                  className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 cursor-pointer ${
                     actionLoading === 'like' ? 'opacity-50' : ''
                   }`}
                 >
-                  <Heart size={18} className={liked ? 'fill-red-500 text-red-500' : ''} />
+                  <Heart size={22} className={liked ? 'fill-red-500 text-red-500' : ''} />
                   <span>{likesCount}</span>
                 </button>
                 <button
                   onClick={handleComment}
-                  className="flex items-center gap-2 text-gray-700 hover:text-blue-600"
+                  className="flex items-center gap-2 text-gray-700 hover:text-blue-600 cursor-pointer"
                 >
-                  <MessageCircle size={18} />
+                  <MessageCircle size={22} />
                   <span>{commentsCount}</span>
                 </button>
                 <button
                   onClick={handleRepost}
                   disabled={actionLoading !== null}
-                  className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 ${
+                  className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 cursor-pointer ${
                     actionLoading === 'repost' ? 'opacity-50' : ''
                   }`}
                 >
-                  <Repeat2 size={18} className={reposted ? 'text-green-600' : ''} />
+                  <Repeat2 size={22} className={reposted ? 'text-[#0B5107]' : ''} />
                   <span>{repostsCount}</span>
                 </button>
                 <button
                   onClick={handleBookmark}
-                  className="flex items-center gap-2 text-gray-700 hover:text-blue-600"
+                  className="flex items-center gap-2 text-gray-700 hover:text-blue-600 cursor-pointer"
                 >
-                  <Bookmark size={18} className={isBookmarked ? 'fill-green-500 text-green-500' : ''} />
+                  <Bookmark size={22} className={isBookmarked ? 'fill-[#0B5107] text-[#0B5107]' : ''} />
                 </button>
               </div>
-            </div>
 
             <CommentSection
               postId={post.id}
@@ -273,7 +280,7 @@ export default function PostDetail() {
             />
           </div>
 
-          <div className="hidden lg:block w-64 shrink-0">
+          <div className="hidden lg:block w-64 shrink-0 spt-10">
             <TagsSidebar />
           </div>
         </div>

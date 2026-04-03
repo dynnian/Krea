@@ -140,7 +140,7 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
               <span className="text-[#1B1C1E]">·</span>
               <span className="text-[#1B1C1E]">{formattedDate}</span>
             </div>
-            <p className="text-[#1B1C1E] text-justify text-[13px] leading-7 mt-1">{post.content}</p>
+            <p className="text-[#1B1C1E] text-justify text-[16px] leading-7 mt-1">{post.content}</p>
           </div>
         </Link>
         <button className="p-1 hover:bg-gray-200 rounded-full self-start">
