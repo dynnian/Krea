@@ -164,7 +164,8 @@
       "read": "Read",
       "trending_genres": "Trending genres",
       "trending_authors": "Trending authors"
-    }
+    },
+    "load_error": "Error al cargar el contenido de exploración"
   },
   "commissions": {
     "loading": "Loading commissions...",
