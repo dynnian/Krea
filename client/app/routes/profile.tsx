@@ -58,6 +58,8 @@ interface Media {
   mimeType: string;
   path: string;
   uploadedAt: string;
+  coverUrl?: string;
+  coverMediaId?: string;
 }
 
 interface PostMedia {
@@ -110,6 +112,8 @@ interface ApiPostMedia {
   mimeType: string;
   url: string;
   isWorkMedia: boolean;
+  coverUrl?: string;
+  coverMediaId?: string;
 }
 
 interface ApiPost {
@@ -372,7 +376,7 @@ function mapPostsToVisualPortfolioItems(posts: Post[]): VisualPortfolioItem[] {
       );
 
       return {
-        id: String(post.id),
+        id: String(post.backendId ?? post.id),
         title: post.title ?? 'Sin título',
         imageUrl: firstImage?.media.path ?? '',
       };
@@ -412,12 +416,13 @@ function mapPostsToMusicSongs(posts: Post[]): MusicSong[] {
       if (!audioMedia) return null;
 
       return {
-        id: String(post.id),
+        id: String(post.backendId ?? post.id),
         title: post.title ?? "Sin título",
         genre: "Sin género",
         coverUrl:
+          audioMedia?.media.coverUrl ??
           coverMedia?.media.path ??
-          "https://placehold.co/240x240?text=Cover",
+           "https://placehold.co/240x240?text=Cover",
         audioUrl: audioMedia.media.path,
       };
     })
@@ -444,7 +449,7 @@ function mapPostsToWriterWorks(posts: Post[]): WriterWork[] {
       );
 
       return {
-        id: String(post.id),
+        id: String(post.backendId ?? post.id),
         title: post.title ?? "Sin título",
         coverUrl:
           coverMedia?.media.path ??
@@ -800,8 +805,12 @@ const PostCard: React.FC<PostCardProps> = ({ post, canDelete = false, onDelete }
             </div>
           </Dropdown>
         </div>
-
-          <p className="text-gray-800 mt-1 text-sm text-justify pr-[20px] pt-[5px]">{post.content}</p>
+          <p
+            className="text-gray-800 mt-1 text-[16px] text-justify pr-[20px] pt-[5px] cursor-pointer"
+            onClick={openPostDetail}
+          >
+            {post.content}
+          </p>
           {post.type === PostType.IMAGE && post.media.length > 0 && (
             <div className="mt-3 pr-[20px]">
               {post.media.length === 1 ? (
@@ -842,7 +851,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, canDelete = false, onDelete }
             <div className="mt-3">
               <WaveformPlayer
                 audioUrl={audioMedia.media.path}
-                coverUrl={imageMedia?.media.path}
+                coverUrl={audioMedia?.media.coverUrl ?? imageMedia?.media.path}
               />
             </div>
           )}
@@ -1037,6 +1046,9 @@ function normalizeApiPosts(apiPosts: ApiPost[], displayName: string): Post[] {
           mimeType: m.mimeType,
           path: m.url,
           uploadedAt: post.createdAt,
+
+          coverUrl: m.coverUrl,
+          coverMediaId: m.coverMediaId,
         },
       })),
       likesCount: 0,
@@ -1438,6 +1450,7 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
         onClose={() => setModalVisible(false)}
         onSuccess={() => {
           setModalVisible(false);
+          window.location.reload();
         }}
       />
         </div>

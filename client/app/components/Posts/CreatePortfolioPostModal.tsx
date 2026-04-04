@@ -150,11 +150,18 @@ const getGenreLabel = () => {
 
   const handleUpload = async (postId: string, file: UploadFile) => {
     const origin = file.originFileObj;
+    console.log('Uploading file:', {
+      name: origin?.name,
+      type: origin?.type,
+      postType,
+    });
+    
     if (!origin) {
       throw new Error('No se encontró el archivo original para subir.');
     }
 
     let fileObj = origin as File;
+    /*
     if (postType === PostType.MUSIC) {
       if (fileObj.type === 'audio/mpeg') {
         const arrayBuffer = await fileObj.arrayBuffer();
@@ -166,6 +173,7 @@ const getGenreLabel = () => {
         fileObj = new File([newBlob], fileObj.name, { type: 'music/wav' });
       }
     }
+      */
     const uploadData: UploadMediaData = {
         File: fileObj,
         Type: postType,
@@ -175,7 +183,6 @@ const getGenreLabel = () => {
         LanguageCode: user?.languageCode || 'es',
         // GenreIds: selectedGenreIds,
     };
-
     // Metadatos según tipo
     if (postType === PostType.IMAGE) {
         const img = new Image();
@@ -193,17 +200,23 @@ const getGenreLabel = () => {
         uploadData.Format = file.name.split('.').pop() || 'mp3';
         uploadData.FileSize = fileObj.size;
     } else if (postType === PostType.TEXT) {
-  const text = await fileObj.text();
-  const words = text.split(/\s+/).length;
-  uploadData.WordCount = words;
   uploadData.SortTitle = title;
   uploadData.Subtitle = '';
   uploadData.Format = file.name.split('.').pop() || 'txt';
   uploadData.FileSize = fileObj.size;
+
+  if (fileObj.type === 'text/plain') {
+    const text = await fileObj.text();
+    const words = text.split(/\s+/).filter(Boolean).length;
+    uploadData.WordCount = words;
+  }
 }
 
     await postsApi.uploadMedia(postId, uploadData);
-    };
+    
+  };
+
+
 
   const handleSubmit = async () => {
     if (!user) {
@@ -232,6 +245,7 @@ const getGenreLabel = () => {
 
       const response: any = await postsApi.createPost(createData);
       console.log("Respuesta createPost:", response);
+      
 
       const postId =
         response?.data?.postId ||
@@ -259,6 +273,8 @@ const getGenreLabel = () => {
 
     } catch (error) {
       console.error('Error al crear post:', error);
+      console.error('response data:', (error as any)?.response?.data);
+      console.error('response status:', (error as any)?.response?.status);
       message.error(t('createPost.error'));
     } finally {
       setLoading(false);

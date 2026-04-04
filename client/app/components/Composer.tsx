@@ -117,7 +117,7 @@ export default function Composer({ onPost }: ComposerProps) {
                 <button
                   type="button"
                   onClick={() => setModalVisible(true)}
-                  className="p-2 hover:bg-[#E3E2DE] rounded-full transition"
+                  className="p-2 hover:bg-[#E3E2DE] rounded-full transition cursor-pointer"
                   title={t("createPost.image")}
                 >
                   <Image size={20} className="text-[#1B1C1E]" />
@@ -125,7 +125,7 @@ export default function Composer({ onPost }: ComposerProps) {
                 <button
                   type="button"
                   onClick={() => setModalVisible(true)}
-                  className="p-2 hover:bg-[#E3E2DE] rounded-full transition"
+                  className="p-2 hover:bg-[#E3E2DE] rounded-full transition cursor-pointer"
                   title={t("createPost.music")}
                 >
                   <Music size={20} className="text-[#1B1C1E]" />
@@ -133,7 +133,7 @@ export default function Composer({ onPost }: ComposerProps) {
                 <button
                   type="button"
                   onClick={() => setModalVisible(true)}
-                  className="p-2 hover:bg-[#E3E2DE] rounded-full transition"
+                  className="p-2 hover:bg-[#E3E2DE] rounded-full transition cursor-pointer"
                   title={t("createPost.literature")}
                 >
                   <FileText size={20} className="text-[#1B1C1E]" />
