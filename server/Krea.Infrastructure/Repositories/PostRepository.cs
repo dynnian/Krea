@@ -91,6 +91,8 @@ namespace Krea.Infrastructure.Repositories {
                 .Include(p => p.AuthorPost)
                 .Include(p => p.Uploads)
                 .ThenInclude(u => u.Media)
+                .Include(p => p.Uploads)
+                .ThenInclude(u => u.CoverMedia)
                 .Include(p => p.Hashtags)
                 .ToListAsync(cancellationToken);
         }
