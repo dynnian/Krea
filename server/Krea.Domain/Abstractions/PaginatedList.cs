@@ -37,5 +37,14 @@ namespace Krea.Domain.Abstractions {
 
             return new PaginatedList<T>(items, count, page, pageSize);
         }
+
+        public static PaginatedList<T> FromItems(
+            IReadOnlyList<T> items,
+            int totalCount,
+            int page,
+            int pageSize)
+        {
+            return new PaginatedList<T>(items, totalCount, page, pageSize);
+        }
     }
 }
