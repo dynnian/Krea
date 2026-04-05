@@ -19,11 +19,48 @@ export type WriterWork = {
 
 const WriterCard: React.FC<{ work: WriterWork }> = ({ work }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const descriptionRef = useRef<HTMLParagraphElement | null>(null);
   const [showReadMore, setShowReadMore] = useState(false);
+  const [liked, setLiked] = useState(work.isLiked);
+  const [likesCount, setLikesCount] = useState(work.likesCount);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const openPostDetail = () => {
     navigate(`/post/${work.postId}`);
+  };
+
+  const requireAuth = () => {
+    if (!user) {
+      message.warning("Debes iniciar sesión para dar like.");
+      navigate("/login");
+      return false;
+    }
+    return true;
+  };
+
+  const handleLike = async () => {
+    if (!requireAuth() || actionLoading) return;
+
+    setActionLoading(true);
+    const wasLiked = liked;
+
+    setLiked(!wasLiked);
+    setLikesCount((prev) => (wasLiked ? prev - 1 : prev + 1));
+
+    try {
+      if (wasLiked) {
+        await postsApi.unlike(work.postId, { postId: work.postId, userId: user!.id });
+      } else {
+        await postsApi.like(work.postId, { postId: work.postId, userId: user!.id });
+      }
+    } catch {
+      setLiked(wasLiked);
+      setLikesCount((prev) => (wasLiked ? prev + 1 : prev - 1));
+      message.error("No se pudo actualizar el like.");
+    } finally {
+      setActionLoading(false);
+    }
   };
 useEffect(() => {
   const el = descriptionRef.current;
@@ -104,12 +141,14 @@ useEffect(() => {
 							<Bookmark size={14} />
 						</button>
 
-						<button
-							type="button"
-							className="w-[24px] h-[24px] rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center"
-						>
-				    		<Heart size={14} />
-						</button>
+            <button
+              type="button"
+              onClick={handleLike}
+              disabled={actionLoading}
+              className="w-[24px] h-[24px] rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] cursor-pointer flex items-center justify-center disabled:opacity-50"
+            >
+              <Heart size={14} className={liked ? "fill-[#0B5107] text-[#0B5107]" : ""} />
+            </button>
 					</div>
 				</div>
 			</div>
