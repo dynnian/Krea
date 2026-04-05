@@ -1,6 +1,8 @@
 using Krea.Domain.Entities;
 
 namespace Krea.Domain.Repositories {
+    using Abstractions;
+
     public interface IUserRepository {
         Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
         Task<IReadOnlyList<User>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken = default);
@@ -14,8 +16,8 @@ namespace Krea.Domain.Repositories {
         Task UpdateAsync(User user, CancellationToken cancellationToken = default);
         Task RemoveAsync(User user, CancellationToken cancellationToken = default);
         Task<User?> GetByIdWithPicturesAsync(Guid userId, CancellationToken cancellationToken = default);
-        Task<int> GetFollowersCountAsync(Guid userId, CancellationToken cancellationToken = default);
-        Task<int> GetFollowingCountAsync(Guid userId, CancellationToken cancellationToken = default);
-        
+        Task<IReadOnlyList<User>> SearchByDisplayNameAsync(
+            string query,
+            CancellationToken cancellationToken = default);
     }
 }
