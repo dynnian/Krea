@@ -452,6 +452,7 @@ function mapPostsToWriterWorks(posts: Post[]): WriterWork[] {
         id: String(post.backendId ?? post.id),
         title: post.title ?? "Sin título",
         coverUrl:
+          documentMedia?.media.coverUrl ??
           coverMedia?.media.path ??
           "https://placehold.co/240x360?text=Libro",
         chaptersCount: 1,
