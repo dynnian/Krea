@@ -4,6 +4,8 @@ using Krea.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Krea.Infrastructure.Repositories {
+    using Domain.Abstractions;
+
     public sealed class UserRepository : IUserRepository {
         private readonly AppDbContext _context;
 
@@ -80,19 +82,23 @@ namespace Krea.Infrastructure.Repositories {
                 .Include(u => u.ProfilePicture)
                 .Include(u => u.BannerPicture)
                 .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        
+        public async Task<IReadOnlyList<User>> SearchByDisplayNameAsync(
+            string query,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return Array.Empty<User>();
 
-        public async Task<int> GetFollowersCountAsync(
-            Guid userId,
-            CancellationToken cancellationToken = default) =>
-            await _context.Set<Follow>()
-                .AsNoTracking()
-                .CountAsync(f => f.TargetId == userId, cancellationToken);
+            query = query.Trim();
+            string containsPattern = $"%{query}%";
 
-        public async Task<int> GetFollowingCountAsync(
-            Guid userId,
-            CancellationToken cancellationToken = default) =>
-            await _context.Set<Follow>()
+            return await _context.DomainUsers
                 .AsNoTracking()
-                .CountAsync(f => f.SourceId == userId, cancellationToken);
+                .Include(u => u.ProfilePicture)
+                .Where(u => !u.IsBanned && !u.IsDisabled)
+                .Where(u => EF.Functions.ILike(u.DisplayName, containsPattern))
+                .ToListAsync(cancellationToken);
+        }
     }
 }
