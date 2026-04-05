@@ -1,6 +1,7 @@
 namespace Krea.API.Controllers {
     using Application.Features.User;
     using Application.Features.Follows;
+    using Application.Features.User.SearchUser;
     using Contracts;
     using Domain.Abstractions;
     using Microsoft.AspNetCore.Authorization;
@@ -276,6 +277,67 @@ namespace Krea.API.Controllers {
                 cancellationToken);
 
             return Ok(response);
+        }
+        
+        /// <summary>
+        /// Searches users by username or display name.
+        /// </summary>
+        /// <param name="query">
+        /// Text used to search users. The search is case-insensitive and supports partial
+        /// matches in both username and display name.
+        /// </param>
+        /// <param name="page">The page number to retrieve. Default is 1.</param>
+        /// <param name="pageSize">The number of results per page. Default is 20.</param>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>
+        /// Returns a paginated list of matching users.
+        /// </returns>
+        /// <remarks>
+        /// This endpoint searches users using partial and case-insensitive matches on:
+        /// - Username, through the identity service
+        /// - DisplayName, through the user profile repository
+        ///
+        /// Business rules:
+        /// - Excludes banned users
+        /// - Excludes disabled users
+        /// - Supports pagination using page and pageSize
+        /// - Optionally excludes the authenticated user from the results
+        ///
+        /// Ordering priority:
+        /// 1. Exact match on Username
+        /// 2. Username starts with the query text
+        /// 3. Exact match on DisplayName
+        /// 4. DisplayName starts with the query text
+        /// 5. Partial match on DisplayName
+        /// 6. Remaining matches
+        ///
+        /// Example request:
+        ///
+        ///     GET /api/users/search?query=gabriel&page=1&pageSize=10
+        ///
+        /// </remarks>
+        /// <response code="200">Returns the paginated list of matching users.</response>
+        /// <response code="400">Returned when the query is empty or invalid.</response>
+        [HttpGet("search")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SearchUsers(
+            [FromQuery] string query,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return BadRequest("Query is required.");
+
+            var request = new SearchUsersQuery(
+                query.Trim(),
+                page,
+                pageSize,
+                TryGetCurrentUserId());
+
+            PaginatedList<UserSearchItemDto> result = await _sender.Send(request, ct);
+
+            return Ok(result);
         }
 
         private Guid GetCurrentUserId() {
