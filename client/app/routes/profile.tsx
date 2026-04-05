@@ -1,6 +1,7 @@
 // profile.tsx
 // deno-lint-ignore-file
 import React, { useEffect, useRef, useState } from 'react';
+import { postsApi } from "../services/postsService.ts";
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Avatar, Tabs, Typography, Grid, message, Spin, Dropdown } from 'antd';
@@ -8,11 +9,9 @@ import type { MenuProps } from 'antd';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import DigitalPortfolio from "../components/Profile/DigitalPortfolio.tsx";
 import MusicPortfolio from "../components/Profile/MusicPortfolio.tsx";
-import type { MusicAlbum, MusicSong } from "../data/musicPortfolioMock.ts";
-// import { digitalPortfolioMock } from "../data/digitalPortfolioMock.ts";
+import type { MusicAlbum, MusicSong } from "../components/Profile/MusicPortfolio.tsx";
 import WriterPortfolio from "../components/Profile/WriterPortfolio.tsx";
-import { postsApi } from "../services/postsService.ts";
-import type { WriterWork } from "../data/writerPortfolioMock.ts";
+import type { WriterWork } from "../components/Profile/WriterPortfolio.tsx";
 import { settingsRepository } from "../services/settingsRepository.ts";
 import CreatePortfolioPostModal from "../components/Posts/CreatePortfolioPostModal.tsx";
 import axiosClient from "../lib/axios.ts";
@@ -417,13 +416,16 @@ function mapPostsToMusicSongs(posts: Post[]): MusicSong[] {
 
       return {
         id: String(post.backendId ?? post.id),
+        postId: String(post.backendId ?? post.id),
         title: post.title ?? "Sin título",
         genre: "Sin género",
         coverUrl:
           audioMedia?.media.coverUrl ??
           coverMedia?.media.path ??
-           "https://placehold.co/240x240?text=Cover",
+          "https://placehold.co/240x240?text=Cover",
         audioUrl: audioMedia.media.path,
+        likesCount: post.likesCount ?? 0,
+        isLiked: false,
       };
     })
     .filter((song): song is MusicSong => song !== null);
@@ -450,6 +452,7 @@ function mapPostsToWriterWorks(posts: Post[]): WriterWork[] {
 
       return {
         id: String(post.backendId ?? post.id),
+        postId: String(post.backendId ?? post.id),
         title: post.title ?? "Sin título",
         coverUrl:
           documentMedia?.media.coverUrl ??
@@ -458,6 +461,8 @@ function mapPostsToWriterWorks(posts: Post[]): WriterWork[] {
         chaptersCount: 1,
         genre: "Sin género",
         description: post.content ?? "",
+        likesCount: post.likesCount ?? 0,
+        isLiked: false,
       };
     });
 }

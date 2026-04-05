@@ -1,14 +1,39 @@
-import React, { useMemo, useRef, useState } from "react";
-import { Tabs } from "antd";
-import { Bookmark, Heart, Play, Pause, Repeat2, ChevronRight } from "lucide-react";
-import AudioWaveform from "../WaveSurfer/AudioWaveform";
-import {
-  musicAlbumsMock,
-  musicSongsMock,
-  type MusicAlbum,
-  type MusicSong,
-  type AlbumTrack,
-} from "../../data/musicPortfolioMock.ts";
+// deno-lint-ignore-file
+import React, { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { message } from "antd";
+import { useAuth } from "../../contexts/AuthContext.tsx";
+import { postsApi } from "../../services/postsService.ts";
+import { Bookmark, Heart, Play, Pause } from "lucide-react";
+import AudioWaveform from "../WaveSurfer/AudioWaveform.tsx";
+
+export type MusicSong = {
+  id: string;
+  title: string;
+  postId: string;
+  genre: string;
+  coverUrl: string;
+  audioUrl: string;
+  likesCount: number;
+  isLiked: boolean;
+};
+
+export type AlbumTrack = {
+  id: string;
+  number: number;
+  title: string;
+  duration: string;
+  audioUrl: string;
+};
+
+export type MusicAlbum = {
+  id: string;
+  title: string;
+  releaseDate: string;
+  songsCount: number;
+  coverUrl: string;
+  tracks: AlbumTrack[];
+};
 
 type MusicPortfolioProps = {
   initialTab?: "songs" | "albums";
@@ -18,26 +43,69 @@ type MusicPortfolioProps = {
 };
 
 const SongCard: React.FC<{ song: MusicSong }> = ({ song }) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [liked, setLiked] = useState(song.isLiked);
+  const [likesCount, setLikesCount] = useState(song.likesCount);
+  const [actionLoading, setActionLoading] = useState(false);
   const [isWaveReady, setIsWaveReady] = useState(false);
   const waveformControls = useRef<{
     playPause: () => void;
     pause: () => void;
   } | null>(null);
+  const openPostDetail = () => {
+    navigate(`/post/${song.postId}`);
+  };
+  const requireAuth = () => {
+  if (!user) {
+    message.warning("Debes iniciar sesión para dar like.");
+    navigate("/login");
+    return false;
+  }
+  return true;
+  };
+const handleLike = async () => {
+  if (!requireAuth() || actionLoading) return;
+
+  setActionLoading(true);
+  const wasLiked = liked;
+
+  setLiked(!wasLiked);
+  setLikesCount((prev) => (wasLiked ? prev - 1 : prev + 1));
+
+  try {
+    if (wasLiked) {
+      await postsApi.unlike(song.postId, { postId: song.postId, userId: user!.id });
+    } else {
+      await postsApi.like(song.postId, { postId: song.postId, userId: user!.id });
+    }
+  } catch {
+    setLiked(wasLiked);
+    setLikesCount((prev) => (wasLiked ? prev + 1 : prev - 1));
+    message.error("No se pudo actualizar el like.");
+  } finally {
+    setActionLoading(false);
+  }
+};
 
   return (
-    <div className="w-full h-[240px] bg-[#E8F1FC] border border-[#8F8E8A] rounded-[10px] shadow-[4px_4px_4px_rgba(0,0,0,0.15)] p-5">
+    <div className="w-full h-[240px] bg-[#E8F1FC] border border-[#8F8E8A] rounded-[10px] shadow-[4px_4px_4px_rgba(0,0,0,0.15)] p-5 ">
       <div className="flex gap-4 items-stretch h-full">
         <img
           src={song.coverUrl}
           alt={song.title}
-          className="h-full aspect-square object-cover rounded shadow-[4px_4px_4px_rgba(0,0,0,0.15)]"
+          onClick={openPostDetail}
+          className="h-full aspect-square object-cover rounded shadow-[4px_4px_4px_rgba(0,0,0,0.15)] cursor-pointer"
         />
 
         <div className="flex-1 min-w-0">
           <div className="h-[24px]"></div>
           <div className="flex items-start justify-between gap-4 mb-[0px]">
-            <h1 className="text-2xl font-medium text-[#1B1C1E]">
+            <h1 
+              className="text-2xl font-medium text-[#1B1C1E] cursor-pointer hover:underline"
+              onClick={openPostDetail}
+            >
               {song.title}
             </h1>
             <span className="text-sm text-[#1B1C1E] whitespace-nowrap">
@@ -61,9 +129,11 @@ const SongCard: React.FC<{ song: MusicSong }> = ({ song }) => {
           <div className="flex items-center justify-center gap-5 mt-4 text-[#0B5107]">
             <button
               type="button"
-              className="w-10 h-10 rounded-full border cursor-pointer border-[#1B1C1E] bg-[#E9FDE8] flex items-center justify-center"
+              onClick={handleLike}
+              disabled={actionLoading}
+              className="w-10 h-10 rounded-full border cursor-pointer border-[#1B1C1E] bg-[#E9FDE8] flex items-center justify-center disabled:opacity-50"
             >
-              <Heart size={18} />
+              <Heart size={18} className={liked ? "fill-[#0B5107] text-[#0B5107]" : ""} />
             </button>
 
             <button
@@ -91,6 +161,7 @@ const SongCard: React.FC<{ song: MusicSong }> = ({ song }) => {
     </div>
   );
 };
+/*
 
 const AlbumCard: React.FC<{ album: MusicAlbum }> = ({ album }) => {
   const visibleTracks = useMemo(() => album.tracks.slice(0, 5), [album.tracks]);
@@ -220,35 +291,18 @@ const AlbumCard: React.FC<{ album: MusicAlbum }> = ({ album }) => {
     </div>
   );
 };
-
+*/
 export default function MusicPortfolio({
   initialTab = "songs",
   songs = [],
-  albums = [],
+  // albums = [],
   error = null,
 }: MusicPortfolioProps) {
   const [activeMusicTab, setActiveMusicTab] = useState<"songs" | "albums">(initialTab);
 
-  const musicTabItems = [
-    { key: "songs", label: "Canciones" },
-    { key: "albums", label: "Álbumes" },
-  ];
 
   return (
     <div className="w-full">
-      <div className="krea-tabs mb-6">
-        <Tabs
-          activeKey={activeMusicTab}
-          onChange={(key) => setActiveMusicTab(key as "songs" | "albums")}
-          items={musicTabItems}
-          centered
-          tabBarStyle={{ borderBottom: "none" }}
-          tabBarGutter={46}
-          size="small"
-        />
-      </div>
-
-      {activeMusicTab === "songs" && (
         <div className="max-w-[975px] mx-auto space-y-4">
           {songs.length > 0 ? (
             songs.map((song) => (
@@ -262,8 +316,8 @@ export default function MusicPortfolio({
             </div>
           )}
         </div>
-      )}
-
+        
+      {/*
       {activeMusicTab === "albums" && (
         <div className="max-w-[975px] mx-auto space-y-12">
           {albums.length > 0 ? (
@@ -277,6 +331,7 @@ export default function MusicPortfolio({
           )}
         </div>
       )}
+      */ }
     </div>
   );
 }
