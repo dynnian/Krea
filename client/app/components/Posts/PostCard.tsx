@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
-import { Avatar, message, Modal } from 'antd';
-import { Heart, MessageCircle, Repeat2, Bookmark, MoreHorizontal, User, FileText } from 'lucide-react';
+import { Avatar, message, Modal, Dropdown} from 'antd';
+import { Heart, MessageCircle, Repeat2, Bookmark, MoreHorizontal, User, FileText, Flag } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import AudioWaveform from '../WaveSurfer/AudioWaveform';
 import { postsApi } from '../../services/postsService';
 import type { PostDto } from '../../types/api';
+import ReportModal from "../Reports/ReportModal.tsx";
 
 interface PostCardProps {
   post: PostDto;
@@ -24,18 +25,24 @@ const getMediaType = (mimeType?: string): 'image' | 'audio' | 'pdf' | 'text' => 
   return 'text';
 };
 
+
 export default function PostCard({ post, onLike, onRepost, onComment, onBookmark }: PostCardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [liked, setLiked] = useState(post.isLikedByCurrentUser);
-  const [likesCount, setLikesCount] = useState(post.likesCount);
+  const originalPost = post.repostOf ?? post;
+  const isRepost = !!post.repostOf;
+  const repostAuthorName = isRepost ? post.authorName : null;
+
+  const [liked, setLiked] = useState(originalPost.isLikedByCurrentUser);
+  const [likesCount, setLikesCount] = useState(originalPost.likesCount);
   const [reposted, setReposted] = useState(post.isRetweetedByCurrentUser);
   const [repostsCount, setRepostsCount] = useState(post.isRetweetedByCurrentUser ? 1 : 0);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(post.isFavoritedByCurrentUser ?? false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   const requireAuth = () => {
     if (!user) {
@@ -54,11 +61,11 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
     setLikesCount(prev => (wasLiked ? prev - 1 : prev + 1));
     try {
       if (wasLiked) {
-        await postsApi.unlike(post.id, { postId: post.id, userId: user!.id });
+        await postsApi.unlike(originalPost.id, { postId: originalPost.id, userId: user!.id });
       } else {
-        await postsApi.like(post.id, { postId: post.id, userId: user!.id });
+        await postsApi.like(originalPost.id, { postId: originalPost.id, userId: user!.id });
       }
-      onLike?.(post.id);
+      onLike?.(originalPost.id);
     } catch {
       setLiked(wasLiked);
       setLikesCount(prev => (wasLiked ? prev + 1 : prev - 1));
@@ -75,9 +82,9 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
     setReposted(!wasReposted);
     setRepostsCount(prev => (wasReposted ? prev - 1 : prev + 1));
     try {
-      await postsApi.repost(post.id, { authorId: user!.id, originalPostId: post.id });
+      await postsApi.repost(originalPost.id, { authorId: user!.id, originalPostId: originalPost.id });
       message.success(t('post.reposted'));
-      onRepost?.(post.id);
+      onRepost?.(originalPost.id);
     } catch {
       setReposted(wasReposted);
       setRepostsCount(prev => (wasReposted ? prev + 1 : prev - 1));
@@ -90,13 +97,13 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
   const handleComment = () => {
     if (!requireAuth()) return;
     if (onComment) onComment();
-    else navigate(`/post/${post.id}`);
+    else navigate(`/post/${originalPost.id}`);
   };
 
   const handleBookmarkClick = async () => {
     if (!requireAuth()) return;
     try {
-      await postsApi.toggleFavorite(post.id);
+      await postsApi.toggleFavorite(originalPost.id);
       setIsBookmarked(prev => !prev);
       message.success(t('post.bookmark_toggled'));
       onBookmark?.();
@@ -105,47 +112,67 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
     }
   };
 
-  const firstMedia = post.media?.[0];
+  const handleReportClick = () => {
+    if (!requireAuth()) return;  
+    setReportModalOpen(true);
+  };
+
+  const menuItems = [
+    {
+      key: 'report',
+      label: t('post.report'),
+      icon: <Flag size={16} />,
+      onClick: () => handleReportClick(),
+    },
+  ];
+
+  const firstMedia = originalPost.media?.[0];
   const mediaUrl = firstMedia?.url;
   const mediaMime = firstMedia?.mimeType;
   const mediaType = getMediaType(mediaMime);
 
-  const formattedDate = post.uploadedAt
-    ? new Date(post.uploadedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+  const formattedDate = originalPost.uploadedAt
+    ? new Date(originalPost.uploadedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
     : '';
 
-  // Usar authorName si existe, sino el ID truncado
-  const authorName = post.authorName || `Usuario ${post.authorPostId.slice(0, 8)}`;
-  const authorHandle = post.authorName ? `@${post.authorName}` : post.authorPostId.slice(0, 8);
+  const authorName = originalPost.authorName || `Usuario ${originalPost.authorPostId.slice(0, 8)}`;
+  const authorHandle = originalPost.authorName ? `@${originalPost.authorName}` : originalPost.authorPostId.slice(0, 8);
 
   return (
-    <article className="w-full min-w-0 bg-[#E8F1FC] rounded-[15px] outline outline-[1.5px] outline-[#95ACCC] p-[22px] shadow-[4px_4px_12.6px_rgba(0,0,0,0.25)] ">
+    <article className="w-full min-w-0 bg-[#E8F1FC] rounded-[15px] outline outline-[1.5px] outline-[#95ACCC] p-[22px] shadow-[4px_4px_12.6px_rgba(0,0,0,0.25)]">
+      {isRepost && (
+        <div className="text-xs text-gray-500 mb-2 ml-[60px]">
+          {t('post.reposted_by')} {repostAuthorName}
+        </div>
+      )}
       <div className="flex gap-3">
-        <Link to={`/post/${post.id}`} className="flex gap-3 flex-1">
+        <Link to={`/post/${originalPost.id}`} className="flex gap-3 flex-1">
           <Avatar
-            src={post.author?.avatar}
-            icon={!post.author?.avatar && <User />}
+            src={originalPost.author?.avatar}
+            icon={!originalPost.author?.avatar && <User />}
             size={48}
             className="bg-white border border-black rounded-full"
           />
           <div className="flex-1">
             <div className="flex items-center flex-wrap gap-2 text-sm">
-              <Link to={`/user/${post.authorPostId}`} className="font-bold text-[#1B1C1E] hover:text-[#1351AA]">
+              <Link to={`/user/${originalPost.authorPostId}`} className="font-bold text-[#1B1C1E] hover:text-[#1351AA]">
                 {authorName}
               </Link>
               <span className="text-[#1B1C1E]">·</span>
-              <Link to={`/user/${post.authorPostId}`} className="text-[#1B1C1E] hover:text-[#1351AA]">
+              <Link to={`/user/${originalPost.authorPostId}`} className="text-[#1B1C1E] hover:text-[#1351AA]">
                 {authorHandle}
               </Link>
               <span className="text-[#1B1C1E]">·</span>
               <span className="text-[#1B1C1E]">{formattedDate}</span>
             </div>
-            <p className="text-[#1B1C1E] text-justify text-[13px] leading-7 mt-1">{post.content}</p>
+            <p className="text-[#1B1C1E] text-justify text-[16px] leading-7 mt-1">{originalPost.content}</p>
           </div>
         </Link>
-        <button className="p-1 hover:bg-gray-200 rounded-full self-start">
-          <MoreHorizontal size={16} className="text-gray-500" />
-        </button>
+        <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">
+          <button className="p-1 hover:bg-gray-200 rounded-full self-start">
+            <MoreHorizontal size={16} className="text-gray-500" />
+          </button>
+        </Dropdown>
       </div>
 
       {firstMedia && mediaUrl && (
@@ -205,7 +232,7 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
           onClick={handleComment}
         >
           <MessageCircle size={18} />
-          <span className="text-sm">{post.replies?.length ?? 0}</span>
+          <span className="text-sm">{originalPost.replies?.length ?? 0}</span>
         </button>
         <button
           className={`flex items-center gap-1 hover:text-blue-600 ${actionLoading === 'repost' ? 'opacity-50 cursor-wait' : ''}`}
@@ -222,6 +249,11 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
           <Bookmark size={18} className={isBookmarked ? 'fill-green-500 text-green-500' : ''} />
         </button>
       </div>
+      <ReportModal
+        open={reportModalOpen}
+        postId={originalPost.id}
+        onClose={() => setReportModalOpen(false)}
+      /> 
     </article>
   );
 }

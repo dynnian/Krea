@@ -106,7 +106,7 @@ export default function Home() {
   return (
     <div className="min-h-screen ">
       <main className="flex justify-center px-2 sm:px-4 gap-6">
-        <div className={`flex-1 ${!isMobile ? "max-w-[870px] mx-auto" : "w-full"} py-4`}>
+        <div className={`flex-1 ${!isMobile ? "w-[870px] mx-auto" : "w-full"} py-4`}>
           {user && <Composer onPost={handleNewPost} />}
           <FeedTabs activeTab={activeTab} onTabChange={setActiveTab} />
           <InfiniteScroll

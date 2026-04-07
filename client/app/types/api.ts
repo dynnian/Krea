@@ -116,7 +116,7 @@ export interface MediaDto {
 
 export interface PostDto {
   id: string;
-  authorPostId: string; // ID del autor (string)
+  authorPostId: string;
   authorName?: string;
   author?: {
     id: string;
@@ -130,11 +130,14 @@ export interface PostDto {
   isLocal: boolean;
   uploadCount: number;
   likesCount: number;
-  uploadedAt: string; // ISO 8601
+  uploadedAt: string;
   media: MediaDto[];
   isLikedByCurrentUser: boolean;
   isRetweetedByCurrentUser: boolean;
+  isFavoritedByCurrentUser?: boolean;
   replies?: PostDto[];
+  repostOfId?: string;         // ID del post original si es repost
+  repostOf?: PostDto;          // Post original (solo si es repost)
 }
 
 export interface PaginatedReplies {

@@ -108,7 +108,7 @@ export default function Composer({ onPost }: ComposerProps) {
                   {...field}
                   placeholder={t("home.composer_placeholder") || "¿Qué piensas?"}
                   autoSize={{ minRows: 2, maxRows: 6 }}
-                  className="bg-[#F3F3F1] rounded-[15px] p-3 text-base border-0"
+                  className="!bg-transparent !border-none !shadow-none !resize-none"
                 />
               )}
             />
@@ -117,7 +117,7 @@ export default function Composer({ onPost }: ComposerProps) {
                 <button
                   type="button"
                   onClick={() => setModalVisible(true)}
-                  className="p-2 hover:bg-[#E3E2DE] rounded-full transition"
+                  className="p-2 hover:bg-[#E3E2DE] rounded-full transition cursor-pointer"
                   title={t("createPost.image")}
                 >
                   <Image size={20} className="text-[#1B1C1E]" />
@@ -125,7 +125,7 @@ export default function Composer({ onPost }: ComposerProps) {
                 <button
                   type="button"
                   onClick={() => setModalVisible(true)}
-                  className="p-2 hover:bg-[#E3E2DE] rounded-full transition"
+                  className="p-2 hover:bg-[#E3E2DE] rounded-full transition cursor-pointer"
                   title={t("createPost.music")}
                 >
                   <Music size={20} className="text-[#1B1C1E]" />
@@ -133,7 +133,7 @@ export default function Composer({ onPost }: ComposerProps) {
                 <button
                   type="button"
                   onClick={() => setModalVisible(true)}
-                  className="p-2 hover:bg-[#E3E2DE] rounded-full transition"
+                  className="p-2 hover:bg-[#E3E2DE] rounded-full transition cursor-pointer"
                   title={t("createPost.literature")}
                 >
                   <FileText size={20} className="text-[#1B1C1E]" />

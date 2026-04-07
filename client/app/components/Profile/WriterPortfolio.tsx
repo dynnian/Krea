@@ -1,12 +1,67 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Bookmark, Heart } from "lucide-react";
-// import { writerPortfolioMock, type WriterWork } from "../../data/writerPortfolioMock";
-import type { WriterWork } from "../../data/writerPortfolioMock.ts";
+import { useNavigate } from "react-router-dom";
+import { message } from "antd";
+import { useAuth } from "../../contexts/AuthContext.tsx";
+import { postsApi } from "../../services/postsService.ts";
+
+export type WriterWork = {
+  id: string;
+  postId: string;
+  title: string;
+  coverUrl: string;
+  chaptersCount: number;
+  genre: string;
+  description: string;
+  likesCount: number;
+  isLiked: boolean;
+};
 
 const WriterCard: React.FC<{ work: WriterWork }> = ({ work }) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const descriptionRef = useRef<HTMLParagraphElement | null>(null);
   const [showReadMore, setShowReadMore] = useState(false);
+  const [liked, setLiked] = useState(work.isLiked);
+  const [likesCount, setLikesCount] = useState(work.likesCount);
+  const [actionLoading, setActionLoading] = useState(false);
 
+  const openPostDetail = () => {
+    navigate(`/post/${work.postId}`);
+  };
+
+  const requireAuth = () => {
+    if (!user) {
+      message.warning("Debes iniciar sesión para dar like.");
+      navigate("/login");
+      return false;
+    }
+    return true;
+  };
+
+  const handleLike = async () => {
+    if (!requireAuth() || actionLoading) return;
+
+    setActionLoading(true);
+    const wasLiked = liked;
+
+    setLiked(!wasLiked);
+    setLikesCount((prev) => (wasLiked ? prev - 1 : prev + 1));
+
+    try {
+      if (wasLiked) {
+        await postsApi.unlike(work.postId, { postId: work.postId, userId: user!.id });
+      } else {
+        await postsApi.like(work.postId, { postId: work.postId, userId: user!.id });
+      }
+    } catch {
+      setLiked(wasLiked);
+      setLikesCount((prev) => (wasLiked ? prev + 1 : prev - 1));
+      message.error("No se pudo actualizar el like.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 useEffect(() => {
   const el = descriptionRef.current;
   if (!el) return;
@@ -19,18 +74,22 @@ useEffect(() => {
 		<div className="w-[687px] h-[170px] bg-[#E8F1FC] border border-[#8F8E8A] p-[15px]">
 			<div className="flex h-full gap-[22px] items-center">
         <div className="h-full aspect-[2/3] shrink-0 overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
-					<img
-						src={work.coverUrl}
-						alt={work.title}
-						className="w-full h-full object-cover"
-					/>
+          <img
+            src={work.coverUrl}
+            alt={work.title}
+            onClick={openPostDetail}
+            className="w-full h-full object-cover cursor-pointer"
+          />
 				</div>
 
 				<div className=" h-full flex flex-col min-w-0 pb-[4px] pt-[5px] gap-[0px]">
 					<div className="flex items-start justify-between gap-[0px]">
             <div className="min-w-0 flex flex-col gap-[0px]">
               <div className="h-full">
-                <h3 className="text-[20px] leading-[20px] font-bold text-[#1B1C1E]">
+                <h3 
+                className="text-[20px] leading-[20px] font-bold text-[#1B1C1E] cursor-pointer hover:underline"
+                onClick={openPostDetail}
+                >
                   {work.title}
                 </h3>
               </div>
@@ -82,12 +141,14 @@ useEffect(() => {
 							<Bookmark size={14} />
 						</button>
 
-						<button
-							type="button"
-							className="w-[24px] h-[24px] rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center"
-						>
-				    		<Heart size={14} />
-						</button>
+            <button
+              type="button"
+              onClick={handleLike}
+              disabled={actionLoading}
+              className="w-[24px] h-[24px] rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] cursor-pointer flex items-center justify-center disabled:opacity-50"
+            >
+              <Heart size={14} className={liked ? "fill-[#0B5107] text-[#0B5107]" : ""} />
+            </button>
 					</div>
 				</div>
 			</div>

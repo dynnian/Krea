@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Spin, message, Alert, Avatar } from 'antd';
-import { ArrowLeft, Heart, MessageCircle, Repeat2, User, MoreHorizontal, Bookmark } from 'lucide-react';
+import { Spin, message, Alert, Avatar, Dropdown } from 'antd';
+import { ArrowLeft, Heart, MessageCircle, Repeat2, User, MoreHorizontal, Bookmark, Flag } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import TagsSidebar from '../Home/TagsSidebar';
 import PostImageDetail from './PostImageDetail';
@@ -10,6 +10,7 @@ import PostAudioDetail from './PostAudioDetail';
 import CommentSection from './CommentSection';
 import { postsApi } from '../../services/postsService';
 import type { PostDto } from '../../types/api';
+import ReportModal from "../Reports/ReportModal.tsx";
 
 const getMediaType = (mimeType?: string): 'image' | 'audio' | 'pdf' | 'text' => {
   if (!mimeType) return 'text';
@@ -18,6 +19,7 @@ const getMediaType = (mimeType?: string): 'image' | 'audio' | 'pdf' | 'text' => 
   if (mimeType === 'application/pdf') return 'pdf';
   return 'text';
 };
+
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
@@ -35,6 +37,7 @@ export default function PostDetail() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [commentsCount, setCommentsCount] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -69,17 +72,21 @@ export default function PostDetail() {
     return true;
   };
 
+  const originalPost = post?.repostOf ?? post;
+  const isRepost = !!post?.repostOf;
+  const repostAuthorName = isRepost ? post?.authorName : null;
+
   const handleLike = async () => {
-    if (!requireAuth() || actionLoading || !post) return;
+    if (!requireAuth() || actionLoading || !originalPost) return;
     setActionLoading('like');
     const wasLiked = liked;
     setLiked(!wasLiked);
     setLikesCount(prev => (wasLiked ? prev - 1 : prev + 1));
     try {
       if (wasLiked) {
-        await postsApi.unlike(post.id, { postId: post.id, userId: user!.id });
+        await postsApi.unlike(originalPost.id, { postId: originalPost.id, userId: user!.id });
       } else {
-        await postsApi.like(post.id, { postId: post.id, userId: user!.id });
+        await postsApi.like(originalPost.id, { postId: originalPost.id, userId: user!.id });
       }
     } catch {
       setLiked(wasLiked);
@@ -91,13 +98,13 @@ export default function PostDetail() {
   };
 
   const handleRepost = async () => {
-    if (!requireAuth() || actionLoading || !post) return;
+    if (!requireAuth() || actionLoading || !originalPost) return;
     setActionLoading('repost');
     const wasReposted = reposted;
     setReposted(!wasReposted);
     setRepostsCount(prev => (wasReposted ? prev - 1 : prev + 1));
     try {
-      await postsApi.repost(post.id, { authorId: user!.id, originalPostId: post.id });
+      await postsApi.repost(originalPost.id, { authorId: user!.id, originalPostId: originalPost.id });
       message.success(t('post.reposted'));
     } catch {
       setReposted(wasReposted);
@@ -109,9 +116,9 @@ export default function PostDetail() {
   };
 
   const handleBookmark = async () => {
-    if (!requireAuth() || !post) return;
+    if (!requireAuth() || !originalPost) return;
     try {
-      await postsApi.toggleFavorite(post.id);
+      await postsApi.toggleFavorite(originalPost.id);
       setIsBookmarked(prev => !prev);
       message.success(t('post.bookmark_toggled'));
     } catch {
@@ -119,12 +126,21 @@ export default function PostDetail() {
     }
   };
 
-  const handleComment = () => {
-    if (!requireAuth()) return;
-  };
+  const menuItems = [
+    {
+      key: 'report',
+      label: t('post.report'),
+      icon: <Flag size={16} />,
+      onClick: () => handleReportClick(),
+    },
+  ];
 
   const handleCommentPosted = () => {
     setCommentsCount(prev => prev + 1);
+  };
+  const handleReportClick = () => {
+    if (!requireAuth()) return;   
+    setReportModalOpen(true);
   };
 
   if (loading) {
@@ -143,7 +159,7 @@ export default function PostDetail() {
     );
   }
 
-  if (!post) {
+  if (!originalPost) {
     return (
       <div className="min-h-screen bg-[#E3E2DE] flex justify-center items-center">
         <p className="text-gray-500">{t('post.not_found')}</p>
@@ -151,38 +167,44 @@ export default function PostDetail() {
     );
   }
 
-  const formattedDate = new Date(post.uploadedAt).toLocaleDateString('es-ES', {
+  const formattedDate = new Date(originalPost.uploadedAt).toLocaleDateString('es-ES', {
     day: 'numeric', month: 'short', year: 'numeric',
   });
-  const formattedTime = new Date(post.uploadedAt).toLocaleTimeString('es-ES', {
+  const formattedTime = new Date(originalPost.uploadedAt).toLocaleTimeString('es-ES', {
     hour: '2-digit', minute: '2-digit',
   });
 
-  const firstMedia = post.media?.[0];
+  const firstMedia = originalPost.media?.[0];
   const mediaUrl = firstMedia?.url;
   const mediaMime = firstMedia?.mimeType;
   const mediaType = getMediaType(mediaMime);
 
-  const authorName = post.authorName || `Usuario ${post.authorPostId.slice(0, 8)}`;
-  const authorHandle = post.authorName ? `@${post.authorName}` : post.authorPostId.slice(0, 8);
+  const authorName = originalPost.authorName || `Usuario ${originalPost.authorPostId.slice(0, 8)}`;
+  const authorHandle = originalPost.authorName ? `@${originalPost.authorName}` : originalPost.authorPostId.slice(0, 8);
 
   return (
-    <div className="min-h-screen bg-[#E3E2DE] py-8">
+    <div className="min-h-screen bg-[#E3E2DE]">
+      <div className="flex items-center gap-3 my-[11px] max-w-7xl mx-auto px-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center justify-center w-[32px] h-[32px] hover:bg-gray-200 rounded-full transition cursor-pointer"
+        >
+          <ArrowLeft size={24} className="text-gray-800" />
+        </button>
+        <div className="pt-[10px]">
+          <h1 className="text-xl font-medium text-gray-800 leading-none">{t('post.publication')}</h1>
+        </div>
+      </div>
       <main className="flex justify-center px-4">
-        <div className="flex flex-col lg:flex-row gap-6 max-w-7xl w-full">
-          <div className="w-full lg:flex-1 lg:min-w-[740px]">
-            <div className="flex items-center gap-4 mb-6">
-              <button
-                onClick={() => navigate(-1)}
-                className="p-2 hover:bg-gray-200 rounded-full transition"
-              >
-                <ArrowLeft size={24} className="text-gray-800" />
-              </button>
-              <h1 className="text-xl font-medium text-gray-800">{t('post.publication')}</h1>
-            </div>
-
+        <div className="flex flex-col lg:flex-row gap-6 max-w-7xl w-full mx-auto">
+          <div className="w-full xl:w-[870px] xl:flex-none min-w-0">
             <div className="bg-[#E8F1FC] rounded-[15px] outline outline-[1.5px] outline-[#95ACCC] p-[22px] shadow-[4px_4px_13px_rgba(0,0,0,0.25)] mb-6">
-              <div className="flex justify-between items-start">
+              {isRepost && (
+                <div className="text-xs text-gray-500 mb-2 ml-[60px]">
+                  {t('post.reposted_by')} {repostAuthorName}
+                </div>
+              )}
+              <div className="flex justify-between items-start mb-[20px]">
                 <div className="flex gap-3">
                   <Avatar
                     icon={<User />}
@@ -190,25 +212,27 @@ export default function PostDetail() {
                     className="bg-white border border-black rounded-full"
                   />
                   <div>
-                    <Link to={`/user/${post.authorPostId}`} className="hover:text-[#1351AA]">
+                    <Link to={`/user/${originalPost.authorPostId}`} className="hover:text-[#1351AA]">
                       <div className="font-medium text-[#1B1C1E]">{authorName}</div>
                       <div className="text-gray-500 text-sm">@{authorHandle}</div>
                     </Link>
                   </div>
                 </div>
-                <button className="p-1 hover:bg-gray-200 rounded-full">
-                  <MoreHorizontal size={20} className="text-gray-500" />
-                </button>
+                <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">
+                  <button className="hover:bg-gray-200 rounded-full p-1">
+                    <MoreHorizontal size={20} className="text-gray-500" />
+                  </button>
+                </Dropdown>
               </div>
 
-              <p className="text-[#1B1C1E] text-justify text-[13px] leading-7 mt-4 mb-6">
-                {post.content}
+              <p className="text-[#1B1C1E] text-justify text-[16px] leading-[28px] mt-4 mb-6">
+                {originalPost.content}
               </p>
 
               {firstMedia && mediaUrl && (
                 <div className="mb-6">
-                  {mediaType === 'image' && <PostImageDetail post={post} />}
-                  {mediaType === 'audio' && <PostAudioDetail post={post} />}
+                  {mediaType === 'image' && <PostImageDetail post={originalPost} />}
+                  {mediaType === 'audio' && <PostAudioDetail post={originalPost} />}
                   {mediaType === 'pdf' && (
                     <div className="bg-[#F3F3F1] p-4 rounded-lg border border-[#8F8E8A] flex items-center gap-2">
                       <a
@@ -224,53 +248,50 @@ export default function PostDetail() {
                 </div>
               )}
 
-              <div className="flex items-center gap-2 text-sm text-gray-600 mt-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
                 <span>{formattedTime}</span>
                 <span>·</span>
                 <span>{formattedDate}</span>
               </div>
-
-              <div className="flex items-center justify-around py-4 border-t border-b border-[#8F8E8A] mt-4">
-                <button
-                  onClick={handleLike}
-                  disabled={actionLoading !== null}
-                  className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 ${
-                    actionLoading === 'like' ? 'opacity-50' : ''
-                  }`}
-                >
-                  <Heart size={18} className={liked ? 'fill-red-500 text-red-500' : ''} />
-                  <span>{likesCount}</span>
-                </button>
-                <button
-                  onClick={handleComment}
-                  className="flex items-center gap-2 text-gray-700 hover:text-blue-600"
-                >
-                  <MessageCircle size={18} />
-                  <span>{commentsCount}</span>
-                </button>
-                <button
-                  onClick={handleRepost}
-                  disabled={actionLoading !== null}
-                  className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 ${
-                    actionLoading === 'repost' ? 'opacity-50' : ''
-                  }`}
-                >
-                  <Repeat2 size={18} className={reposted ? 'text-green-600' : ''} />
-                  <span>{repostsCount}</span>
-                </button>
-                <button
-                  onClick={handleBookmark}
-                  className="flex items-center gap-2 text-gray-700 hover:text-blue-600"
-                >
-                  <Bookmark size={18} className={isBookmarked ? 'fill-green-500 text-green-500' : ''} />
-                </button>
-              </div>
             </div>
 
-            <CommentSection
-              postId={post.id}
-              onCommentPosted={handleCommentPosted}
-            />
+            <div className="flex items-center justify-around py-4 border-[#8F8E8A] mb-6 bg-[#E8F1FC] px-[22px] py-[24px] border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
+              <button
+                onClick={handleLike}
+                disabled={actionLoading !== null}
+                className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 cursor-pointer ${
+                  actionLoading === 'like' ? 'opacity-50' : ''
+                }`}
+              >
+                <Heart size={22} className={liked ? 'fill-red-500 text-red-500' : ''} />
+                <span>{likesCount}</span>
+              </button>
+              <button
+                onClick={() => {}} // puedes enfocar el input si lo deseas
+                className="flex items-center gap-2 text-gray-700 hover:text-blue-600 cursor-pointer"
+              >
+                <MessageCircle size={22} />
+                <span>{commentsCount}</span>
+              </button>
+              <button
+                onClick={handleRepost}
+                disabled={actionLoading !== null}
+                className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 cursor-pointer ${
+                  actionLoading === 'repost' ? 'opacity-50' : ''
+                }`}
+              >
+                <Repeat2 size={22} className={reposted ? 'text-[#0B5107]' : ''} />
+                <span>{repostsCount}</span>
+              </button>
+              <button
+                onClick={handleBookmark}
+                className="flex items-center gap-2 text-gray-700 hover:text-blue-600 cursor-pointer"
+              >
+                <Bookmark size={22} className={isBookmarked ? 'fill-[#0B5107] text-[#0B5107]' : ''} />
+              </button>
+            </div>
+
+            <CommentSection postId={originalPost.id} onCommentPosted={handleCommentPosted} />
           </div>
 
           <div className="hidden lg:block w-64 shrink-0">
@@ -278,6 +299,11 @@ export default function PostDetail() {
           </div>
         </div>
       </main>
+      <ReportModal
+        open={reportModalOpen}
+        postId={originalPost.id}
+        onClose={() => setReportModalOpen(false)}
+      />
     </div>
   );
 }

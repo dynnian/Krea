@@ -14,8 +14,7 @@ namespace Krea.Application.Features.Posts.GetPostById {
 
         public async Task<GetPostByIdResponse?> Handle(
             GetPostByIdCommand request,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             Post? post = await _postRepository
                 .GetFullPostAsync(request.PostId, cancellationToken);
 
@@ -24,26 +23,15 @@ namespace Krea.Application.Features.Posts.GetPostById {
 
             Guid? currentUserId = request.CurrentUserId;
 
-            // Media del post actual
             IReadOnlyList<PostMediaDto> media = post.Uploads
-                .Select(u => new PostMediaDto
-                {
-                    Id = u.Id,
-                    FileName = u.Media.FileName,
-                    MimeType = u.Media.MimeType,
-                    Url = u.Media.Path,
-                    IsWorkMedia = u.IsWorkMedia
-                })
+                .Select(MapPostMedia)
                 .ToList();
 
-            // Like
             bool isLiked = currentUserId is not null &&
                            post.Likes.Any(l => l.UserId == currentUserId);
 
-            // Repost del usuario actual sobre el contenido canónico
             bool isRetweeted = false;
-            if (currentUserId is not null)
-            {
+            if (currentUserId is not null) {
                 Guid repostTargetId = post.RepostOfId ?? post.Id;
 
                 isRetweeted = await _postRepository.ExistsRepostAsync(
@@ -52,7 +40,6 @@ namespace Krea.Application.Features.Posts.GetPostById {
                     cancellationToken);
             }
 
-            // Replies
             var (replyPosts, _) = await _postRepository.GetRepliesAsync(
                 post.Id,
                 page: 1,
@@ -69,7 +56,6 @@ namespace Krea.Application.Features.Posts.GetPostById {
                 ))
                 .ToList();
 
-            // Referencia al post original si este post es repost
             RepostReferenceDto? repostOf = post.RepostOf is null
                 ? null
                 : new RepostReferenceDto(
@@ -84,14 +70,7 @@ namespace Krea.Application.Features.Posts.GetPostById {
                     post.RepostOf.Likes.Count,
                     post.RepostOf.UploadedAt,
                     post.RepostOf.Uploads
-                        .Select(u => new PostMediaDto
-                        {
-                            Id = u.Id,
-                            FileName = u.Media.FileName,
-                            MimeType = u.Media.MimeType,
-                            Url = u.Media.Path,
-                            IsWorkMedia = u.IsWorkMedia
-                        })
+                        .Select(MapPostMedia)
                         .ToList()
                 );
 
@@ -106,17 +85,25 @@ namespace Krea.Application.Features.Posts.GetPostById {
                 post.Uploads.Count,
                 post.Likes.Count,
                 post.UploadedAt,
-
                 media,
-
                 isLiked,
                 isRetweeted,
-
                 replies,
-
                 post.RepostOfId,
                 repostOf
             );
         }
+
+        private static PostMediaDto MapPostMedia(PostUpload upload) =>
+            new PostMediaDto {
+                Id = upload.Id,
+                FileName = upload.Media.FileName,
+                MimeType = upload.Media.MimeType,
+                Url = upload.Media.Path,
+                IsWorkMedia = upload.IsWorkMedia,
+                CoverMediaId = upload.CoverMediaId,
+                CoverUrl = upload.CoverMedia?.Path,
+                CoverMimeType = upload.CoverMedia?.MimeType
+            };
     }
 }

@@ -5,7 +5,7 @@ namespace Krea.Application.Features.Posts.Dto {
     {
         public Guid Id { get; init; }
         public Guid UserId { get; init; }
-        
+
         public string AuthorUsername { get; init; } = string.Empty;
 
         public string Title { get; init; } = default!;
@@ -31,11 +31,14 @@ namespace Krea.Application.Features.Posts.Dto {
                     .Where(u => u.Media != null)
                     .Select(upload => new PostMediaDto
                     {
-                        Id = upload.Media.Id,
+                        Id = upload.Id,
                         FileName = upload.Media.FileName,
                         MimeType = upload.Media.MimeType,
                         Url = upload.Media.Path,
-                        IsWorkMedia = upload.IsWorkMedia
+                        IsWorkMedia = upload.IsWorkMedia,
+                        CoverMediaId = upload.CoverMediaId,
+                        CoverUrl = upload.CoverMedia?.Path,
+                        CoverMimeType = upload.CoverMedia?.MimeType
                     })
                     .ToList() ?? []
             };

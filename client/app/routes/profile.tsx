@@ -1,6 +1,7 @@
 // profile.tsx
 // deno-lint-ignore-file
 import React, { useEffect, useRef, useState } from 'react';
+import { postsApi } from "../services/postsService.ts";
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Avatar, Tabs, Typography, Grid, message, Spin, Dropdown } from 'antd';
@@ -8,11 +9,9 @@ import type { MenuProps } from 'antd';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import DigitalPortfolio from "../components/Profile/DigitalPortfolio.tsx";
 import MusicPortfolio from "../components/Profile/MusicPortfolio.tsx";
-import type { MusicAlbum, MusicSong } from "../data/musicPortfolioMock.ts";
-// import { digitalPortfolioMock } from "../data/digitalPortfolioMock.ts";
+import type { MusicAlbum, MusicSong } from "../components/Profile/MusicPortfolio.tsx";
 import WriterPortfolio from "../components/Profile/WriterPortfolio.tsx";
-import { postsApi } from "../services/postsService.ts";
-import type { WriterWork } from "../data/writerPortfolioMock.ts";
+import type { WriterWork } from "../components/Profile/WriterPortfolio.tsx";
 import { settingsRepository } from "../services/settingsRepository.ts";
 import CreatePortfolioPostModal from "../components/Posts/CreatePortfolioPostModal.tsx";
 import axiosClient from "../lib/axios.ts";
@@ -58,6 +57,8 @@ interface Media {
   mimeType: string;
   path: string;
   uploadedAt: string;
+  coverUrl?: string;
+  coverMediaId?: string;
 }
 
 interface PostMedia {
@@ -110,6 +111,8 @@ interface ApiPostMedia {
   mimeType: string;
   url: string;
   isWorkMedia: boolean;
+  coverUrl?: string;
+  coverMediaId?: string;
 }
 
 interface ApiPost {
@@ -372,7 +375,7 @@ function mapPostsToVisualPortfolioItems(posts: Post[]): VisualPortfolioItem[] {
       );
 
       return {
-        id: String(post.id),
+        id: String(post.backendId ?? post.id),
         title: post.title ?? 'Sin título',
         imageUrl: firstImage?.media.path ?? '',
       };
@@ -412,13 +415,17 @@ function mapPostsToMusicSongs(posts: Post[]): MusicSong[] {
       if (!audioMedia) return null;
 
       return {
-        id: String(post.id),
+        id: String(post.backendId ?? post.id),
+        postId: String(post.backendId ?? post.id),
         title: post.title ?? "Sin título",
         genre: "Sin género",
         coverUrl:
+          audioMedia?.media.coverUrl ??
           coverMedia?.media.path ??
           "https://placehold.co/240x240?text=Cover",
         audioUrl: audioMedia.media.path,
+        likesCount: post.likesCount ?? 0,
+        isLiked: false,
       };
     })
     .filter((song): song is MusicSong => song !== null);
@@ -444,14 +451,18 @@ function mapPostsToWriterWorks(posts: Post[]): WriterWork[] {
       );
 
       return {
-        id: String(post.id),
+        id: String(post.backendId ?? post.id),
+        postId: String(post.backendId ?? post.id),
         title: post.title ?? "Sin título",
         coverUrl:
+          documentMedia?.media.coverUrl ??
           coverMedia?.media.path ??
           "https://placehold.co/240x360?text=Libro",
         chaptersCount: 1,
         genre: "Sin género",
         description: post.content ?? "",
+        likesCount: post.likesCount ?? 0,
+        isLiked: false,
       };
     });
 }
@@ -731,6 +742,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, canDelete = false, onDelete }
 
   const imageMedia = post.media.find(m => isImageMime(m.media?.mimeType));
   const audioMedia = post.media.find(m => isAudioMime(m.media?.mimeType));
+  const openPostDetail = () => {
+  const targetId = post.backendId ?? String(post.id);
+    navigate(`/post/${targetId}`);
+  };
 
     const handleDeletePost = async () => {
     if (!post.backendId) {
@@ -775,13 +790,16 @@ const PostCard: React.FC<PostCardProps> = ({ post, canDelete = false, onDelete }
         />
         <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2 flex-wrap min-w-0">
-            <span className="font-medium text-gray-900">{post.author.name}</span>
-            <span className="text-gray-500">·</span>
-            <span className="text-gray-500">@{post.author.handle}</span>
-            <span className="text-gray-500">·</span>
-            <span className="text-gray-500">{formatDate(post.createdAt)}</span>
-          </div>
+        <div
+          className="flex items-center gap-2 flex-wrap min-w-0 cursor-pointer"
+          onClick={openPostDetail}
+        >
+          <span className="font-medium text-gray-900">{post.author.name}</span>
+          <span className="text-gray-500">·</span>
+          <span className="text-gray-500">@{post.author.handle}</span>
+          <span className="text-gray-500">·</span>
+          <span className="text-gray-500">{formatDate(post.createdAt)}</span>
+        </div>
 
           <Dropdown
             menu={{ items: postMenuItems, onClick: handlePostMenuClick }}
@@ -793,8 +811,12 @@ const PostCard: React.FC<PostCardProps> = ({ post, canDelete = false, onDelete }
             </div>
           </Dropdown>
         </div>
-
-          <p className="text-gray-800 mt-1 text-sm text-justify pr-[20px] pt-[5px]">{post.content}</p>
+          <p
+            className="text-gray-800 mt-1 text-[16px] text-justify pr-[20px] pt-[5px] cursor-pointer"
+            onClick={openPostDetail}
+          >
+            {post.content}
+          </p>
           {post.type === PostType.IMAGE && post.media.length > 0 && (
             <div className="mt-3 pr-[20px]">
               {post.media.length === 1 ? (
@@ -835,7 +857,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, canDelete = false, onDelete }
             <div className="mt-3">
               <WaveformPlayer
                 audioUrl={audioMedia.media.path}
-                coverUrl={imageMedia?.media.path}
+                coverUrl={audioMedia?.media.coverUrl ?? imageMedia?.media.path}
               />
             </div>
           )}
@@ -1030,6 +1052,9 @@ function normalizeApiPosts(apiPosts: ApiPost[], displayName: string): Post[] {
           mimeType: m.mimeType,
           path: m.url,
           uploadedAt: post.createdAt,
+
+          coverUrl: m.coverUrl,
+          coverMediaId: m.coverMediaId,
         },
       })),
       likesCount: 0,
@@ -1431,6 +1456,7 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
         onClose={() => setModalVisible(false)}
         onSuccess={() => {
           setModalVisible(false);
+          window.location.reload();
         }}
       />
         </div>
