@@ -451,17 +451,14 @@ namespace Krea.API.Controllers {
             return NoContent();
         }
         
-        [HttpGet("me/favorites")] 
+        [HttpGet("me/favorites")]
         [Authorize]
         public async Task<IActionResult> GetFavorites(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10)
         {
-            var userId = GetCurrentUserId();
-
-            var result = await _sender.Send(
-                new GetUserFavoritesQuery(userId, page, pageSize));
-
+            var userId = GetCurrentUserId(); 
+            var result = await _sender.Send(new GetUserFavoritesQuery(userId, page, pageSize));
             return Ok(result);
         }
         
