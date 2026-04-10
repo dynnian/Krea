@@ -18,11 +18,7 @@ namespace Krea.API {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddApplication();
-            builder.Services.AddControllers().AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-                options.JsonSerializerOptions.MaxDepth = 64;
-            });
+            builder.Services.AddControllers();
             builder.Services.AddSignalR();
             builder.Services.AddOpenApi();
             builder.Services.AddCors(options => {
