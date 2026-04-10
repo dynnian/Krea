@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 public class AcceptCommissionRequestCommandHandler(
     ICurrentUserService currentUserService,
     ICommissionRequestRepository requestRepository,
+    ICommissionOfferingRepository offeringRepository,
     IUnitOfWork unitOfWork,
     ILogger<AcceptCommissionRequestCommandHandler> logger)
     : IRequestHandler<AcceptCommissionRequestCommand, Unit>
@@ -28,12 +29,20 @@ public class AcceptCommissionRequestCommandHandler(
         if (commissionRequest.Offering?.Artist == null)
             throw new InvalidOperationException("Commission request data is incomplete.");
 
+        // Enforce Max Slots
+        var offering = commissionRequest.Offering;
+        var activeCount = await offeringRepository.GetActiveRequestCountAsync(offering.Id, cancellationToken);
+        if (activeCount >= offering.MaxSlots)
+            throw new InvalidOperationException("This offering has reached its maximum number of active commissions.");
+        
         // Only the artist who owns the offering can accept
         if (commissionRequest.Offering.Artist.Id != currentUserId)
             throw new UnauthorizedAccessException("Only the artist can accept this commission.");
 
         if (commissionRequest.Status != CommissionRequestStatus.Pending)
             throw new InvalidOperationException("Commission request is not pending.");
+        
+        
 
         commissionRequest.Accept();
 
