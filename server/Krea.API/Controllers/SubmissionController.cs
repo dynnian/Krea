@@ -1,7 +1,9 @@
 namespace Krea.API.Controllers 
 {
     using Application.Features.Commissions.AddSubmissionFeedback;
+    using Application.Features.Commissions.Dtos;
     using Application.Features.Commissions.EditSubmissionFeedback;
+    using Application.Features.Commissions.GetFeedback;
     using Domain.Abstractions;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
@@ -58,6 +60,27 @@ namespace Krea.API.Controllers
             var command = new EditSubmissionFeedbackCommand(feedbackId, request.NewContent);
             await _sender.Send(command);
             return NoContent();
+        }
+        
+        /// <summary>
+        /// Retrieves all feedback entries for a specific submission.
+        /// </summary>
+        /// <param name="submissionId">The ID of the submission.</param>
+        /// <returns>A list of feedback entries with author details and timestamps.</returns>
+        /// <response code="200">Returns the feedback list.</response>
+        /// <response code="401">If the user is not authenticated.</response>
+        /// <response code="403">If the user is not authorized to view the feedback.</response>
+        /// <response code="404">If the submission is not found.</response>
+        [HttpGet("{submissionId}/feedback")]
+        [ProducesResponseType(typeof(IReadOnlyList<SubmissionFeedbackDto>), 200)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<IReadOnlyList<SubmissionFeedbackDto>>> GetFeedback(Guid submissionId)
+        {
+            var query = new GetFeedbackQuery(submissionId);
+            var result = await _sender.Send(query);
+            return Ok(result);
         }
     }
 }

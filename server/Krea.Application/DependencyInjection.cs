@@ -39,6 +39,7 @@ namespace Krea.Application {
     using Features.Admin.Users;
     using Features.Collections.UploadCollectionCover;
     using Features.Commissions.AcceptCommissionRequest;
+    using Features.Commissions.ActivateOffering;
     using Features.Commissions.AddSubmission;
     using Features.Commissions.AddSubmissionFeedback;
     using Features.Commissions.ApproveCommission;
@@ -46,9 +47,20 @@ namespace Krea.Application {
     using Features.Commissions.CreateCommissionOffering;
     using Features.Commissions.CreateCommissionRequest;
     using Features.Commissions.CreatePaymentForCommission;
+    using Features.Commissions.DeactivateOffering;
+    using Features.Commissions.DeleteOffering;
     using Features.Commissions.DeliverCommission;
+    using Features.Commissions.Dtos;
     using Features.Commissions.EditSubmissionFeedback;
+    using Features.Commissions.GetCommissionRequests;
+    using Features.Commissions.GetFeedback;
+    using Features.Commissions.GetOfferingDetails;
+    using Features.Commissions.GetOfferings;
+    using Features.Commissions.GetRequestDetails;
+    using Features.Commissions.GetSubmissions;
     using Features.Commissions.RequestChanges;
+    using Features.Commissions.UpdateCommissionOffering;
+    using CommissionsPagedResult = Features.Commissions.GetSubmissions.PagedResult<Features.Commissions.Dtos.SubmissionDto>;
     using Features.Posts.CreatePost;
     using Features.Posts.DeletePost;
     using Features.Posts.Explore;
@@ -114,7 +126,7 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<LikePostCommand, Unit>, LikePostHandler>();
             services.AddScoped<IRequestHandler<UnlikePostCommand, Unit>, UnlikePostHandler>();
             services.AddScoped<IRequestHandler<CreatePostUploadCommand, CreatePostUploadResponse>, CreatePostUploadHandler>();
-            services.AddScoped<IRequestHandler<ExploreQuery, PagedResult<ExplorePostDto>>, ExploreHandler>();
+            services.AddScoped<IRequestHandler<ExploreQuery, Features.Posts.Explore.PagedResult<ExplorePostDto>>, ExploreHandler>();
             
             // Messaging
             services.AddScoped<IRequestHandler<GetConversationQuery, ConversationDto>, GetConversationQueryHandler>();
@@ -129,8 +141,16 @@ namespace Krea.Application {
             // Donations
             services.AddScoped<IRequestHandler<CreateDonationCommand, CreateDonationResponse>, CreateDonationCommandHandler>();
             
-            // Commissions
+            // Commission Offering
             services.AddScoped<IRequestHandler<CreateCommissionOfferingCommand, CreateCommissionOfferingResponse>, CreateCommissionOfferingCommandHandler>();
+            services.AddScoped<IRequestHandler<UpdateCommissionOfferingCommand, Unit>, UpdateCommissionOfferingCommandHandler>();
+            services.AddScoped<IRequestHandler<ActivateOfferingCommand, Unit>, ActivateOfferingCommandHandler>();
+            services.AddScoped<IRequestHandler<DeactivateOfferingCommand, Unit>, DeactivateOfferingCommandHandler>();
+            services.AddScoped<IRequestHandler<DeleteOfferingCommand, Unit>, DeleteOfferingCommandHandler>();
+            services.AddScoped<IRequestHandler<GetOfferingsQuery, IReadOnlyList<CommissionOfferingDto>>, GetOfferingsQueryHandler>();
+            services.AddScoped<IRequestHandler<GetOfferingDetailsQuery, CommissionOfferingDto>, GetOfferingDetailsQueryHandler>();
+
+            // Commission Request
             services.AddScoped<IRequestHandler<CreateCommissionRequestCommand, CreateCommissionRequestResponse>, CreateCommissionRequestCommandHandler>();
             services.AddScoped<IRequestHandler<AcceptCommissionRequestCommand, Unit>, AcceptCommissionRequestCommandHandler>();
             services.AddScoped<IRequestHandler<CreatePaymentForCommissionCommand, CreatePaymentForCommissionResponse>, CreatePaymentForCommissionCommandHandler>();
@@ -139,10 +159,14 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<ApproveCommissionCommand, Unit>, ApproveCommissionCommandHandler>();
             services.AddScoped<IRequestHandler<RequestChangesCommand, Unit>, RequestChangesCommandHandler>();
             services.AddScoped<IRequestHandler<CancelCommissionCommand, Unit>, CancelCommissionCommandHandler>();
-            
-            // Submissions
+            services.AddScoped<IRequestHandler<GetCommissionRequestsQuery, IReadOnlyList<CommissionRequestDto>>, GetCommissionRequestsQueryHandler>();
+            services.AddScoped<IRequestHandler<GetRequestDetailsQuery, CommissionRequestDto>, GetRequestDetailsQueryHandler>();
+            services.AddScoped<IRequestHandler<GetSubmissionsQuery, CommissionsPagedResult>, GetSubmissionsQueryHandler>();
+
+            // Submission Feedback
             services.AddScoped<IRequestHandler<AddSubmissionFeedbackCommand, Unit>, AddSubmissionFeedbackCommandHandler>();
             services.AddScoped<IRequestHandler<EditSubmissionFeedbackCommand, Unit>, EditSubmissionFeedbackCommandHandler>();
+            services.AddScoped<IRequestHandler<GetFeedbackQuery, IReadOnlyList<SubmissionFeedbackDto>>, GetFeedbackQueryHandler>();
             
             services.AddScoped<ISender, Sender>();
             

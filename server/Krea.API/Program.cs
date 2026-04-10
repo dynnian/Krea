@@ -102,6 +102,7 @@ namespace Krea.API {
                         .WithTitle("Krea API")
                         .WithTheme(ScalarTheme.Purple)
                         .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+                    options.AddPreferredSecuritySchemes("Bearer");
                 });
             }
 
