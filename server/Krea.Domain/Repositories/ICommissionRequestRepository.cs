@@ -7,6 +7,10 @@ public interface ICommissionRequestRepository
     Task<CommissionRequest?> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default);
+    
+    Task<IReadOnlyList<CommissionRequest>> GetByArtistAsync(
+        Guid artistId, 
+        CancellationToken cancellationToken = default);
 
     Task<CommissionRequest?> GetByIdWithAllAsync(
         Guid id, 
