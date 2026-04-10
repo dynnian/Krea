@@ -8,6 +8,10 @@ namespace Krea.API.Controllers
     using Application.Features.Commissions.ApproveCommission;
     using Application.Features.Commissions.RequestChanges;
     using Application.Features.Commissions.CancelCommission;
+    using Application.Features.Commissions.Dtos;
+    using Application.Features.Commissions.GetCommissionRequests;
+    using Application.Features.Commissions.GetRequestDetails;
+    using Application.Features.Commissions.GetSubmissions;
     using Domain.Abstractions;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
@@ -202,7 +206,7 @@ namespace Krea.API.Controllers
         /// </summary>
         /// <param name="requestId">The ID of the commission request.</param>
         /// <returns>No content on success.</returns>
-        /// <response code="204">If cancelled successfully.</response>
+        /// <response code="204">If canceled successfully.</response>
         /// <response code="400">If the request is invalid.</response>
         /// <response code="401">If the user is not authenticated.</response>
         /// <response code="403">If the user is not authorized.</response>
@@ -219,7 +223,69 @@ namespace Krea.API.Controllers
             await _sender.Send(command);
             return NoContent();
         }
+        
+        /// <summary>
+        /// Retrieves a list of commission requests for the authenticated user.
+        /// </summary>
+        /// <param name="asBidder">If true, returns requests where the user is the bidder; if false, returns requests for offerings owned by the user (artist).</param>
+        /// <returns>A list of commission requests.</returns>
+        /// <response code="200">Returns the list of requests.</response>
+        /// <response code="401">If the user is not authenticated.</response>
+        [HttpGet]
+        [ProducesResponseType(typeof(IReadOnlyList<CommissionRequestDto>), 200)]
+        [ProducesResponseType(401)]
+        public async Task<ActionResult<IReadOnlyList<CommissionRequestDto>>> GetRequests([FromQuery] bool asBidder = true)
+        {
+            var query = new GetCommissionRequestsQuery(asBidder);
+            var result = await _sender.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Retrieves detailed information about a specific commission request.
+        /// </summary>
+        /// <param name="requestId">The ID of the commission request.</param>
+        /// <returns>The request details including payments, submissions, and feedback.</returns>
+        /// <response code="200">Returns the request details.</response>
+        /// <response code="401">If the user is not authenticated.</response>
+        /// <response code="403">If the user is neither bidder nor artist.</response>
+        /// <response code="404">If the request is not found.</response>
+        [HttpGet("{requestId}")]
+        [ProducesResponseType(typeof(CommissionRequestDto), 200)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<CommissionRequestDto>> GetRequest(Guid requestId)
+        {
+            var query = new GetRequestDetailsQuery(requestId);
+            var result = await _sender.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Retrieves paginated submissions for a commission request.
+        /// </summary>
+        /// <param name="requestId">The ID of the commission request.</param>
+        /// <param name="page">Page number (starting from 1).</param>
+        /// <param name="pageSize">Number of items per page.</param>
+        /// <returns>A paginated list of submissions.</returns>
+        /// <response code="200">Returns the submissions.</response>
+        /// <response code="401">If the user is not authenticated.</response>
+        /// <response code="403">If the user is neither bidder nor artist.</response>
+        /// <response code="404">If the request is not found.</response>
+        [HttpGet("{requestId}/submissions")]
+        [ProducesResponseType(typeof(PagedResult<SubmissionDto>), 200)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<PagedResult<SubmissionDto>>> GetSubmissions(Guid requestId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        {
+            var query = new GetSubmissionsQuery(requestId, page, pageSize);
+            var result = await _sender.Send(query);
+            return Ok(result);
+        }
     }
+    
 
     /// <summary>
     /// Request payload for creating a commission request.
