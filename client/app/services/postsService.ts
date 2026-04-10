@@ -1,6 +1,5 @@
 // app/services/postsService.ts
 import axiosClient from "../lib/axios";
-import { normalizePaginatedResponse } from "../lib/normalizePaginated.ts";
 import {
   type ApiPost,
   type CreatePostData,
@@ -82,12 +81,7 @@ export const postsApi = {
 
   // Obtener comentarios (replies)
   getReplies: (postId: string, page = 1, pageSize = 20) =>
-    axiosClient
-      .get<any>(`/Posts/${postId}/replies`, { params: { page, pageSize } })
-      .then((response) => ({
-        ...response,
-        data: normalizePaginatedResponse<ReplyDto>(response.data),
-      })),
+    axiosClient.get<ReplyDto[]>(`/Posts/${postId}/replies`, { params: { page, pageSize } }),
 
   // Responder (comentar) – asumimos que la respuesta devuelve el nuevo ReplyDto
   replyToPost: (
@@ -111,12 +105,7 @@ export const postsApi = {
   toggleFavorite: (postId: string) =>
     axiosClient.post(`/Posts/${postId}/favorite/toggle`),
   getFavorites: (page = 1, pageSize = 20) =>
-    axiosClient
-      .get<any>("/Posts/me/favorites", { params: { page, pageSize } })
-      .then((response) => ({
-        ...response,
-        data: normalizePaginatedResponse<PostDto>(response.data),
-      })),
+    axiosClient.get<PostDto[]>('/Posts/me/favorites', { params: { page, pageSize } }),
 };
 
 export const feedApi = {
