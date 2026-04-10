@@ -11,13 +11,18 @@ namespace Krea.API {
     using Infrastructure.Setup;
     using Microsoft.Extensions.Primitives;
     using Services;
+    using System.Text.Json.Serialization;
 
     internal static class Program {
         public static async Task Main(string[] args) {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddApplication();
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+                options.JsonSerializerOptions.MaxDepth = 64;
+            });
             builder.Services.AddSignalR();
             builder.Services.AddOpenApi();
             builder.Services.AddCors(options => {
