@@ -19,6 +19,16 @@ public sealed class CommissionRequestRepository(AppDbContext context)
             .FirstOrDefaultAsync(cr => cr.Id == id, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<CommissionRequest>> GetByArtistAsync(Guid artistId, CancellationToken cancellationToken = default)
+    {
+        return await context.CommissionRequests
+            .AsNoTracking()
+            .Include(cr => cr.Bidder)
+            .Include(cr => cr.Offering)
+            .Where(cr => cr.Offering.Artist.Id == artistId)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<CommissionRequest?> GetByIdWithAllAsync(
         Guid id,
         CancellationToken cancellationToken = default)
