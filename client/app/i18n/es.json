@@ -256,6 +256,11 @@
     "commission_button": "Comisión",
     "edit_profile_button": "Editar perfil"
   },
+  "bookmarks": {
+    "title": "Guardados",
+    "load_error": "Error al cargar los posts guardados",
+    "empty": "No tienes posts guardados"
+  },
   "chat": {
     "placeholder": "Enviar mensaje...",
     "online": "En línea",

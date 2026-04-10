@@ -70,7 +70,11 @@ export default [
           {
             path: "messages",
             file: "routes/chat.tsx",
-          }
+          },
+          {
+            path: "saved",
+            file: "routes/bookmarks.tsx",
+          },
         ],
       },
     ],
