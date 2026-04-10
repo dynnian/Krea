@@ -91,34 +91,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
   // Restore session on mount
   useEffect(() => {
-    if (isMounted.current) return;
-    isMounted.current = true;
+    if (!user) return;
+    
     const token = storage.getToken();
-    const storedUser = storage.getUser() as AuthUser | undefined;
-
-    if (token && storedUser) {
-      try {
-        const decoded = jwtDecode<TokenPayload>(token);
+    if (!token) return;
+    
+    try {
+      const decoded = jwtDecode<TokenPayload>(token);
+      const exp = decoded.exp;
+      if (exp) {
         const now = Date.now() / 1000;
-        if (decoded.exp && decoded.exp < now) {
-          // Token expired
-          storage.clearAll();
-          setUser(undefined);
+        const timeToExpire = exp - now;
+        // Si el token expira en menos de 5 minutos, refrescar ahora
+        if (timeToExpire < 300) {
+          refreshToken();
         } else {
-          setUser(storedUser);
+          // Programar refresco 1 minuto antes de que expire
+          const timeoutId = setTimeout(() => {
+            refreshToken();
+          }, (timeToExpire - 60) * 1000);
+          return () => clearTimeout(timeoutId);
         }
-      } catch {
-        // Invalid token
-        storage.clearAll();
-        setUser(undefined);
       }
-    } else {
-      // Inconsistent state
-      storage.clearAll();
-      setUser(undefined);
+    } catch (e) {
+      console.error('Error decoding token', e);
     }
-    setLoading(false);
-  }, []);
+  }, [user]);
 
   const login = async (credentials: LoginDTO, rememberMe = false) => {
     try {
@@ -215,13 +213,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const refreshToken = async () => {
+    try {
+      const response = await axiosClient.post('/Auth/refresh-token');
+      const newToken = response.data.token;
+      if (newToken) {
+        const rememberMe = storage.getRememberMe();
+        storage.setToken(newToken, rememberMe);
+      }
+    } catch (error) {
+      console.error('Refresh token failed', error);
+      logout();
+      window.location.href = '/login';
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await axiosClient.post('/Auth/revoke-token');
+    } catch (e) {
+      // ignore
+    }
     storage.clearAll();
     setUser(undefined);
     stopSignalR();
 
   };
-    const value = useMemo(() => ({
+
+  const value = useMemo(() => ({
     user,
     login,
     register,
