@@ -1,39 +1,29 @@
-// lib/storage.ts
-const TOKEN_KEY = 'auth_token';
-const USER_KEY = 'auth_user';
+const TOKEN_KEY = 'token';
+const USER_KEY = 'user';
+const REMEMBER_ME_KEY = 'rememberMe';
 
 export const storage = {
-  // Token methods
-  getToken: () => localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY),
-  setToken: (token: string, remember: boolean = true) => {
-    if (remember) {
+  getToken: () => {
+    // Primero intentar sessionStorage, luego localStorage
+    return sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY);
+  },
+  setToken: (token: string, rememberMe: boolean) => {
+    if (rememberMe) {
       localStorage.setItem(TOKEN_KEY, token);
       sessionStorage.removeItem(TOKEN_KEY);
     } else {
       sessionStorage.setItem(TOKEN_KEY, token);
       localStorage.removeItem(TOKEN_KEY);
     }
+    storage.setRememberMe(rememberMe);
   },
-  clearToken: () => {
-    localStorage.removeItem(TOKEN_KEY);
-    sessionStorage.removeItem(TOKEN_KEY);
-  },
-
-  // User methods
   getUser: () => {
-    const userStr = localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY);
-    if (userStr) {
-      try {
-        return JSON.parse(userStr);
-      } catch {
-        return undefined;
-      }
-    }
-    return undefined;
+    const userStr = sessionStorage.getItem(USER_KEY) || localStorage.getItem(USER_KEY);
+    return userStr ? JSON.parse(userStr) : null;
   },
-  setUser: (user: any, remember: boolean = true) => {  // 'any' can be replaced with AuthUser type
+  setUser: (user: any, rememberMe: boolean) => {
     const userStr = JSON.stringify(user);
-    if (remember) {
+    if (rememberMe) {
       localStorage.setItem(USER_KEY, userStr);
       sessionStorage.removeItem(USER_KEY);
     } else {
@@ -41,14 +31,18 @@ export const storage = {
       localStorage.removeItem(USER_KEY);
     }
   },
-  clearUser: () => {
+  clearAll: () => {
+    localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(REMEMBER_ME_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
     sessionStorage.removeItem(USER_KEY);
   },
-
-  // Clear both
-  clearAll: () => {
-    storage.clearToken();
-    storage.clearUser();
+  setRememberMe: (rememberMe: boolean) => {
+    localStorage.setItem(REMEMBER_ME_KEY, JSON.stringify(rememberMe));
+  },
+  getRememberMe: () => {
+    const val = localStorage.getItem(REMEMBER_ME_KEY);
+    return val ? JSON.parse(val) : false;
   },
 };
