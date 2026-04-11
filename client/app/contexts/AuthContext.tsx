@@ -1,23 +1,19 @@
-// contexts/AuthContext.tsx
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import axiosClient from '../lib/axios.ts';
-import { storage } from '../lib/storage.ts';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
+import axiosClient from '../lib/axios';
+import { storage } from '../lib/storage';
 import { initSignalR, stopSignalR } from '../services/signalrListener';
-// Token payload from JWT (based on your actual token)
+
 interface TokenPayload {
   sub: string;
   unique_name: string;
   email: string;
   displayName: string;
-  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string; // <-- add this
+  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string;
   exp?: number;
-  iss?: string;
-  aud?: string;
 }
 
-// User object returned from /Auth/login (inside the response)
 interface UserResponse {
   id: string;
   username: string;
@@ -26,30 +22,28 @@ interface UserResponse {
   biography: string | null;
   languageCode: string;
   timeZoneId: string;
-  roleId: number;        // note: roleId, not role string
+  roleId: number;
 }
 
-// Complete login response from backend
 interface LoginResponse {
   token: string;
-  expiration: string;    // ISO date string
+  expiration: string;
   user: UserResponse;
 }
 
-// AuthUser for the app (id is string, not number)
 export interface AuthUser {
   id: string;
   email: string;
-  name: string;          // displayName
-  handle: string;        // username
+  name: string;
+  handle: string;
   biography?: string | null;
   languageCode?: string;
   timeZoneId?: string;
-  role?: string;         // optional, can be derived from token
+  role?: string;
 }
 
 export interface LoginDTO {
-  email: string;         // from form, maps to emailOrUsername in backend
+  email: string;
   password: string;
 }
 
@@ -78,64 +72,64 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | undefined>();
   const [loading, setLoading] = useState(true);
-  const isMounted = useRef(false);
-  
+  const signalRInitialized = useRef(false);
+
+  // Restaurar sesión al montar
   useEffect(() => {
-    if (user) {
-      // Small delay to ensure everything is settled
-      const timer = setTimeout(() => {
-        initSignalR(user.id);
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [user]);
-  // Restore session on mount
-  useEffect(() => {
-    if (!user) return;
-    
     const token = storage.getToken();
-    if (!token) return;
-    
-    try {
-      const decoded = jwtDecode<TokenPayload>(token);
-      const exp = decoded.exp;
-      if (exp) {
+    const storedUser = storage.getUser() as AuthUser | undefined;
+
+    if (token && storedUser) {
+      try {
+        const decoded = jwtDecode<TokenPayload>(token);
         const now = Date.now() / 1000;
-        const timeToExpire = exp - now;
-        // Si el token expira en menos de 5 minutos, refrescar ahora
-        if (timeToExpire < 300) {
-          refreshToken();
+        if (decoded.exp && decoded.exp < now) {
+          storage.clearAll();
+          setUser(undefined);
         } else {
-          // Programar refresco 1 minuto antes de que expire
-          const timeoutId = setTimeout(() => {
-            refreshToken();
-          }, (timeToExpire - 60) * 1000);
-          return () => clearTimeout(timeoutId);
+          setUser(storedUser);
         }
+      } catch {
+        storage.clearAll();
+        setUser(undefined);
       }
-    } catch (e) {
-      console.error('Error decoding token', e);
+    } else {
+      storage.clearAll();
+      setUser(undefined);
+    }
+    setLoading(false);
+  }, []);
+
+  // Inicializar SignalR solo cuando el usuario esté autenticado y no se haya hecho antes
+  useEffect(() => {
+    if (user && !signalRInitialized.current) {
+      signalRInitialized.current = true;
+      (async () => {
+        try {
+          await initSignalR(user.id);
+        } catch (err) {
+          console.error('SignalR init failed:', err);
+        }
+      })();
+    }
+    if (!user && signalRInitialized.current) {
+      stopSignalR();
+      signalRInitialized.current = false;
     }
   }, [user]);
 
   const login = async (credentials: LoginDTO, rememberMe = false) => {
     try {
-      // Call backend login endpoint
       const response = await axiosClient.post('/Auth/login', {
         emailOrUsername: credentials.email,
         password: credentials.password,
       });
 
-      // The response data matches the LoginResponse interface
       const data = response.data as LoginResponse;
-
       const { token, user: userData } = data;
 
-      if (!token || !userData) {
-        throw new Error('Invalid response from server');
-      }
+      if (!token || !userData) throw new Error('Invalid response');
 
-      // Build AuthUser from the user object
       const authUser: AuthUser = {
         id: userData.id,
         email: userData.email,
@@ -146,101 +140,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         timeZoneId: userData.timeZoneId,
       };
 
-      // Optionally extract role from token (if needed)
+      // Extraer rol del token
       try {
         const decoded = jwtDecode<TokenPayload>(token);
         const roleClaim = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-        if (roleClaim) {
-          authUser.role = roleClaim; // "Admin" for admin users
-        }
+        if (roleClaim) authUser.role = roleClaim;
       } catch {
         // ignore
       }
 
-      // Store token and user with rememberMe preference
       storage.setToken(token, rememberMe);
       storage.setUser(authUser, rememberMe);
-      // Update state
+
+      // Actualizar el estado del usuario
       setUser(authUser);
     } catch (error) {
-      // Enhanced error handling
       if (axios.isAxiosError(error) && error.response) {
         const data = error.response.data;
-        const message =
-          data?.message ||
-          data?.title ||
-          (data?.errors ? Object.values(data.errors).flat().join(' ') : null) ||
-          'Login failed';
-        throw new Error(message);
-      }
-      throw new Error('Network error. Please check your connection.');
-    }
-  };
-
-  const register = async (data: RegisterDTO, rememberMe = false) => {
-    try {
-      await axiosClient.post('/Auth/register', data);
-      // No token or user returned – account requires confirmation
-      return;
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        const data = error.response.data;
-        const message =
-          data?.message ||
-          data?.title ||
-          (data?.errors ? Object.values(data.errors).flat().join(' ') : null) ||
-          'Registration failed';
-        throw new Error(message);
-      }
-      throw new Error('Network error. Please check your connection.');
-    }
-  };
-
-  const confirmEmail = async (userId: string, token: string) => {
-    try {
-      await axiosClient.get('/Auth/confirm-email', {
-        params: { userId, token }
-      });
-      // If the request succeeds, the email is confirmed.
-      // The user must log in manually.
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        const data = error.response.data;
-        const message = data?.message || data?.title || 'Email confirmation failed';
+        const message = data?.message || data?.title || 'Login failed';
         throw new Error(message);
       }
       throw new Error('Network error');
     }
   };
 
-  const refreshToken = async () => {
+  const register = async (data: RegisterDTO, rememberMe = false) => {
     try {
-      const response = await axiosClient.post('/Auth/refresh-token');
-      const newToken = response.data.token;
-      if (newToken) {
-        const rememberMe = storage.getRememberMe();
-        storage.setToken(newToken, rememberMe);
-      }
+      await axiosClient.post('/Auth/register', data);
+      // No hay token, solo registro
     } catch (error) {
-      console.error('Refresh token failed', error);
-      logout();
-      window.location.href = '/login';
+      if (axios.isAxiosError(error) && error.response) {
+        const data = error.response.data;
+        const message = data?.message || data?.title || 'Registration failed';
+        throw new Error(message);
+      }
+      throw new Error('Network error');
     }
   };
 
-  const logout = async () => {
+  const confirmEmail = async (userId: string, token: string) => {
     try {
-      await axiosClient.post('/Auth/revoke-token');
-    } catch (e) {
-      // ignore
+      await axiosClient.get('/Auth/confirm-email', { params: { userId, token } });
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        const data = error.response.data;
+        throw new Error(data?.message || data?.title || 'Email confirmation failed');
+      }
+      throw new Error('Network error');
     }
+  };
+
+  const logout = () => {
     storage.clearAll();
     setUser(undefined);
     stopSignalR();
-
+    signalRInitialized.current = false;
   };
 
-  const value = useMemo(() => ({
+  const value: AuthContextType = {
     user,
     login,
     register,
@@ -248,20 +205,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logout,
     isAuthenticated: !!user,
     loading,
-  }), [user, login, register, confirmEmail, logout, loading]);
-  return (
-    <AuthContext.Provider
-      value={value}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextType {
   const ctx = useContext(AuthContext);
-  if (!ctx) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
