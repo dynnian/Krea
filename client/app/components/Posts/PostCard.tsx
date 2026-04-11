@@ -165,7 +165,7 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
               <span className="text-[#1B1C1E]">·</span>
               <span className="text-[#1B1C1E]">{formattedDate}</span>
             </div>
-            <p className="text-[#1B1C1E] text-justify text-[16px] leading-7 mt-1">{originalPost.content}</p>
+            <p className="text-[#1B1C1E] text-justify text-[16px] leading-6 mt-1">{originalPost.content}</p>
           </div>
         </Link>
         <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">

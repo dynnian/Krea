@@ -1,4 +1,10 @@
-import React from "react";
+// deno-lint-ignore-file
+import React, { useState } from "react";
+import { ChevronLeft, MoreHorizontal } from "lucide-react";
+import {
+  mockImageCollections,
+  type MockImageCollection,
+} from "../../data/mockImageCollections.ts";
 
 export type DigitalArtwork = {
   id: string;
@@ -10,7 +16,219 @@ type DigitalPortfolioProps = {
   items: DigitalArtwork[];
 };
 
+type PreviewImage = {
+  id: string;
+  title: string;
+  imageUrl: string;
+};
+
+function getPortfolioGeneralImages(items: DigitalArtwork[]): PreviewImage[] {
+  return items.slice(0, 3);
+}
+
+function getLatestCollectionImages(collection: MockImageCollection): PreviewImage[] {
+  if (!collection.posts?.length) return [];
+
+  const sortedPosts = [...collection.posts].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
+  return sortedPosts.slice(0, 2);
+}
+
+function PortfolioGeneralCard({ items, onOpen,}: {
+  items: DigitalArtwork[];
+  onOpen: () => void;
+}){
+  const previewImages = getPortfolioGeneralImages(items);
+  const mainImage = previewImages[0];
+  const rightTopImage = previewImages[1];
+  const rightBottomImage = previewImages[2];
+  // const [showGeneralPortfolio, setShowGeneralPortfolio] = useState(false);
+  
+  return (
+    <button
+      type="button"
+      className="w-[320px] text-left bg-transparent"
+    >
+      <div className="w-full">
+          <div 
+            className="flex gap-[5px] h-[225px] rounded-[10px] overflow-hidden cursor-pointer"
+            onClick={onOpen}
+          >
+          
+          <div className="w-[58%] h-full bg-[#D9D9D9] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
+            {mainImage ? (
+              <img
+                src={mainImage.imageUrl}
+                alt={mainImage.title}
+                className="w-full h-full object-cover"
+              />
+            ) : null}
+          </div>
+
+          <div className="w-[42%] h-full flex flex-col gap-[5px]">
+            <div className="flex-1 bg-[#D9D9D9] overflow-hidden">
+              {rightTopImage ? (
+                <img
+                  src={rightTopImage.imageUrl}
+                  alt={rightTopImage.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : null}
+            </div>
+
+            <div className="flex-1 bg-[#D9D9D9] overflow-hidden">
+              {rightBottomImage ? (
+                <img
+                  src={rightBottomImage.imageUrl}
+                  alt={rightBottomImage.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : null}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-start justify-between pl-[4px] py-[14px]">
+          <div>
+            <h3 
+              className="text-[24px] font-medium leading-[22px] text-[#1B1C1E] cursor-pointer hover:underline"
+              onClick={onOpen}
+            >
+              Portafolio General
+            </h3>
+            <h3 className="text-[14px] font-medium leading-[14px] text-[#1B1C1E] mt-[8px]">
+              {items.length} Obras
+            </h3>
+          </div>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function ImageCollectionCard({ collection }: { collection: MockImageCollection }) {
+  const latestImages = getLatestCollectionImages(collection);
+  const rightTopImage = latestImages[0];
+  const rightBottomImage = latestImages[1];
+
+  return (
+    <button
+      type="button"
+      className="w-[320px] text-left bg-transparent"
+      onClick={() => {
+        console.log("Abrir collection", collection.id);
+      }}
+    >
+      <div className="w-full">
+        <div className="flex gap-[5px] h-[225px] rounded-[10px] overflow-hidden cursor-pointer">
+          <div className="w-[58%] h-full bg-[#D9D9D9] overflow-hidden">
+            {collection.coverUrl ? (
+              <img
+                src={collection.coverUrl}
+                alt={collection.title}
+                className="w-full h-full object-cover"
+              />
+            ) : null}
+          </div>
+
+          <div className="w-[42%] h-full flex flex-col gap-[5px]">
+            <div className="flex-1 bg-[#D9D9D9] overflow-hidden">
+              {rightTopImage ? (
+                <img
+                  src={rightTopImage.imageUrl}
+                  alt={rightTopImage.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : null}
+            </div>
+
+            <div className="flex-1 bg-[#D9D9D9] overflow-hidden">
+              {rightBottomImage ? (
+                <img
+                  src={rightBottomImage.imageUrl}
+                  alt={rightBottomImage.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : null}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-start justify-between pl-[4px] py-[14px]">
+          <div className="flex flex-col">
+            <h3 className="text-[24px] font-medium leading-[22px] text-[#1B1C1E] cursor-pointer hover:underline">
+              {collection.title}
+            </h3>
+            <h3 className="text-[14px] font-medium leading-[14px] text-[#1B1C1E] mt-[8px]">
+              {collection.itemCount} Obras
+            </h3>
+          </div>
+
+          <button
+            type="button"
+            className="h-[20px] w-[20px] flex items-center justify-center rounded-full cursor-pointer"
+            onClick={(event) => {
+              event.stopPropagation();
+              console.log("Abrir menú collection", collection.id);
+            }}
+          >
+            <MoreHorizontal size={16} className="text-[#1B1C1E]" />
+          </button>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function PortfolioViewHeader({
+  title,
+  onBack,
+}: {
+  title: string;
+  onBack: () => void;
+}) {
+  return (   
+      <div className="flex items-center gap-[10px] px-[24px] md:px-[34px] pb-[18px]">
+        <button
+          onClick={onBack}
+          className="flex items-center justify-center w-[32px] h-[32px] hover:bg-gray-200 rounded-full transition cursor-pointer"
+        >
+          <ChevronLeft size={24} className="text-gray-800" />
+        </button>
+        <div className="pt-[10px]">
+          <h1 className="text-[20px] font-medium text-gray-800 leading-none">{title}</h1>
+        </div>
+      </div>
+      
+  );
+}
+
+function DigitalPortfolioGrid({ items }: { items: DigitalArtwork[] }) {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-[1px] px-0 pb-[1px]">
+      {items.map((item) => (
+        <div
+          key={item.id}
+          className="aspect-square overflow-hidden bg-white"
+        >
+          <img
+            src={item.imageUrl}
+            alt={item.title}
+            className="w-full h-full object-cover cursor-pointer hover:scale-105 transition"
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function DigitalPortfolio({ items }: DigitalPortfolioProps) {
+  const USE_COLLECTIONS_MOCK = true;
+  const collections = USE_COLLECTIONS_MOCK ? mockImageCollections : [];
+  const [showGeneralPortfolio, setShowGeneralPortfolio] = useState(false);
+
   if (items.length === 0) {
     return (
       <div className="text-center text-gray-500 py-8">
@@ -19,20 +237,37 @@ export default function DigitalPortfolio({ items }: DigitalPortfolioProps) {
     );
   }
 
+  if (showGeneralPortfolio) {
     return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-[1px] px-0 pb-[1px]">
-        {items.map((item) => (
-        <div
-            key={item.id}
-            className="aspect-square overflow-hidden bg-white "
-        >
-            <img
-            src={item.imageUrl}
-            alt={item.title}
-            className="w-full h-full object-cover cursor-pointer hover:scale-105 transition"
-            />
-        </div>
-        ))}
-    </div>
+      <div className="w-full -mt-[60px] AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA">
+        <PortfolioViewHeader
+          title="Portafolio General"
+          onBack={() => setShowGeneralPortfolio(false)}
+        />
+        <DigitalPortfolioGrid items={items} />
+      </div>
     );
+  }
+
+  if (collections.length === 0) {
+    return <DigitalPortfolioGrid items={items} />;
+  }
+
+  return (
+    <div className="w-full px-[20px] md:px-[100px] pb-[30px]">
+      <div className="grid justify-center gap-x-[35px] gap-y-[20px] [grid-template-columns:repeat(auto-fit,320px)]">
+        <PortfolioGeneralCard
+          items={items}
+          onOpen={() => setShowGeneralPortfolio(true)}
+        />
+
+        {collections.map((collection) => (
+          <ImageCollectionCard
+            key={collection.id}
+            collection={collection}
+          />
+        ))}
+      </div>
+    </div>
+  );
 }

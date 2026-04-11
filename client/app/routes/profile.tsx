@@ -87,6 +87,7 @@ interface Post {
   favoritesCount: number;
   replies: any[];
   backendId?: string;
+  isLikedByCurrentUser?: boolean;
 }
 
 interface ProfileData {
@@ -124,11 +125,14 @@ interface ApiPost {
   content: string;
   createdAt: string;
   media: ApiPostMedia[];
+  likesCount?: number;
+  favoritesCount?: number;
+  isLikedByCurrentUser?: boolean;
 }
 
 
 
-// ---------- Funciones API (debes implementar) ----------
+// ---------- Funciones API ----------
 async function fetchProfile(username: string): Promise<ProfileData> {
   // Simular llamada API
   return new Promise((resolve) => {
@@ -312,7 +316,7 @@ async function fetchMyProfileFromApi() {
 }
 
 async function fetchPostsByAuthorFromApi(authorId: string) {
-  const res = await axiosClient.get(`/posts/user/${authorId}?page=1&pageSize=100`);
+  const res = await postsApi.getUserPosts(authorId, 1, 100);
   return res.data;
 }
 
@@ -425,7 +429,7 @@ function mapPostsToMusicSongs(posts: Post[]): MusicSong[] {
           "https://placehold.co/240x240?text=Cover",
         audioUrl: audioMedia.media.path,
         likesCount: post.likesCount ?? 0,
-        isLiked: false,
+        isLiked: post.isLikedByCurrentUser ?? false,
       };
     })
     .filter((song): song is MusicSong => song !== null);
@@ -462,7 +466,7 @@ function mapPostsToWriterWorks(posts: Post[]): WriterWork[] {
         genre: "Sin género",
         description: post.content ?? "",
         likesCount: post.likesCount ?? 0,
-        isLiked: false,
+        isLiked: post.isLikedByCurrentUser ?? false,
       };
     });
 }
@@ -664,7 +668,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, canDelete = false, onDelete }
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [liked, setLiked] = useState(post.likesCount > 0);
+  const [liked, setLiked] = useState(post.isLikedByCurrentUser ?? false);
   const [likesCount, setLikesCount] = useState(post.likesCount);
   const [reposted, setReposted] = useState(false);
   const [repostsCount, setRepostsCount] = useState(post.favoritesCount);
@@ -812,7 +816,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, canDelete = false, onDelete }
           </Dropdown>
         </div>
           <p
-            className="text-gray-800 mt-1 text-[16px] text-justify pr-[20px] pt-[5px] cursor-pointer"
+            className="text-gray-800 mt-1 text-[16px] leading-6 text-justify pr-[20px] pt-[5px] cursor-pointer"
             onClick={openPostDetail}
           >
             {post.content}
@@ -876,27 +880,37 @@ const PostCard: React.FC<PostCardProps> = ({ post, canDelete = false, onDelete }
           )}
 
           <div className="flex items-center gap-6 mt-3 text-gray-600">
-            <ActionButton
-              icon={<Heart size={18} fill={liked ? 'currentColor' : 'none'} />}
-              onClick={handleLike}
-              active={liked}
-              count={likesCount}
-            />
-            <ActionButton
-              icon={<MessageCircle size={18} />}
-              count={post.replies.length}
-            />
-            <ActionButton
-              icon={<Repeat2 size={18} fill={reposted ? 'currentColor' : 'none'} />}
-              onClick={handleRepost}
-              active={reposted}
-              count={repostsCount}
-            />
-            <ActionButton
-              icon={<Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />}
-              onClick={handleBookmark}
-              active={bookmarked}
-            />
+              <button
+                onClick={handleLike}
+                className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 cursor-pointer`}
+              >
+                <Heart size={18} className={liked ? 'fill-red-500 text-red-500' : ''} />
+                <span>{likesCount}</span>
+              </button>
+
+              <button
+                onClick={handleLike}
+                className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 cursor-pointer`}
+              >
+                <MessageCircle size={18} className={''} />
+                <span>{post.replies.length}</span>
+              </button>
+
+              <button
+                onClick={handleRepost}
+                className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 cursor-pointer`}
+              >
+                <Repeat2 size={18} className={reposted ? ' text-[#0B5107] font-bold' : ''} />
+                <span>{repostsCount}</span>
+              </button>
+            
+              <button
+                onClick={handleBookmark}
+                className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 cursor-pointer`}
+              >
+                <Bookmark size={18} className={bookmarked ? 'fill-[#0B5107] text-[#0B5107] font-bold' : ''} />
+                <span>{repostsCount}</span>
+              </button>
           </div>
         </div>
       </div>
@@ -1057,9 +1071,10 @@ function normalizeApiPosts(apiPosts: ApiPost[], displayName: string): Post[] {
           coverMediaId: m.coverMediaId,
         },
       })),
-      likesCount: 0,
-      favoritesCount: 0,
+      likesCount: post.likesCount ?? 0,
+      favoritesCount: post.favoritesCount ?? 0,
       replies: [],
+      isLikedByCurrentUser: post.isLikedByCurrentUser ?? false,
     };
   });
 }
@@ -1363,103 +1378,115 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
     </div>
 
     {shouldShowUpdatePortfolioButton && (
-      <div className="px-[70px] mt-[-6px] mb-[10px] flex justify-end">
-       <div className="ml-[500px] -mt-[30px] relative z-20 "> 
+      <div className="px-[70px] mt-[-6px] mb-[10px] flex justify-end pr-[0px]">
+        <div className="flex items-center gap-[10px] -mt-[30px] relative z-20 translate-x-[55px]">
+          <button
+            type="button"
+            onClick={() => {
+              console.log("Crear colección");
+            }}
+            className="rounded-full bg-[#0B5107] cursor-pointer transition hover:bg-[#093B05] px-[14px] py-[6px] text-[11px] border border-[#1B1C1E]"
+          >
+            <span className="text-[13px] font-medium leading-5 text-[#E3E2DE]">
+              Crear colección
+            </span>
+          </button>
+
           <button
             type="button"
             onClick={handleUpdatePortfolioClick}
             className="rounded-full bg-[#0B5107] cursor-pointer transition hover:bg-[#093B05] px-[14px] py-[6px] text-[11px] border border-[#1B1C1E]"
           >
             <span className="text-[13px] font-medium leading-5 text-[#E3E2DE]">
-                  Actualizar Portafolio
+              Actualizar Portafolio
             </span>
-           </button>
+          </button>
         </div>
       </div>
-              )}
-              </>
-          )}
-    </div>
-        
-         {/*LINEA DEL DIABLO*/}
+    )}
+    </>
+    )}
+  </div>
+  
+   {/*LINEA DEL DIABLO*/}
    
 
-        <div className={` ${
-            isPortfolioView
-              ? "pt-[20px]"
-              : ""
-          }`}
-        >
+  <div className={` ${
+      isPortfolioView
+        ? "pt-[20px]"
+        : ""
+    }`}
+  >
 
-          {activeMainTab === "portfolio" && effectivePortfolioTab === "images" && (
-           <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-          <DigitalPortfolio items={visualPortfolioItems} />
-           </div>
-          )}
+    {activeMainTab === "portfolio" && effectivePortfolioTab === "images" && (
+     <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+    <DigitalPortfolio items={visualPortfolioItems} />
+     </div>
+    )}
 
-          {activeMainTab === "portfolio" && effectivePortfolioTab === "music" && (
-            <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
-              <MusicPortfolio songs={musicSongs} albums={musicAlbums} error={postsError} />
-            </div>
-          )}
-          
-          {activeMainTab === "portfolio" && effectivePortfolioTab === "literature" && (
-            <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
-              <WriterPortfolio works={writerWorks} error={postsError} />
-            </div>
-          )}
+    {activeMainTab === "portfolio" && effectivePortfolioTab === "music" && (
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
+        <MusicPortfolio songs={musicSongs} albums={musicAlbums} error={postsError} />
+      </div>
+    )}
+    
+    {activeMainTab === "portfolio" && effectivePortfolioTab === "literature" && (
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
+        <WriterPortfolio works={writerWorks} error={postsError} />
+      </div>
+    )}
 
-            {activeMainTab !== "portfolio" && (
-            <div className="space-y-[] ">
-              {activeMainTab === "publications" && postsError ? (
-                <div className="text-center text-red-500 py-8">
-                  {postsError}
-                </div>
-              ) : (
-                <>
-                  {filteredPosts.map((post) => (
-                    <div key={post.id} className="mt-[15px] bg-[#E9F1FC] p-[22px] w-full border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]  AAAAAAAAAAAAAAAA">
-                      <PostCard
-                        post={post}
-                        canDelete={isOwnProfile && activeMainTab === "publications"}
-                        onDelete={(deletedPost) => {
-                          setProfile((prev) =>
-                            prev
-                              ? {
-                                  ...prev,
-                                  posts: prev.posts.filter((p) =>
-                                    deletedPost.backendId
-                                      ? p.backendId !== deletedPost.backendId
-                                      : p.id !== deletedPost.id
-                                  ),
-                                }
-                              : prev
-                          );
-                        }}
-                      />
-                      
-                    </div>
-                  ))}
-                  {filteredPosts.length === 0 && (
-                    <div className="text-center text-gray-500 py-8 ">
-                      {t("profile.no_posts")}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-            </div>
-                  <CreatePortfolioPostModal
-        visible={modalVisible}
-        initialPostType={portfolioModalType}
-        onClose={() => setModalVisible(false)}
-        onSuccess={() => {
-          setModalVisible(false);
-          window.location.reload();
-        }}
-      />
-        </div>
+      {activeMainTab !== "portfolio" && (
+      <div className="space-y-[] ">
+        {activeMainTab === "publications" && postsError ? (
+          <div className="text-center text-red-500 py-8">
+            {postsError}
+          </div>
+        ) : (
+          <>
+            {filteredPosts.map((post) => (
+              <div key={post.id} className="mt-[15px] bg-[#E9F1FC] p-[22px] w-full border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]  AAAAAAAAAAAAAAAA">
+                <PostCard
+                  post={post}
+                  canDelete={isOwnProfile && activeMainTab === "publications"}
+                  onDelete={(deletedPost) => {
+                    setProfile((prev) =>
+                      prev
+                        ? {
+                            ...prev,
+                            posts: prev.posts.filter((p) =>
+                              deletedPost.backendId
+                                ? p.backendId !== deletedPost.backendId
+                                : p.id !== deletedPost.id
+                            ),
+                          }
+                        : prev
+                    );
+                  }}
+                />
+                
+              </div>
+            ))}
+            {filteredPosts.length === 0 && (
+              <div className="text-center text-gray-500 py-8 ">
+                {t("profile.no_posts")}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    )}
+      </div>
+            <CreatePortfolioPostModal
+  visible={modalVisible}
+  initialPostType={portfolioModalType}
+  onClose={() => setModalVisible(false)}
+  onSuccess={() => {
+    setModalVisible(false);
+    window.location.reload();
+  }}
+/>
+  </div>
   </div>
 );
 }

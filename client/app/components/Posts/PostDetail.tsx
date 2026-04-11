@@ -195,6 +195,7 @@ export default function PostDetail() {
           <h1 className="text-xl font-medium text-gray-800 leading-none">{t('post.publication')}</h1>
         </div>
       </div>
+      
       <main className="flex justify-center px-4">
         <div className="flex flex-col lg:flex-row gap-6 max-w-7xl w-full mx-auto">
           <div className="w-full xl:w-[870px] xl:flex-none min-w-0">
@@ -225,7 +226,7 @@ export default function PostDetail() {
                 </Dropdown>
               </div>
 
-              <p className="text-[#1B1C1E] text-justify text-[16px] leading-[28px] mt-4 mb-6">
+              <p className="text-[#1B1C1E] text-justify text-[16px] leading-6 mt-4 mb-6">
                 {originalPost.content}
               </p>
 
