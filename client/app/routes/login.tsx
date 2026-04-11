@@ -39,6 +39,7 @@ export default function LoginRoute() {
   }, []);
 
   useEffect(() => {
+    console.log('Auth changed:', { isAuthenticated, user });
     if (!loading && isAuthenticated) {
       if (user?.role === "Admin") {
         navigate("/admin", { replace: true });
