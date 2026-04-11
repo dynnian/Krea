@@ -21,16 +21,14 @@ public sealed class GetUserFavoritesHandler
         GetUserFavoritesQuery request,
         CancellationToken cancellationToken)
     {
-        // Obtiene PaginatedList<Post> del repositorio
         var result = await _repository.GetUserFavoritesAsync(
             request.UserId,
             request.Page,
             request.PageSize,
             cancellationToken);
 
-        // Convierte cada Post a FavoritePostDto
         var items = result.Items
-            .Select(FavoritePostDto.FromDomain)
+            .Select(post => FavoritePostDto.FromDomain(post, request.UserId))
             .ToList();
 
         return new FavoritePostsResponse
