@@ -41,7 +41,7 @@ public sealed class FavoritePostDto
     [JsonPropertyName("media")]
     public List<FavoriteMediaDto> Media { get; init; } = new();
 
-    public static FavoritePostDto FromDomain(Post post)
+    public static FavoritePostDto FromDomain(Post post, Guid currentUserId)
     {
         return new FavoritePostDto
         {
@@ -52,10 +52,10 @@ public sealed class FavoritePostDto
             Content = post.Content,
             UploadedAt = post.UploadedAt,
             LikesCount = post.Likes.Count,
-            IsLikedByCurrentUser = false,      // Se puede calcular después
-            IsRetweetedByCurrentUser = false,  // Se puede calcular después
+            IsLikedByCurrentUser = post.Likes.Any(l => l.UserId == currentUserId),
+            IsRetweetedByCurrentUser = false, // pendiente para calcular reposts
             IsFavoritedByCurrentUser = true,
-            Media = post.Uploads?
+            Media = post.Uploads
                 .Where(u => u.Media != null)
                 .Select(u => new FavoriteMediaDto
                 {
@@ -64,7 +64,8 @@ public sealed class FavoritePostDto
                     MimeType = u.Media.MimeType,
                     Url = u.Media.Path,
                     IsWorkMedia = u.IsWorkMedia
-                }).ToList() ?? new()
+                })
+                .ToList()
         };
     }
 }

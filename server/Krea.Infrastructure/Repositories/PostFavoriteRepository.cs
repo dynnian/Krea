@@ -42,13 +42,12 @@ namespace Krea.Infrastructure.Repositories {
             CancellationToken ct)
         {
             var query = _context.Posts
+                .AsNoTracking()
                 .Where(p => p.Favorites.Any(f => f.UserId == userId) && !p.IsDeleted)
                 .Include(p => p.AuthorPost)
+                .Include(p => p.Likes)
                 .Include(p => p.Uploads)
-                    .ThenInclude(u => u.Media)
-                .Include(p => p.Uploads)
-                    .ThenInclude(u => u.Metadata)
-                    .ThenInclude(m => m.Genres)
+                .ThenInclude(u => u.Media)
                 .OrderByDescending(p => p.UploadedAt);
 
             return await PaginatedList<Post>.CreateAsync(query, page, pageSize, ct);
