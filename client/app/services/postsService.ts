@@ -81,7 +81,9 @@ export const postsApi = {
 
   // Obtener comentarios (replies)
   getReplies: (postId: string, page = 1, pageSize = 20) =>
-    axiosClient.get<ReplyDto[]>(`/Posts/${postId}/replies`, { params: { page, pageSize } }),
+    axiosClient.get<ReplyDto[]>(`/Posts/${postId}/replies`, {
+      params: { page, pageSize },
+    }),
 
   // Responder (comentar) – asumimos que la respuesta devuelve el nuevo ReplyDto
   replyToPost: (
@@ -104,8 +106,21 @@ export const postsApi = {
   }) => axiosClient.get<PostDto[]>("/Posts/explore", { params }),
   toggleFavorite: (postId: string) =>
     axiosClient.post(`/Posts/${postId}/favorite/toggle`),
-  getFavorites: (page = 1, pageSize = 20) =>
-    axiosClient.get<PostDto[]>('/Posts/me/favorites', { params: { page, pageSize } }),
+  getFavorites: async (page = 1, pageSize = 20) => {
+    const response = await axiosClient.get("/Posts/me/favorites", {
+      params: { page, pageSize },
+    });
+    const data = response.data;
+    // Extraer el array de items (paginado) o devolver array vacío
+    const postsArray = data?.items ?? [];
+    return {
+      data: postsArray,
+      page: data.page ?? 1,
+      pageSize: data.pageSize ?? postsArray.length,
+      totalCount: data.totalCount ?? postsArray.length,
+      totalPages: data.totalPages ?? 1,
+    };
+  },
 };
 
 export const feedApi = {
