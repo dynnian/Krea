@@ -3,13 +3,13 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Spin, message, Alert, Avatar, Dropdown } from 'antd';
 import { ArrowLeft, Heart, MessageCircle, Repeat2, User, MoreHorizontal, Bookmark, Flag } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import TagsSidebar from '../Home/TagsSidebar';
-import PostImageDetail from './PostImageDetail';
-import PostAudioDetail from './PostAudioDetail';
-import CommentSection from './CommentSection';
-import { postsApi } from '../../services/postsService';
-import type { PostDto } from '../../types/api';
+import { useAuth } from '../../contexts/AuthContext.tsx';
+import TagsSidebar from '../Home/TagsSidebar.tsx';
+import PostImageDetail from './PostImageDetail.tsx';
+import PostAudioDetail from './PostAudioDetail.tsx';
+import CommentSection from './CommentSection.tsx';
+import { postsApi } from '../../services/postsService.ts';
+import type { PostDto } from '../../types/api.ts';
 import ReportModal from "../Reports/ReportModal.tsx";
 
 const getMediaType = (mimeType?: string): 'image' | 'audio' | 'pdf' | 'text' => {
@@ -195,7 +195,6 @@ export default function PostDetail() {
           <h1 className="text-xl font-medium text-gray-800 leading-none">{t('post.publication')}</h1>
         </div>
       </div>
-      
       <main className="flex justify-center px-4">
         <div className="flex flex-col lg:flex-row gap-6 max-w-7xl w-full mx-auto">
           <div className="w-full xl:w-[870px] xl:flex-none min-w-0">

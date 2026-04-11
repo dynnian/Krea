@@ -449,8 +449,7 @@ const resetForm = () => {
               value={selectedCollectionId}
               onChange={setSelectedCollectionId}
               placeholder="Seleccionar Colección"
-              className="w-full"
-              rootClassName="w-full h-[56px]"
+              className="w-full h-[56px]"
               size="large"
               allowClear
               showSearch

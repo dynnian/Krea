@@ -14,6 +14,7 @@ import WriterPortfolio from "../components/Profile/WriterPortfolio.tsx";
 import type { WriterWork } from "../components/Profile/WriterPortfolio.tsx";
 import { settingsRepository } from "../services/settingsRepository.ts";
 import CreatePortfolioPostModal from "../components/Posts/CreatePortfolioPostModal.tsx";
+import CreateCollectionModal from "../components/Profile/CreateCollectionModal.tsx";
 import axiosClient from "../lib/axios.ts";
 import type { UploadMediaType } from "../types/api.ts";
 import { PostType as PortfolioPostType } from "../types/common.ts";
@@ -950,7 +951,7 @@ const [isFollowing, setIsFollowing] = useState(false);
 const [isSubscribed, setIsSubscribed] = useState(false);
 const [modalVisible, setModalVisible] = useState(false);
 const [portfolioModalType, setPortfolioModalType] = useState<UploadMediaType>(PortfolioPostType.IMAGE);
-
+const [isCreateCollectionModalOpen, setIsCreateCollectionModalOpen] = useState(false);
 
 const handleGoToSettings = () => {
   navigate("/settings");
@@ -1023,7 +1024,7 @@ function normalizeApiPosts(apiPosts: ApiPost[], displayName: string): Post[] {
     const hasAudio = post.media.some((m) => isAudioMime(m.mimeType));
     const hasImage = post.media.some((m) => isImageMime(m.mimeType));
     const hasDocument = post.media.some((m) => isDocumentMime(m.mimeType));
-
+    
     return {
       backendId: post.postId ?? post.id,
       id: Number.isFinite(Number(post.postId ?? post.id))
@@ -1277,7 +1278,6 @@ const handleUpdatePortfolioClick = () => {
   setModalVisible(true);
 };
 
-
 const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
   
  return (
@@ -1378,19 +1378,21 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
     </div>
 
     {shouldShowUpdatePortfolioButton && (
+      
       <div className="px-[70px] mt-[-6px] mb-[10px] flex justify-end pr-[0px]">
         <div className="flex items-center gap-[10px] -mt-[30px] relative z-20 translate-x-[55px]">
-          <button
-            type="button"
-            onClick={() => {
-              console.log("Crear colección");
-            }}
-            className="rounded-full bg-[#0B5107] cursor-pointer transition hover:bg-[#093B05] px-[14px] py-[6px] text-[11px] border border-[#1B1C1E]"
-          >
-            <span className="text-[13px] font-medium leading-5 text-[#E3E2DE]">
-              Crear colección
-            </span>
-          </button>
+        <button
+          type="button"
+          onClick={() => {
+            console.log("click crear colección");
+            setIsCreateCollectionModalOpen(true);
+          }}
+          className="rounded-full bg-[#0B5107] cursor-pointer transition hover:bg-[#093B05] px-[14px] py-[6px] text-[11px] border border-[#1B1C1E]"
+        >
+          <span className="text-[13px] font-medium leading-5 text-[#E3E2DE]">
+            Crear colección
+          </span>
+        </button>
 
           <button
             type="button"
@@ -1477,7 +1479,7 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
       </div>
     )}
       </div>
-            <CreatePortfolioPostModal
+<CreatePortfolioPostModal
   visible={modalVisible}
   initialPostType={portfolioModalType}
   onClose={() => setModalVisible(false)}
@@ -1486,8 +1488,12 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
     window.location.reload();
   }}
 />
-  </div>
-  </div>
+<CreateCollectionModal
+  open={isCreateCollectionModalOpen}
+  onClose={() => setIsCreateCollectionModalOpen(false)}
+/>
+</div>
+</div>
 );
 }
 export default Profile;

@@ -1,5 +1,7 @@
 // deno-lint-ignore-file
 import React, { useState } from "react";
+import { Dropdown, Modal, message } from "antd";
+import type { MenuProps } from "antd";
 import { ChevronLeft, MoreHorizontal } from "lucide-react";
 import {
   mockImageCollections,
@@ -44,7 +46,7 @@ function PortfolioGeneralCard({ items, onOpen,}: {
   const mainImage = previewImages[0];
   const rightTopImage = previewImages[1];
   const rightBottomImage = previewImages[2];
-  // const [showGeneralPortfolio, setShowGeneralPortfolio] = useState(false);
+
   
   return (
     <button
@@ -53,7 +55,7 @@ function PortfolioGeneralCard({ items, onOpen,}: {
     >
       <div className="w-full">
           <div 
-            className="flex gap-[5px] h-[225px] rounded-[10px] overflow-hidden cursor-pointer"
+            className="flex gap-[3px] h-[225px] rounded-[10px] overflow-hidden cursor-pointer"
             onClick={onOpen}
           >
           
@@ -67,7 +69,7 @@ function PortfolioGeneralCard({ items, onOpen,}: {
             ) : null}
           </div>
 
-          <div className="w-[42%] h-full flex flex-col gap-[5px]">
+          <div className="w-[42%] h-full flex flex-col gap-[3px]">
             <div className="flex-1 bg-[#D9D9D9] overflow-hidden">
               {rightTopImage ? (
                 <img
@@ -108,10 +110,53 @@ function PortfolioGeneralCard({ items, onOpen,}: {
   );
 }
 
-function ImageCollectionCard({ collection }: { collection: MockImageCollection }) {
+function ImageCollectionCard({ collection, onEdit, onDelete,}: {
+  collection: MockImageCollection;
+  onEdit: (collection: MockImageCollection) => void;
+  onDelete: (collectionId: string) => void;
+}) {
   const latestImages = getLatestCollectionImages(collection);
   const rightTopImage = latestImages[0];
   const rightBottomImage = latestImages[1];
+  const collectionMenuItems: MenuProps["items"] = [
+  {
+    key: "edit",
+    label: "Editar colección",
+  },
+  {
+    key: "delete",
+    label: "Eliminar colección",
+    danger: true,
+  },
+];
+
+const handleCollectionMenuClick: MenuProps["onClick"] = ({ key }) => {
+  if (key === "edit") {
+    onEdit(collection);
+    return;
+  }
+
+  if (key === "delete") {
+    Modal.confirm({
+      title: "¿Eliminar colección?",
+      content: "Esta acción no se puede deshacer.",
+      okText: "Eliminar",
+      okType: "danger",
+      cancelText: "Cancelar",
+      className: "[&_.ant-modal-content]:bg-[#000000]",
+      centered: true,
+      onOk: () => {
+        onDelete(collection.id);
+      },
+      okButtonProps: {
+        className: "krea-cancel-button"
+      },
+      cancelButtonProps: {
+        className: "krea-white-button"
+      },
+    });
+  }
+};
 
   return (
     <button
@@ -122,7 +167,7 @@ function ImageCollectionCard({ collection }: { collection: MockImageCollection }
       }}
     >
       <div className="w-full">
-        <div className="flex gap-[5px] h-[225px] rounded-[10px] overflow-hidden cursor-pointer">
+        <div className="flex gap-[3px] h-[225px] rounded-[10px] overflow-hidden cursor-pointer">
           <div className="w-[58%] h-full bg-[#D9D9D9] overflow-hidden">
             {collection.coverUrl ? (
               <img
@@ -133,7 +178,7 @@ function ImageCollectionCard({ collection }: { collection: MockImageCollection }
             ) : null}
           </div>
 
-          <div className="w-[42%] h-full flex flex-col gap-[5px]">
+          <div className="w-[42%] h-full flex flex-col gap-[3px]">
             <div className="flex-1 bg-[#D9D9D9] overflow-hidden">
               {rightTopImage ? (
                 <img
@@ -166,16 +211,21 @@ function ImageCollectionCard({ collection }: { collection: MockImageCollection }
             </h3>
           </div>
 
-          <button
-            type="button"
-            className="h-[20px] w-[20px] flex items-center justify-center rounded-full cursor-pointer"
-            onClick={(event) => {
-              event.stopPropagation();
-              console.log("Abrir menú collection", collection.id);
-            }}
+          <Dropdown
+            menu={{ items: collectionMenuItems, onClick: handleCollectionMenuClick }}
+            trigger={["click"]}
+            placement="bottomRight"
           >
-            <MoreHorizontal size={16} className="text-[#1B1C1E]" />
-          </button>
+            <button
+              type="button"
+              className="h-[20px] w-[20px] flex items-center justify-center rounded-full cursor-pointer"
+              onClick={(event) => {
+                event.stopPropagation();
+              }}
+            >
+              <MoreHorizontal size={16} className="text-[#1B1C1E]" />
+            </button>
+          </Dropdown>
         </div>
       </div>
     </button>
@@ -226,7 +276,9 @@ function DigitalPortfolioGrid({ items }: { items: DigitalArtwork[] }) {
 
 export default function DigitalPortfolio({ items }: DigitalPortfolioProps) {
   const USE_COLLECTIONS_MOCK = true;
-  const collections = USE_COLLECTIONS_MOCK ? mockImageCollections : [];
+  const [collections, setCollections] = useState<MockImageCollection[]>(
+  USE_COLLECTIONS_MOCK ? mockImageCollections : []
+);
   const [showGeneralPortfolio, setShowGeneralPortfolio] = useState(false);
 
   if (items.length === 0) {
@@ -236,6 +288,16 @@ export default function DigitalPortfolio({ items }: DigitalPortfolioProps) {
       </div>
     );
   }
+
+  const handleEditCollection = (collection: MockImageCollection) => {
+    console.log("Editar colección", collection);
+    message.info(`Editar colección: ${collection.title}`);
+  };
+
+  const handleDeleteCollection = (collectionId: string) => {
+    setCollections((prev) => prev.filter((collection) => collection.id !== collectionId));
+    message.success("Colección eliminada.");
+  };
 
   if (showGeneralPortfolio) {
     return (
@@ -265,6 +327,8 @@ export default function DigitalPortfolio({ items }: DigitalPortfolioProps) {
           <ImageCollectionCard
             key={collection.id}
             collection={collection}
+            onEdit={handleEditCollection}
+            onDelete={handleDeleteCollection}
           />
         ))}
       </div>

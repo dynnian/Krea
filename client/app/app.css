@@ -60,6 +60,26 @@ html, body, #root {
   border-top: 0 !important;
 }
 
+.krea-white-button {
+  border-color: #1B1C1E;
+  color: #1B1C1E;
+  background: #f3f3f1;
+  cursor: pointer;
+}
+
+.krea-white-button:hover {
+  border-color: #1351AA !important; 
+  color: #1351AA !important;
+  background: #f3f3f1 !important;
+}
+
+.krea-white-button:active {
+  border-color: #1B1C1E !important;
+  background: #1351AA !important;
+  color: #f3f3f1 !important;
+  transition: background 0.1s ease;
+}
+
 .krea-cancel-button {
   border-color: #e19494;
   color: #7e2929;
@@ -77,7 +97,7 @@ html, body, #root {
   border-color: #AB1313 !important;
   background: #f3f3f1 !important;
   color: #AB1313 !important;
-  transition: background 1.0s ease;
+  transition: background 0.1s ease;
 }
 
 .krea-save-button {
@@ -97,7 +117,7 @@ html, body, #root {
   border-color: #0b5107 !important;
   background: #f3f3f1 !important;
   color: #0b5107 !important;
-  transition: background 0.0s ease;
+  transition: background 0.1s ease;
 }
 
 
