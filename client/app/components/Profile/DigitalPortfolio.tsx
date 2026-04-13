@@ -16,6 +16,7 @@ export type DigitalArtwork = {
 
 type DigitalPortfolioProps = {
   items: DigitalArtwork[];
+  onEditCollection: (collection: MockImageCollection) => void;
 };
 
 type PreviewImage = {
@@ -38,6 +39,16 @@ function getLatestCollectionImages(collection: MockImageCollection): PreviewImag
   return sortedPosts.slice(0, 2);
 }
 
+function mapCollectionPostsToDigitalArtwork(
+  collection: MockImageCollection,
+): DigitalArtwork[] {
+  return collection.posts.map((post) => ({
+    id: post.id,
+    title: post.title,
+    imageUrl: post.imageUrl,
+  }));
+}
+
 function PortfolioGeneralCard({ items, onOpen,}: {
   items: DigitalArtwork[];
   onOpen: () => void;
@@ -46,13 +57,9 @@ function PortfolioGeneralCard({ items, onOpen,}: {
   const mainImage = previewImages[0];
   const rightTopImage = previewImages[1];
   const rightBottomImage = previewImages[2];
-
   
-  return (
-    <button
-      type="button"
-      className="w-[320px] text-left bg-transparent"
-    >
+return (
+  <div className="w-[320px] text-left bg-transparent">
       <div className="w-full">
           <div 
             className="flex gap-[3px] h-[225px] rounded-[10px] overflow-hidden cursor-pointer"
@@ -106,12 +113,13 @@ function PortfolioGeneralCard({ items, onOpen,}: {
           </div>
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 
-function ImageCollectionCard({ collection, onEdit, onDelete,}: {
+function ImageCollectionCard({ collection, onOpen, onEdit, onDelete, }: {
   collection: MockImageCollection;
+  onOpen: (collection: MockImageCollection) => void;
   onEdit: (collection: MockImageCollection) => void;
   onDelete: (collectionId: string) => void;
 }) {
@@ -132,6 +140,7 @@ function ImageCollectionCard({ collection, onEdit, onDelete,}: {
 
 const handleCollectionMenuClick: MenuProps["onClick"] = ({ key }) => {
   if (key === "edit") {
+    console.log("menu edit clicked", collection);
     onEdit(collection);
     return;
   }
@@ -143,7 +152,7 @@ const handleCollectionMenuClick: MenuProps["onClick"] = ({ key }) => {
       okText: "Eliminar",
       okType: "danger",
       cancelText: "Cancelar",
-      className: "[&_.ant-modal-content]:bg-[#000000]",
+      // className: "[&_.ant-modal-content]:bg-[#000000]",
       centered: true,
       onOk: () => {
         onDelete(collection.id);
@@ -159,15 +168,16 @@ const handleCollectionMenuClick: MenuProps["onClick"] = ({ key }) => {
 };
 
   return (
-    <button
-      type="button"
-      className="w-[320px] text-left bg-transparent"
-      onClick={() => {
-        console.log("Abrir collection", collection.id);
-      }}
-    >
+<button
+  type="button"
+  className="w-[320px] text-left bg-transparent"
+ 
+>
       <div className="w-full">
-        <div className="flex gap-[3px] h-[225px] rounded-[10px] overflow-hidden cursor-pointer">
+        <div 
+        className="flex gap-[3px] h-[225px] rounded-[10px] overflow-hidden cursor-pointer"
+        onClick={() => onOpen(collection)}
+        >
           <div className="w-[58%] h-full bg-[#D9D9D9] overflow-hidden">
             {collection.coverUrl ? (
               <img
@@ -203,7 +213,10 @@ const handleCollectionMenuClick: MenuProps["onClick"] = ({ key }) => {
 
         <div className="flex items-start justify-between pl-[4px] py-[14px]">
           <div className="flex flex-col">
-            <h3 className="text-[24px] font-medium leading-[22px] text-[#1B1C1E] cursor-pointer hover:underline">
+            <h3 
+            className="text-[24px] font-medium leading-[22px] text-[#1B1C1E] cursor-pointer hover:underline"
+            onClick={() => onOpen(collection)}
+            >
               {collection.title}
             </h3>
             <h3 className="text-[14px] font-medium leading-[14px] text-[#1B1C1E] mt-[8px]">
@@ -274,42 +287,62 @@ function DigitalPortfolioGrid({ items }: { items: DigitalArtwork[] }) {
   );
 }
 
-export default function DigitalPortfolio({ items }: DigitalPortfolioProps) {
+export default function DigitalPortfolio({ items, onEditCollection }: DigitalPortfolioProps) {
   const USE_COLLECTIONS_MOCK = true;
   const [collections, setCollections] = useState<MockImageCollection[]>(
-  USE_COLLECTIONS_MOCK ? mockImageCollections : []
+    USE_COLLECTIONS_MOCK ? mockImageCollections : []
 );
-  const [showGeneralPortfolio, setShowGeneralPortfolio] = useState(false);
+const [showGeneralPortfolio, setShowGeneralPortfolio] = useState(false);
+const [activeCollection, setActiveCollection] = useState<MockImageCollection | null>(null);
 
-  if (items.length === 0) {
-    return (
-      <div className="text-center text-gray-500 py-8">
-        No hay obras visuales disponibles.
-      </div>
-    );
-  }
+if (items.length === 0) {
+  return (
+    <div className="text-center text-gray-500 py-8">
+      No hay obras visuales disponibles.
+    </div>
+  );
+}
 
   const handleEditCollection = (collection: MockImageCollection) => {
-    console.log("Editar colección", collection);
-    message.info(`Editar colección: ${collection.title}`);
+    console.log("DigitalPortfolio handleEditCollection", collection);
+    onEditCollection(collection);
   };
-
+  
   const handleDeleteCollection = (collectionId: string) => {
     setCollections((prev) => prev.filter((collection) => collection.id !== collectionId));
     message.success("Colección eliminada.");
   };
 
-  if (showGeneralPortfolio) {
-    return (
-      <div className="w-full -mt-[60px] AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA">
-        <PortfolioViewHeader
-          title="Portafolio General"
-          onBack={() => setShowGeneralPortfolio(false)}
-        />
-        <DigitalPortfolioGrid items={items} />
-      </div>
-    );
-  }
+  const handleOpenCollection = (collection: MockImageCollection) => {
+    setActiveCollection(collection);
+  };
+  
+
+ if (showGeneralPortfolio) {
+  return (
+    <div className="w-full -mt-[60px] AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA">
+      <PortfolioViewHeader
+        title="Portafolio General"
+        onBack={() => setShowGeneralPortfolio(false)}
+      />
+      <DigitalPortfolioGrid items={items} />
+    </div>
+  );
+}
+
+if (activeCollection) {
+  return (
+    <div className="w-full -mt-[60px] AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA">
+      <PortfolioViewHeader
+        title={activeCollection.title}
+        onBack={() => setActiveCollection(null)}
+      />
+      <DigitalPortfolioGrid
+        items={mapCollectionPostsToDigitalArtwork(activeCollection)}
+      />
+    </div>
+  );
+}
 
   if (collections.length === 0) {
     return <DigitalPortfolioGrid items={items} />;
@@ -327,6 +360,7 @@ export default function DigitalPortfolio({ items }: DigitalPortfolioProps) {
           <ImageCollectionCard
             key={collection.id}
             collection={collection}
+            onOpen={handleOpenCollection}
             onEdit={handleEditCollection}
             onDelete={handleDeleteCollection}
           />

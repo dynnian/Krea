@@ -8,13 +8,15 @@ import { Avatar, Tabs, Typography, Grid, message, Spin, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import DigitalPortfolio from "../components/Profile/DigitalPortfolio.tsx";
+import EditImageCollectionView from "../components/Profile/Collections/EditCollectionView.tsx";
+import type { MockImageCollection } from "../data/mockImageCollections.ts";
 import MusicPortfolio from "../components/Profile/MusicPortfolio.tsx";
 import type { MusicAlbum, MusicSong } from "../components/Profile/MusicPortfolio.tsx";
 import WriterPortfolio from "../components/Profile/WriterPortfolio.tsx";
 import type { WriterWork } from "../components/Profile/WriterPortfolio.tsx";
 import { settingsRepository } from "../services/settingsRepository.ts";
 import CreatePortfolioPostModal from "../components/Posts/CreatePortfolioPostModal.tsx";
-import CreateCollectionModal from "../components/Profile/CreateCollectionModal.tsx";
+import CreateCollectionModal from "../components/Profile/Collections/CreateCollectionModal.tsx";
 import axiosClient from "../lib/axios.ts";
 import type { UploadMediaType } from "../types/api.ts";
 import { PostType as PortfolioPostType } from "../types/common.ts";
@@ -952,6 +954,7 @@ const [isSubscribed, setIsSubscribed] = useState(false);
 const [modalVisible, setModalVisible] = useState(false);
 const [portfolioModalType, setPortfolioModalType] = useState<UploadMediaType>(PortfolioPostType.IMAGE);
 const [isCreateCollectionModalOpen, setIsCreateCollectionModalOpen] = useState(false);
+const [editingImageCollection, setEditingImageCollection] = useState<MockImageCollection | null>(null);
 
 const handleGoToSettings = () => {
   navigate("/settings");
@@ -1216,6 +1219,25 @@ const handleFollow = async () => {
     );
   }
 
+
+  
+if (editingImageCollection) {
+  console.log("rendering EditImageCollectionView", editingImageCollection);
+  return (
+    <div className="w-full min-h-screen bg-[#E3E2DE]">
+      <EditImageCollectionView
+        collection={editingImageCollection}
+        allItems={visualPortfolioItems}
+        onCancel={() => setEditingImageCollection(null)}
+        onSave={(updatedCollection) => {
+          console.log("guardar colección editada", updatedCollection);
+          setEditingImageCollection(null);
+        }}
+      />
+    </div>
+  );
+}
+
   const mainTabItems  = [
     { key: 'portfolio', label: t('Portafolio') },
     { key: 'publications', label: t('Publicaciones') },
@@ -1422,7 +1444,13 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
 
     {activeMainTab === "portfolio" && effectivePortfolioTab === "images" && (
      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-    <DigitalPortfolio items={visualPortfolioItems} />
+      <DigitalPortfolio
+        items={visualPortfolioItems}
+        onEditCollection={(collection) => {
+          console.log("Profile setEditingImageCollection", collection);
+          setEditingImageCollection(collection);
+        }}
+      />
      </div>
     )}
 

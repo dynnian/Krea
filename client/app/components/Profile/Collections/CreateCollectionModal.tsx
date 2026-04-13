@@ -3,7 +3,7 @@ import React, { useMemo, useState } from "react";
 import { Modal, Upload, Input, Select, ConfigProvider } from "antd";
 import { InboxOutlined, CloseOutlined } from "@ant-design/icons";
 import type { UploadFile, UploadProps } from "antd/es/upload/interface";
-import "../../app.css";
+import "../../../app.css";
 
 const { Dragger } = Upload;
 const { TextArea } = Input;
@@ -138,8 +138,6 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
     },
     accept: "image/*",
   };
-
-  console.log("CreateCollectionModal open:", open);
   
   return (
     <ConfigProvider
