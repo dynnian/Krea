@@ -5,6 +5,11 @@ namespace Krea.Application.Features.Collections.CreateCollection {
     public sealed record CreateCollectionCommand(
         Guid OwnerId,
         string Title,
-        string? Description, 
-        CollectionType Type
-    ) : IRequest<CreateCollectionResponse>;}
+        string? Description,
+        CollectionType Type,
+        Stream? CoverStream,
+        string? CoverFileName,
+        string? CoverContentType,
+        long? CoverSize
+    ) : IRequest<CreateCollectionResponse>;
+}

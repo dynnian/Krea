@@ -8,14 +8,17 @@ namespace Krea.API.Controllers {
     using Application.Features.Collections.RemovePostFromCollection;
     using Application.Features.Collections.UploadCollectionCover;
     using Domain.Abstractions;
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
-    
+    using System.Security.Claims;
+
     /// <summary>
     /// Provides endpoints to manage user collections and the posts saved inside them.
     /// </summary>
     /// <remarks>
     /// Collections allow users to organize and save posts for later reference.
     /// </remarks>
+    [Authorize]
     [ApiController]
     [Route("api/collections")] 
     public sealed class CollectionsController : ControllerBase { 
@@ -37,20 +40,32 @@ namespace Krea.API.Controllers {
         /// </returns>
         /// <response code="200">Collection created successfully.</response>
         /// <response code="400">Invalid request data.</response>
-        [HttpPost] 
-        public async Task<IActionResult> CreateCollection(
-            [FromBody] CreateCollectionRequest request, 
-            CancellationToken ct) 
-        { 
-            var result = await _sender.Send(
-                new CreateCollectionCommand(
-                    request.OwnerId, 
-                    request.Title, 
-                    request.Description,
-                    request.Type), 
-                ct);
-            
-            return Ok(result); 
+        [HttpPost]
+        public async Task<IActionResult> Create(
+            [FromForm] CreateCollectionRequest request,
+            CancellationToken ct)
+        {
+            Guid ownerId = GetCurrentUserId();
+
+            using Stream? coverStream = request.Cover?.OpenReadStream();
+
+            var command = new CreateCollectionCommand(
+                ownerId,
+                request.Title,
+                request.Description,
+                request.Type,
+                coverStream,
+                request.Cover?.FileName,
+                request.Cover?.ContentType,
+                request.Cover?.Length
+            );
+
+            var response = await _sender.Send(command, ct);
+
+            return CreatedAtAction(
+                nameof(GetCollection),
+                new { collectionId = response.Id, page = 1, pageSize = 20 },
+                response);
         }
 
         /// <summary>
@@ -225,6 +240,15 @@ namespace Krea.API.Controllers {
             var result = await _sender.Send(command, cancellationToken);
 
             return Ok(result);
+        }
+        
+        private Guid GetCurrentUserId() {
+            string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid userId)) {
+                throw new UnauthorizedAccessException("User ID not found in claims.");
+            }
+
+            return userId;
         }
     }
 }

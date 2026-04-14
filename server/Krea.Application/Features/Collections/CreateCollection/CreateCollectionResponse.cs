@@ -6,5 +6,8 @@ namespace Krea.Application.Features.Collections.CreateCollection {
         string Title,
         string? Description,
         int ItemCount,
-        CollectionType Type
-    );}
+        CollectionType Type,
+        Guid? MediaId,
+        string? CoverUrl
+    );
+}
