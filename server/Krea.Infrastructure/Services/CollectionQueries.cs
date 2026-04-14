@@ -31,6 +31,15 @@ namespace Krea.Infrastructure.Services {
                     ItemCount = c.ItemCount,
                     Type = c.Type,
                     CreatedAt = c.CreatedAt,
+
+                    CoverMediaId = c.MediaId,
+                    CoverUrl = c.MediaId != null
+                        ? _context.Media
+                            .Where(m => m.Id == c.MediaId)
+                            .Select(m => m.Path)
+                            .FirstOrDefault()
+                        : null,
+
                     Posts = c.Posts
                         .OrderByDescending(p => p.UploadedAt)
                         .Skip((page - 1) * pageSize)
@@ -61,7 +70,15 @@ namespace Krea.Infrastructure.Services {
                     Title = c.Title,
                     ItemCount = c.ItemCount,
                     Type = c.Type,
-                    UpdatedAt = c.UpdatedAt
+                    UpdatedAt = c.UpdatedAt,
+
+                    CoverMediaId = c.MediaId,
+                    CoverUrl = c.MediaId != null
+                        ? _context.Media
+                            .Where(m => m.Id == c.MediaId)
+                            .Select(m => m.Path)
+                            .FirstOrDefault()
+                        : null,
                 })
                 .ToListAsync(cancellationToken);
         }

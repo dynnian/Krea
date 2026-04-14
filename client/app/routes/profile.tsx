@@ -8,8 +8,9 @@ import { Avatar, Tabs, Typography, Grid, message, Spin, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import DigitalPortfolio from "../components/Profile/DigitalPortfolio.tsx";
-import EditImageCollectionView from "../components/Profile/Collections/EditCollectionView.tsx";
+import EditCollectionView from "../components/Profile/Collections/EditCollectionView.tsx";
 import type { MockImageCollection } from "../data/mockImageCollections.ts";
+import { collectionsApi } from "../services/collectionsService.ts";
 import MusicPortfolio from "../components/Profile/MusicPortfolio.tsx";
 import type { MusicAlbum, MusicSong } from "../components/Profile/MusicPortfolio.tsx";
 import WriterPortfolio from "../components/Profile/WriterPortfolio.tsx";
@@ -606,6 +607,7 @@ interface WaveformPlayerProps {
   coverUrl?: string;
 }
 
+
 const WaveformPlayer: React.FC<WaveformPlayerProps> = ({ audioUrl, coverUrl }) => {
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurfer = useRef<WaveSurfer | null>(null);
@@ -922,6 +924,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, canDelete = false, onDelete }
 };
 
 
+
 // ---------- Componente principal Profile ----------
 const Profile: React.FC = () => {
   const { t } = useTranslation();
@@ -984,7 +987,6 @@ setLoading(true);
   let resolvedMusicSongs: MusicSong[] = [];
   let resolvedMusicAlbums: MusicAlbum[] = [];
   let resolvedWriterWorks: WriterWork[] = [];
-
         
       if (isOwnProfile) {
         if (!user) {
@@ -995,7 +997,7 @@ setLoading(true);
   const mockProfile = await fetchProfile('me');
   const apiProfile = await fetchMyProfileFromApi();
 
-  let apiPosts = null;
+  let apiPosts: any = null;
 
   try {
     apiPosts = await fetchPostsByAuthorFromApi(apiProfile.id);
@@ -1010,8 +1012,8 @@ setLoading(true);
       "No se pudieron cargar las publicaciones.";
   }
 
-  const rawPosts = Array.isArray(apiPosts?.items)
-    ? apiPosts.items
+  const rawPosts = Array.isArray((apiPosts as any)?.items)
+    ? (apiPosts as any).items
     : Array.isArray(apiPosts)
       ? apiPosts
       : [];
@@ -1021,6 +1023,7 @@ setLoading(true);
     apiProfile.displayName || apiProfile.username
     
   );
+
 
 function normalizeApiPosts(apiPosts: ApiPost[], displayName: string): Post[] {
   return apiPosts.map((post, index) => {
@@ -1132,6 +1135,7 @@ function normalizeApiPosts(apiPosts: ApiPost[], displayName: string): Post[] {
     loadProfile();
   }, [username, user, navigate, isOwnProfile]);
 
+
     useEffect(() => {
     const loadPortfolioSettings = async () => {
       const settings = await settingsRepository.getSettings();
@@ -1222,16 +1226,18 @@ const handleFollow = async () => {
 
   
 if (editingImageCollection) {
-  console.log("rendering EditImageCollectionView", editingImageCollection);
+  console.log("rendering EditCollectionView", editingImageCollection);
+
   return (
     <div className="w-full min-h-screen bg-[#E3E2DE]">
-      <EditImageCollectionView
+      <EditCollectionView
         collection={editingImageCollection}
         allItems={visualPortfolioItems}
+        moveTargets={[]}
         onCancel={() => setEditingImageCollection(null)}
-        onSave={(updatedCollection) => {
-          console.log("guardar colección editada", updatedCollection);
+        onSave={() => {
           setEditingImageCollection(null);
+          window.location.reload();
         }}
       />
     </div>
@@ -1298,6 +1304,21 @@ const handleUpdatePortfolioClick = () => {
   }
 
   setModalVisible(true);
+};
+
+const collectionModalItemsByType = {
+  images: visualPortfolioItems.map((item) => ({
+    id: item.id,
+    title: item.title,
+  })),
+  music: musicSongs.map((song) => ({
+    id: song.postId,
+    title: song.title,
+  })),
+  literature: writerWorks.map((work) => ({
+    id: work.postId,
+    title: work.title,
+  })),
 };
 
 const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
@@ -1444,13 +1465,14 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
 
     {activeMainTab === "portfolio" && effectivePortfolioTab === "images" && (
      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-      <DigitalPortfolio
-        items={visualPortfolioItems}
-        onEditCollection={(collection) => {
-          console.log("Profile setEditingImageCollection", collection);
-          setEditingImageCollection(collection);
-        }}
-      />
+    <DigitalPortfolio
+      userId={profile.user.id ?? ""}
+      items={visualPortfolioItems}
+      onEditCollection={(collection) => {
+        console.log("Profile setEditingImageCollection", collection);
+        setEditingImageCollection(collection);
+      }}
+    />
      </div>
     )}
 
@@ -1519,6 +1541,12 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
 <CreateCollectionModal
   open={isCreateCollectionModalOpen}
   onClose={() => setIsCreateCollectionModalOpen(false)}
+  ownerId={profile.user.id ?? ""}
+  availableItemsByType={collectionModalItemsByType}
+  onSuccess={() => {
+    setIsCreateCollectionModalOpen(false);
+    window.location.reload();
+  }}
 />
 </div>
 </div>

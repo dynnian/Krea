@@ -1,12 +1,14 @@
 // deno-lint-ignore-file
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dropdown, Modal, message } from "antd";
 import type { MenuProps } from "antd";
 import { ChevronLeft, MoreHorizontal } from "lucide-react";
+import type { MockImageCollection } from "../../data/mockImageCollections.ts";
 import {
-  mockImageCollections,
-  type MockImageCollection,
-} from "../../data/mockImageCollections.ts";
+  collectionsApi,
+  type CollectionDetailDto,
+  type UserCollectionDto,
+} from "../../services/collectionsService.ts";
 
 export type DigitalArtwork = {
   id: string;
@@ -15,6 +17,7 @@ export type DigitalArtwork = {
 };
 
 type DigitalPortfolioProps = {
+  userId: string;
   items: DigitalArtwork[];
   onEditCollection: (collection: MockImageCollection) => void;
 };
@@ -23,6 +26,14 @@ type PreviewImage = {
   id: string;
   title: string;
   imageUrl: string;
+};
+
+type ImageCollectionCardData = {
+  id: string;
+  title: string;
+  itemCount: number;
+  coverUrl: string | null;
+  previewPosts?: PreviewImage[];
 };
 
 function getPortfolioGeneralImages(items: DigitalArtwork[]): PreviewImage[] {
@@ -117,15 +128,16 @@ return (
   );
 }
 
-function ImageCollectionCard({ collection, onOpen, onEdit, onDelete, }: {
-  collection: MockImageCollection;
-  onOpen: (collection: MockImageCollection) => void;
+function ImageCollectionCard({ collection, items, onOpen, onEdit, onDelete, }: {
+  collection: ImageCollectionCardData;
+  items: DigitalArtwork[];
+  onOpen: (collectionId: string) => void;
   onEdit: (collection: MockImageCollection) => void;
   onDelete: (collectionId: string) => void;
 }) {
-  const latestImages = getLatestCollectionImages(collection);
-  const rightTopImage = latestImages[0];
-  const rightBottomImage = latestImages[1];
+  const rightTop = collection.previewPosts?.[0];
+  const rightBottom = collection.previewPosts?.[1];
+
   const collectionMenuItems: MenuProps["items"] = [
   {
     key: "edit",
@@ -138,10 +150,16 @@ function ImageCollectionCard({ collection, onOpen, onEdit, onDelete, }: {
   },
 ];
 
-const handleCollectionMenuClick: MenuProps["onClick"] = ({ key }) => {
+const handleCollectionMenuClick: MenuProps["onClick"] = async ({ key }) => {
   if (key === "edit") {
-    console.log("menu edit clicked", collection);
-    onEdit(collection);
+    try {
+      const detail = await collectionsApi.getCollectionById(collection.id);
+      const fullCollection = mapCollectionDetailToMockImageCollection(detail, items);
+      onEdit(fullCollection);
+    } catch (error) {
+      console.error("Error loading collection for edit:", error);
+      message.error("No se pudo abrir la colección para editar.");
+    }
     return;
   }
 
@@ -152,7 +170,6 @@ const handleCollectionMenuClick: MenuProps["onClick"] = ({ key }) => {
       okText: "Eliminar",
       okType: "danger",
       cancelText: "Cancelar",
-      // className: "[&_.ant-modal-content]:bg-[#000000]",
       centered: true,
       onOk: () => {
         onDelete(collection.id);
@@ -167,16 +184,12 @@ const handleCollectionMenuClick: MenuProps["onClick"] = ({ key }) => {
   }
 };
 
-  return (
-<button
-  type="button"
-  className="w-[320px] text-left bg-transparent"
- 
->
+return (
+  <div className="w-[320px] text-left bg-transparent">
       <div className="w-full">
         <div 
         className="flex gap-[3px] h-[225px] rounded-[10px] overflow-hidden cursor-pointer"
-        onClick={() => onOpen(collection)}
+        onClick={() => onOpen(collection.id)}
         >
           <div className="w-[58%] h-full bg-[#D9D9D9] overflow-hidden">
             {collection.coverUrl ? (
@@ -190,23 +203,23 @@ const handleCollectionMenuClick: MenuProps["onClick"] = ({ key }) => {
 
           <div className="w-[42%] h-full flex flex-col gap-[3px]">
             <div className="flex-1 bg-[#D9D9D9] overflow-hidden">
-              {rightTopImage ? (
+              {rightTop && (
                 <img
-                  src={rightTopImage.imageUrl}
-                  alt={rightTopImage.title}
+                  src={rightTop.imageUrl}
+                  alt={rightTop.title}
                   className="w-full h-full object-cover"
                 />
-              ) : null}
+              )}
             </div>
 
             <div className="flex-1 bg-[#D9D9D9] overflow-hidden">
-              {rightBottomImage ? (
+              {rightBottom && (
                 <img
-                  src={rightBottomImage.imageUrl}
-                  alt={rightBottomImage.title}
+                  src={rightBottom.imageUrl}
+                  alt={rightBottom.title}
                   className="w-full h-full object-cover"
                 />
-              ) : null}
+              )}
             </div>
           </div>
         </div>
@@ -215,7 +228,7 @@ const handleCollectionMenuClick: MenuProps["onClick"] = ({ key }) => {
           <div className="flex flex-col">
             <h3 
             className="text-[24px] font-medium leading-[22px] text-[#1B1C1E] cursor-pointer hover:underline"
-            onClick={() => onOpen(collection)}
+            onClick={() => onOpen(collection.id)}
             >
               {collection.title}
             </h3>
@@ -241,7 +254,7 @@ const handleCollectionMenuClick: MenuProps["onClick"] = ({ key }) => {
           </Dropdown>
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -287,13 +300,118 @@ function DigitalPortfolioGrid({ items }: { items: DigitalArtwork[] }) {
   );
 }
 
-export default function DigitalPortfolio({ items, onEditCollection }: DigitalPortfolioProps) {
-  const USE_COLLECTIONS_MOCK = true;
-  const [collections, setCollections] = useState<MockImageCollection[]>(
-    USE_COLLECTIONS_MOCK ? mockImageCollections : []
-);
+function mapCollectionDetailToMockImageCollection(
+  detail: CollectionDetailDto,
+  allItems: DigitalArtwork[],
+): MockImageCollection {
+  const normalizedPosts = detail.posts
+    .map((post) => {
+      const matchingItem = allItems.find((item) => item.id === post.id);
+      const resolvedImageUrl = post.mediaPreviewUrl ?? matchingItem?.imageUrl ?? "";
+
+      if (!resolvedImageUrl) return null;
+
+      return {
+        id: post.id,
+        title: post.title,
+        imageUrl: resolvedImageUrl,
+        createdAt: post.uploadedAt,
+      };
+    })
+    .filter((post): post is NonNullable<typeof post> => post !== null);
+
+  return {
+    id: detail.id,
+    title: detail.title,
+    description: detail.description ?? "",
+    itemCount: normalizedPosts.length,
+    updatedAt: detail.createdAt,
+    coverUrl: detail.coverUrl ?? normalizedPosts[0]?.imageUrl ?? null,
+    posts: normalizedPosts,
+  };
+}
+
+function mapUserCollectionToCardData(
+  collection: UserCollectionDto,
+): ImageCollectionCardData {
+  return {
+    id: collection.id,
+    title: collection.title,
+    itemCount: collection.itemCount,
+    coverUrl: collection.coverUrl ?? null,
+  };
+}
+
+export default function DigitalPortfolio({
+  userId,
+  items,
+  onEditCollection,
+}: DigitalPortfolioProps) {
 const [showGeneralPortfolio, setShowGeneralPortfolio] = useState(false);
 const [activeCollection, setActiveCollection] = useState<MockImageCollection | null>(null);
+const [collections, setCollections] = useState<ImageCollectionCardData[]>([]);
+const [collectionsLoading, setCollectionsLoading] = useState(false);
+const [collectionDetailLoading, setCollectionDetailLoading] = useState(false);
+
+
+useEffect(() => {
+  const loadCollections = async () => {
+    if (!userId) return;
+
+    try {
+      setCollectionsLoading(true);
+
+      const userCollections = await collectionsApi.getUserCollections(userId);
+      const imageCollectionSummaries = userCollections.filter(
+        (collection) => collection.type === 0
+      );
+
+      const baseCollections = imageCollectionSummaries.map(mapUserCollectionToCardData);
+
+      const collectionsWithPreview = await Promise.all(
+        baseCollections.map(async (col) => {
+          try {
+            const detail = await collectionsApi.getCollectionById(col.id);
+
+            const previewPosts = detail.posts
+              .map((post) => {
+                const matchingItem = items.find((item) => item.id === post.id);
+                const resolvedImageUrl = post.mediaPreviewUrl ?? matchingItem?.imageUrl ?? "";
+
+                if (!resolvedImageUrl) return null;
+
+                return {
+                  id: post.id,
+                  title: post.title,
+                  imageUrl: resolvedImageUrl,
+                };
+              })
+              .filter((post): post is PreviewImage => post !== null)
+              .slice(0, 2);
+
+            return {
+              ...col,
+              previewPosts,
+            };
+          } catch (error) {
+            console.error(`Error loading preview for collection ${col.id}:`, error);
+            return col;
+          }
+        })
+      );
+
+      setCollections(collectionsWithPreview);
+    } catch (error) {
+      console.error("Error loading image collections:", error);
+      message.error("No se pudieron cargar las colecciones.");
+    } finally {
+      setCollectionsLoading(false);
+    }
+  };
+
+  loadCollections();
+}, [userId, items]);
+
 
 if (items.length === 0) {
   return (
@@ -303,20 +421,48 @@ if (items.length === 0) {
   );
 }
 
+if (collectionDetailLoading) {
+  return (
+    <div className="text-center text-gray-500 py-8">
+      Cargando colección...
+    </div>
+  );
+}
+
   const handleEditCollection = (collection: MockImageCollection) => {
     console.log("DigitalPortfolio handleEditCollection", collection);
     onEditCollection(collection);
   };
   
-  const handleDeleteCollection = (collectionId: string) => {
-    setCollections((prev) => prev.filter((collection) => collection.id !== collectionId));
-    message.success("Colección eliminada.");
+  const handleDeleteCollection = async (collectionId: string) => {
+    try {
+      await collectionsApi.deleteCollection(collectionId);
+      setCollections((prev) =>
+        prev.filter((collection) => collection.id !== collectionId)
+      );
+      message.success("Colección eliminada.");
+    } catch (error) {
+      console.error("Error deleting collection:", error);
+      message.error("No se pudo eliminar la colección.");
+    }
   };
 
-  const handleOpenCollection = (collection: MockImageCollection) => {
-    setActiveCollection(collection);
+  const handleOpenCollection = async (collectionId: string) => {
+    try {
+      setCollectionDetailLoading(true);
+
+      const detail = await collectionsApi.getCollectionById(collectionId);
+      const mappedCollection = mapCollectionDetailToMockImageCollection(detail, items);
+
+      setActiveCollection(mappedCollection);
+    } catch (error) {
+      console.error("Error loading collection detail:", error);
+      message.error("No se pudo abrir la colección.");
+    } finally {
+      setCollectionDetailLoading(false);
+    }
   };
-  
+    
 
  if (showGeneralPortfolio) {
   return (
@@ -360,6 +506,7 @@ if (activeCollection) {
           <ImageCollectionCard
             key={collection.id}
             collection={collection}
+            items={items}
             onOpen={handleOpenCollection}
             onEdit={handleEditCollection}
             onDelete={handleDeleteCollection}

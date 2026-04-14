@@ -13,11 +13,18 @@ type CollectionItem = {
   imageUrl: string;
 };
 
+type StagedMoveMap = Record<string, CollectionItem[]>;
+
+type EditCollectionSavePayload = {
+  updatedCollection: MockImageCollection;
+  stagedMoves: StagedMoveMap;
+};
+
 type EditCollectionViewProps = {
   collection: MockImageCollection;
   allItems: CollectionItem[];
   onCancel: () => void;
-  onSave: (updatedCollection: MockImageCollection) => void;
+  onSave: (payload: EditCollectionSavePayload) => void;
   collectionType?: CollectionType;
   moveTargets?: MoveTargetCollection[];
 };
@@ -172,6 +179,7 @@ export default function EditCollectionView({
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
   const [moveSearch, setMoveSearch] = useState("");
   const [selectedMoveTargetId, setSelectedMoveTargetId] = useState<string | null>(null);
+  const [stagedMoves, setStagedMoves] = useState<StagedMoveMap>({});
 
   useEffect(() => {
     setTitle(collection.title);
@@ -190,6 +198,7 @@ export default function EditCollectionView({
     setIsMoveModalOpen(false);
     setMoveSearch("");
     setSelectedMoveTargetId(null);
+    setStagedMoves({});
   }, [collection]);
 
   const selectedItems = useMemo(
@@ -202,13 +211,15 @@ export default function EditCollectionView({
   const isDirty = useMemo(() => {
     const originalIds = collection.posts.map((post) => post.id).join("|");
     const stagedIds = stagedItems.map((item) => item.id).join("|");
+    const hasStagedMoves = Object.values(stagedMoves).some((items) => items.length > 0);
 
     return (
       title.trim() !== collection.title ||
       (coverUrl ?? "") !== (collection.coverUrl ?? "") ||
-      originalIds !== stagedIds
+      originalIds !== stagedIds ||
+      hasStagedMoves
     );
-  }, [title, coverUrl, stagedItems, collection]);
+  }, [title, coverUrl, stagedItems, stagedMoves, collection]);
 
   const filteredMoveTargets = useMemo(() => {
     const currentTargets = moveTargets.filter((target) => target.id !== collection.id);
@@ -282,30 +293,44 @@ export default function EditCollectionView({
     setIsMoveModalOpen(true);
   };
 
-  const handleConfirmMove = () => {
-    if (!selectedMoveTargetId || !hasSelection) return;
+const handleConfirmMove = () => {
+  if (!selectedMoveTargetId || !hasSelection) return;
 
-    const remainingItems = stagedItems.filter(
-      (item) => !selectedIds.includes(item.id),
+  const itemsToMove = stagedItems.filter((item) =>
+    selectedIds.includes(item.id),
+  );
+
+  const remainingItems = stagedItems.filter(
+    (item) => !selectedIds.includes(item.id),
+  );
+
+  const coverWasMoved = itemsToMove.some(
+    (item) => item.imageUrl === coverUrl,
+  );
+
+  setStagedItems(remainingItems);
+
+  setStagedMoves((prev) => {
+    const existingTargetItems = prev[selectedMoveTargetId] ?? [];
+
+    const dedupedNewItems = itemsToMove.filter(
+      (item) => !existingTargetItems.some((existing) => existing.id === item.id),
     );
 
-    const coverWasMoved = selectedItems.some(
-      (item) => item.imageUrl === coverUrl,
-    );
+    return {
+      ...prev,
+      [selectedMoveTargetId]: [...existingTargetItems, ...dedupedNewItems],
+    };
+  });
 
-    setStagedItems(remainingItems);
-    setSelectedIds([]);
-    setIsMoveModalOpen(false);
-    setSelectedMoveTargetId(null);
+  setSelectedIds([]);
+  setIsMoveModalOpen(false);
+  setSelectedMoveTargetId(null);
 
-    if (coverWasMoved) {
-      setCoverUrl(remainingItems[0]?.imageUrl ?? "");
-    }
-
-    // TODO:
-    // Aquí luego conectamos el staged move hacia la colección destino
-    // cuando el parent maneje todas las collections al mismo tiempo.
-  };
+  if (coverWasMoved) {
+    setCoverUrl(remainingItems[0]?.imageUrl ?? "");
+  }
+};
 
   const buildUpdatedCollection = (): MockImageCollection => {
     return {
@@ -350,29 +375,34 @@ export default function EditCollectionView({
     });
   };
 
-  const handleSave = () => {
-    if (!isDirty) {
-      onSave(buildUpdatedCollection());
-      return;
-    }
-
-    Modal.confirm({
-      title: "¿Estas seguro?",
-      content: "Se guardarán los cambios realizados en esta colección.",
-      centered: true,
-      okText: "Guardar",
-      cancelText: "Cancelar",
-      okButtonProps: {
-        className: "krea-save-button",
-      },
-      cancelButtonProps: {
-        className: "krea-white-button",
-      },
-      onOk: () => {
-        onSave(buildUpdatedCollection());
-      },
-    });
+const handleSave = () => {
+  const payload: EditCollectionSavePayload = {
+    updatedCollection: buildUpdatedCollection(),
+    stagedMoves,
   };
+
+  if (!isDirty && Object.keys(stagedMoves).length === 0) {
+    onSave(payload);
+    return;
+  }
+
+  Modal.confirm({
+    title: "¿Estas seguro?",
+    content: "Se guardarán los cambios realizados en esta colección.",
+    centered: true,
+    okText: "Guardar",
+    cancelText: "Cancelar",
+    okButtonProps: {
+      className: "krea-save-button",
+    },
+    cancelButtonProps: {
+      className: "krea-white-button",
+    },
+    onOk: () => {
+      onSave(payload);
+    },
+  });
+};
 
   const renderBottomContent = () => {
     if (collectionType === "images") {

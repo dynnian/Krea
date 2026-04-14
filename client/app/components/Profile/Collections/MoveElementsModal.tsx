@@ -103,7 +103,7 @@ export default function MoveElementsModal({
         styles={{ body: { padding: 0 } }}
         closable={false}
       >
-        <div className="p-6 bg-[#E8F1FC] rounded-lg outline outline-2 outline-[#8F8E8A]">
+        <div className="p-[30px] bg-[#E8F1FC]  rounded-lg outline outline-2 outline-[#8F8E8A]">
           <h2 className="text-[24px] font-medium text-[#1B1C1E] mb-8">
             {title}
           </h2>
@@ -132,8 +132,8 @@ export default function MoveElementsModal({
                       key={target.id}
                       type="button"
                       onClick={() => onSelectTarget(target.id)}
-                      className={`w-full flex items-center gap-[12px] text-left rounded-[12px] px-[4px] py-[4px] transition ${
-                        isSelected ? "bg-[#DCE9F9]" : "bg-transparent"
+                      className={`w-full flex items-center hover:bg-[#DCE9F9] gap-[12px] text-left rounded-[12px] px-[4px] py-[4px] transition cursor-pointer ${
+                        isSelected ? "bg-[#BFD1EA] hover:bg-[#BFD1EA]" : ""
                       }`}
                     >
                       <div className="w-[66px] h-[66px] rounded-[10px] overflow-hidden bg-[#D9D9D9] shrink-0 border border-[#1B1C1E]">

@@ -1,9 +1,14 @@
-// deno-lint-ignore-file no-sloppy-imports jsx-button-has-type
+// deno-lint-ignore-file no-sloppy-imports jsx-button-has-type no-unused-vars
 import React, { useMemo, useState } from "react";
-import { Modal, Upload, Input, Select, ConfigProvider } from "antd";
+import { Modal, Upload, Input, Select, ConfigProvider, message } from "antd";
 import { InboxOutlined, CloseOutlined } from "@ant-design/icons";
 import type { UploadFile, UploadProps } from "antd/es/upload/interface";
 import "../../../app.css";
+import {
+  collectionsApi,
+  // type CollectionType,
+  type CreateCollectionResponse,
+} from "../../../services/collectionsService";
 
 const { Dragger } = Upload;
 const { TextArea } = Input;
@@ -20,35 +25,22 @@ type CollectionSelectableItem = {
 type CreateCollectionModalProps = {
   open: boolean;
   onClose: () => void;
+  ownerId: string;
+  availableItemsByType: Record<PortfolioCollectionType, CollectionSelectableItem[]>;
+  onSuccess?: (
+    created: CreateCollectionResponse,
+    selectedItems: CollectionSelectableItem[],
+    uploadedCoverUrl?: string | null
+  ) => void;
 };
 
-const MOCK_ITEMS: Record<PortfolioCollectionType, CollectionSelectableItem[]> = {
-  images: [
-    { id: "img-1", title: "Obra 1", year: "2025" },
-    { id: "img-2", title: "Obra 2", year: "2025" },
-    { id: "img-3", title: "Obra 3", year: "2025" },
-    { id: "img-4", title: "Obra 4", year: "2025" },
-    { id: "img-5", title: "Obra 5", year: "2025" },
-  ],
-  music: [
-    { id: "song-1", title: "Canción 1", year: "2025" },
-    { id: "song-2", title: "Canción 2", year: "2025" },
-    { id: "song-3", title: "Canción 3", year: "2025" },
-    { id: "song-4", title: "Canción 4", year: "2025" },
-    { id: "song-5", title: "Canción 5", year: "2025" },
-  ],
-  literature: [
-    { id: "work-1", title: "Obra 1", year: "2025" },
-    { id: "work-2", title: "Obra 2", year: "2025" },
-    { id: "work-3", title: "Obra 3", year: "2025" },
-    { id: "work-4", title: "Obra 4", year: "2025" },
-    { id: "work-5", title: "Obra 5", year: "2025" },
-  ],
-};
 
 const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
   open,
   onClose,
+  ownerId,
+  availableItemsByType,
+  onSuccess,
 }) => {
   const [portfolioType, setPortfolioType] = useState<PortfolioCollectionType>("images");
   const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -57,7 +49,10 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
   const [selectedItems, setSelectedItems] = useState<CollectionSelectableItem[]>([]);
 
-  const availableItems = useMemo(() => MOCK_ITEMS[portfolioType], [portfolioType]);
+  const availableItems = useMemo(
+    () => availableItemsByType[portfolioType] ?? [],
+    [availableItemsByType, portfolioType]
+  );
 
   const isMusic = portfolioType === "music";
   const isLiterature = portfolioType === "literature";
@@ -86,6 +81,18 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
 
   const typeLabel = isMusic ? "Álbum" : "Colección";
 
+  const getBackendCollectionType = (): number => {
+    switch (portfolioType) {
+      case "images":
+        return 0;
+      case "music":
+        return 1;
+      case "literature":
+        return 2;
+      default:
+        return 0;
+    }
+  };
   const resetForm = () => {
     setPortfolioType("images");
     setFileList([]);
@@ -117,16 +124,47 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
     setSelectedItems((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const handleSave = () => {
-    console.log("Guardar collection/album", {
-      portfolioType,
-      title,
-      description,
-      cover: fileList,
-      items: selectedItems,
-    });
-    handleModalClose();
-  };
+const handleSave = async () => {
+  if (!title.trim()) {
+    message.error(isMusic ? "Debes escribir el título del álbum." : "Debes escribir el título de la colección.");
+    return;
+  }
+
+  try {
+const payload = {
+  ownerId,
+  title: title.trim(),
+  description: description.trim() || undefined,
+  type: getBackendCollectionType(),
+};
+
+console.log("create collection payload", payload);
+
+  const created = await collectionsApi.createCollection(payload);
+
+  let uploadedCoverUrl: string | null = null;
+
+  const coverFile = fileList[0]?.originFileObj;
+  if (coverFile instanceof File) {
+    const uploadedCover = await collectionsApi.uploadCollectionCover(created.id, coverFile);
+    uploadedCoverUrl = uploadedCover.url;
+  }
+
+  for (const item of selectedItems) {
+    await collectionsApi.addPostToCollection(created.id, item.id);
+  }
+
+  message.success(isMusic ? "Álbum creado correctamente." : "Colección creada correctamente.");
+
+  onSuccess?.(created, selectedItems, uploadedCoverUrl);
+  handleModalClose();
+  } catch (error: any) {
+    console.error("Error creating collection:", error);
+    console.error("Error response data:", error?.response?.data);
+    console.error("Error response status:", error?.response?.status);
+    message.error(isMusic ? "No se pudo crear el álbum." : "No se pudo crear la colección.");
+  }
+};
 
   const uploadProps: UploadProps = {
     name: "file",

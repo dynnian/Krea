@@ -6,7 +6,11 @@ import type { UploadFile, UploadProps } from 'antd/es/upload/interface';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { postsApi } from '../../services/postsService';
-import { collectionsApi, type UserCollectionDto } from '../../services/collectionsService';
+import {
+  collectionsApi,
+  type UserCollectionDto,
+  type CollectionType,
+} from '../../services/collectionsService';
 import { PostType } from '../../types/common';
 import type { CreatePostData, UploadMediaData } from '../../types/api';
 import type { UploadMediaType } from '../../types/api';
@@ -61,32 +65,31 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
   return false;
 };
 
-  useEffect(() => {
-    if (!visible) return;
+useEffect(() => {
+  if (!visible) return;
 
-    setPostType(initialPostType);
+  setPostType(initialPostType);
+  setSelectedCollectionId(undefined);
 
-    const loadCollections = async () => {
-      if (!user?.id) return;
+  const loadCollections = async () => {
+    if (!user?.id) return;
 
-      try {
-        setCollectionsLoading(true);
-        const data = await collectionsApi.getUserCollections(user.id);
-        setCollections(data);
-      } catch (error) {
-        console.error('Error loading collections:', error);
-        message.error('No se pudieron cargar las colecciones.');
-      } finally {
-        setCollectionsLoading(false);
-      }
-    };
+    try {
+      setCollectionsLoading(true);
+      const data = await collectionsApi.getUserCollections(user.id);
+      setCollections(data);
+    } catch (error) {
+      console.error('Error loading collections:', error);
+      message.error('No se pudieron cargar las colecciones.');
+    } finally {
+      setCollectionsLoading(false);
+    }
+  };
 
-    loadCollections();
-  }, [visible, initialPostType, user?.id]);
-
+  loadCollections();
+}, [visible, initialPostType, user?.id]);
 
 const showGenresSection = postType === PostType.MUSIC || postType === PostType.TEXT;
-
 
 const removeGenre = (genreToRemove: string) => {
   setGenres((prev) => prev.filter((genre) => genre !== genreToRemove));
@@ -304,6 +307,23 @@ const resetForm = () => {
     }
   };
 
+  const getTargetCollectionType = (): CollectionType => {
+    switch (postType) {
+      case PostType.IMAGE:
+        return 0;
+      case PostType.MUSIC:
+        return 1;
+      case PostType.TEXT:
+        return 2;
+      default:
+        return 0;
+    }
+  };
+
+  const filteredCollections = collections.filter(
+    (collection) => collection.type === getTargetCollectionType()
+  );
+  
   const getTitleText = () => {
     switch (postType) {
       case PostType.MUSIC:
@@ -364,7 +384,10 @@ const resetForm = () => {
           </label>
           <Select
             value={postType}
-            onChange={setPostType}
+            onChange={(value) => {
+              setPostType(value);
+              setSelectedCollectionId(undefined);
+            }}
             className="w-full"
             size="large"
           >
@@ -448,7 +471,7 @@ const resetForm = () => {
             <Select
               value={selectedCollectionId}
               onChange={setSelectedCollectionId}
-              placeholder="Seleccionar Colección"
+              placeholder={postType === PostType.MUSIC ? "Seleccionar álbum" : "Seleccionar colección"}
               className="w-full h-[56px]"
               size="large"
               allowClear
@@ -456,11 +479,11 @@ const resetForm = () => {
               loading={collectionsLoading}
               optionFilterProp="children"
             >
-              {collections.map((collection) => (
-                <Option key={collection.id} value={collection.id}>
-                  {collection.title}
-                </Option>
-              ))}
+            {filteredCollections.map((collection) => (
+              <Option key={collection.id} value={collection.id}>
+                {collection.title}
+              </Option>
+            ))}
             </Select>
           </div>
 
