@@ -1,3 +1,5 @@
+import axiosClient from "../lib/axios";
+
 import type {
   SettingsState,
   ProfileSettings,
@@ -7,14 +9,26 @@ import type {
   SecuritySettings,
 } from "../types/settings";
 
+import type {
+  UserProfileResponse,
+  PatchUserProfileRequest,
+  UploadUserProfilePictureResponse,
+} from "../types/api";
+
 const STORAGE_KEY = "krea_settings_draft_v1";
 
 const defaultSettings: SettingsState = {
   profile: {
     username: "",
     email: "",
-    phone: "",
-    bio: "",
+    displayName: "",
+    biography: "",
+    languageCode: "",
+    timeZoneId: "",
+    profilePictureUrl: null,
+    bannerPictureUrl: null,
+    profilePictureId: null,
+    bannerPictureId: null,
   },
   subscription: {
     previewEnabled: true,
@@ -99,14 +113,101 @@ function writeStorage(data: SettingsState): void {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
+function mapProfileResponseToSettings(profile: UserProfileResponse): ProfileSettings {
+  return {
+    username: profile.username ?? "",
+    email: profile.email ?? "",
+    displayName: profile.displayName ?? "",
+    biography: profile.biography ?? "",
+    languageCode: profile.languageCode ?? "",
+    timeZoneId: profile.timeZoneId ?? "",
+    profilePictureUrl: profile.profilePictureUrl ?? null,
+    bannerPictureUrl: profile.bannerPictureUrl ?? null,
+    profilePictureId: null,
+    bannerPictureId: null,
+  };
+}
+
+function buildPatchPayload(
+  current: ProfileSettings,
+  original: ProfileSettings
+): PatchUserProfileRequest {
+  const displayNameChanged = current.displayName !== original.displayName;
+  const biographyChanged = current.biography !== original.biography;
+  const languageCodeChanged = current.languageCode !== original.languageCode;
+  const timeZoneIdChanged = current.timeZoneId !== original.timeZoneId;
+  const profilePictureChanged = current.profilePictureId !== original.profilePictureId;
+  const bannerPictureChanged = current.bannerPictureId !== original.bannerPictureId;
+
+  return {
+    displayName: displayNameChanged ? current.displayName || null : undefined,
+    displayNameIsSet: displayNameChanged,
+
+    biography: biographyChanged ? current.biography || null : undefined,
+    biographyIsSet: biographyChanged,
+
+    languageCode: languageCodeChanged ? current.languageCode || null : undefined,
+    languageCodeIsSet: languageCodeChanged,
+
+    timeZoneId: timeZoneIdChanged ? current.timeZoneId || null : undefined,
+    timeZoneIdIsSet: timeZoneIdChanged,
+
+    profilePictureId: profilePictureChanged ? current.profilePictureId || null : undefined,
+    profilePictureIdIsSet: profilePictureChanged,
+
+    bannerPictureId: bannerPictureChanged ? current.bannerPictureId || null : undefined,
+    bannerPictureIdIsSet: bannerPictureChanged,
+  };
+}
+
 export const settingsRepository = {
-  async getSettings(): Promise<SettingsState> {
-    return readStorage();
+  async getProfile(): Promise<ProfileSettings> {
+    const { data } = await axiosClient.get<UserProfileResponse>("/users/me/profile");
+    return mapProfileResponseToSettings(data);
   },
 
-  async saveProfile(profile: ProfileSettings): Promise<SettingsState> {
+  async patchProfile(
+    current: ProfileSettings,
+    original: ProfileSettings
+  ): Promise<ProfileSettings> {
+    const payload = buildPatchPayload(current, original);
+
+    await axiosClient.patch("/users/me/profile", payload);
+
+    return await this.getProfile();
+  },
+
+  async uploadProfilePicture(file: File): Promise<UploadUserProfilePictureResponse> {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const { data } = await axiosClient.post<UploadUserProfilePictureResponse>(
+      "/users/me/profile-picture",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return data;
+  },
+
+  async getSettings(): Promise<SettingsState> {
     const current = readStorage();
-    const next = { ...current, profile };
+    const profile = await this.getProfile();
+    return { ...current, profile };
+  },
+
+  async saveProfile(
+    profile: ProfileSettings,
+    original: ProfileSettings
+  ): Promise<SettingsState> {
+    const updatedProfile = await this.patchProfile(profile, original);
+
+    const current = readStorage();
+    const next = { ...current, profile: updatedProfile };
     writeStorage(next);
     return next;
   },

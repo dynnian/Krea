@@ -21,6 +21,50 @@ export interface UserDto {
   roleId: number;
 }
 
+// --- Profile ---
+export interface UserProfileResponse {
+  id: string;
+  username: string;
+  email: string;
+  displayName: string;
+  biography: string | null;
+  languageCode: string;
+  timeZoneId: string;
+  roleId: number;
+  followersCount: number;
+  followingCount: number;
+  profilePictureUrl: string | null;
+  bannerPictureUrl: string | null;
+}
+
+export interface PatchUserProfileRequest {
+  displayName?: string | null;
+  displayNameIsSet: boolean;
+
+  biography?: string | null;
+  biographyIsSet: boolean;
+
+  languageCode?: string | null;
+  languageCodeIsSet: boolean;
+
+  timeZoneId?: string | null;
+  timeZoneIdIsSet: boolean;
+
+  profilePictureId?: string | null;
+  profilePictureIdIsSet: boolean;
+
+  bannerPictureId?: string | null;
+  bannerPictureIdIsSet: boolean;
+}
+
+export interface UploadUserProfilePictureResponse {
+  mediaId: string;
+  fileName: string;
+  mimeType: string;
+  url: string;
+  size: number;
+}
+
 // --- Posts ---
 
 export interface CreatePostData {
