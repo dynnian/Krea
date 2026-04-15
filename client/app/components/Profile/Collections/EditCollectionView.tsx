@@ -1,8 +1,9 @@
 // deno-lint-ignore-file
 import React, { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, Check, MoveRight, Trash2 } from "lucide-react";
+import { ChevronLeft, Check, MoveRight, Trash2, Plus } from "lucide-react";
 import { Modal } from "antd";
 import MoveElementsModal, { type MoveTargetCollection } from "./MoveElementsModal.tsx";
+import AddElementsModal, { type AddElementItem } from "./AddElementsModal.tsx";
 import type { MockImageCollection } from "../../../data/mockImageCollections.ts";
 
 export type CollectionType = "images" | "literature" | "music";
@@ -37,6 +38,8 @@ const COLLECTION_TYPE_CONFIG: Record<
     titleLabel: string;
     titlePlaceholder: string;
     moveModalLabel: string;
+    addModalLabel: string;
+    addListLabel: string;
     itemWordSingular: string;
     itemWordPlural: string;
     otherCollectionsLabel: string;
@@ -48,6 +51,8 @@ const COLLECTION_TYPE_CONFIG: Record<
     titleLabel: "Titulo de la colección",
     titlePlaceholder: "Titulo de la colección",
     moveModalLabel: "Mover x obras a:",
+    addModalLabel: "Agregar obras",
+    addListLabel: "Otras obras",
     itemWordSingular: "obra",
     itemWordPlural: "obras",
     otherCollectionsLabel: "Otras collections",
@@ -58,6 +63,8 @@ const COLLECTION_TYPE_CONFIG: Record<
     titleLabel: "Titulo de la colección",
     titlePlaceholder: "Titulo de la colección",
     moveModalLabel: "Mover x obras a:",
+    addModalLabel: "Agregar obras",
+    addListLabel: "Otras obras",
     itemWordSingular: "obra",
     itemWordPlural: "obras",
     otherCollectionsLabel: "Otras collections",
@@ -68,6 +75,8 @@ const COLLECTION_TYPE_CONFIG: Record<
     titleLabel: "Titulo de la album",
     titlePlaceholder: "Titulo de la album",
     moveModalLabel: "Mover x canciones a:",
+    addModalLabel: "Agregar cancion",
+    addListLabel: "Otras cancion",
     itemWordSingular: "cancion",
     itemWordPlural: "canciones",
     otherCollectionsLabel: "Otras collections",
@@ -181,6 +190,9 @@ export default function EditCollectionView({
   const [selectedMoveTargetId, setSelectedMoveTargetId] = useState<string | null>(null);
   const [stagedMoves, setStagedMoves] = useState<StagedMoveMap>({});
 
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [addSearch, setAddSearch] = useState("");
+  const [selectedAddItemIds, setSelectedAddItemIds] = useState<string[]>([]);
   useEffect(() => {
     setTitle(collection.title);
     setCoverUrl(collection.coverUrl ?? "");
@@ -198,7 +210,9 @@ export default function EditCollectionView({
     setIsMoveModalOpen(false);
     setMoveSearch("");
     setSelectedMoveTargetId(null);
-    setStagedMoves({});
+    setIsAddModalOpen(false);
+    setAddSearch("");
+    setSelectedAddItemIds([]);
   }, [collection]);
 
   const selectedItems = useMemo(
@@ -220,6 +234,18 @@ export default function EditCollectionView({
       hasStagedMoves
     );
   }, [title, coverUrl, stagedItems, stagedMoves, collection]);
+
+  const availableItemsToAdd = useMemo(() => {
+  const stagedIds = new Set(stagedItems.map((item) => item.id));
+
+  return allItems
+    .filter((item) => !stagedIds.has(item.id))
+    .map((item) => ({
+      id: item.id,
+      title: item.title,
+      imageUrl: item.imageUrl,
+    }));
+  }, [allItems, stagedItems]);
 
   const filteredMoveTargets = useMemo(() => {
     const currentTargets = moveTargets.filter((target) => target.id !== collection.id);
@@ -292,6 +318,41 @@ export default function EditCollectionView({
     setMoveSearch("");
     setIsMoveModalOpen(true);
   };
+
+  const handleOpenAddModal = () => {
+  setSelectedAddItemIds([]);
+  setAddSearch("");
+  setIsAddModalOpen(true);
+};
+
+const handleToggleAddItem = (itemId: string) => {
+  const exists = selectedAddItemIds.includes(itemId);
+
+  if (exists) {
+    setSelectedAddItemIds((prev) => prev.filter((id) => id !== itemId));
+    return;
+  }
+
+  setSelectedAddItemIds((prev) => [...prev, itemId]);
+};
+
+const handleConfirmAdd = () => {
+  if (selectedAddItemIds.length === 0) return;
+
+  const itemsToAdd = availableItemsToAdd.filter((item) =>
+    selectedAddItemIds.includes(item.id),
+  );
+
+  setStagedItems((prev) => {
+    const existingIds = new Set(prev.map((item) => item.id));
+    const dedupedToAdd = itemsToAdd.filter((item) => !existingIds.has(item.id));
+    return [...prev, ...dedupedToAdd];
+  });
+
+  setSelectedAddItemIds([]);
+  setAddSearch("");
+  setIsAddModalOpen(false);
+};
 
 const handleConfirmMove = () => {
   if (!selectedMoveTargetId || !hasSelection) return;
@@ -478,6 +539,15 @@ const handleSave = () => {
               <div className="flex items-center gap-[12px]">
                 <button
                   type="button"
+                  onClick={handleOpenAddModal}
+                  className="h-[34px] rounded-[10px] border px-[14px] flex items-center gap-[8px] text-[13px] font-medium krea-white-button text-[#1B1C1E] cursor-pointer transition"
+                >
+                <Plus size={14} />
+                <span>Agregar</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={handleOpenMoveModal}
                   disabled={!hasSelection}
                   className={`h-[34px] rounded-[10px] border px-[14px] flex items-center gap-[8px] text-[13px] font-medium ${
@@ -553,6 +623,19 @@ const handleSave = () => {
         title={config.moveModalLabel}
         otherCollectionsLabel={config.otherCollectionsLabel}
       />
+      <AddElementsModal
+        open={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSave={handleConfirmAdd}
+        availableItems={availableItemsToAdd}
+        searchValue={addSearch}
+        onSearchChange={setAddSearch}
+        selectedItemIds={selectedAddItemIds}
+        onToggleItem={handleToggleAddItem}
+        title={config.addModalLabel}
+        listLabel={config.addListLabel}
+      />
     </div>
+    
   );
 }

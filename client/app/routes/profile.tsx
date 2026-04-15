@@ -958,6 +958,7 @@ const [modalVisible, setModalVisible] = useState(false);
 const [portfolioModalType, setPortfolioModalType] = useState<UploadMediaType>(PortfolioPostType.IMAGE);
 const [isCreateCollectionModalOpen, setIsCreateCollectionModalOpen] = useState(false);
 const [editingImageCollection, setEditingImageCollection] = useState<MockImageCollection | null>(null);
+const [editingMusicCollection, setEditingMusicCollection] = useState<MockImageCollection | null>(null);
 
 const handleGoToSettings = () => {
   navigate("/settings");
@@ -1244,6 +1245,28 @@ if (editingImageCollection) {
   );
 }
 
+if (editingMusicCollection) {
+  return (
+    <div className="w-full min-h-screen bg-[#E3E2DE]">
+      <EditCollectionView
+        collection={editingMusicCollection}
+        allItems={musicSongs.map((song) => ({
+          id: song.postId,
+          title: song.title,
+          imageUrl: song.coverUrl,
+        }))}
+        moveTargets={[]}
+        collectionType="music"
+        onCancel={() => setEditingMusicCollection(null)}
+        onSave={() => {
+          setEditingMusicCollection(null);
+          window.location.reload();
+        }}
+      />
+    </div>
+  );
+}
+
   const mainTabItems  = [
     { key: 'portfolio', label: t('Portafolio') },
     { key: 'publications', label: t('Publicaciones') },
@@ -1451,10 +1474,7 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
     )}
     </>
     )}
-  </div>
-  
-   {/*LINEA DEL DIABLO*/}
-   
+  </div> 
 
   <div className={` ${
       isPortfolioView
@@ -1478,7 +1498,27 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
 
     {activeMainTab === "portfolio" && effectivePortfolioTab === "music" && (
       <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
-        <MusicPortfolio songs={musicSongs} albums={musicAlbums} error={postsError} />
+       <MusicPortfolio
+        songs={musicSongs}
+        albums={musicAlbums}
+        error={postsError}
+        onEditAlbum={(album) => {
+          setEditingMusicCollection({
+            id: album.id,
+            title: album.title,
+            description: "",
+            itemCount: album.songsCount,
+            updatedAt: album.releaseDate,
+            coverUrl: album.coverUrl,
+            posts: album.tracks.map((track) => ({
+              id: track.id,
+              title: track.title,
+              imageUrl: album.coverUrl,
+              createdAt: album.releaseDate,
+            })),
+          });
+        }}
+/>
       </div>
     )}
     
@@ -1529,26 +1569,26 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
       </div>
     )}
       </div>
-<CreatePortfolioPostModal
-  visible={modalVisible}
-  initialPostType={portfolioModalType}
-  onClose={() => setModalVisible(false)}
-  onSuccess={() => {
-    setModalVisible(false);
-    window.location.reload();
-  }}
-/>
-<CreateCollectionModal
-  open={isCreateCollectionModalOpen}
-  onClose={() => setIsCreateCollectionModalOpen(false)}
-  ownerId={profile.user.id ?? ""}
-  availableItemsByType={collectionModalItemsByType}
-  onSuccess={() => {
-    setIsCreateCollectionModalOpen(false);
-    window.location.reload();
-  }}
-/>
-</div>
+  <CreatePortfolioPostModal
+    visible={modalVisible}
+    initialPostType={portfolioModalType}
+    onClose={() => setModalVisible(false)}
+    onSuccess={() => {
+      setModalVisible(false);
+      window.location.reload();
+    }}
+  />
+  <CreateCollectionModal
+    open={isCreateCollectionModalOpen}
+    onClose={() => setIsCreateCollectionModalOpen(false)}
+    ownerId={profile.user.id ?? ""}
+    availableItemsByType={collectionModalItemsByType}
+    onSuccess={() => {
+      setIsCreateCollectionModalOpen(false);
+      window.location.reload();
+    }}
+  />
+  </div>
 </div>
 );
 }
