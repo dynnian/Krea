@@ -2,10 +2,12 @@ namespace Krea.API.Controllers {
     using Application.Features.User;
     using Application.Features.Follows;
     using Application.Features.User.SearchUser;
+    using Application.Features.User.UploadUserProfilePicture;
     using Contracts;
     using Domain.Abstractions;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
+    using System.ComponentModel.DataAnnotations;
     using System.Security.Claims;
 
     [ApiController]
@@ -340,6 +342,58 @@ namespace Krea.API.Controllers {
             return Ok(result);
         }
 
+        /// <summary>
+        /// Uploads a profile picture image for the currently authenticated user.
+        /// </summary>
+        /// <remarks>
+        /// Accepts a single image file in multipart/form-data format, validates it,
+        /// stores it in the configured file storage, and creates a media record.
+        /// 
+        /// This endpoint only uploads the image and returns the created media information.
+        /// To persist the new profile picture on the user profile, use the profile update endpoint
+        /// with the returned media identifier.
+        /// </remarks>
+        /// <param name="file">Image file to upload.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>Returns the uploaded media information.</returns>
+        /// <response code="200">The image was uploaded successfully.</response>
+        /// <response code="400">The file is missing or invalid.</response>
+        /// <response code="401">The request is unauthorized.</response>
+        /// <response code="404">The authenticated user was not found.</response>
+        [HttpPost("me/profile-picture")]
+        [Consumes("multipart/form-data")]
+        [ProducesResponseType(typeof(UploadUserProfilePictureResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UploadMyProfilePicture(
+            [FromForm] IFormFile file,
+            CancellationToken cancellationToken) {
+            if (file is null || file.Length == 0)
+                return BadRequest(new { error = "File is required." });
+
+            await using var stream = file.OpenReadStream();
+
+            try {
+                var result = await _sender.Send(
+                    new UploadUserProfilePictureCommand(
+                        GetCurrentUserId(),
+                        file.FileName,
+                        file.ContentType,
+                        file.Length,
+                        stream),
+                    cancellationToken);
+
+                return Ok(result);
+            }
+            catch (ValidationException ex) {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (ArgumentException ex) {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (KeyNotFoundException ex) {
+                return NotFound(new { error = ex.Message });
+            }
+        }
+        
         private Guid GetCurrentUserId() {
             string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid userId))
