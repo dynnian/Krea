@@ -1,5 +1,5 @@
-import { useEffect, useState, type ChangeEvent } from "react";
-import { Avatar, Button, Input, Switch, message } from "antd";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { Avatar, Button, Input, Select, Switch, message } from "antd";
 import { ImagePlus, User } from "lucide-react";
 import { settingsRepository } from "../services/settingsRepository";
 import type {
@@ -9,6 +9,15 @@ import type {
   SettingsState,
 } from "../types/settings";
 import "./settings.css";
+
+const languageOptions = [
+  { value: "1", label: "Español" },
+  { value: "2", label: "Ingles" },
+];
+
+const timeZoneOptions = [
+  { value: "1", label: "America/Santo_Domingo" },
+];
 
 const settingsSections: SettingsSection[] = [
   { key: "profile", label: "Perfil" },
@@ -22,8 +31,14 @@ const settingsSections: SettingsSection[] = [
 const emptyProfileDraft: ProfileSettings = {
   username: "",
   email: "",
-  phone: "",
-  bio: "",
+  displayName: "",
+  biography: "",
+  languageCode: "",
+  timeZoneId: "",
+  profilePictureUrl: null,
+  bannerPictureUrl: null,
+  profilePictureId: null,
+  bannerPictureId: null,
 };
 
 export default function SettingsRoute() {
@@ -32,15 +47,25 @@ export default function SettingsRoute() {
   const [profileDraft, setProfileDraft] = useState<ProfileSettings>(emptyProfileDraft);
   const [isNewTierModalOpen, setIsNewTierModalOpen] = useState(false);
   const [isNewCommissionModalOpen, setIsNewCommissionModalOpen] = useState(false);
+  const [originalProfile, setOriginalProfile] = useState<ProfileSettings | null>(null);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
-    const loadSettings = async () => {
+useEffect(() => {
+  const loadSettings = async () => {
+    try {
       const data = await settingsRepository.getSettings();
       setSettingsState(data);
       setProfileDraft(data.profile);
-    };
-    void loadSettings();
-  }, []);
+      setOriginalProfile(data.profile);
+    } catch {
+      message.error("No se pudo cargar la configuración");
+    }
+  };
+
+  void loadSettings();
+}, []);
 
   const handleInputChange =
     (field: keyof ProfileSettings) =>
@@ -48,16 +73,65 @@ export default function SettingsRoute() {
       setProfileDraft((prev) => ({ ...prev, [field]: event.target.value }));
     };
 
-  const handleCancelProfile = () => {
-    if (!settingsState) return;
-    setProfileDraft(settingsState.profile);
-  };
+ const handleCancelProfile = () => {
+  if (!originalProfile) return;
+  setProfileDraft(originalProfile);
+};
 
-  const handleSaveProfile = async () => {
-    const next = await settingsRepository.saveProfile(profileDraft);
+ const handleSaveProfile = async () => {
+  if (!originalProfile) return;
+
+  try {
+    setIsSavingProfile(true);
+    const next = await settingsRepository.saveProfile(profileDraft, originalProfile);
     setSettingsState(next);
+    setProfileDraft(next.profile);
+    setOriginalProfile(next.profile);
     message.success("Perfil guardado");
-  };
+  } catch {
+    message.error("No se pudo guardar el perfil");
+  } finally {
+    setIsSavingProfile(false);
+  }
+};
+
+const handleOpenAvatarPicker = () => {
+  fileInputRef.current?.click();
+};
+
+const handleProfilePictureSelected = async (
+  event: ChangeEvent<HTMLInputElement>
+) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  try {
+    setIsUploadingAvatar(true);
+
+    const uploaded = await settingsRepository.uploadProfilePicture(file);
+
+    console.log("uploaded profile picture", uploaded);
+
+    setProfileDraft((prev) => {
+      const next = {
+        ...prev,
+        profilePictureId: uploaded.mediaId,
+        profilePictureUrl: uploaded.url,
+      };
+
+      console.log("next profile draft", next);
+      return next;
+    });
+
+    message.success("Imagen de perfil cargada");
+  } catch (error) {
+    console.error("Error uploading profile picture", error);
+    message.error("No se pudo subir la imagen de perfil");
+  } finally {
+    setIsUploadingAvatar(false);
+    event.target.value = "";
+  }
+};
 
   const handleSubscriptionPreviewToggle = async (value: boolean) => {
     if (!settingsState) return;
@@ -113,76 +187,117 @@ export default function SettingsRoute() {
     );
   };
 
-  const renderProfileSection = () => (
-    <>
-      <h2 className="settings-content-title">Editar perfil</h2>
+const renderProfileSection = () => (
+  <>
+    <h2 className="settings-content-title">Editar perfil</h2>
+    <div className="settings-avatar-row">
+  <Avatar
+    key={profileDraft.profilePictureUrl ?? "empty-avatar"}
+    size={74}
+    src={profileDraft.profilePictureUrl || undefined}
+    icon={<User size={36} />}
+    className="settings-avatar"
+  />
+  <Button
+    className="settings-avatar-button"
+    type="default"
+    loading={isUploadingAvatar}
+    onClick={handleOpenAvatarPicker}
+  >
+    Cambiar avatar
+  </Button>
 
-      <div className="settings-avatar-row">
-        <Avatar
-          size={74}
-          icon={<User size={36} />}
-          className="settings-avatar"
-        />
-        <Button className="settings-avatar-button" type="default">
-          Cambiar avatar
-        </Button>
-      </div>
+  <input
+    ref={fileInputRef}
+    type="file"
+    accept="image/png,image/jpeg,image/jpg,image/webp"
+    style={{ display: "none" }}
+    onChange={handleProfilePictureSelected}
+  />
+</div>
 
-      <form className="settings-form" onSubmit={(event) => event.preventDefault()}>
-        <label className="settings-label" htmlFor="username">
-          Nombre de usuario
+    <form className="settings-form" onSubmit={(event) => event.preventDefault()}>
+      <label className="settings-label" htmlFor="username">
+        Nombre de usuario
+      </label>
+      <Input
+        id="username"
+        value={profileDraft.username}
+        readOnly
+        className="settings-input"
+      />
+
+      <label className="settings-label" htmlFor="email">
+        Correo
+      </label>
+      <Input
+        id="email"
+        value={profileDraft.email}
+        readOnly
+        className="settings-input"
+      />
+
+      <label className="settings-label" htmlFor="displayName">
+        Nombre para mostrar
+      </label>
+      <Input
+        id="displayName"
+        value={profileDraft.displayName}
+        onChange={handleInputChange("displayName")}
+        placeholder="[ Nombre para mostrar ]"
+        className="settings-input"
+      />
+
+      <label className="settings-label" htmlFor="biography">
+        Biografía (Opcional)
+      </label>
+      <Input.TextArea
+        id="biography"
+        value={profileDraft.biography}
+        onChange={handleInputChange("biography")}
+        className="settings-textarea"
+      />
+      <label className="settings-label" htmlFor="languageCode">
+        Idioma
         </label>
-        <Input
-          id="username"
-          value={profileDraft.username}
-          onChange={handleInputChange("username")}
-          placeholder="[ Nombre de usuario ]"
+        <Select
+          id="languageCode"
+          value={profileDraft.languageCode}
+          onChange={(value) =>
+            setProfileDraft((prev) => ({ ...prev, languageCode: value }))
+          }
+          options={languageOptions}
           className="settings-input"
-        />
-
-        <label className="settings-label" htmlFor="email">
-          Correo
+          />
+      <label className="settings-label" htmlFor="timeZoneId">
+        Zona horaria
         </label>
-        <Input
-          id="email"
-          value={profileDraft.email}
-          onChange={handleInputChange("email")}
-          placeholder="[ Correo ]"
+        <Select
+          id="timeZoneId"
+          value={profileDraft.timeZoneId}
+          onChange={(value) =>
+            setProfileDraft((prev) => ({ ...prev, timeZoneId: value }))
+          }
+          options={timeZoneOptions}
           className="settings-input"
-        />
+          />
+    </form>
 
-        <label className="settings-label" htmlFor="phone">
-          Teléfono
-        </label>
-        <Input
-          id="phone"
-          value={profileDraft.phone}
-          onChange={handleInputChange("phone")}
-          placeholder="[ Número ]"
-          className="settings-input"
-        />
-
-        <label className="settings-label" htmlFor="bio">
-          Biografía (Opcional)
-        </label>
-        <Input.TextArea
-          id="bio"
-          value={profileDraft.bio}
-          onChange={handleInputChange("bio")}
-          className="settings-textarea"
-        />
-      </form>
-
-      <div className="settings-actions">
-        <Button className="settings-cancel-button" onClick={handleCancelProfile}>
-          Cancelar
-        </Button>
-        <Button className="settings-save-button" type="primary" onClick={() => void handleSaveProfile()}>
-          Guardar
-        </Button>
-      </div>
-    </>
-  );
+    <div className="settings-actions">
+      <Button className="settings-cancel-button" onClick={handleCancelProfile}>
+        Cancelar
+      </Button>
+      <Button
+        className="settings-save-button"
+        type="primary"
+        loading={isSavingProfile}
+        onClick={() => void handleSaveProfile()}
+      >
+        Guardar
+      </Button>
+    </div>
+  </>
+);
 
   const renderSubscriptionSection = () => (
     <>
