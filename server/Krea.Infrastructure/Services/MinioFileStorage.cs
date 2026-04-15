@@ -23,16 +23,20 @@ namespace Krea.Infrastructure.Services {
             string fileName,
             string contentType,
             long size,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            string? folder = null)
         {
             try
             {
                 var safeFileName = Path.GetFileName(fileName);
-                var objectName = $"posts/{Guid.NewGuid()}_{safeFileName}";
-                
+                var normalizedFolder = string.IsNullOrWhiteSpace(folder)
+                    ? "posts"
+                    : folder.Trim().Trim('/');
+
+                var objectName = $"{normalizedFolder}/{Guid.NewGuid()}_{safeFileName}";
+        
                 await EnsureBucketExists(cancellationToken);
 
-                // Subir archivo
                 await _minioClient.PutObjectAsync(
                     new PutObjectArgs()
                         .WithBucket(BucketName)
@@ -41,6 +45,7 @@ namespace Krea.Infrastructure.Services {
                         .WithObjectSize(size)
                         .WithContentType(contentType),
                     cancellationToken);
+
                 var cleanBaseUrl = _baseUrl.Trim('\"', ' ').TrimEnd('/');
                 var url = $"{cleanBaseUrl}/{BucketName}/{objectName}";
 
