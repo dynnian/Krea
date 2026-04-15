@@ -6,6 +6,7 @@ namespace Krea.API.Controllers {
     using Application.Features.Collections.GetCollectionById;
     using Application.Features.Collections.GetUserCollections;
     using Application.Features.Collections.RemovePostFromCollection;
+    using Application.Features.Collections.UpdateCollectionTitle;
     using Application.Features.Collections.UploadCollectionCover;
     using Domain.Abstractions;
     using Microsoft.AspNetCore.Authorization;
@@ -241,7 +242,31 @@ namespace Krea.API.Controllers {
 
             return Ok(result);
         }
-        
+
+        /// <summary>
+        /// Updates the title of an existing collection.
+        /// </summary>
+        /// <param name="collectionId">The identifier of the collection.</param>
+        /// <param name="request">The new title.</param>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>The updated collection information.</returns>
+        /// <response code="200">Title updated successfully.</response>
+        /// <response code="400">Invalid title.</response>
+        /// <response code="404">Collection not found.</response>
+        /// <response code="401">Unauthorized.</response>
+        /// <response code="403">Forbidden. The user is not the owner.</response>
+        [HttpPut("{collectionId:guid}/title")]
+        public async Task<IActionResult> UpdateTitle(
+            Guid collectionId,
+            [FromBody] UpdateCollectionTitleRequest request,
+            CancellationToken ct)
+        {
+            var currentUserId = GetCurrentUserId();
+            var command = new UpdateCollectionTitleCommand(collectionId, currentUserId, request.Title);
+            var result = await _sender.Send(command, ct);
+            return Ok(result);
+        }
+
         private Guid GetCurrentUserId() {
             string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid userId)) {
