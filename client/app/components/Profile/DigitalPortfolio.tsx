@@ -19,7 +19,10 @@ export type DigitalArtwork = {
 type DigitalPortfolioProps = {
   userId: string;
   items: DigitalArtwork[];
-  onEditCollection: (collection: MockImageCollection) => void;
+  onEditCollection: (
+    collection: MockImageCollection,
+    moveTargets: { id: string; title: string; coverUrl?: string }[]
+  ) => void;
 };
 
 type PreviewImage = {
@@ -431,7 +434,16 @@ if (collectionDetailLoading) {
 
   const handleEditCollection = (collection: MockImageCollection) => {
     console.log("DigitalPortfolio handleEditCollection", collection);
-    onEditCollection(collection);
+
+    const moveTargets = collections
+      .filter((target) => target.id !== collection.id)
+      .map((target) => ({
+        id: target.id,
+        title: target.title,
+        coverUrl: target.coverUrl ?? undefined,
+      }));
+
+    onEditCollection(collection, moveTargets);
   };
   
   const handleDeleteCollection = async (collectionId: string) => {
@@ -495,7 +507,7 @@ if (activeCollection) {
   }
 
   return (
-    <div className="w-full px-[20px] md:px-[341px] pb-[30px]">
+    <div className="w-full px-[20px] md:px-[241px] pb-[30px]">
       <div className="grid justify-center gap-x-[35px] gap-y-[20px] [grid-template-columns:repeat(auto-fit,320px)]">
         <PortfolioGeneralCard
           items={items}

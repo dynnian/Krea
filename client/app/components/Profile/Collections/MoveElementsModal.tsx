@@ -21,49 +21,6 @@ type MoveElementsModalProps = {
   otherCollectionsLabel: string;
 };
 
-const MOCK_MOVE_TARGETS: MoveTargetCollection[] = [
-  {
-    id: "mock-1",
-    title: "Fantasy Worlds",
-    coverUrl: "https://placehold.co/66x66?text=1",
-  },
-  {
-    id: "mock-2",
-    title: "Dreamscapes",
-    coverUrl: "https://placehold.co/66x66?text=2",
-  },
-  {
-    id: "mock-3",
-    title: "Dark Visions",
-    coverUrl: "https://placehold.co/66x66?text=3",
-  },
-  {
-    id: "mock-4",
-    title: "Nature Studies",
-    coverUrl: "https://placehold.co/66x66?text=4",
-  },
-  {
-    id: "mock-5",
-    title: "Sketch Archive",
-    coverUrl: "https://placehold.co/66x66?text=5",
-  },
-  {
-    id: "mock-6",
-    title: "Magic Creatures",
-    coverUrl: "https://placehold.co/66x66?text=6",
-  },
-  {
-    id: "mock-7",
-    title: "Portrait Lab",
-    coverUrl: "https://placehold.co/66x66?text=7",
-  },
-  {
-    id: "mock-8",
-    title: "Color Experiments",
-    coverUrl: "https://placehold.co/66x66?text=8",
-  },
-];
-
 export default function MoveElementsModal({
   open,
   onClose,
@@ -76,8 +33,7 @@ export default function MoveElementsModal({
   title,
   otherCollectionsLabel,
 }: MoveElementsModalProps) {
-  const displayTargets = moveTargets.length > 0 ? moveTargets : MOCK_MOVE_TARGETS;
-  const filteredTargets = displayTargets.filter((target) =>
+  const filteredTargets = moveTargets.filter((target) =>
   target.title.toLowerCase().includes(searchValue.toLowerCase())
 );
   return (
@@ -138,7 +94,7 @@ export default function MoveElementsModal({
                           : "hover:bg-[#DCE9F9]"
                       }`}
                     >
-                      <div className="w-[66px] h-[66px] rounded-[10px] overflow-hidden bg-[#D9D9D9] shrink-0 border border-[#1B1C1E]">
+                      <div className="w-[66px] h-[66px] rounded-[5px] overflow-hidden bg-[#D9D9D9] shrink-0 border border-[#95ACCC]">
                         {target.coverUrl ? (
                           <img
                             src={target.coverUrl}

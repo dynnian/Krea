@@ -958,6 +958,9 @@ const [modalVisible, setModalVisible] = useState(false);
 const [portfolioModalType, setPortfolioModalType] = useState<UploadMediaType>(PortfolioPostType.IMAGE);
 const [isCreateCollectionModalOpen, setIsCreateCollectionModalOpen] = useState(false);
 const [editingImageCollection, setEditingImageCollection] = useState<MockImageCollection | null>(null);
+const [editingImageMoveTargets, setEditingImageMoveTargets] = useState<
+  { id: string; title: string; coverUrl?: string }[]
+>([]);
 const [editingMusicCollection, setEditingMusicCollection] = useState<MockImageCollection | null>(null);
 
 const handleGoToSettings = () => {
@@ -1252,11 +1255,27 @@ if (editingImageCollection) {
       <EditCollectionView
         collection={editingImageCollection}
         allItems={visualPortfolioItems}
-        moveTargets={[]}
-        onCancel={() => setEditingImageCollection(null)}
-        onSave={() => {
+        moveTargets={editingImageMoveTargets}
+        onCancel={() => {
           setEditingImageCollection(null);
-          window.location.reload();
+          setEditingImageMoveTargets([]);
+        }}
+        onSave={async ({ updatedCollection, stagedMoves }) => {
+          try {
+            await saveEditedCollectionChanges({
+              originalCollection: editingImageCollection,
+              updatedCollection,
+              stagedMoves,
+              entityLabel: "la colección",
+            });
+
+            setEditingImageCollection(null);
+            setEditingImageMoveTargets([]);
+            window.location.reload();
+          } catch (error) {
+            console.error("Error saving edited image collection:", error);
+            message.error("No se pudieron guardar los cambios de la colección.");
+          }
         }}
       />
     </div>
@@ -1273,12 +1292,30 @@ if (editingMusicCollection) {
           title: song.title,
           imageUrl: song.coverUrl,
         }))}
-        moveTargets={[]}
+        moveTargets={musicAlbums
+          .filter((album) => album.id !== editingMusicCollection.id)
+          .map((album) => ({
+            id: album.id,
+            title: album.title,
+            coverUrl: album.coverUrl,
+          }))}
         collectionType="music"
         onCancel={() => setEditingMusicCollection(null)}
-        onSave={() => {
-          setEditingMusicCollection(null);
-          window.location.reload();
+        onSave={async ({ updatedCollection, stagedMoves }) => {
+          try {
+            await saveEditedCollectionChanges({
+              originalCollection: editingMusicCollection,
+              updatedCollection,
+              stagedMoves,
+              entityLabel: "el album",
+            });
+
+            setEditingMusicCollection(null);
+            window.location.reload();
+          } catch (error) {
+            console.error("Error saving edited music collection:", error);
+            message.error("No se pudieron guardar los cambios del album.");
+          }
         }}
       />
     </div>
@@ -1361,6 +1398,64 @@ const collectionModalItemsByType = {
     title: work.title,
   })),
 };
+
+async function saveEditedCollectionChanges({
+  originalCollection,
+  updatedCollection,
+  stagedMoves,
+  entityLabel,
+}: {
+  originalCollection: MockImageCollection;
+  updatedCollection: MockImageCollection;
+  stagedMoves: Record<string, { id: string; title: string; imageUrl: string }[]>;
+  entityLabel: string;
+}) {
+  const sourceCollectionId = originalCollection.id;
+
+  const originalPostIds = new Set(
+    originalCollection.posts.map((post) => post.id)
+  );
+
+  const updatedPostIds = new Set(
+    updatedCollection.posts.map((post) => post.id)
+  );
+
+  const movedPostIds = new Set(
+    Object.values(stagedMoves).flat().map((item) => item.id)
+  );
+
+  const removedPostIds = [...originalPostIds].filter(
+    (postId) => !updatedPostIds.has(postId) && !movedPostIds.has(postId)
+  );
+
+  const addedPostIds = [...updatedPostIds].filter(
+    (postId) => !originalPostIds.has(postId)
+  );
+
+  const nextTitle = updatedCollection.title.trim();
+  const previousTitle = originalCollection.title.trim();
+
+  if (nextTitle && nextTitle !== previousTitle) {
+    await collectionsApi.updateCollectionTitle(sourceCollectionId, nextTitle);
+  }
+
+  for (const postId of addedPostIds) {
+    await collectionsApi.addPostToCollection(sourceCollectionId, postId);
+  }
+
+  for (const postId of removedPostIds) {
+    await collectionsApi.removePostFromCollection(sourceCollectionId, postId);
+  }
+
+  for (const [targetCollectionId, items] of Object.entries(stagedMoves)) {
+    for (const item of items) {
+      await collectionsApi.addPostToCollection(targetCollectionId, item.id);
+      await collectionsApi.removePostFromCollection(sourceCollectionId, item.id);
+    }
+  }
+
+  message.success(`Cambios de ${entityLabel} guardados correctamente.`);
+}
 
 const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
   
@@ -1506,9 +1601,10 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
     <DigitalPortfolio
       userId={profile.user.id ?? ""}
       items={visualPortfolioItems}
-      onEditCollection={(collection) => {
+      onEditCollection={(collection, moveTargets) => {
         console.log("Profile setEditingImageCollection", collection);
         setEditingImageCollection(collection);
+        setEditingImageMoveTargets(moveTargets);
       }}
     />
      </div>

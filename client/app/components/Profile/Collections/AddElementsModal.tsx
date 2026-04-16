@@ -95,7 +95,7 @@ export default function AddElementsModal({
                           : "hover:bg-[#DCE9F9]"
                       }`}
                       >
-                      <div className="w-[66px] h-[66px] rounded-[10px] overflow-hidden bg-[#D9D9D9] shrink-0 border border-[#1B1C1E]">
+                      <div className="w-[66px] h-[66px] rounded-[5px] overflow-hidden bg-[#D9D9D9] shrink-0 border border-[#95ACCC] border-[1px]">
                         {item.imageUrl ? (
                           <img
                             src={item.imageUrl}

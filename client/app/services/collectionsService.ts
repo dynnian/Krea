@@ -136,5 +136,14 @@ export const collectionsApi = {
 
     return res.data;
   },
+
+  updateCollectionTitle: async (collectionId: string, title: string) => {
+    const res = await axiosClient.put<{ id: string; title: string; updatedAt: string }>(
+      `/collections/${collectionId}/title`,
+      { title }
+    );
+
+    return res.data;
+  },
 };
 
