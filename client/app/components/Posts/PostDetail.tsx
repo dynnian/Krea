@@ -75,6 +75,8 @@ export default function PostDetail() {
   const originalPost = post?.repostOf ?? post;
   const isRepost = !!post?.repostOf;
   const repostAuthorName = isRepost ? post?.authorName : null;
+  const isOwnPost = user?.id === originalPost!.authorPostId;
+
 
   const handleLike = async () => {
     if (!requireAuth() || actionLoading || !originalPost) return;
@@ -126,22 +128,27 @@ export default function PostDetail() {
     }
   };
 
-  const menuItems = [
-    {
-      key: 'report',
-      label: t('post.report'),
-      icon: <Flag size={16} />,
-      onClick: () => handleReportClick(),
-    },
-  ];
 
   const handleCommentPosted = () => {
     setCommentsCount(prev => prev + 1);
   };
   const handleReportClick = () => {
-    if (!requireAuth()) return;   
+    if (!requireAuth()) return;
+    if (isOwnPost) {
+      message.warning(t('post.cannot_report_own'));
+      return;
+    }
     setReportModalOpen(true);
   };
+  const menuItems = [];
+  if (!isOwnPost) {
+    menuItems.push({
+      key: 'report',
+      label: t('post.report'),
+      icon: <Flag size={16} />,
+      onClick: handleReportClick,
+    });
+  }
 
   if (loading) {
     return (

@@ -36,6 +36,7 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
   const originalPost = post.repostOf ?? post;
   const isRepost = !!post.repostOf;
   const repostAuthorName = isRepost ? post.authorName : null;
+  const isOwnPost = user?.id === originalPost.authorPostId;
 
   const [liked, setLiked] = useState(originalPost.isLikedByCurrentUser);
   const [likesCount, setLikesCount] = useState(originalPost.likesCount);
@@ -124,7 +125,11 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
   };
 
   const handleReportClick = () => {
-    if (!requireAuth()) return;  
+    if (!requireAuth()) return;
+    if (isOwnPost) {
+      message.warning(t('post.cannot_report_own'));
+      return;
+    }
     setReportModalOpen(true);
   };
 
@@ -141,24 +146,25 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
     }
   };
 
-  const menuItems = [
-    {
+  const menuItems = [];
+
+  if (!isOwnPost) {
+    menuItems.push({
       key: 'report',
       label: t('post.report'),
       icon: <Flag size={16} />,
-      onClick: () => handleReportClick(),
-    },
-    ...(canDelete
-      ? [
-          {
-            key: 'delete',
-            label: 'Eliminar publicación',
-            danger: true,
-            onClick: () => handleDeletePost(),
-          },
-        ]
-      : []),
-  ];
+      onClick: handleReportClick,
+    });
+  }
+
+  if (canDelete) {
+    menuItems.push({
+      key: 'delete',
+      label: 'Eliminar publicación',
+      danger: true,
+      onClick: handleDeletePost,
+    });
+  }
 
   const firstMedia = originalPost.media?.[0];
   const mediaUrl = firstMedia?.url;
