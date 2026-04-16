@@ -100,5 +100,14 @@ namespace Krea.Domain.Entities {
             MediaId = image.Id;
             UpdatedAt = DateTime.UtcNow;
         }
+        
+        public void UpdateTitle(string title)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+                throw new ArgumentException("Title is required.", nameof(title));
+
+            Title = title;
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 }
