@@ -34,6 +34,7 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
   const originalPost = post.repostOf ?? post;
   const isRepost = !!post.repostOf;
   const repostAuthorName = isRepost ? post.authorName : null;
+  const isOwnPost = user?.id === originalPost.authorPostId;
 
   const [liked, setLiked] = useState(originalPost.isLikedByCurrentUser);
   const [likesCount, setLikesCount] = useState(originalPost.likesCount);
@@ -113,18 +114,23 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
   };
 
   const handleReportClick = () => {
-    if (!requireAuth()) return;  
+    if (!requireAuth()) return;
+    if (isOwnPost) {
+      message.warning(t('post.cannot_report_own'));
+      return;
+    }
     setReportModalOpen(true);
   };
 
-  const menuItems = [
-    {
+  const menuItems = [];
+  if (!isOwnPost) {
+    menuItems.push({
       key: 'report',
       label: t('post.report'),
       icon: <Flag size={16} />,
-      onClick: () => handleReportClick(),
-    },
-  ];
+      onClick: handleReportClick,
+    });
+  }
 
   const firstMedia = originalPost.media?.[0];
   const mediaUrl = firstMedia?.url;
