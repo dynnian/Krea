@@ -81,7 +81,25 @@ export const collectionsApi = {
   },
 
   createCollection: async (data: CreateCollectionRequest) => {
-    const res = await axiosClient.post<CreateCollectionResponse>("/collections", data);
+    const formData = new FormData();
+    formData.append("title", data.title);
+
+    if (data.description) {
+      formData.append("description", data.description);
+    }
+
+    formData.append("type", String(data.type));
+
+    const res = await axiosClient.post<CreateCollectionResponse>(
+      "/collections",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
     return res.data;
   },
 

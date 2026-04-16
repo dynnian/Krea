@@ -71,15 +71,15 @@ const COLLECTION_TYPE_CONFIG: Record<
   },
   music: {
     pageTitle: "Editar album",
-    coverLabel: "Cover de la album",
-    titleLabel: "Titulo de la album",
-    titlePlaceholder: "Titulo de la album",
+    coverLabel: "Cover del album",
+    titleLabel: "Titulo del album",
+    titlePlaceholder: "Titulo del album",
     moveModalLabel: "Mover x canciones a:",
-    addModalLabel: "Agregar cancion",
-    addListLabel: "Otras cancion",
+    addModalLabel: "Agregar canciones",
+    addListLabel: "Otras canciones",
     itemWordSingular: "cancion",
     itemWordPlural: "canciones",
-    otherCollectionsLabel: "Otras collections",
+    otherCollectionsLabel: "Otros albums",
   },
 };
 
@@ -167,6 +167,65 @@ function PlaceholderGrid({
   return (
     <div className="w-full min-h-[220px] rounded-[12px] border border-dashed border-[#8F8E8A] flex items-center justify-center text-[#5E5E5E] text-[15px]">
       {message}
+    </div>
+  );
+}
+
+function SelectableMusicGrid({
+  items,
+  selectedIds,
+  onToggle,
+}: {
+  items: CollectionItem[];
+  selectedIds: string[];
+  onToggle: (item: CollectionItem) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-x-[10px] px-0 pb-[1px]">
+      {items.map((item) => {
+        const isSelected = selectedIds.includes(item.id);
+
+        return (
+          <div key={item.id} className="w-full">
+            <div
+              className="relative w-full aspect-square group cursor-pointer shadow-[4px_4px_13px_rgba(0,0,0,0.18)]"
+            >
+              <img
+                src={item.imageUrl}
+                alt={item.title}
+                className={`w-full h-full object-cover transition rounded-[8px] ${
+                  isSelected ? "opacity-80" : "group-hover:scale-[1.03] "
+                }`}
+              />
+
+              <div
+                onClick={() => onToggle(item)}
+                className={`absolute inset-0 transition ${
+                  isSelected
+                    ? "bg-[#0B5107]/25"
+                    : "bg-transparent group-hover:bg-black/10 group-hover:scale-[1.03] rounded-[8px]"
+                }`}
+              />
+
+              <div
+                className={`absolute top-[10px] right-[10px] flex items-center justify-center w-[24px] h-[24px] rounded-full border transition ${
+                  isSelected
+                    ? "bg-[#0B5107] border-[#0B5107] text-white"
+                    : "bg-white/90 border-[#1B1C1E] text-transparent"
+                }`}
+              >
+                <Check size={14} />
+              </div>
+            </div>
+
+            <p 
+            onClick={() => onToggle(item)}
+            className="pt-[5px] text-[18px] leading-[30px] font-medium text-[#1B1C1E] truncate cursor-pointer hover:underline">
+              {item.title}
+            </p>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -484,7 +543,11 @@ const handleSave = () => {
 
     if (collectionType === "music") {
       return (
-        <PlaceholderGrid message="Vista de música pendiente de conectar." />
+        <SelectableMusicGrid
+          items={stagedItems}
+          selectedIds={selectedIds}
+          onToggle={handleToggleSelection}
+        />
       );
     }
 

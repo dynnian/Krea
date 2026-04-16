@@ -1013,6 +1013,25 @@ setLoading(true);
       "No se pudieron cargar las publicaciones.";
   }
 
+  try {
+    const userCollections = await collectionsApi.getUserCollections(apiProfile.id);
+
+    const musicCollections = userCollections.filter((c) => c.type === 1);
+
+    resolvedMusicAlbums = musicCollections.map((collection) => ({
+      id: collection.id,
+      title: collection.title,
+      releaseDate: collection.updatedAt,
+      songsCount: collection.itemCount,
+      coverUrl:
+        collection.coverUrl ??
+        "https://placehold.co/240x240?text=Album",
+      tracks: [],
+    }));
+  } catch (err) {
+    console.error("Error fetching music collections:", err);
+  }
+
   const rawPosts = Array.isArray((apiPosts as any)?.items)
     ? (apiPosts as any).items
     : Array.isArray(apiPosts)
@@ -1089,7 +1108,6 @@ function normalizeApiPosts(apiPosts: ApiPost[], displayName: string): Post[] {
 
   resolvedVisualPortfolioItems = mapPostsToVisualPortfolioItems(resolvedPosts);
   resolvedMusicSongs = mapPostsToMusicSongs(resolvedPosts);
-  resolvedMusicAlbums = [];
   resolvedWriterWorks = mapPostsToWriterWorks(resolvedPosts);
 
   profileData = {
@@ -1502,23 +1520,37 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
         songs={musicSongs}
         albums={musicAlbums}
         error={postsError}
-        onEditAlbum={(album) => {
-          setEditingMusicCollection({
-            id: album.id,
-            title: album.title,
-            description: "",
-            itemCount: album.songsCount,
-            updatedAt: album.releaseDate,
-            coverUrl: album.coverUrl,
-            posts: album.tracks.map((track) => ({
-              id: track.id,
-              title: track.title,
-              imageUrl: album.coverUrl,
-              createdAt: album.releaseDate,
-            })),
-          });
-        }}
-/>
+onEditAlbum={async (album) => {
+  try {
+    const collectionDetail = await collectionsApi.getCollectionById(album.id);
+
+    setEditingMusicCollection({
+      id: collectionDetail.id,
+      title: collectionDetail.title,
+      description: collectionDetail.description ?? "",
+      itemCount: collectionDetail.itemCount,
+      updatedAt: collectionDetail.createdAt,
+      coverUrl: collectionDetail.coverUrl ?? album.coverUrl,
+      posts: collectionDetail.posts.map((post) => {
+        const matchingSong = musicSongs.find((song) => song.postId === post.id);
+
+        return {
+          id: post.id,
+          title: post.title,
+          imageUrl:
+            post.mediaPreviewUrl ??
+            matchingSong?.coverUrl ??
+            album.coverUrl,
+          createdAt: post.uploadedAt,
+        };
+      }),
+    });
+  } catch (error) {
+    console.error("Error loading album detail for edit:", error);
+    message.error("No se pudo cargar el album para editar.");
+  }
+}}
+        />
       </div>
     )}
     

@@ -269,13 +269,13 @@ function PortfolioViewHeader({
 }
 
 function MusicPortfolioGeneralCard({
-  albums,
+  songs,
   onOpen,
 }: {
-  albums: MusicAlbum[];
+  songs: MusicSong[];
   onOpen: () => void;
 }) {
-  const previewCovers = albums.slice(0, 3);
+  const previewCovers = [...songs].slice(0, 3);
 
   return (
     <div className="w-[220px] text-left bg-transparent">
@@ -284,16 +284,6 @@ function MusicPortfolioGeneralCard({
         className="relative w-[214px] h-[214px] mx-auto cursor-pointer"
       >
         <div className="absolute left-[10px] top-[52px] w-[120px] h-[120px] rotate-[-20deg] rounded-[5px] overflow-hidden shadow-[4px_4px_13px_rgba(0,0,0,0.25)] bg-[#D9D9D9]">
-          {previewCovers[0] ? (
-            <img
-              src={previewCovers[0].coverUrl}
-              alt={previewCovers[0].title}
-              className="w-full h-full object-cover"
-            />
-          ) : null}
-        </div>
-
-        <div className="absolute left-[50px] top-[25px] w-[120px] h-[120px] rotate-[0deg] rounded-[5px] overflow-hidden shadow-[4px_4px_13px_rgba(0,0,0,0.25)] bg-[#D9D9D9]">
           {previewCovers[2] ? (
             <img
               src={previewCovers[2].coverUrl}
@@ -303,7 +293,7 @@ function MusicPortfolioGeneralCard({
           ) : null}
         </div>
 
-        <div className="absolute left-[90px] top-[52px] w-[120px] h-[120px] rotate-[20deg] rounded-[5px] overflow-hidden shadow-[4px_4px_13px_rgba(0,0,0,0.25)] bg-[#D9D9D9]">
+        <div className="absolute left-[50px] top-[25px] w-[120px] h-[120px] rotate-[0deg] rounded-[5px] overflow-hidden shadow-[4px_4px_13px_rgba(0,0,0,0.25)] bg-[#D9D9D9]">
           {previewCovers[1] ? (
             <img
               src={previewCovers[1].coverUrl}
@@ -312,9 +302,19 @@ function MusicPortfolioGeneralCard({
             />
           ) : null}
         </div>
+
+        <div className="absolute left-[90px] top-[52px] w-[120px] h-[120px] rotate-[20deg] rounded-[5px] overflow-hidden shadow-[4px_4px_13px_rgba(0,0,0,0.25)] bg-[#D9D9D9]">
+          {previewCovers[0] ? (
+            <img
+              src={previewCovers[0].coverUrl}
+              alt={previewCovers[0].title}
+              className="w-full h-full object-cover"
+            />
+          ) : null}
+        </div>
       </div>
 
-      <div className="mt-[14px] w-[183px] mx-auto">
+      <div className=" mt-[14px] w-[183px] mx-auto">
         <h3
           className="text-[18px] font-medium leading-[20px] text-[#1B1C1E] hover:underline cursor-pointer"
           onClick={onOpen}
@@ -322,7 +322,7 @@ function MusicPortfolioGeneralCard({
           Portafolio general
         </h3>
         <p className="text-[14px] leading-[16px] text-[#1B1C1E] mt-[8px]">
-          {albums.reduce((acc, album) => acc + album.songsCount, 0)} Canciones
+          {songs.length} Canciones
         </p>
       </div>
     </div>
@@ -408,11 +408,13 @@ function AlbumCard({
 }
 
 function AlbumsGrid({
+  songs,
   albums,
   onOpenGeneralPortfolio,
   onEditAlbum,
   onDeleteAlbum,
 }: {
+  songs: MusicSong[];
   albums: MusicAlbum[];
   onOpenGeneralPortfolio: () => void;
   onEditAlbum: (album: MusicAlbum) => void;
@@ -422,7 +424,7 @@ function AlbumsGrid({
     <div className="w-full px-[20px] m:px-[140px] l:px-[240px] xl:px-[340px] pb-[30px]">
       <div className="grid justify-center gap-x-[20px] gap-y-[20px] [grid-template-columns:repeat(auto-fit,220px)]">
         <MusicPortfolioGeneralCard
-          albums={albums}
+          songs={songs}
           onOpen={onOpenGeneralPortfolio}
         />
 
@@ -482,12 +484,13 @@ export default function MusicPortfolio({
 
   if (showGeneralPortfolio) {
     return (
-      <div className="w-full -mt-[60px]">
+      <div className=" w-full -mt-[60px]">
+        <div className="pl-[430px]">
         <PortfolioViewHeader
           title="Portafolio General"
           onBack={() => setShowGeneralPortfolio(false)}
         />
-
+      </div>
         <div className="max-w-[975px] mx-auto space-y-4">
           {songs.length > 0 ? (
             songs.map((song) => (
@@ -527,6 +530,7 @@ if (!hasRealAlbums) {
 
 return (
   <AlbumsGrid
+    songs={songs}
     albums={displayAlbums}
     onOpenGeneralPortfolio={handleOpenGeneralPortfolio}
     onEditAlbum={handleEditAlbum}
