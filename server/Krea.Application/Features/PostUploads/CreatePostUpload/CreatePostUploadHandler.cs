@@ -71,12 +71,15 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
                 command.FileName,
                 command.ContentType);
 
+            var storageFolder = GetPostStorageFolder(command.Type);
+
             var storageResult = await _fileStorage.SaveAsync(
                 command.FileStream,
                 media.FileName,
                 command.ContentType,
                 command.Size,
-                cancellationToken);
+                cancellationToken,
+                storageFolder);
 
             media.SetPath(storageResult.Url);
 
@@ -236,7 +239,8 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
                 coverMedia.FileName,
                 command.CoverContentType!,
                 command.CoverSize!.Value,
-                cancellationToken);
+                cancellationToken,
+                "posts/covers");
 
             coverMedia.SetPath(coverStorageResult.Url);
 
@@ -277,7 +281,8 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
                 coverMedia.FileName,
                 extractedCover.ContentType,
                 extractedCover.Size,
-                cancellationToken);
+                cancellationToken,
+                "posts/covers");
 
             coverMedia.SetPath(coverStorageResult.Url);
 
@@ -308,6 +313,17 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
                 throw new ValidationException("The provided stream must support seeking.");
 
             stream.Position = 0;
+        }
+        
+        private static string GetPostStorageFolder(string type)
+        {
+            return type.ToLowerInvariant() switch
+            {
+                "image" => "posts/images",
+                "music" => "posts/music",
+                "text" => "posts/text",
+                _ => "posts"
+            };
         }
     }
 }
