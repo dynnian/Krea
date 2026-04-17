@@ -60,18 +60,6 @@ export interface AdminReportsOverviewDto {
   activity: ActivityItemDto[];
 }
 
-// You may need to define the report item DTOs for post reports
-export interface AdminPostModerationReportDto {
-  // based on actual response
-  id: string;
-  postId: string;
-  reportedBy: string;
-  reason: string;
-  status: "Pending" | "Reviewed" | "Dismissed";
-  createdAt: string;
-  // ...
-}
-
 export interface AdminPostModerationReportsPageDto {
   page: number;
   pageSize: number;
@@ -92,3 +80,56 @@ export interface ChangePasswordCommand {
   currentPassword: string;
   newPassword: string;
 }
+
+export type PostModerationReportStatusNumber = 1 | 2; // 1: Pending, 2: Resolved
+export type PostModerationDecisionAction =
+  | "Dismiss"
+  | "DeletePost"
+  | "SuspendAuthor";
+
+export interface AdminPostModerationReportDto {
+  id: string;
+  postId: string;
+  postTitle: string;
+  reporterUserId: string;
+  reporterDisplayName: string; // en lugar de reportedByUsername
+  reason: string;
+  details?: string | null;
+  status: PostModerationReportStatusNumber; // 1 o 2
+  createdAt: string;
+  resolvedAt: string | null;
+  resolvedAction: PostModerationDecisionAction; // solo presente si status === 2
+  resolvedByUserId: string | null;
+  moderatorNote: string | null;
+}
+
+export interface AdminPostModerationReportsPageDto {
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  status: number; // posiblemente el filtro aplicado? pero no lo usamos
+  items: AdminPostModerationReportDto[];
+}
+
+export interface PostReportsQueryParams {
+  status?: "Pending" | "Resolved"; // strings para el query param
+  page?: number;
+  pageSize?: number;
+}
+
+export interface EvaluateReportRequest {
+  action: PostModerationDecisionAction; // ← cambiar de 'decision' a 'action'
+  moderatorNote?: string | null;
+}
+
+export interface AdminPostModerationReportsPageDto {
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+  items: AdminPostModerationReportDto[];
+}
+
