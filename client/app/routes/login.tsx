@@ -115,8 +115,12 @@ export default function LoginRoute() {
                       <Controller name="password" control={control} rules={{ required: t("errors.password_required"), minLength: { value: 6, message: t("errors.password_min_length") } }} render={({ field }) => <Input.Password {...field} placeholder={t("login.password_placeholder")} className="text-base rounded-xl" disabled={isSubmitting} />} />
                     </Form.Item>
                     <div className="flex items-center justify-between mb-8">
-                      <Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)}><span className="text-gray-700">{t("login.remember_me")}</span></Checkbox>
-                      <a href="#" className="text-sm text-blue-600 hover:text-blue-800">{t("login.forgot_password")}</a>
+                      <Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)}>
+                        <span className="text-white">{t("login.remember_me")}</span>
+                      </Checkbox>
+                      <a href="#" className="text-sm text-white hover:text-gray-300">
+                        {t("login.forgot_password")}
+                      </a>
                     </div>
                     <Button type="primary" htmlType="submit" size="large" block loading={isSubmitting} className="h-14 text-lg rounded-2xl">{isSubmitting ? t("login.sign_in_button") + "..." : t("login.sign_in_button")}</Button>
                     <div className="text-center mt-8 pt-6 border-t"><span className="text-gray-600">{t("login.no_account")} </span><Link to="/signup" className="text-blue-600 font-medium hover:text-blue-800">{t("login.register")}</Link></div>
