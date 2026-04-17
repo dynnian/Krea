@@ -13,12 +13,12 @@
   "signup": {
     "title": "Sign Up",
     "welcome": "Register!",
-    "username_placeholder": "Username",
-    "account_name_placeholder": "Account name",
-    "phone_placeholder": "Phone number",
-    "email_placeholder": "Email",
-    "password_placeholder": "Password",
-    "confirm_password_placeholder": "Confirm password",
+    "username": "Username",
+    "display_name": "Account name",
+    "phone": "Phone number",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
     "remember_me": "Remember me",
     "sign_up_button": "Sign Up",
     "have_account": "Already have an account?",
@@ -31,7 +31,24 @@
     "password_min_length": "Password must be at least 6 characters",
     "auth_failed": "Invalid email or password. Please try again.",
     "invalid_code": "Invalid code. Please check and try again",
-    "code_required": "Please enter the 6-digit code"
+    "code_required": "Please enter the 6-digit code",
+    "invalid_credentials": "Invalid email/username or password",
+    "email_not_confirmed": "Please confirm your email before logging in",
+    "user_not_found": "User not found",
+    "network_error": "Network error. Please check your connection.",
+    "username_taken": "Username already taken",
+    "email_taken": "Email already registered",
+    "password_complexity": "Password must contain uppercase, lowercase, number and special character",
+    "passwords_do_not_match": "Passwords do not match",
+    "field_required": "This field is required",
+    "registration_failed": "Registration failed. Please try again.",
+    "username_required": "Username is required",
+    "phone_required": "Phone number is required",
+    "invalid_email": "Please enter a valid email address",
+    "confirm_password_required": "Please confirm your password",
+    "display_name_required": "Account name is required",
+    "display_name_empty": "Account name cannot be empty",
+    "phone_invalid": "Phone number can only contain digits, spaces, dashes, and the plus sign"
   },
   "confirm": {
     "title": "Confirm Account",
@@ -482,5 +499,6 @@
     "passwordChangeSuccess": "Password changed successfully",
     "passwordChangeError": "Failed to change password"
   },
+  
   "version": "Krea Platform v2.1.0"
 }
