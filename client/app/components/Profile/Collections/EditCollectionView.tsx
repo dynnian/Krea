@@ -1,5 +1,5 @@
 // deno-lint-ignore-file
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, Check, MoveRight, Trash2, Plus } from "lucide-react";
 import { Modal } from "antd";
 import MoveElementsModal, { type MoveTargetCollection } from "./MoveElementsModal.tsx";
@@ -19,6 +19,7 @@ type StagedMoveMap = Record<string, CollectionItem[]>;
 type EditCollectionSavePayload = {
   updatedCollection: MockImageCollection;
   stagedMoves: StagedMoveMap;
+  coverFile: File | null;
 };
 
 type EditCollectionViewProps = {
@@ -92,6 +93,7 @@ function EditCollectionHeader({
 }) {
   return (
     <div className="flex items-center gap-[12px] px-[24px] md:px-[34px] pb-[18px] pt-[10px]">
+      {/*
       <button
         type="button"
         onClick={onBack}
@@ -99,6 +101,7 @@ function EditCollectionHeader({
       >
         <ChevronLeft size={26} className="text-[#1B1C1E]" />
       </button>
+      */}
       <div className="pt-[10px]">
         <h1 className="text-xl font-medium text-gray-800 leading-none">
           {title}
@@ -242,6 +245,8 @@ export default function EditCollectionView({
 
   const [title, setTitle] = useState(collection.title);
   const [coverUrl, setCoverUrl] = useState(collection.coverUrl ?? "");
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const coverInputRef = useRef<HTMLInputElement | null>(null);
   const [stagedItems, setStagedItems] = useState<CollectionItem[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
@@ -255,6 +260,7 @@ export default function EditCollectionView({
   useEffect(() => {
     setTitle(collection.title);
     setCoverUrl(collection.coverUrl ?? "");
+    setCoverFile(null);
 
     const normalizedSelected = collection.posts
       .map((post) => ({
@@ -330,10 +336,29 @@ export default function EditCollectionView({
   };
 
   const handleChangeCover = () => {
-    if (!hasSelection) return;
+    coverInputRef.current?.click();
+  };
 
-    const nextCover = selectedItems[0]?.imageUrl ?? "";
-    setCoverUrl(nextCover);
+  const handleCoverFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      Modal.error({
+        title: "Archivo no válido",
+        content: "Debes seleccionar una imagen para el cover.",
+        centered: true,
+      });
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+
+    setCoverFile(file);
+    setCoverUrl(previewUrl);
+
+    event.target.value = "";
   };
 
   const handleDeleteSelection = () => {
@@ -499,29 +524,10 @@ const handleSave = () => {
   const payload: EditCollectionSavePayload = {
     updatedCollection: buildUpdatedCollection(),
     stagedMoves,
+    coverFile,
   };
 
-  if (!isDirty && Object.keys(stagedMoves).length === 0) {
-    onSave(payload);
-    return;
-  }
-
-  Modal.confirm({
-    title: "¿Estas seguro?",
-    content: "Se guardarán los cambios realizados en esta colección.",
-    centered: true,
-    okText: "Guardar",
-    cancelText: "Cancelar",
-    okButtonProps: {
-      className: "krea-save-button",
-    },
-    cancelButtonProps: {
-      className: "krea-white-button",
-    },
-    onOk: () => {
-      onSave(payload);
-    },
-  });
+  onSave(payload);
 };
 
   const renderBottomContent = () => {
@@ -591,6 +597,13 @@ const handleSave = () => {
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder={config.titlePlaceholder}
                 className="w-full h-[48px] rounded-[10px] border border-[#1B1C1E] bg-[#F3F3F1] px-[14px] text-[15px] text-[#1B1C1E] outline-none"
+              />
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleCoverFileChange}
               />
             </div>
 

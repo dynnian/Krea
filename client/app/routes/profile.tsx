@@ -1260,23 +1260,30 @@ if (editingImageCollection) {
           setEditingImageCollection(null);
           setEditingImageMoveTargets([]);
         }}
-        onSave={async ({ updatedCollection, stagedMoves }) => {
-          try {
-            await saveEditedCollectionChanges({
-              originalCollection: editingImageCollection,
-              updatedCollection,
-              stagedMoves,
-              entityLabel: "la colección",
-            });
+          onSave={async ({ updatedCollection, stagedMoves, coverFile }) => {
+            try {
+              await saveEditedCollectionChanges({
+                originalCollection: editingImageCollection,
+                updatedCollection,
+                stagedMoves,
+                entityLabel: "la colección",
+              });
 
-            setEditingImageCollection(null);
-            setEditingImageMoveTargets([]);
-            window.location.reload();
-          } catch (error) {
-            console.error("Error saving edited image collection:", error);
-            message.error("No se pudieron guardar los cambios de la colección.");
-          }
-        }}
+              if (coverFile) {
+                await collectionsApi.uploadCollectionCover(
+                  editingImageCollection.id,
+                  coverFile
+                );
+              }
+
+              setEditingImageCollection(null);
+              setEditingImageMoveTargets([]);
+              window.location.reload();
+            } catch (error) {
+              console.error("Error saving edited image collection:", error);
+              message.error("No se pudieron guardar los cambios de la colección.");
+            }
+          }}
       />
     </div>
   );
@@ -1301,7 +1308,7 @@ if (editingMusicCollection) {
           }))}
         collectionType="music"
         onCancel={() => setEditingMusicCollection(null)}
-        onSave={async ({ updatedCollection, stagedMoves }) => {
+        onSave={async ({ updatedCollection, stagedMoves, coverFile }) => {
           try {
             await saveEditedCollectionChanges({
               originalCollection: editingMusicCollection,
@@ -1309,6 +1316,13 @@ if (editingMusicCollection) {
               stagedMoves,
               entityLabel: "el album",
             });
+
+            if (coverFile) {
+              await collectionsApi.uploadCollectionCover(
+                editingMusicCollection.id,
+                coverFile
+              );
+            }
 
             setEditingMusicCollection(null);
             window.location.reload();
@@ -1425,7 +1439,7 @@ async function saveEditedCollectionChanges({
   );
 
   const removedPostIds = [...originalPostIds].filter(
-    (postId) => !updatedPostIds.has(postId) && !movedPostIds.has(postId)
+    (postId) => !updatedPostIds.has(postId)
   );
 
   const addedPostIds = [...updatedPostIds].filter(

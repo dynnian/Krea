@@ -10,6 +10,13 @@ interface AudioWaveformProps {
   showTime?: boolean;
   onPlayingChange?: (isPlaying: boolean) => void;
   onReady?: (actions: { playPause: () => void; pause: () => void }) => void;
+  waveColor?: string;
+  progressColor?: string;
+  barWidth?: number;
+  barGap?: number;
+  barRadius?: number;
+  height?: number;
+  timeClassName?: string;
 }
 
 export default function AudioWaveform({
@@ -18,6 +25,13 @@ export default function AudioWaveform({
   showTime = false,
   onPlayingChange,
   onReady,
+  waveColor = "#1351AA",
+  progressColor = "#0B5107",
+  barWidth = 3,
+  barGap = 0,
+  barRadius = 3,
+  height = 60,
+  timeClassName = "absolute right-0 top-full mt-1 text-[#1B1C1E] text-[14px] whitespace-nowrap",
 }: AudioWaveformProps) {
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
@@ -43,12 +57,13 @@ useEffect(() => {
 
     const ws = WaveSurfer.create({
       container: waveformRef.current,
-      waveColor: "#1351AA",
-      progressColor: "#0B5107",
+      waveColor,
+      progressColor,
       cursorColor: "#8F8E8A",
-      barWidth: 3,
-      barRadius: 3,
-      height: 60,
+      barWidth,
+      barGap,
+      barRadius,
+      height,
       normalize: true,
     });
 
@@ -165,7 +180,7 @@ useEffect(() => {
       />
 
       {showTime && (
-        <div className="absolute right-0 top-full mt-1 text-[#1B1C1E] text-[14px] whitespace-nowrap">
+        <div className={timeClassName}>
           {formatTime(currentTime)} / {formatTime(duration)}
         </div>
       )}

@@ -29,6 +29,11 @@ export default [
         path: "post/:id",
         file: "routes/post.tsx",
       },
+      // Vista de Album.
+      {
+        path: "album/:id",
+        file: "routes/album.tsx",
+      },
       // Exploración (búsqueda por tags/categorías)
       {
         path: "explore",
