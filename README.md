@@ -1,19 +1,28 @@
-# Krea
+<div align="center">
+  <img src="./assets/logo_light_mode.png#light-mode-only" alt="Krea Logo" width="300px">
+  <img src="./assets/logo_dark_mode.png#dark-mode-only" alt="Krea Logo" width="300px">
+  <h4>A Unified, Decentralized Haven for the Polymath Artist</h4>
+  <br/>
+</div>
 
-![Krea Logo](./assets/logo_light_mode.png)
+*Krea* is a next-generation social media platform and creative hub built for the **Fediverse**. It is designed to be a cohesive, warm, and artist-centric space where musicians, writers, and visual artists can thrive without the constraints of centralized silos. 
 
-A Unified, Decentralized Haven for the Polymath Artist.
+In the current digital landscape, artists are often forced to fragment their identity: a profile for music, a gallery for art, and a blog for writing. *Krea* dissolves these barriers, allowing creators to host their entire portfolio in a single, fully federated home powered by the **ActivityPub** protocol.
 
-Krea is a federated social platform for creators across music, writing, and visual art. It is designed for the Fediverse and uses ActivityPub to connect creators and communities across instances while preserving a rich, creator-first product experience.
+## Three Worlds, One Profile
 
-## What Krea Delivers
+We believe that creativity isn't linear. Our platform bridges the gap between different mediums by providing dedicated tools for three main artistic pillars:
 
-- A unified creative identity with one profile across artistic mediums.
-- ActivityPub federation and Fediverse interoperability.
-- Publishing and discovery for posts, uploads, collections, hashtags, and favorites.
-- Real-time direct messaging with SignalR.
-- Community and safety tooling, including moderation reports and admin controls.
-- Creator economy features, including commissions and membership-oriented workflows.
+* **The Studio (Sound):** A home for musicians and podcasters. Think high-quality audio streaming, album collections, and discographies—bringing the spirit of **Bandcamp** to the decentralized web.
+* **The Library (Word):** A space for novelists, poets, and essayists. With long-form reading experiences and episodic publishing reminiscent of **Wattpad**, writers can finally engage with a federated audience.
+* **The Gallery (Visual):** A high-fidelity showcase for digital artists, photographers, and illustrators. Inspired by the community-driven curation of **DeviantArt**, the Gallery focuses on presentation and discovery.
+
+## Key Features
+
+* **Unified Creative Identity:** One profile to rule them all. Publish a song, a short story, and a painting in a single, beautiful timeline.
+* **Federated Engagement:** Built on **ActivityPub**, your work is discoverable across the entire Fediverse (Mastodon, Pleroma, PixelFed, etc.) while maintaining the unique features of our platform.
+* **Artist Empowerment:** Built-in support for commissions, tips, and donations. We believe artists should be compensated for their labor without predatory platform fees.
+* **A Warm Environment:** Designed from the ground up to be a supportive "third place." Our moderation tools and community guidelines are built to foster encouragement and genuine connection.
 
 ## Architecture
 
