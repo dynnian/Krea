@@ -24,6 +24,7 @@ namespace Krea.Application {
     using Features.DirectMessages.MarkMessageAsRead;
     using Features.DirectMessages.SendDirectMessage;
     using Features.Posts.Dto;
+    using Features.Favorites.Dto;
     using Features.Posts.GetAllPosts;
     using Features.Posts.GetPostsByUser;
     using Features.PostUploads.CreatePostUpload;
@@ -128,7 +129,7 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<GetAllHashtagsQuery, IReadOnlyList<Hashtag>>, GetAllHashtagsHandler>();
             services.AddScoped<IRequestHandler<AddPostToFavoritesCommand, bool>, AddPostToFavoritesHandler>();
             services.AddScoped<IRequestHandler<RemovePostFromFavoritesCommand, bool>, RemovePostFromFavoritesHandler>();
-            services.AddScoped<IRequestHandler<GetUserFavoritesQuery, PaginatedList<Post>>, GetUserFavoritesHandler>();
+            services.AddScoped<IRequestHandler<GetUserFavoritesQuery, FavoritePostsResponse>, GetUserFavoritesHandler>();
             services.AddScoped<IRequestHandler<TogglePostFavoriteCommand, bool>, TogglePostFavoriteHandler>();
 
             // Reports

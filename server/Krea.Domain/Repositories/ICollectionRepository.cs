@@ -5,6 +5,8 @@ namespace Krea.Domain.Repositories {
     {
         Task<Collection?> GetByIdAsync(Guid id, CancellationToken ct = default);
 
+        Task<Collection?> GetByIdWithPostsAsync(Guid id, CancellationToken ct = default);
+
         Task<IReadOnlyList<Collection>> GetByOwnerAsync(Guid ownerId, CancellationToken ct = default);
 
         Task AddAsync(Collection collection, CancellationToken ct = default);

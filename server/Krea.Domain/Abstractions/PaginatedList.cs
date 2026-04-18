@@ -8,7 +8,9 @@ namespace Krea.Domain.Abstractions {
         public int PageSize { get; }
         public int TotalCount { get; }
 
-        public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
+        public int TotalPages => PageSize <= 0
+            ? 0
+            : (int)Math.Ceiling(TotalCount / (double)PageSize);
 
         private PaginatedList(
             IReadOnlyList<T> items,
@@ -28,6 +30,9 @@ namespace Krea.Domain.Abstractions {
             int pageSize,
             CancellationToken ct = default)
         {
+            page = page < 1 ? 1 : page;
+            pageSize = pageSize < 1 ? 10 : pageSize;
+
             var count = await source.CountAsync(ct);
 
             var items = await source
@@ -44,6 +49,9 @@ namespace Krea.Domain.Abstractions {
             int page,
             int pageSize)
         {
+            page = page < 1 ? 1 : page;
+            pageSize = pageSize < 1 ? 10 : pageSize;
+
             return new PaginatedList<T>(items, totalCount, page, pageSize);
         }
     }

@@ -11,14 +11,14 @@
     "forgot_password": "¿Olvidaste tu contraseña?"
   },
   "signup": {
-    "title": "Regístrate",
+    "title": "Registrate",
     "welcome": "¡Regístrate!",
-    "username_placeholder": "Nombre de usuario",
-    "account_name_placeholder": "Nombre de cuenta",
-    "phone_placeholder": "Número",
-    "email_placeholder": "Correo",
-    "password_placeholder": "Contraseña",
-    "confirm_password_placeholder": "Confirmar contraseña",
+    "username": "Nombre de usuario",
+    "display_name": "Nombre de cuenta",
+    "phone": "Número de teléfono",
+    "email": "Correo",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
     "remember_me": "Recuérdame",
     "sign_up_button": "Regístrate",
     "have_account": "¿Ya tienes cuenta?",
@@ -31,7 +31,24 @@
     "password_min_length": "La contraseña debe tener al menos 6 caracteres",
     "auth_failed": "Email o contraseña incorrectos. Por favor intenta de nuevo.",
     "code_required": "Por favor, ingrese los 6 dígitos del código",
-    "invalid_code": "Código inválido. Por favor, verifique e intente nuevamente"
+    "invalid_code": "Código inválido. Por favor, verifique e intente nuevamente",
+    "invalid_credentials": "Email/username o contraseña inválidos",
+    "email_not_confirmed": "Por favor, confirme su email antes de iniciar sesión",
+    "user_not_found": "Usuario no encontrado",
+    "network_error": "Error de red. Por favor, verifique su conexión.",
+    "username_taken": "Nombre de usuario ya tomado",
+    "email_taken": "Email ya registrado",
+    "password_complexity": "La contraseña debe contener mayúsculas, minúsculas, números y caracteres especiales",
+    "passwords_do_not_match": "Contraseñas no coinciden",
+    "field_required": "Este campo es requerido",
+    "registration_failed": "Error al registrarse. Por favor, inténtalo de nuevo.",
+    "username_required": "El nombre de usuario es requerido",
+    "phone_required": "El número de teléfono es requerido",
+    "invalid_email": "Por favor, ingrese una dirección de email válida",
+    "confirm_password_required": "Por favor, confirme su contraseña",
+    "display_name_required": "El nombre de cuenta es requerido",
+    "display_name_empty": "El nombre de cuenta no puede estar vacío",
+    "phone_invalid": "El número de teléfono solo puede contener dígitos, espacios, guiones y el signo más"
   },
   "confirm": {
     "title": "Confirmar cuenta",
@@ -123,7 +140,10 @@
     "fromLastMonth": "del mes pasado",
     "saveChanges": "Guardar Cambios",
     "saveSettings": "Guardar Configuracion",
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "total": "Total",
+    "items": "items",
+    "submit": "Enviar"
   },
   "explore": {
     "tabs": {
@@ -163,7 +183,8 @@
       "read": "Leer",
       "trending_genres": "Géneros en tendencia",
       "trending_authors": "Autores en tendencia"
-    }
+    },
+    "load_error": "Error al cargar el contenido de exploración"
   },
   "commissions": {
     "loading": "Cargando comisiones...",
@@ -255,6 +276,11 @@
     "commission_button": "Comisión",
     "edit_profile_button": "Editar perfil"
   },
+  "bookmarks": {
+    "title": "Guardados",
+    "load_error": "Error al cargar los posts guardados",
+    "empty": "No tienes posts guardados"
+  },
   "chat": {
     "placeholder": "Enviar mensaje...",
     "online": "En línea",
@@ -262,7 +288,7 @@
     "select_conversation": "Selecciona una conversación para empezar a chatear",
     "start_messaging": "Start messaging...",
     "conversations": "Conversaciones",
-    "search_placeholder":"Buscar"
+    "search_placeholder": "Buscar"
   },
 
   "createPost": {
@@ -405,7 +431,36 @@
     "success": "exito",
     "warning": "advertencia",
     "error": "error",
-    "info": "info"
+    "info": "info",
+    "moderationReports": "Reportes de moderación",
+    "filterByStatus": "Filtrar por estado",
+    "allStatus": "Todos los estados",
+    "post": "Publicación",
+    "reportedBy": "Reportado por",
+    "reason": "Motivo",
+    "createdAt": "Fecha",
+    "review": "Revisar",
+    "alreadyReviewed": "Ya revisado",
+    "evaluateReport": "Evaluar reporte",
+    "decision": "Decisión",
+    "moderatorNote": "Nota del moderador",
+    "moderatorNotePlaceholder": "Opcional: explicación de la decisión",
+    "evaluateSuccess": "Reporte evaluado correctamente",
+    "evaluateError": "Error al evaluar el reporte",
+    "status": "Estado",
+    "fetchError": "Error al cargar los reportes",
+    "statusPending": "Pendiente",
+    "statusResolved": "Resuelto",
+    "statusApproved": "Aprobado",
+    "statusRejected": "Rechazado",
+    "statusDismissed": "Desestimado",
+    "decisionApprove": "Aprobar publicación",
+    "decisionReject": "Rechazar publicación",
+    "decisionDismiss": "Desestimar reporte",
+    "decisionDeletePost": "Eliminar publicación",
+    "decisionSuspendAuthor": "Suspender autor",
+    "statusDeleted": "Publicación eliminada",
+    "statusSuspended": "Autor suspendido"
   },
   "federation": {
     "title": "Federacion y Configuracion de Instancia",
