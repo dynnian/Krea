@@ -18,6 +18,15 @@ namespace Krea.Infrastructure.Repositories {
             return await _context.Collections
                 .FirstOrDefaultAsync(c => c.Id == id, ct);
         }
+        
+        public async Task<Collection?> GetByIdWithPostsAsync(
+            Guid id,
+            CancellationToken ct = default)
+        {
+            return await _context.Collections
+                .Include(c => c.Posts)
+                .FirstOrDefaultAsync(c => c.Id == id, ct);
+        }
 
         public async Task<IReadOnlyList<Collection>> GetByOwnerAsync(
             Guid ownerId,

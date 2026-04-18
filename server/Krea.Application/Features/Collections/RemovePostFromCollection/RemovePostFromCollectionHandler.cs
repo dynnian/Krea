@@ -20,18 +20,18 @@ namespace Krea.Application.Features.Collections.RemovePostFromCollection {
             RemovePostFromCollectionCommand request,
             CancellationToken cancellationToken)
         {
-            var collection = await _collections.GetByIdAsync(
+            var collection = await _collections.GetByIdWithPostsAsync(
                 request.CollectionId,
                 cancellationToken);
 
             if (collection is null)
-                throw new Exception("Collection not found");
+                throw new KeyNotFoundException("Collection not found.");
 
             collection.RemovePost(request.PostId);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return new Unit();
+            return Unit.Value;
         }
     }
 }

@@ -80,9 +80,12 @@ namespace Krea.Domain.Entities {
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public void RemovePost(Guid postId) {
+        public void RemovePost(Guid postId)
+        {
             Post? post = _posts.FirstOrDefault(p => p.Id == postId);
-            if (post is null) return;
+
+            if (post is null)
+                throw new InvalidOperationException("Post is not part of this collection.");
 
             _posts.Remove(post);
             ItemCount = _posts.Count;
