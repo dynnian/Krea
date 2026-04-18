@@ -5,7 +5,7 @@ import { postsApi } from "../services/postsService.ts";
 import PostCard from "../components/Posts/PostCard.tsx";
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Tabs, Typography, Grid, message, Spin } from 'antd';
+import { Tabs, Typography, Grid, message, Spin, Dropdown } from 'antd';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import DigitalPortfolio from "../components/Profile/DigitalPortfolio.tsx";
 import EditCollectionView from "../components/Profile/Collections/EditCollectionView.tsx";
@@ -14,6 +14,7 @@ import { collectionsApi } from "../services/collectionsService.ts";
 import MusicPortfolio from "../components/Profile/MusicPortfolio.tsx";
 import type { MusicAlbum, MusicSong } from "../components/Profile/MusicPortfolio.tsx";
 import WriterPortfolio from "../components/Profile/WriterPortfolio.tsx";
+import { ChevronDown } from "lucide-react";
 import type {
   WriterWork,
   WriterCollectionPreview,
@@ -30,6 +31,7 @@ import type {
   ProfileData,
   VisualPortfolioItem,
 } from "../types/profile.ts";
+import type { MenuProps } from "antd";
 import {
   mapPostsToMusicSongs,
   mapPostsToVisualPortfolioItems,
@@ -72,14 +74,18 @@ const Profile: React.FC = () => {
   const [writerWorks, setWriterWorks] = useState<WriterWork[]>([]);
   const [writerCollections, setWriterCollections] = useState<WriterCollectionPreview[]>([]);
   const [editingWriterCollection, setEditingWriterCollection] = useState<MockImageCollection | null>(null);
-  const [, setPortfolioSettings] = useState <{
+  const [portfolioSettings, setPortfolioSettings] = useState<{
     imagesEnabled: boolean;
     musicEnabled: boolean;
     literatureEnabled: boolean;
   } | null>(null);
+  const username = usernameParam ?? "me";
+  const [activeMainTab, setActiveMainTab] = useState('portfolio');
+  const portfolioStorageKey = `profile:${username}:lastPortfolioTab`;
 
-const [activeMainTab, setActiveMainTab] = useState('portfolio');
-const [activePortfolioSubTab, setActivePortfolioSubTab] = useState("images");
+const [activePortfolioSubTab, setActivePortfolioSubTab] = useState(() => {
+  return localStorage.getItem(portfolioStorageKey) ?? "images";
+});
 const [modalVisible, setModalVisible] = useState(false);
 const [portfolioModalType, setPortfolioModalType] = useState<UploadMediaType>(PortfolioPostType.IMAGE);
 const [isCreateCollectionModalOpen, setIsCreateCollectionModalOpen] = useState(false);
@@ -99,7 +105,7 @@ const handleGoToSaved = () => {
 // Determinar si es el perfil propio (ruta /profile/me)
 // const isOwnProfile = username === 'me';
 
-const username = usernameParam ?? "me";
+
   useEffect(() => {
     const loadProfile = async () => {
       if (!username) {
@@ -265,13 +271,17 @@ const username = usernameParam ?? "me";
 
 
     useEffect(() => {
-    const loadPortfolioSettings = async () => {
-      const settings = await settingsRepository.getSettings();
-      setPortfolioSettings(settings.portfolio);
-    };
+      const loadPortfolioSettings = async () => {
+        const settings = await settingsRepository.getSettings();
+        setPortfolioSettings(settings.portfolio);
+      };
 
-  void loadPortfolioSettings();
-}, []);
+    void loadPortfolioSettings();
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(portfolioStorageKey, activePortfolioSubTab);
+  }, [portfolioStorageKey, activePortfolioSubTab]);
 
   if (loading) {
     return (
@@ -291,22 +301,95 @@ const username = usernameParam ?? "me";
 
 
 
-  const mainTabItems  = [
-    { key: 'portfolio', label: t('Portafolio') },
-    { key: 'publications', label: t('Publicaciones') },
-    { key: 'members', label: t('Miembros') },
-  ];
+const hasIntegratedPortfolioSettings =
+  portfolioSettings &&
+  (
+    portfolioSettings.imagesEnabled ||
+    portfolioSettings.musicEnabled ||
+    portfolioSettings.literatureEnabled
+  );
 
-const portfolioSubTabs = [
-  { key: "images", label: "Imágenes" },
-  { key: "music", label: "Música" },
-  { key: "literature", label: "Literatura" },
-];
+const portfolioOptions = hasIntegratedPortfolioSettings
+  ? [
+      ...(portfolioSettings.imagesEnabled
+        ? [{ key: "images", label: "Imágenes" }]
+        : []),
+      ...(portfolioSettings.musicEnabled
+        ? [{ key: "music", label: "Música" }]
+        : []),
+      ...(portfolioSettings.literatureEnabled
+        ? [{ key: "literature", label: "Literatura" }]
+        : []),
+    ]
+  : [
+      { key: "images", label: "Imágenes" },
+      { key: "music", label: "Música" },
+      { key: "literature", label: "Literatura" },
+    ];
+
 
 const effectivePortfolioTab =
-  portfolioSubTabs.find((tab) => tab.key === activePortfolioSubTab)?.key ??
-  portfolioSubTabs[0]?.key ??
-  "";
+  portfolioOptions.find((tab) => tab.key === activePortfolioSubTab)?.key ??
+  portfolioOptions[0]?.key ??
+  "images";
+
+const portfolioDropdownItems: MenuProps["items"] = portfolioOptions.map((tab) => ({
+  key: tab.key,
+  label: tab.label,
+}));
+
+const handlePortfolioTabClick = () => {
+  setActiveMainTab("portfolio");
+
+  if (!portfolioOptions.some((tab) => tab.key === activePortfolioSubTab)) {
+    setActivePortfolioSubTab(portfolioOptions[0]?.key ?? "images");
+  }
+};
+
+const handlePortfolioDropdownClick: MenuProps["onClick"] = ({ key }) => {
+  setActiveMainTab("portfolio");
+  setActivePortfolioSubTab(String(key));
+};
+
+const mainTabItems = [
+  {
+    key: "portfolio",
+    label: (
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            handlePortfolioTabClick();
+          }}
+          className="bg-transparent border-none p-0 m-0 cursor-pointer"
+        >
+          {t("Portafolio")}
+        </button>
+
+        {portfolioOptions.length > 1 && (
+          <Dropdown
+            menu={{
+              items: portfolioDropdownItems,
+              onClick: handlePortfolioDropdownClick,
+            }}
+            trigger={["click"]}
+          >
+            <button
+              type="button"
+              onClick={(e) => e.stopPropagation()}
+              className="bg-transparent border-none p-0 m-0 flex items-center cursor-pointer"
+            >
+              <ChevronDown size={14} />
+            </button>
+          </Dropdown>
+        )}
+      </div>
+    ),
+  },
+    { key: "publications", label: t("Publicaciones") },
+    { key: "members", label: t("Miembros") },
+  ];
 
 const getFilteredPosts = () => {
   if (!profile) return [];
@@ -540,7 +623,14 @@ const editingCollectionConfig = getEditingCollectionConfig();
         <div className=" krea-tabs">
           <Tabs
             activeKey={activeMainTab}
-            onChange={setActiveMainTab}
+            onChange={(key) => {
+              if (key === "portfolio") {
+                handlePortfolioTabClick();
+                return;
+              }
+
+              setActiveMainTab(key);
+            }}
             items={mainTabItems}
             centered={!isMobile}
             tabBarStyle={{ borderBottom: "none" }}
@@ -550,21 +640,10 @@ const editingCollectionConfig = getEditingCollectionConfig();
 
 {activeMainTab === "portfolio" && (
   <>
-    <div className="krea-tabs">
-      <Tabs
-        activeKey={effectivePortfolioTab}
-        onChange={setActivePortfolioSubTab}
-        items={portfolioSubTabs}
-        centered={!isMobile}
-        tabBarStyle={{ borderBottom: "none" }}
-        tabBarGutter={46}
-        size="small"
-      />
-    </div>
 
     {activeMainTab === "portfolio" && (
       
-      <div className="px-[70px] mt-[-6px] mb-[10px] flex justify-end pr-[0px]">
+      <div className="px-[70px] mt-[-10px] mb-[10px] flex justify-end pr-[0px]">
         <div className="flex items-center gap-[10px] -mt-[30px] relative z-20 translate-x-[55px]">
         <button
           type="button"
