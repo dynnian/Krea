@@ -64,7 +64,7 @@ export default function Composer({ onPost }: ComposerProps) {
           id: user.id,
           username: user.handle || user.email.split("@")[0],
           displayName: user.name || user.handle || user.email.split("@")[0],
-          avatar: user.avatar || undefined,
+          avatar: undefined,
         },
         title: title,
         content: data.content,
@@ -95,8 +95,7 @@ export default function Composer({ onPost }: ComposerProps) {
       <div className="bg-[#E8F1FC] rounded-[15px] outline outline-[1.5px] outline-[#95ACCC] p-[22px] shadow-md mb-6 min-h-[140px]">
         <div className="flex items-start gap-6">
           <Avatar
-            src={user.avatar}
-            icon={!user.avatar && <User />}
+            icon={<User />}
             size={48}
             className="bg-white border border-black rounded-full"
           />

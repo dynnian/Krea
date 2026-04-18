@@ -23,7 +23,6 @@ interface UserResponse {
   languageCode: string;
   timeZoneId: string;
   roleId: number;
-  profilePictureUrl?: string | null;
 }
 
 interface LoginResponse {
@@ -41,7 +40,6 @@ export interface AuthUser {
   languageCode?: string;
   timeZoneId?: string;
   role?: string;
-  avatar?: string | null;
 }
 
 export interface LoginDTO {
@@ -140,7 +138,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         biography: userData.biography,
         languageCode: userData.languageCode,
         timeZoneId: userData.timeZoneId,
-        avatar: userData.profilePictureUrl,
       };
 
       // Extraer rol del token
