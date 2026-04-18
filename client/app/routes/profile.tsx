@@ -233,15 +233,14 @@ const handleGoToSaved = () => {
             id: apiProfile.id,
             name: apiProfile.displayName || apiProfile.username,
             handle: apiProfile.username,
-            avatar: undefined,
+            avatar: apiProfile.profilePictureUrl ?? apiProfile.ProfilePictureUrl ?? undefined,
             isVerified: true,
           },
           bio: apiProfile.biography ?? "",
-          followingCount: 0,
-          followersCount: 0,
+          followingCount: apiProfile.followingCount ?? apiProfile.FollowingCount ?? 0,
+          followersCount: apiProfile.followersCount ?? apiProfile.FollowersCount ?? 0,
           posts: resolvedPosts,
         };
-
         // Set states
         setProfile(profileData);
         setVisualPortfolioItems(resolvedVisualPortfolioItems);

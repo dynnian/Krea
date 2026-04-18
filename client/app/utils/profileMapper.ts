@@ -26,21 +26,33 @@ export function normalizeApiPosts(
   displayName: string,
 ): Post[] {
   return apiPosts.map((post, index) => {
-    const hasAudio = post.media?.some((m: any) => isAudioMime(m.mimeType));
-    const hasImage = post.media?.some((m: any) => isImageMime(m.mimeType));
-    const hasDocument = post.media?.some((m: any) => isDocumentMime(m.mimeType));
+    const media = post.media ?? post.Media ?? [];
+    const hasAudio = media.some((m: any) => isAudioMime(m.mimeType ?? m.MimeType));
+    const hasImage = media.some((m: any) => isImageMime(m.mimeType ?? m.MimeType));
+    const hasDocument = media.some((m: any) => isDocumentMime(m.mimeType ?? m.MimeType));
 
-    const backendId = post.id ?? String(index + 1);
-    const uploadedAt = post.uploadedAt ?? post.createdAt ?? new Date().toISOString();
+    const backendId = post.id ?? post.Id ?? String(index + 1);
+    const uploadedAt =
+      post.uploadedAt ??
+      post.UploadedAt ??
+      post.createdAt ??
+      post.CreatedAt ??
+      new Date().toISOString();
+
+    const likesCount = post.likesCount ?? post.LikesCount ?? 0;
+    const isLikedByCurrentUser =
+      post.isLikedByCurrentUser ?? post.IsLikedByCurrentUser ?? false;
+    const favoritesCount = post.favoritesCount ?? post.FavoritesCount ?? 0;
 
     return {
       backendId,
       id: Number.isFinite(Number(backendId)) ? Number(backendId) : index + 1,
-      userPostId: typeof post.uploadCount === "number"
-        ? post.uploadCount
-        : Number.isFinite(Number(post.authorPostId))
-          ? Number(post.authorPostId)
-          : index + 1,
+      userPostId:
+        post.uploadCount ??
+        post.UploadCount ??
+        post.authorPostId ??
+        post.AuthorPostId ??
+        index + 1,
       type: hasAudio
         ? PostType.AUDIO
         : hasDocument
@@ -48,47 +60,64 @@ export function normalizeApiPosts(
           : hasImage
             ? PostType.IMAGE
             : PostType.LINK,
-      title: post.title ?? null,
-      content: post.content ?? "",
-      isWork: post.isWork ?? post.media?.some((m: any) => m.isWorkMedia) ?? false,
+      title: post.title ?? post.Title ?? null,
+      content: post.content ?? post.Content ?? "",
+      isWork:
+        post.isWork ??
+        post.IsWork ??
+        media.some((m: any) => m.isWorkMedia ?? m.IsWorkMedia) ??
+        false,
       isDeleted: false,
-      isLocal: post.isLocal ?? true,
-      postRepliedTo: post.postRepliedTo ? Number(post.postRepliedTo) : null,
-      postRepostOf: post.postRepostOf ? Number(post.postRepostOf) : null,
+      isLocal: post.isLocal ?? post.IsLocal ?? true,
+      postRepliedTo: post.postRepliedTo ?? post.PostRepliedTo ?? null,
+      postRepostOf: post.postRepostOf ?? post.PostRepostOf ?? null,
       createdAt: uploadedAt,
-      updatedAt: post.updatedAt ?? uploadedAt,
+      updatedAt: post.updatedAt ?? post.UpdatedAt ?? uploadedAt,
       author: {
-        id: post.author?.id ?? post.authorPostId ?? backendId,
+        id:
+          post.author?.id ??
+          post.Author?.Id ??
+          post.userId ??
+          post.UserId ??
+          backendId,
         name:
           post.author?.displayName ??
+          post.Author?.DisplayName ??
           post.authorName ??
+          post.AuthorName ??
           displayName,
         handle:
           post.author?.username ??
-          post.authorName ??
+          post.Author?.Username ??
+          post.authorUsername ??
+          post.AuthorUsername ??
           displayName,
-        avatar: post.author?.avatar,
+        avatar:
+          post.author?.avatar ??
+          post.Author?.Avatar ??
+          post.author?.profilePictureUrl ??
+          post.Author?.ProfilePictureUrl,
         isVerified: true,
       },
-      media: (post.media ?? []).map((m: any) => ({
+      media: media.map((m: any) => ({
         postId: Number.isFinite(Number(backendId)) ? Number(backendId) : Number.NaN,
-        mediaId: m.id,
-        isWorkMedia: m.isWorkMedia,
+        mediaId: m.id ?? m.Id,
+        isWorkMedia: m.isWorkMedia ?? m.IsWorkMedia ?? false,
         media: {
-          id: m.id,
-          originalFileName: m.fileName,
-          fileName: m.fileName,
-          mimeType: m.mimeType,
-          path: m.url,
+          id: m.id ?? m.Id,
+          originalFileName: m.fileName ?? m.FileName,
+          fileName: m.fileName ?? m.FileName,
+          mimeType: m.mimeType ?? m.MimeType,
+          path: m.url ?? m.Url,
           uploadedAt,
-          coverUrl: m.coverUrl,
-          coverMediaId: m.coverMediaId,
+          coverUrl: m.coverUrl ?? m.CoverUrl,
+          coverMediaId: m.coverMediaId ?? m.CoverMediaId,
         },
       })),
-      likesCount: post.likesCount ?? 0,
-      favoritesCount: post.favoritesCount ?? 0,
-      replies: post.replies ?? [],
-      isLikedByCurrentUser: post.isLikedByCurrentUser ?? false,
+      likesCount,
+      favoritesCount,
+      replies: post.replies ?? post.Replies ?? [],
+      isLikedByCurrentUser,
     };
   });
 }
