@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Krea.Application.Features.Favorites.Dto {
     public sealed class FavoritePostsResponse {
         public List<FavoritePostDto> Items { get; set; } = new();

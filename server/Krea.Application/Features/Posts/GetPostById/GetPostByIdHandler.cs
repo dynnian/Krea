@@ -49,7 +49,7 @@ namespace Krea.Application.Features.Posts.GetPostById {
                                                   r.Id,
                                                   r.AuthorPostId,
                                                   r.AuthorPost.DisplayName,
-                                                  r.Content,
+                                                  r.Content ?? string.Empty,
                                                   r.UploadedAt
                                               ))
                                               .ToList();

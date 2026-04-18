@@ -7,7 +7,6 @@ namespace Krea.API.Tests.TestSupport {
     using Infrastructure.Data;
     using Microsoft.AspNetCore.Authentication;
     using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.TestHost;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;

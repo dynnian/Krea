@@ -3,7 +3,6 @@ namespace Krea.API.Tests.Integration {
     using System.Text.Json;
     using TestSupport;
     using Infrastructure.Data;
-    using Infrastructure.Identity;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.DependencyInjection;
     using Xunit;

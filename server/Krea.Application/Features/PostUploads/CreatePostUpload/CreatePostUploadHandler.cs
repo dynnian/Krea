@@ -158,10 +158,15 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
             List<Genre> genres) {
             ValidateParsedMetadata(command.Type, parsedMetadata);
 
+            string title = command.Title ?? string.Empty;
+            string languageCode = string.IsNullOrWhiteSpace(command.LanguageCode)
+                ? "und"
+                : command.LanguageCode;
+
             return command.Type.ToLowerInvariant() switch {
                 "image" => new ImageMetadata(
                     uploadId,
-                    command.Title,
+                    title,
                     command.Description,
                     parsedMetadata.Width!.Value,
                     parsedMetadata.Height!.Value,
@@ -171,7 +176,7 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
 
                 "music" => new MusicMetadata(
                     uploadId,
-                    command.Title,
+                    title,
                     command.Description,
                     parsedMetadata.BitrateKbps!.Value,
                     parsedMetadata.DurationSec!.Value,
@@ -179,11 +184,11 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
 
                 "text" => new TextMetadata(
                     uploadId,
-                    command.Title,
+                    title,
                     command.Description,
                     command.SortTitle,
                     command.Subtitle,
-                    command.LanguageCode,
+                    languageCode,
                     parsedMetadata.WordCount!.Value,
                     genres),
 

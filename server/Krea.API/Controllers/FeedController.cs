@@ -1,7 +1,6 @@
 namespace Krea.API.Controllers {
     using Microsoft.AspNetCore.Mvc;
     using Application.Features.Feed;
-    using Application.Features.Posts;
     using Application.Features.Posts.Dto;
     using Microsoft.AspNetCore.Authorization;
     using System.Security.Claims;

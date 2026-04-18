@@ -11,7 +11,6 @@ namespace Krea.API {
     using Infrastructure.Setup;
     using Microsoft.Extensions.Primitives;
     using Services;
-    using System.Text.Json.Serialization;
 
     internal static class Program {
         public static async Task Main(string[] args) {

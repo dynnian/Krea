@@ -1,6 +1,5 @@
 using Krea.Application.Abstractions.Identity;
 using Krea.Domain.Abstractions;
-using Krea.Domain.Entities;
 using Krea.Domain.Repositories;
 
 namespace Krea.Application.Features.Auth.ConfirmEmail {

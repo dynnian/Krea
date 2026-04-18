@@ -1,6 +1,4 @@
 namespace Krea.Application.Features.Posts.Dto {
-    using Domain.ValueObjects;
-
     public sealed record RepostReferenceDto(
         Guid Id,
         Guid AuthorPostId,

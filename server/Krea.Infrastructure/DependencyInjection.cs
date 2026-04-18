@@ -16,7 +16,6 @@ namespace Krea.Infrastructure {
     using Application.Abstractions.Filter;
     using Application.Abstractions.Identity;
     using Configuration;
-    using Domain.Entities;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;

@@ -3,7 +3,6 @@ namespace Krea.Application.Features.Posts.CreatePost {
     using Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;
-    using Domain.ValueObjects;
 
     public sealed class CreatePostHandler
         : IRequestHandler<CreatePostCommand, CreatePostResponse> {
@@ -33,7 +32,7 @@ namespace Krea.Application.Features.Posts.CreatePost {
             );
 
             // Extraer hashtags solo desde el contenido
-            List<string> hashtagNames = HashtagParser.Extract(post.Content)
+            List<string> hashtagNames = HashtagParser.Extract(post.Content ?? string.Empty)
                                                      .Select(tag => tag.Trim().ToLowerInvariant().Replace("#", ""))
                                                      .Distinct()
                                                      .ToList();

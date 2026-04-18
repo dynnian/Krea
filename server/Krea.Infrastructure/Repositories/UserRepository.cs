@@ -4,8 +4,6 @@ using Krea.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Krea.Infrastructure.Repositories {
-    using Domain.Abstractions;
-
     public sealed class UserRepository : IUserRepository {
         private readonly AppDbContext _context;
 

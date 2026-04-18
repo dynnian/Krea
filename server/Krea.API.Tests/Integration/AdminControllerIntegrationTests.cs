@@ -6,7 +6,6 @@ namespace Krea.API.Tests.Integration {
     using Domain.ValueObjects;
     using Infrastructure.Data;
     using Infrastructure.Identity;
-    using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.DependencyInjection;
     using Xunit;

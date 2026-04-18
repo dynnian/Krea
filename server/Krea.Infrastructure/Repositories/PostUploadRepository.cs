@@ -16,7 +16,7 @@ namespace Krea.Infrastructure.Repositories {
                                                                 CancellationToken cancellationToken = default) =>
             await _context.PostUploads
                           .Include(u => u.Metadata)
-                          .ThenInclude(m => m.Genres)
+                          .ThenInclude(m => m!.Genres)
                           .FirstOrDefaultAsync(u => u.Id == uploadId, cancellationToken);
     }
 }
