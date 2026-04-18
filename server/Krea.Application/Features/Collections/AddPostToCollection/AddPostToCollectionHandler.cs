@@ -2,7 +2,6 @@ namespace Krea.Application.Features.Collections.AddPostToCollection {
     using Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;
-    using Dto;
 
     public sealed class AddPostToCollectionHandler
         : IRequestHandler<AddPostToCollectionCommand, AddPostToCollectionResponse> {

@@ -2,7 +2,6 @@ namespace Krea.Application.Features.Admin.Reports {
     using Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;
-    using Domain.ValueObjects;
 
     public sealed class GetAdminPostModerationReportsHandler
         : IRequestHandler<GetAdminPostModerationReportsQuery, AdminPostModerationReportsPageDto> {

@@ -4,8 +4,6 @@ using Krea.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Krea.Infrastructure.Repositories {
-    using Application.Abstractions.Collection;
-
     public class CollectionRepository : ICollectionRepository {
         private readonly AppDbContext _context;
 

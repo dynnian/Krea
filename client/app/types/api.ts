@@ -140,6 +140,7 @@ export interface FeedPost {
   content: string;
   authorId: string;
   authorUsername: string;
+  authorProfilePictureUrl?: string | null;
   uploadedAt: string; // fecha ISO
   mediaPreviewUrl: string | null;
   mediaMimeType: string | null;
@@ -162,6 +163,7 @@ export interface PostDto {
   id: string;
   authorPostId: string;
   authorName?: string;
+  authorProfilePictureUrl?: string | null;
   author?: {
     id: string;
     username: string;

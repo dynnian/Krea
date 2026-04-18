@@ -6,7 +6,7 @@ namespace Krea.Domain.Entities {
         [Key] public Guid Id { get; private set; }
 
         public Guid AuthorPostId { get; private set; }
-        public User AuthorPost { get; private set; }
+        public User AuthorPost { get; private set; } = null!;
 
         public PostType Type { get; private set; }
 

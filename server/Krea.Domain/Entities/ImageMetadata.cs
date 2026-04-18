@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace Krea.Domain.Entities {
     public sealed class ImageMetadata : Metadata {
         public int Width { get; private set; }

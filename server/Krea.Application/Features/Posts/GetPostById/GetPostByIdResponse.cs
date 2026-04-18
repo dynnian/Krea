@@ -5,6 +5,7 @@ namespace Krea.Application.Features.Posts.GetPostById {
         Guid Id,
         Guid AuthorPostId,
         string AuthorName,
+        string? AuthorProfilePictureUrl,
         string Title,
         string? Content,
         bool IsWork,

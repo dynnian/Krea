@@ -2,7 +2,6 @@ namespace Krea.Application.Features.Posts.Hashtag {
     using Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;
-    using Dto;
 
     public sealed class RemoveHashtagHandler
         : IRequestHandler<RemoveHashtagCommand, Unit> {

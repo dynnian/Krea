@@ -49,7 +49,7 @@ namespace Krea.Application.Features.Posts.GetPostById {
                                                   r.Id,
                                                   r.AuthorPostId,
                                                   r.AuthorPost.DisplayName,
-                                                  r.Content,
+                                                  r.Content ?? string.Empty,
                                                   r.UploadedAt
                                               ))
                                               .ToList();
@@ -60,6 +60,7 @@ namespace Krea.Application.Features.Posts.GetPostById {
                     post.RepostOf.Id,
                     post.RepostOf.AuthorPostId,
                     post.RepostOf.AuthorPost.DisplayName,
+                    post.RepostOf.AuthorPost.ProfilePicture?.Path,
                     post.RepostOf.Title,
                     post.RepostOf.Content,
                     post.RepostOf.IsWork,
@@ -76,6 +77,7 @@ namespace Krea.Application.Features.Posts.GetPostById {
                 post.Id,
                 post.AuthorPostId,
                 post.AuthorPost.DisplayName,
+                post.AuthorPost.ProfilePicture?.Path,
                 post.Title,
                 post.Content,
                 post.IsWork,

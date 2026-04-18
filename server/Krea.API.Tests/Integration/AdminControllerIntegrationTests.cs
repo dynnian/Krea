@@ -6,17 +6,23 @@ namespace Krea.API.Tests.Integration {
     using Domain.ValueObjects;
     using Infrastructure.Data;
     using Infrastructure.Identity;
-    using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.DependencyInjection;
     using Xunit;
 
+    [Collection(IntegrationTestCollection.Name)]
     public sealed class AdminControllerIntegrationTests {
+        private readonly PostgresContainerFixture _postgres;
+
+        public AdminControllerIntegrationTests(PostgresContainerFixture postgres) {
+            _postgres = postgres;
+        }
+
         [Fact]
         public async Task GetDashboard_ReturnsAggregates() {
             TestDataSeeder.SeededUsers seeded = default!;
 
-            await using var host = await IntegrationTestHost.CreateAsync(async services => {
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
                 seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
                 await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "Dashboard post");
                 await TestDataSeeder.SeedFollowAsync(services, seeded.AdminId, seeded.ArtistId);
@@ -42,7 +48,7 @@ namespace Krea.API.Tests.Integration {
         public async Task GetUsers_ReturnsSeededUsersFromDatabase() {
             TestDataSeeder.SeededUsers seeded = default!;
 
-            await using var host = await IntegrationTestHost.CreateAsync(async services => {
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
                 seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
             });
 
@@ -66,7 +72,7 @@ namespace Krea.API.Tests.Integration {
         public async Task UpdateUserRole_ChangesIdentityRole() {
             TestDataSeeder.SeededUsers seeded = default!;
 
-            await using var host = await IntegrationTestHost.CreateAsync(async services => {
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
                 seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
             });
 
@@ -100,7 +106,7 @@ namespace Krea.API.Tests.Integration {
         public async Task UpdateUserStatus_Suspended_ChangesDomainUserState() {
             TestDataSeeder.SeededUsers seeded = default!;
 
-            await using var host = await IntegrationTestHost.CreateAsync(async services => {
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
                 seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
             });
 
@@ -126,7 +132,7 @@ namespace Krea.API.Tests.Integration {
         public async Task GetReports_ReturnsAggregates() {
             TestDataSeeder.SeededUsers seeded = default!;
 
-            await using var host = await IntegrationTestHost.CreateAsync(async services => {
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
                 seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
                 await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "Reports post");
                 await TestDataSeeder.SeedFollowAsync(services, seeded.AdminId, seeded.ArtistId);
@@ -153,7 +159,7 @@ namespace Krea.API.Tests.Integration {
             TestDataSeeder.SeededUsers seeded = default!;
             var reportId = Guid.Empty;
 
-            await using var host = await IntegrationTestHost.CreateAsync(async services => {
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
                 seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
                 Guid postId = await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "post for moderation list");
                 reportId = await TestDataSeeder.SeedPostModerationReportAsync(services, postId, seeded.OtherId, "Spam");
@@ -180,7 +186,7 @@ namespace Krea.API.Tests.Integration {
             var postId = Guid.Empty;
             var reportId = Guid.Empty;
 
-            await using var host = await IntegrationTestHost.CreateAsync(async services => {
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
                 seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
                 postId = await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "post to be removed");
                 reportId = await TestDataSeeder.SeedPostModerationReportAsync(services, postId, seeded.OtherId,
@@ -215,7 +221,7 @@ namespace Krea.API.Tests.Integration {
         public async Task GetConfiguration_ReturnsPersistedDefaults() {
             TestDataSeeder.SeededUsers seeded = default!;
 
-            await using var host = await IntegrationTestHost.CreateAsync(async services => {
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
                 seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
             });
 
@@ -239,7 +245,7 @@ namespace Krea.API.Tests.Integration {
         public async Task UpdateConfiguration_UpdatesDatabase() {
             TestDataSeeder.SeededUsers seeded = default!;
 
-            await using var host = await IntegrationTestHost.CreateAsync(async services => {
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
                 seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
             });
 
@@ -273,7 +279,7 @@ namespace Krea.API.Tests.Integration {
         public async Task DeleteUser_RemovesDomainAndIdentityUser() {
             TestDataSeeder.SeededUsers seeded = default!;
 
-            await using var host = await IntegrationTestHost.CreateAsync(async services => {
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
                 seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
             });
 

@@ -1,6 +1,3 @@
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Krea.Application.Features.Favorites.Dto;
 using Krea.Domain.Abstractions;
 using Krea.Domain.Repositories;

@@ -1,8 +1,6 @@
-using Krea.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-
 namespace Krea.Domain.Entities {
+    using Krea.Domain.ValueObjects;
+
     public sealed class Donation {
         public Guid Id { get; private set; }
         public User Donor { get; private set; }

@@ -1,6 +1,5 @@
 namespace Krea.Application {
     using Abstractions;
-    using Abstractions.Feed;
     using Domain.Abstractions;
     using Domain.Entities;
     using Features.Auth;

@@ -1,6 +1,5 @@
 namespace Krea.Domain.Repositories {
     using Entities;
-    using ValueObjects;
 
     public interface IGenreRepository {
         Task<IReadOnlyList<Genre>> GetAllAsync(CancellationToken cancellationToken = default);

@@ -9,10 +9,17 @@ namespace Krea.API.Tests.Integration {
     using Microsoft.Extensions.DependencyInjection;
     using Xunit;
 
+    [Collection(IntegrationTestCollection.Name)]
     public sealed class AuthControllerIntegrationTests {
+        private readonly PostgresContainerFixture _postgres;
+
+        public AuthControllerIntegrationTests(PostgresContainerFixture postgres) {
+            _postgres = postgres;
+        }
+
         [Fact]
         public async Task Register_PersistsIdentityAndDomainUser() {
-            await using var host = await IntegrationTestHost.CreateAsync(TestDataSeeder.SeedRolesOnlyAsync);
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, TestDataSeeder.SeedRolesOnlyAsync);
 
             HttpResponseMessage response = await host.Client.PostAsJsonAsync("/api/auth/register",
                 new {
@@ -40,6 +47,84 @@ namespace Krea.API.Tests.Integration {
             string body = await response.Content.ReadAsStringAsync();
             using JsonDocument json = JsonDocument.Parse(body);
             Assert.True(json.RootElement.TryGetProperty("token", out _));
+        }
+
+        [Fact]
+        public async Task Login_ReturnsTokenForValidCredentials() {
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
+                await TestDataSeeder.SeedBasicUsersAsync(services);
+            });
+
+            HttpResponseMessage response = await host.Client.PostAsJsonAsync("/api/auth/login",
+                new {
+                    emailOrUsername = "admin",
+                    password = "Admin123!"
+                });
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            using JsonDocument json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            Assert.True(json.RootElement.TryGetProperty("token", out _));
+        }
+
+        [Fact]
+        public async Task ConfirmEmail_WithInvalidToken_ReturnsBadRequest() {
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, TestDataSeeder.SeedRolesOnlyAsync);
+
+            HttpResponseMessage response = await host.Client.GetAsync(
+                $"/api/auth/confirm-email?userId={Guid.NewGuid()}&token=invalid-token");
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task RefreshToken_WithoutCookie_ReturnsUnauthorized() {
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, TestDataSeeder.SeedRolesOnlyAsync);
+
+            HttpResponseMessage response = await host.Client.PostAsJsonAsync("/api/auth/refresh-token", new { });
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task RevokeToken_WithoutCookie_ReturnsOk_WhenAuthenticated() {
+            TestDataSeeder.SeededUsers seeded = default!;
+
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+            });
+
+            HttpResponseMessage response = await IntegrationTestHost.SendAuthenticatedAsync(
+                host.Client,
+                HttpMethod.Post,
+                "/api/auth/revoke-token",
+                seeded.AdminId,
+                "Artist");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ChangePassword_WithMismatchedUserId_ReturnsUnauthorized() {
+            TestDataSeeder.SeededUsers seeded = default!;
+
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+            });
+
+            HttpResponseMessage response = await IntegrationTestHost.SendAuthenticatedAsync(
+                host.Client,
+                HttpMethod.Post,
+                "/api/auth/change-password",
+                seeded.AdminId,
+                "Artist",
+                new {
+                    userId = seeded.ArtistId,
+                    currentPassword = "Admin123!",
+                    newPassword = "Admin123!x"
+                });
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
     }
 }

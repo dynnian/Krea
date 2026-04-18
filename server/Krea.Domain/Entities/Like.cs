@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Krea.Domain.ValueObjects;
 
 namespace Krea.Domain.Entities {
     public sealed class Like {

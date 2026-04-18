@@ -2,7 +2,6 @@ namespace Krea.Application.Features.Posts.Like {
     using Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;
-    using Dto;
 
     public sealed class LikePostHandler
         : IRequestHandler<LikePostCommand, Unit> {

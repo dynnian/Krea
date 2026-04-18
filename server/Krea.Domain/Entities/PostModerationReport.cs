@@ -6,10 +6,10 @@ namespace Krea.Domain.Entities {
         [Key] public Guid Id { get; private set; }
 
         public Guid PostId { get; private set; }
-        public Post Post { get; private set; }
+        public Post Post { get; private set; } = null!;
 
         public Guid ReporterUserId { get; private set; }
-        public User ReporterUser { get; private set; }
+        public User ReporterUser { get; private set; } = null!;
 
         [StringLength(256)] public string Reason { get; private set; }
 

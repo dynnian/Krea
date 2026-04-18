@@ -17,7 +17,7 @@ namespace Krea.Domain.Entities {
 
         public CollectionType Type { get; private set; }
 
-        public User Owner { get; private set; }
+        public User Owner { get; private set; } = null!;
         public Guid OwnerId { get; private set; }
 
         private readonly List<Post> _posts = new();

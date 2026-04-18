@@ -12,7 +12,7 @@ namespace Krea.Application.Features.Posts.ReplyPost.GetReplies {
                     Id = p.Id,
                     AuthorId = p.AuthorPostId,
                     AuthorName = p.AuthorPost.DisplayName,
-                    Content = p.Content,
+                    Content = p.Content ?? string.Empty,
                     CreatedAt = p.UploadedAt
                 });
 

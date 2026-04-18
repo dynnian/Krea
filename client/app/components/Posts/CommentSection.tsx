@@ -6,8 +6,16 @@ import { Avatar, Input, Button, message } from 'antd';
 import { Heart, MessageCircle, Repeat2, Share2, MoreHorizontal, User } from 'lucide-react';
 import { postsApi } from '../../services/postsService';
 import type { ReplyDto } from '../../services/comments';
+import axiosClient from '../../lib/axios';
+import type { UserProfileResponse } from '../../types/api';
 
 const { TextArea } = Input;
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5101';
+
+const toAbsoluteUrl = (url?: string | null): string | undefined => {
+  if (!url) return undefined;
+  return url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+};
 
 interface CommentSectionProps {
   postId: string;
@@ -23,6 +31,35 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [composerDisplayName, setComposerDisplayName] = useState('');
+  const [composerHandle, setComposerHandle] = useState('');
+  const [composerAvatarUrl, setComposerAvatarUrl] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!user) {
+      setComposerDisplayName('');
+      setComposerHandle('');
+      setComposerAvatarUrl(undefined);
+      return;
+    }
+
+    setComposerDisplayName(user.name || user.handle || user.email.split('@')[0]);
+    setComposerHandle(user.handle || user.email.split('@')[0]);
+    setComposerAvatarUrl(undefined);
+
+    const fetchComposerProfile = async () => {
+      try {
+        const { data } = await axiosClient.get<UserProfileResponse>('/users/me/profile');
+        setComposerDisplayName(data.displayName || user.name || user.handle || user.email.split('@')[0]);
+        setComposerHandle(data.username || user.handle || user.email.split('@')[0]);
+        setComposerAvatarUrl(toAbsoluteUrl(data.profilePictureUrl));
+      } catch {
+        // Keep auth-context fallbacks when profile fetch is unavailable.
+      }
+    };
+
+    fetchComposerProfile();
+  }, [user]);
 
   useEffect(() => {
     const fetchReplies = async () => {
@@ -85,8 +122,18 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
   return (
     <div>
       <div className="flex gap-3 mb-6 bg-[#E8F1FC] px-[22px] py-[15px] border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
-        <Avatar icon={<User />} size={40} className="bg-white border border-gray-800" />
+        <Avatar src={composerAvatarUrl} icon={!composerAvatarUrl && <User />} size={40} className="bg-white border border-gray-800" />
         <div className="flex-1">
+          {user && (
+            <div className="mb-2">
+              <div className="font-medium text-[#1B1C1E] leading-tight">
+                {composerDisplayName || user.name || user.handle || user.email.split('@')[0]}
+              </div>
+              <div className="text-gray-500 text-sm leading-tight">
+                @{composerHandle || user.handle || user.email.split('@')[0]}
+              </div>
+            </div>
+          )}
           <TextArea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
