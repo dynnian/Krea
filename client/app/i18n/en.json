@@ -13,12 +13,12 @@
   "signup": {
     "title": "Sign Up",
     "welcome": "Register!",
-    "username_placeholder": "Username",
-    "account_name_placeholder": "Account name",
-    "phone_placeholder": "Phone number",
-    "email_placeholder": "Email",
-    "password_placeholder": "Password",
-    "confirm_password_placeholder": "Confirm password",
+    "username": "Username",
+    "display_name": "Account name",
+    "phone": "Phone number",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
     "remember_me": "Remember me",
     "sign_up_button": "Sign Up",
     "have_account": "Already have an account?",
@@ -31,7 +31,24 @@
     "password_min_length": "Password must be at least 6 characters",
     "auth_failed": "Invalid email or password. Please try again.",
     "invalid_code": "Invalid code. Please check and try again",
-    "code_required": "Please enter the 6-digit code"
+    "code_required": "Please enter the 6-digit code",
+    "invalid_credentials": "Invalid email/username or password",
+    "email_not_confirmed": "Please confirm your email before logging in",
+    "user_not_found": "User not found",
+    "network_error": "Network error. Please check your connection.",
+    "username_taken": "Username already taken",
+    "email_taken": "Email already registered",
+    "password_complexity": "Password must contain uppercase, lowercase, number and special character",
+    "passwords_do_not_match": "Passwords do not match",
+    "field_required": "This field is required",
+    "registration_failed": "Registration failed. Please try again.",
+    "username_required": "Username is required",
+    "phone_required": "Phone number is required",
+    "invalid_email": "Please enter a valid email address",
+    "confirm_password_required": "Please confirm your password",
+    "display_name_required": "Account name is required",
+    "display_name_empty": "Account name cannot be empty",
+    "phone_invalid": "Phone number can only contain digits, spaces, dashes, and the plus sign"
   },
   "confirm": {
     "title": "Confirm Account",
@@ -95,8 +112,7 @@
     "report_details_placeholder": "Provide more context...",
     "report_success": "Report submitted. Thank you for helping us maintain a safe community.",
     "report_error": "Error submitting report. Please try again.",
-    "report_submit": "Submit report",
-    "reposted_by": "Reposted by"
+    "report_submit": "Submit report"
   },
   "tags": {
     "latest_illustration": "Latest in Illustration",
@@ -124,7 +140,10 @@
     "fromLastMonth": "from last month",
     "saveChanges": "Save Changes",
     "saveSettings": "Save Settings",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "total": "Total",
+    "items": "items",
+    "submit": "Submit"
   },
   "explore": {
     "tabs": {
@@ -164,7 +183,8 @@
       "read": "Read",
       "trending_genres": "Trending genres",
       "trending_authors": "Trending authors"
-    }
+    },
+    "load_error": "Error al cargar el contenido de exploración"
   },
   "commissions": {
     "loading": "Loading commissions...",
@@ -255,6 +275,11 @@
     },
     "commission_button": "Commission",
     "edit_profile_button": "Edit profile"
+  },
+  "bookmarks": {
+    "title": "Saved",
+    "load_error": "Error loading saved posts",
+    "empty": "You have no saved posts"
   },
   "chat": {
     "placeholder": "Send message...",
@@ -364,8 +389,8 @@
     "deleteError": "Failed to delete user",
     "statusUpdateSuccess": "User status updated successfully",
     "statusUpdateError": "Failed to update user status",
-    "deleteConfirmTitle":"Delete User",
-    "deleteConfirmContent":"Are you sure you want to delete this user? This action cannot be undone.",
+    "deleteConfirmTitle": "Delete User",
+    "deleteConfirmContent": "Are you sure you want to delete this user? This action cannot be undone.",
     "deleteConfirmOk": "Yes, delete"
   },
   "reports": {
@@ -405,7 +430,36 @@
     "success": "success",
     "warning": "warning",
     "error": "error",
-    "info": "info"
+    "info": "info",
+    "moderationReports": "Moderation Reports",
+    "filterByStatus": "Filter by Status",
+    "allStatus": "All Statuses",
+    "post": "Post",
+    "reportedBy": "Reported By",
+    "reason": "Reason",
+    "createdAt": "Created At",
+    "review": "Review",
+    "alreadyReviewed": "Already Reviewed",
+    "evaluateReport": "Evaluate Report",
+    "decision": "Decision",
+    "moderatorNote": "Moderator Note",
+    "moderatorNotePlaceholder": "Optional: explanation of the decision",
+    "evaluateSuccess": "Report evaluated successfully",
+    "evaluateError": "Failed to evaluate report",
+    "status": "Status",
+    "fetchError": "Failed to load reports",
+    "statusPending": "Pending",
+    "statusResolved": "Resolved",
+    "statusApproved": "Approved",
+    "statusRejected": "Rejected",
+    "statusDismissed": "Dismissed",
+    "decisionApprove": "Approve post",
+    "decisionReject": "Reject post",
+    "decisionDismiss": "Dismiss report",
+    "decisionDeletePost": "Delete post",
+    "decisionSuspendAuthor": "Suspend author",
+    "statusDeleted": "Post deleted",
+    "statusSuspended": "Author suspended"
   },
   "federation": {
     "title": "Federation & Instance Settings",
@@ -477,5 +531,6 @@
     "passwordChangeSuccess": "Password changed successfully",
     "passwordChangeError": "Failed to change password"
   },
+  
   "version": "Krea Platform v2.1.0"
 }

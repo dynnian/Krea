@@ -8,7 +8,6 @@ import ExploreImages from "../components/Explore/ExploreImages.tsx";
 import ExploreMusic from "../components/Explore/ExploreMusic.tsx";
 import ExploreLiterature from "../components/Explore/ExploreLiterature.tsx";
 
-// ---------- ClientOnly wrapper (evita errores de SSR) ----------
 const ClientOnly = ({ children }: { children: React.ReactNode }) => {
   const [hasMounted, setHasMounted] = useState(false);
 

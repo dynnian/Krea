@@ -19,6 +19,14 @@ export interface PostsQuery {
   pageSize?: number;
 }
 
+export interface PaginatedResponse<T> {
+  items: { $values: T[] };
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+}
+
 export const postsApi = {
   // Obtener todos los posts (paginado)
   getPosts: (page = 1, pageSize = 20) =>
@@ -73,7 +81,7 @@ export const postsApi = {
 
   // Obtener comentarios (replies)
   getReplies: (postId: string, page = 1, pageSize = 20) =>
-    axiosClient.get<PaginatedReplies>(`/Posts/${postId}/replies`, {
+    axiosClient.get<ReplyDto[]>(`/Posts/${postId}/replies`, {
       params: { page, pageSize },
     }),
 
@@ -98,6 +106,21 @@ export const postsApi = {
   }) => axiosClient.get<PostDto[]>("/Posts/explore", { params }),
   toggleFavorite: (postId: string) =>
     axiosClient.post(`/Posts/${postId}/favorite/toggle`),
+  getFavorites: async (page = 1, pageSize = 20) => {
+    const response = await axiosClient.get("/Posts/me/favorites", {
+      params: { page, pageSize },
+    });
+    const data = response.data;
+    // Extraer el array de items (paginado) o devolver array vacío
+    const postsArray = data?.items ?? [];
+    return {
+      data: postsArray,
+      page: data.page ?? 1,
+      pageSize: data.pageSize ?? postsArray.length,
+      totalCount: data.totalCount ?? postsArray.length,
+      totalPages: data.totalPages ?? 1,
+    };
+  },
 };
 
 export const feedApi = {

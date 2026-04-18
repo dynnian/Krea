@@ -1,9 +1,9 @@
-namespace Krea.Application.Features.Favorites.GetUserFavorites {
-    using Domain.Abstractions;
-    using Domain.Entities;
+using Krea.Domain.Abstractions;
+using Krea.Application.Features.Favorites.Dto;
 
-    public sealed record GetUserFavoritesQuery(
-        Guid UserId,
-        int Page,
-        int PageSize
-    ) : IRequest<PaginatedList<Post>>;}
+namespace Krea.Application.Features.Favorites.GetUserFavorites;
+
+public sealed record GetUserFavoritesQuery(
+    Guid UserId,
+    int Page,
+    int PageSize) : IRequest<FavoritePostsResponse>;

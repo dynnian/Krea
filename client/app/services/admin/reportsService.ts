@@ -2,6 +2,7 @@ import axiosClient from "@/lib/axios";
 import type {
   AdminReportsOverviewDto,
   AdminPostModerationReportsPageDto,
+  EvaluateReportRequest,
 } from "@/types/admin";
 
 export async function getReportsOverview(): Promise<AdminReportsOverviewDto> {
@@ -22,12 +23,9 @@ export async function getPostReports(
   return response.data;
 }
 
-export async function evaluatePostReport(
+export async function evaluateReport(
   reportId: string,
-  decision: any,
+  data: EvaluateReportRequest,
 ): Promise<void> {
-  await axiosClient.patch(
-    `/admin/reports/posts/${reportId}/evaluate`,
-    decision,
-  );
+  await axiosClient.patch(`/admin/reports/posts/${reportId}/evaluate`, data);
 }
