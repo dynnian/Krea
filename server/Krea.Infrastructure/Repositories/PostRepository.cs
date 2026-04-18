@@ -81,6 +81,7 @@ namespace Krea.Infrastructure.Repositories {
                           .Skip((page - 1) * pageSize)
                           .Take(pageSize)
                           .Include(p => p.AuthorPost)
+                          .Include(p => p.Likes)
                           .Include(p => p.Uploads)
                           .ThenInclude(u => u.Media)
                           .Include(p => p.Uploads)
@@ -142,5 +143,24 @@ namespace Krea.Infrastructure.Repositories {
                           .AnyAsync(p => p.RepostOfId == originalPostId &&
                                          p.AuthorPostId == userId &&
                                          !p.IsDeleted, cancellationToken);
+        
+        public async Task<HashSet<Guid>> GetRepostedTargetIdsAsync(
+            Guid authorId,
+            IReadOnlyCollection<Guid> repostTargetIds,
+            CancellationToken ct)
+        {
+            if (repostTargetIds.Count == 0)
+                return [];
+
+            return await _context.Posts
+                .AsNoTracking()
+                .Where(p =>
+                    !p.IsDeleted &&
+                    p.AuthorPostId == authorId &&
+                    p.RepostOfId.HasValue &&
+                    repostTargetIds.Contains(p.RepostOfId.Value))
+                .Select(p => p.RepostOfId!.Value)
+                .ToHashSetAsync(ct);
+        }
     }
 }

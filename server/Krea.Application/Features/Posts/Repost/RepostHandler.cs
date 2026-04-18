@@ -29,10 +29,7 @@ namespace Krea.Application.Features.Posts.Repost {
 
             if (original.RepostOfId.HasValue)
                 throw new InvalidOperationException("Cannot repost a repost");
-
-            if (original.AuthorPostId == command.AuthorId)
-                throw new InvalidOperationException("You cannot repost your own post");
-
+            
             Guid repostTargetId = original.RepostOfId ?? original.Id;
 
             bool alreadyReposted = await _postRepository.ExistsRepostAsync(

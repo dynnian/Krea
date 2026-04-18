@@ -74,23 +74,30 @@ namespace Krea.API.Controllers {
         /// <summary>
         /// Retrieves a paginated list of posts created by a specific user.
         /// </summary>
-        /// <param name="authorId">Identifier of the user whose posts will be retrieved.</param>
+        /// <param name="authorPostId">Identifier of the user whose posts will be retrieved.</param>
         /// <param name="page">Page number to retrieve. Default is 1.</param>
         /// <param name="pageSize">Number of posts per page. Default is 10.</param>
-        /// <param name="cancellationToken">Token used to cancel the request.</param>
+        /// <param name="ct">Token used to cancel the request.</param>
         /// <returns>
         /// A paginated collection of posts authored by the specified user.
         /// </returns>
         [HttpGet("user/{authorId:guid}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetByUser(
-            Guid authorId,
+            Guid authorPostId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
-            CancellationToken cancellationToken = default) {
-            IReadOnlyList<PostDto> result = await _sender.Send(
-                new GetPostsByUserQuery(authorId, page, pageSize),
-                cancellationToken);
+            CancellationToken ct = default)
+        {
+            Guid? currentUserId = GetCurrentUserId();
+
+            var result = await _sender.Send(
+                new GetPostsByUserQuery(
+                    authorPostId,
+                    page,
+                    pageSize,
+                    currentUserId),
+                ct);
 
             return Ok(result);
         }

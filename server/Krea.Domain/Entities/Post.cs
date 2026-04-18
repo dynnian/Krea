@@ -135,9 +135,6 @@ namespace Krea.Domain.Entities {
             if (RepostOfId.HasValue)
                 throw new InvalidOperationException("Post is already a repost");
 
-            if (postId == Id)
-                throw new InvalidOperationException("A post cannot repost itself");
-
             RepostOfId = postId;
             UpdatedAt = DateTime.UtcNow;
         }
