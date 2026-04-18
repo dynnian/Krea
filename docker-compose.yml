@@ -72,7 +72,7 @@ services:
       Jwt__Audience: ${JWT_AUDIENCE:-KreaClient}
       Jwt__Key: ${JWT_KEY}
       Security__EnforceHttpsRedirection: ${ENFORCE_HTTPS_REDIRECTION:-false}
-      Cors__AllowedOriginsCsv: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      PublicUrl: ${PUBLIC_URL:-http://localhost:3000}
       UseFakeEmail: ${USE_FAKE_EMAIL:-true}
       Seeding__Enabled: ${SEEDING_ENABLED:-false}
       AdminUser__Email: ${ADMIN_EMAIL:-admin@krea.local}

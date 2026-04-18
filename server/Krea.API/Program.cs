@@ -46,10 +46,13 @@ namespace Krea.API {
             bool enforceHttpsRedirection =
                 app.Configuration.GetValue<bool>("Security:EnforceHttpsRedirection");
 
-            app.UseForwardedHeaders(new ForwardedHeadersOptions {
+            var forwardedHeadersOptions = new ForwardedHeadersOptions {
                 ForwardedHeaders =
                     ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost
-            });
+            };
+            forwardedHeadersOptions.KnownNetworks.Clear();
+            forwardedHeadersOptions.KnownProxies.Clear();
+            app.UseForwardedHeaders(forwardedHeadersOptions);
 
             if (!app.Environment.IsDevelopment() && enforceHttpsRedirection) {
                 app.UseHsts();
@@ -108,17 +111,23 @@ namespace Krea.API {
         }
 
         private static string[] ResolveAllowedOrigins(IConfiguration configuration, bool isDevelopment) {
-            string[] fromSection = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
-            string[] fromCsv = (configuration["Cors:AllowedOriginsCsv"] ?? string.Empty)
-                               .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            string? publicUrl = configuration["PublicUrl"];
+            List<string> configuredOrigins = new();
 
-            string[] configuredOrigins = fromSection.Concat(fromCsv)
-                                                    .Where(origin => Uri.IsWellFormedUriString(origin, UriKind.Absolute))
-                                                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                                                    .ToArray();
+            if (!string.IsNullOrWhiteSpace(publicUrl) && Uri.TryCreate(publicUrl, UriKind.Absolute, out Uri? uri)) {
+                configuredOrigins.Add(uri.GetLeftPart(UriPartial.Authority));
+                
+                // Also allow the non-HTTPS version if it's HTTPS, or vice-versa, 
+                // to be more resilient during migration/setup if needed.
+                if (uri.Scheme == Uri.UriSchemeHttps) {
+                    configuredOrigins.Add($"http://{uri.Authority}");
+                } else if (uri.Scheme == Uri.UriSchemeHttp) {
+                    configuredOrigins.Add($"https://{uri.Authority}");
+                }
+            }
 
-            if (configuredOrigins.Length > 0) {
-                return configuredOrigins;
+            if (configuredOrigins.Count > 0) {
+                return configuredOrigins.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
             }
 
             return isDevelopment ? DevelopmentCorsOrigins : Array.Empty<string>();
