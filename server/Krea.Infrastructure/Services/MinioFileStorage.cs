@@ -51,11 +51,6 @@ namespace Krea.Infrastructure.Services {
                     cancellationToken);
 
                 string cleanBaseUrl = _baseUrl.Trim('\"', ' ').TrimEnd('/');
-                if (!cleanBaseUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && 
-                    !cleanBaseUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase) &&
-                    !cleanBaseUrl.StartsWith("//", StringComparison.OrdinalIgnoreCase)) {
-                    cleanBaseUrl = "https://" + cleanBaseUrl;
-                }
                 string url = $"{cleanBaseUrl}/{_bucketName}/{objectName}";
 
                 Logger.Info("File uploaded: {ObjectName}", objectName);

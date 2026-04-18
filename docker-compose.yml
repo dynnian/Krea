@@ -90,7 +90,7 @@ services:
       Minio__Endpoint: minio:9000
       Minio__AccessKey: ${MINIO_ROOT_USER:-minioadmin}
       Minio__SecretKey: ${MINIO_ROOT_PASSWORD}
-      Minio__BaseUrl: ${PUBLIC_URL:-http://localhost:3000}
+      Minio__BaseUrl: ${MINIO_BASE_URL:-http://localhost:3000}
       Minio__UseSsl: ${MINIO_USE_SSL:-false}
       Minio__Bucket: ${MINIO_BUCKET:-uploads}
     networks:
