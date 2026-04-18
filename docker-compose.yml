@@ -3,48 +3,52 @@ name: ${COMPOSE_PROJECT_NAME:-krea}
 services:
   postgres:
     image: postgres:16-alpine
+    container_name: postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      POSTGRES_DB: ${POSTGRES_DB:-krea}
+    networks:
+      - internal
     volumes:
       - krea_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-krea}"]
       interval: 5s
       timeout: 5s
       retries: 10
 
   minio:
     image: minio/minio:latest
+    container_name: minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    ports:
-      - "${MINIO_PORT:-9000}:9000"
-      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    networks:
+      - internal
     volumes:
       - krea_minio_data:/data
 
-  minio-setup:
+  minio_setup:
     image: minio/mc:latest
+    container_name: minio_setup
     restart: "no"
     depends_on:
       minio:
         condition: service_started
+    networks:
+      - internal
     entrypoint: >
       /bin/sh -c "
-      until mc alias set local http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}; do
+      until mc alias set local http://minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD}; do
         echo 'Waiting for MinIO...';
         sleep 1;
       done;
-      mc mb --ignore-existing local/${MINIO_BUCKET};
-      mc anonymous set download local/${MINIO_BUCKET};
+      mc mb --ignore-existing local/${MINIO_BUCKET:-uploads};
+      mc anonymous set download local/${MINIO_BUCKET:-uploads};
       "
 
   api:
@@ -52,60 +56,67 @@ services:
       context: ./server
       dockerfile: Krea.API/Dockerfile
     restart: unless-stopped
+    container_name: api
     depends_on:
       postgres:
         condition: service_healthy
       minio:
         condition: service_started
-      minio-setup:
+      minio_setup:
         condition: service_completed_successfully
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-      Jwt__Issuer: ${JWT_ISSUER}
-      Jwt__Audience: ${JWT_AUDIENCE}
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB:-krea};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      Jwt__Issuer: ${JWT_ISSUER:-KreaAPI}
+      Jwt__Audience: ${JWT_AUDIENCE:-KreaClient}
       Jwt__Key: ${JWT_KEY}
-      Security__EnforceHttpsRedirection: ${ENFORCE_HTTPS_REDIRECTION}
-      Cors__AllowedOriginsCsv: ${CORS_ALLOWED_ORIGINS}
-      UseFakeEmail: ${USE_FAKE_EMAIL}
-      Seeding__Enabled: ${SEEDING_ENABLED}
-      AdminUser__Email: ${ADMIN_EMAIL}
-      AdminUser__Username: ${ADMIN_USERNAME}
+      Security__EnforceHttpsRedirection: ${ENFORCE_HTTPS_REDIRECTION:-false}
+      Cors__AllowedOriginsCsv: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      UseFakeEmail: ${USE_FAKE_EMAIL:-true}
+      Seeding__Enabled: ${SEEDING_ENABLED:-false}
+      AdminUser__Email: ${ADMIN_EMAIL:-admin@krea.local}
+      AdminUser__Username: ${ADMIN_USERNAME:-admin}
       AdminUser__Password: ${ADMIN_PASSWORD}
-      AdminUser__DisplayName: ${ADMIN_DISPLAY_NAME}
-      InstanceSettings__PlatformName: ${INSTANCE_PLATFORM_NAME}
-      InstanceSettings__Description: ${INSTANCE_DESCRIPTION}
-      InstanceSettings__AdministratorEmail: ${INSTANCE_ADMIN_EMAIL}
+      AdminUser__DisplayName: ${ADMIN_DISPLAY_NAME:-Administrator}
+      InstanceSettings__PlatformName: ${INSTANCE_PLATFORM_NAME:-Krea}
+      InstanceSettings__Description: ${INSTANCE_DESCRIPTION:-A federated platform for artists and creators}
+      InstanceSettings__AdministratorEmail: ${INSTANCE_ADMIN_EMAIL:-admin@krea.local}
       Email__SmtpHost: ${EMAIL_SMTP_HOST}
       Email__SmtpPort: ${EMAIL_SMTP_PORT}
       Email__SmtpUser: ${EMAIL_SMTP_USER}
       Email__SmtpPassword: ${EMAIL_SMTP_PASSWORD}
       Email__FromAddress: ${EMAIL_FROM_ADDRESS}
-      Minio__Endpoint: ${MINIO_ENDPOINT}
-      Minio__AccessKey: ${MINIO_ROOT_USER}
+      Minio__Endpoint: minio:9000
+      Minio__AccessKey: ${MINIO_ROOT_USER:-minioadmin}
       Minio__SecretKey: ${MINIO_ROOT_PASSWORD}
-      Minio__BaseUrl: ${MINIO_BASE_URL}
-      Minio__UseSsl: ${MINIO_USE_SSL}
-      Minio__Bucket: ${MINIO_BUCKET}
-    ports:
-      - "${API_PORT:-5101}:8080"
+      Minio__BaseUrl: ${MINIO_BASE_URL:-http://localhost:3000}
+      Minio__UseSsl: ${MINIO_USE_SSL:-false}
+      Minio__Bucket: ${MINIO_BUCKET:-uploads}
+    networks:
+      - internal
 
   web:
     build:
       context: ./client
       dockerfile: Dockerfile
-      args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
-        VITE_API_URL: ${VITE_API_URL}
-        VITE_HUB_BASE_URL: ${VITE_HUB_BASE_URL}
     restart: unless-stopped
+    container_name: web
     depends_on:
       api:
         condition: service_started
+    networks:
+      - internal
+      - public
     ports:
       - "${WEB_PORT:-3000}:80"
 
 volumes:
   krea_pgdata:
   krea_minio_data:
+
+networks:
+  internal:
+    driver: bridge
+  public:
+    driver: bridge
