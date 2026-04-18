@@ -72,10 +72,10 @@ export default function PostDetail() {
     return true;
   };
 
-  const originalPost = post?.repostOf ?? post;
-  const isRepost = !!post?.repostOf;
-  const repostAuthorName = isRepost ? post?.authorName : null;
-  const isOwnPost = user?.id === originalPost!.authorPostId;
+const originalPost = post?.repostOf ?? post;
+const isRepost = !!post?.repostOf;
+const repostAuthorName = isRepost ? post?.authorName : null;
+const isOwnPost = !!originalPost && user?.id === originalPost.authorPostId;
 
 
   const handleLike = async () => {
