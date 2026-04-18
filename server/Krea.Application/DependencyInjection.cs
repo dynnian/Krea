@@ -56,6 +56,7 @@ namespace Krea.Application {
     using Features.Posts.UserReports;
     using Features.User.GetReportsByUser;
     using Features.User.SearchUser;
+    using Features.User.UploadUserProfilePicture;
 
     public static class DependencyInjection {
         public static IServiceCollection AddApplication(this IServiceCollection services) {
@@ -80,6 +81,7 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<GetFollowersQuery, FollowListResponse>, GetFollowersQueryHandler>();
             services.AddScoped<IRequestHandler<GetFollowingUsersQuery, FollowListResponse>, GetFollowingUsersQueryHandler>();
             services.AddScoped<IRequestHandler<SearchUsersQuery, PaginatedList<UserSearchItemDto>>, SearchUsersHandler>();
+            services.AddScoped<IRequestHandler<UploadUserProfilePictureCommand, UploadUserProfilePictureResponse>, UploadUserProfilePictureCommandHandler>();
 
             // Admin
             services.AddScoped<IRequestHandler<GetAdminUsersQuery, AdminUsersPageDto>, GetAdminUsersHandler>();

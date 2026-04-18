@@ -11,12 +11,18 @@ export type SettingsSection = {
   label: string;
 };
 
-export type ProfileSettings = {
+export interface ProfileSettings {
   username: string;
   email: string;
-  phone: string;
-  bio: string;
-};
+  displayName: string;
+  biography: string;
+  languageCode: string;
+  timeZoneId: string;
+  profilePictureUrl: string | null;
+  bannerPictureUrl: string | null;
+  profilePictureId: string | null;
+  bannerPictureId: string | null;
+}
 
 export type SubscriptionTier = {
   id: string;

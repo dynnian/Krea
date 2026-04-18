@@ -23,16 +23,29 @@ namespace Krea.Infrastructure.Services {
             string fileName,
             string contentType,
             long size,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            string? folder = null)
         {
             try
             {
-                var safeFileName = Path.GetFileName(fileName);
-                var objectName = $"posts/{Guid.NewGuid()}_{safeFileName}";
-                
+                string objectName;
+
+                if (!string.IsNullOrWhiteSpace(folder))
+                {
+                    var normalizedFolder = folder.Trim().Trim('/');
+                    var safeFileName = Path.GetFileName(fileName);
+                    objectName = $"{normalizedFolder}/{safeFileName}";
+                }
+                else
+                {
+                    objectName = fileName.Replace("\\", "/").TrimStart('/');
+                }
+
+                if (string.IsNullOrWhiteSpace(objectName))
+                    throw new InvalidOperationException("Invalid object name for storage.");
+
                 await EnsureBucketExists(cancellationToken);
 
-                // Subir archivo
                 await _minioClient.PutObjectAsync(
                     new PutObjectArgs()
                         .WithBucket(BucketName)
@@ -41,6 +54,7 @@ namespace Krea.Infrastructure.Services {
                         .WithObjectSize(size)
                         .WithContentType(contentType),
                     cancellationToken);
+
                 var cleanBaseUrl = _baseUrl.Trim('\"', ' ').TrimEnd('/');
                 var url = $"{cleanBaseUrl}/{BucketName}/{objectName}";
 

@@ -130,6 +130,11 @@ namespace Krea.Domain.Entities {
             BannerPictureId = null;
             UpdatedAt = DateTime.UtcNow;
         }
+        
+        public void SetProfilePicture(Guid? mediaId)
+        {
+            ProfilePictureId = mediaId;
+        }
 
         public void UpdateBiography(string biography) {
             Biography = biography;
