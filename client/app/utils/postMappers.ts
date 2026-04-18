@@ -150,6 +150,9 @@ export function feedItemToPostDto(item: FeedItem): PostDto {
     mimeType: item.mediaMimeType || "",
     url: item.mediaPreviewUrl,
     isWorkMedia: false,
+    coverMediaId: item.coverMediaId ?? null,
+    coverUrl: item.coverUrl ?? null,
+    coverMimeType: item.coverMimeType ?? null,
   }] : [];
 
   return {

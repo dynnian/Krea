@@ -37,10 +37,22 @@ namespace Krea.Infrastructure.Services {
                     MediaPreviewUrl = p.RepostOfId == null
                         ? p.Uploads.Select(u => u.Media.Path).FirstOrDefault() 
                         : p.RepostOf!.Uploads.Select(u => u.Media.Path).FirstOrDefault(),
-                    
+
                     MediaMimeType = p.RepostOfId == null 
                         ? p.Uploads.Select(u => u.Media.MimeType).FirstOrDefault() 
                         : p.RepostOf!.Uploads.Select(u => u.Media.MimeType).FirstOrDefault(),
+
+                    CoverMediaId = p.RepostOfId == null
+                        ? p.Uploads.Select(u => u.CoverMediaId).FirstOrDefault()
+                        : p.RepostOf!.Uploads.Select(u => u.CoverMediaId).FirstOrDefault(),
+
+                    CoverUrl = p.RepostOfId == null
+                        ? p.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.Path : null).FirstOrDefault()
+                        : p.RepostOf!.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.Path : null).FirstOrDefault(),
+
+                    CoverMimeType = p.RepostOfId == null
+                        ? p.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.MimeType : null).FirstOrDefault()
+                        : p.RepostOf!.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.MimeType : null).FirstOrDefault(),
                         
                         LikeCount = p.Likes.Count(),
                         
@@ -143,12 +155,21 @@ namespace Krea.Infrastructure.Services {
                             Title = p.RepostOf.Title, 
                             Content = p.RepostOf.Content!, 
                             UploadedAt = p.RepostOf.UploadedAt,
-                            MediaPreviewUrl = p.RepostOf.Uploads 
-                                .Select(u => u.Media.Path) 
-                                .FirstOrDefault(), 
-                            MediaMimeType = p.RepostOf.Uploads 
-                                .Select(u => u.Media.MimeType) 
-                                .FirstOrDefault(), 
+                            MediaPreviewUrl = p.RepostOf.Uploads
+                                .Select(u => u.Media.Path)
+                                .FirstOrDefault(),
+                            MediaMimeType = p.RepostOf.Uploads
+                                .Select(u => u.Media.MimeType)
+                                .FirstOrDefault(),
+                            CoverMediaId = p.RepostOf.Uploads
+                                .Select(u => u.CoverMediaId)
+                                .FirstOrDefault(),
+                            CoverUrl = p.RepostOf.Uploads
+                                .Select(u => u.CoverMedia != null ? u.CoverMedia.Path : null)
+                                .FirstOrDefault(),
+                            CoverMimeType = p.RepostOf.Uploads
+                                .Select(u => u.CoverMedia != null ? u.CoverMedia.MimeType : null)
+                                .FirstOrDefault(),
                             LikeCount = p.RepostOf.Likes.Count(), 
                             ReplyCount = _context.Posts.Count(r => r.RepliedToId == p.RepostOf.Id), 
                             RepostCount = _context.Posts.Count(r => r.RepostOfId == p.RepostOf.Id) 

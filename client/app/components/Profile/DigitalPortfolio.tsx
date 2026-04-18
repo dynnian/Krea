@@ -478,7 +478,7 @@ if (collectionDetailLoading) {
 
  if (showGeneralPortfolio) {
   return (
-    <div className="w-full -mt-[60px]">
+    <div className="w-full md:-mt-[60px]">
       <PortfolioViewHeader
         title="Portafolio General"
         onBack={() => setShowGeneralPortfolio(false)}
@@ -490,7 +490,7 @@ if (collectionDetailLoading) {
 
 if (activeCollection) {
   return (
-    <div className="w-full -mt-[60px]">
+    <div className="w-full md:-mt-[60px]">
       <PortfolioViewHeader
         title={activeCollection.title}
         onBack={() => setActiveCollection(null)}

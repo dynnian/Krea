@@ -617,7 +617,7 @@ const editingCollectionConfig = getEditingCollectionConfig();
         onGoToSettings={handleGoToSettings}
         onGoToSaved={handleGoToSaved}
       />
-
+      <div className="w-full flex justify-center">
         <div className=" krea-tabs">
           <Tabs
             activeKey={activeMainTab}
@@ -635,14 +635,16 @@ const editingCollectionConfig = getEditingCollectionConfig();
             tabBarGutter={46}
           />
         </div>
+      </div>
 
 {activeMainTab === "portfolio" && (
   <>
 
     {activeMainTab === "portfolio" && (
       
-      <div className="px-[70px] mt-[-10px] mb-[10px] flex justify-end pr-[0px]">
-        <div className="flex items-center gap-[10px] -mt-[30px] relative z-20 translate-x-[55px]">
+      <div className="lg:pl-[70px]  md:mt-[-10px] mb-[10px] flex justify-end pr-[0px]">
+        <div className="w-full flex justify-center mt-[32px] md:mt-0 md:pl-[520px]">
+        <div className="flex items-center gap-[10px] md:-mt-[30px] relative z-20 md:translate-x-[55px]">
         <button
           type="button"
           onClick={() => {
@@ -664,6 +666,7 @@ const editingCollectionConfig = getEditingCollectionConfig();
               Actualizar Portafolio
             </span>
           </button>
+        </div>
         </div>
       </div>
     )}

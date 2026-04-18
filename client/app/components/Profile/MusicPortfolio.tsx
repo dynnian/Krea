@@ -102,28 +102,32 @@ const SongCard: React.FC<{ song: MusicSong }> = ({ song }) => {
   };
 
   return (
-    <div className="w-full h-[240px] bg-[#E8F1FC] border border-[#8F8E8A] rounded-[10px] shadow-[4px_4px_4px_rgba(0,0,0,0.15)] p-5">
-      <div className="flex gap-4 items-stretch h-full">
-        <img
-          src={song.coverUrl}
-          alt={song.title}
+    <div className="w-full bg-[#E8F1FC] border border-[#8F8E8A] rounded-[10px] shadow-[4px_4px_4px_rgba(0,0,0,0.15)] p-3 sm:p-4 md:p-5 md:h-[240px]">
+      <div className="flex gap-3 sm:gap-4 items-stretch min-h-[170px] sm:min-h-[200px] md:h-full">
+        <div
           onClick={openPostDetail}
-          className="h-full aspect-square object-cover rounded shadow-[4px_4px_4px_rgba(0,0,0,0.15)] cursor-pointer"
-        />
+          className="self-stretch aspect-square shrink-0 min-w-[90px] max-w-[200px] overflow-hidden rounded shadow-[4px_4px_4px_rgba(0,0,0,0.15)] cursor-pointer"
+        >
+          <img
+            src={song.coverUrl}
+            alt={song.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
 
         <div className="flex-1 min-w-0">
           <div className="h-[24px]" />
-          <div className="flex items-start justify-between gap-4 mb-[0px]">
-            <h1
-              className="text-2xl font-medium text-[#1B1C1E] cursor-pointer hover:underline"
-              onClick={openPostDetail}
-            >
-              {song.title}
-            </h1>
-            <span className="text-sm text-[#1B1C1E] whitespace-nowrap">
-              {song.genre}
-            </span>
-          </div>
+            <div className="flex items-start justify-between gap-2 sm:gap-4 mb-1">
+              <h1
+                className="text-[20px] sm:text-[24px] leading-[22px] sm:leading-[28px] font-medium text-[#1B1C1E] cursor-pointer hover:underline line-clamp-2 min-w-0"
+                onClick={openPostDetail}
+              >
+                {song.title}
+              </h1>
+              <span className="text-[11px] sm:text-sm text-[#1B1C1E] whitespace-nowrap shrink-0 pl-2">
+                {song.genre}
+              </span>
+            </div>
 
           <div className="mt-1 cursor-pointer">
             <AudioWaveform
@@ -420,7 +424,7 @@ export default function MusicPortfolio({
 
 if (showGeneralPortfolio) {
   return (
-    <div className="w-full -mt-[60px]">
+    <div className="w-full md:-mt-[60px]">
       <div className="max-w-[975px] mx-auto">
         <PortfolioViewHeader
           title="Portafolio General"

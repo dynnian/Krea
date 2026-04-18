@@ -13,4 +13,7 @@ export interface FeedItem {
   replyCount: number;
   repostCount: number;
   isFavorite: boolean;
+  coverMediaId?: string | null;
+  coverUrl?: string | null;
+  coverMimeType?: string | null;
 }

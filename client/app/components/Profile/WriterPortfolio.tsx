@@ -80,9 +80,9 @@ useEffect(() => {
 }, [work.description]);
 
 	return (
-		<div className="w-[687px] h-[170px] bg-[#E8F1FC] border border-[#8F8E8A] p-[15px]">
-			<div className="flex h-full gap-[22px] items-center">
-        <div className="h-full aspect-[2/3] shrink-0 overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
+    <div className="w-full min-h-[170px] bg-[#E8F1FC] border border-[#8F8E8A] p-[14px] ">
+      <div className="flex h-full gap-3 sm:gap-[22px] items-start">
+        <div className="self-stretch h-auto aspect-[2/3] shrink-0 max-w-[110px] overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
           <img
             src={work.coverUrl}
             alt={work.title}
@@ -91,12 +91,12 @@ useEffect(() => {
           />
 				</div>
 
-				<div className=" h-full flex flex-col min-w-0 pb-[4px] pt-[5px] gap-[0px]">
+				<div className="flex-1 h-full flex flex-col min-w-0 pb-[4px] pt-[2px] sm:pt-[5px] gap-0">
 					<div className="flex items-start justify-between gap-[0px]">
             <div className="min-w-0 flex flex-col gap-[0px]">
               <div className="h-full">
                 <h3 
-                className="text-[20px] leading-[20px] font-bold text-[#1B1C1E] cursor-pointer hover:underline"
+                className="text-[22px] sm:text-[24px] leading-[22px] sm:leading-[24px] font-bold text-[#1B1C1E] cursor-pointer hover:underline line-clamp-2"
                 onClick={openPostDetail}
                 >
                   {work.title}
@@ -104,13 +104,13 @@ useEffect(() => {
               </div>
               
               <div className="-mt-[5px]">
-                <p className=" text-[13px] leading-[13px] font-medium text-[#1B1C1E]">
+                <p className="text-[13px] sm:text-[14px] leading-[14px] sm:leading-[15px] font-medium text-[#1B1C1E]">
                   {work.chaptersCount} Capítulos
                 </p>
               </div>
             </div>
 
-						<span className="pt-[2px] text-[12px] font-medium text-[#1B1C1E] whitespace-nowrap">
+						<span className="pt-[2px] text-[12px] sm:text-[13px] font-medium text-[#1B1C1E] whitespace-nowrap shrink-0 pl-2">
 							{work.genre}
 						</span>
 					</div>
@@ -119,7 +119,7 @@ useEffect(() => {
             <div className="mt-[px] min-w-0">
               <p
                 ref={descriptionRef}
-                className="text-[11px] leading-[16px] text-justify font-medium text-[#1B1C1E] line-clamp-3 overflow-hidden"
+                className="text-[12px] sm:text-[13px] leading-[16px] sm:leading-[18px] text-justify font-medium text-[#1B1C1E] line-clamp-2 sm:line-clamp-3 overflow-hidden"
               >
                 {work.description}
               {showReadMore && (
@@ -133,30 +133,30 @@ useEffect(() => {
               </p>
             </div>
           </div>
-					<div className="mt-auto pt-[0px] flex items-center gap-3">
+					<div className="mt-auto pt-[6px] flex items-center gap-3">
 						<button
 							type="button"
-							className="px-[33px] py-[1px] cursor-pointer hover:bg-[#093B05] rounded-full bg-[#0B5107] border border-[#1B1C1E]"
+							className="px-[36px] py-[4px] cursor-pointer hover:bg-[#093B05] rounded-full bg-[#0B5107] border border-[#1B1C1E]"
 						>
-							<span className="text-[11px] font-medium leading-5 text-[#E3E2DE]">
+							<span className="text-[13px] font-medium leading-5 text-[#E3E2DE]">
 								Leer
 							</span>
 						</button>
 
 						<button
 							type="button"
-							className="w-[24px] h-[24px] rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center"
+							className="w-[30px] h-[30px] rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center"
 						>
-							<Bookmark size={14} />
+							<Bookmark size={16} />
 						</button>
 
             <button
               type="button"
               onClick={handleLike}
               disabled={actionLoading}
-              className="w-[24px] h-[24px] rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] cursor-pointer flex items-center justify-center disabled:opacity-50"
+              className="w-[30px] h-[30px] rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] cursor-pointer flex items-center justify-center disabled:opacity-50"
             >
-              <Heart size={14} className={liked ? "fill-[#0B5107] text-[#0B5107]" : ""} />
+              <Heart size={16} className={liked ? "fill-[#0B5107] text-[#0B5107]" : ""} />
             </button>
 					</div>
 				</div>
@@ -502,7 +502,7 @@ export default function WriterPortfolio({
 
   if (showGeneralPortfolio) {
     return (
-      <div className="w-full -mt-[60px]">
+      <div className="w-full md:-mt-[60px]">
         <div className="max-w-[1388px] mx-auto">
           <PortfolioViewHeader
             title="Portafolio General"
@@ -517,7 +517,7 @@ export default function WriterPortfolio({
 
   if (activeCollection) {
     return (
-      <div className="w-full -mt-[60px]">
+      <div className="w-full md:-mt-[60px]">
         <div className="max-w-[1388px] mx-auto">
           <PortfolioViewHeader
             title={activeCollection.title}
