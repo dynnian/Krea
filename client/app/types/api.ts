@@ -19,6 +19,7 @@ export interface UserDto {
   languageCode: string;
   timeZoneId: string;
   roleId: number;
+  profilePictureUrl?: string | null;
 }
 
 // --- Profile ---

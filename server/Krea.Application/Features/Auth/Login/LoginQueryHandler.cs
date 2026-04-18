@@ -33,7 +33,7 @@ namespace Krea.Application.Features.Auth.Login {
             if (!passwordValid)
                 throw new Exception("Invalid credentials.");
 
-            User? domainUser = await _userRepository.GetByIdAsync(identityUser.Id, cancellationToken);
+            User? domainUser = await _userRepository.GetByIdWithPicturesAsync(identityUser.Id, cancellationToken);
             if (domainUser == null)
                 throw new Exception("User not found in domain.");
             if (!domainUser.EmailConfirmed)
@@ -59,7 +59,8 @@ namespace Krea.Application.Features.Auth.Login {
                 domainUser.Biography,
                 domainUser.LanguageCode,
                 domainUser.TimeZoneId,
-                GetRoleInt(identity.Roles)
+                GetRoleInt(identity.Roles),
+                domainUser.ProfilePicture?.Path
             );
     }
 }

@@ -21,7 +21,7 @@ namespace Krea.Application.Features.Auth.Refresh {
             if (userIdentity == null)
                 return null;
 
-            User? domainUser = await userRepository.GetByIdAsync(tokens.UserId, cancellationToken);
+            User? domainUser = await userRepository.GetByIdWithPicturesAsync(tokens.UserId, cancellationToken);
             if (domainUser == null)
                 return null;
 
@@ -33,7 +33,8 @@ namespace Krea.Application.Features.Auth.Refresh {
                 domainUser.Biography,
                 domainUser.LanguageCode,
                 domainUser.TimeZoneId,
-                GetRoleInt(userIdentity.Roles)
+                GetRoleInt(userIdentity.Roles),
+                domainUser.ProfilePicture?.Path
             );
 
             return new AuthResponse(tokens.AccessToken, tokens.AccessTokenExpiration, tokens.RefreshToken, userDto);
