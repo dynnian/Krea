@@ -105,7 +105,6 @@ const handleGoToSaved = () => {
 // Determinar si es el perfil propio (ruta /profile/me)
 // const isOwnProfile = username === 'me';
 
-
   useEffect(() => {
     const loadProfile = async () => {
       if (!username) {
