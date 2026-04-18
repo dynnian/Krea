@@ -3,6 +3,7 @@ namespace Krea.Application.Features.Posts.Dto {
         Guid Id,
         Guid AuthorPostId,
         string AuthorName,
+        string? AuthorProfilePictureUrl,
         string Title,
         string? Content,
         bool IsWork,

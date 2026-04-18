@@ -16,6 +16,7 @@ namespace Krea.Infrastructure.Repositories {
         public async Task<Post?> GetFullPostAsync(Guid id, CancellationToken cancellationToken = default) =>
             await _context.Posts
                           .Include(p => p.AuthorPost)
+                          .ThenInclude(u => u.ProfilePicture)
                           .Include(p => p.Uploads)
                           .ThenInclude(u => u.Metadata)
                           .ThenInclude(m => m!.Genres)
@@ -27,6 +28,7 @@ namespace Krea.Infrastructure.Repositories {
                           .Include(p => p.Likes)
                           .Include(p => p.RepostOf)
                           .ThenInclude(r => r!.AuthorPost)
+                          .ThenInclude(u => u.ProfilePicture)
                           .Include(p => p.RepostOf)
                           .ThenInclude(r => r!.Uploads)
                           .ThenInclude(u => u.Metadata)

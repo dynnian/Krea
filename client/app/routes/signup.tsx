@@ -238,13 +238,18 @@ export default function SignUpRoute() {
 
       const registerResponse = await register(registerData, rememberMe);
       let registrationNotice: string | undefined;
+      const registrationToken = registerResponse.token || (registerResponse as any).Token;
 
-      if (registerResponse.token && profilePictureFile) {
-        try {
-          const profilePictureId = await uploadImageAndGetMediaId(registerResponse.token, profilePictureFile);
-          await patchProfilePicture(registerResponse.token, profilePictureId);
-        } catch {
+      if (profilePictureFile) {
+        if (!registrationToken) {
           registrationNotice = t("signup.picture_upload_warning");
+        } else {
+          try {
+            const profilePictureId = await uploadImageAndGetMediaId(registrationToken, profilePictureFile);
+            await patchProfilePicture(registrationToken, profilePictureId);
+          } catch {
+            registrationNotice = t("signup.picture_upload_warning");
+          }
         }
       }
 

@@ -27,6 +27,10 @@ namespace Krea.Infrastructure.Services {
                               Content = p.Content!,
                               AuthorId = p.AuthorPostId,
                               AuthorUsername = p.AuthorPost.DisplayName,
+                              AuthorProfilePictureUrl = _context.Media
+                                  .Where(m => m.Id == p.AuthorPost.ProfilePictureId)
+                                  .Select(m => m.Path)
+                                  .FirstOrDefault(),
                               UploadedAt = p.UploadedAt,
                               MediaPreviewUrl = p.RepostOfId == null
                                   ? p.Uploads.Select(u => u.Media.Path).FirstOrDefault()
@@ -55,6 +59,10 @@ namespace Krea.Infrastructure.Services {
                                       Content = p.RepostOf.Content!,
                                       AuthorId = p.RepostOf.AuthorPostId,
                                       AuthorUsername = p.RepostOf.AuthorPost.DisplayName,
+                                      AuthorProfilePictureUrl = _context.Media
+                                          .Where(m => m.Id == p.RepostOf.AuthorPost.ProfilePictureId)
+                                          .Select(m => m.Path)
+                                          .FirstOrDefault(),
                                       UploadedAt = p.RepostOf.UploadedAt,
                                       MediaPreviewUrl = p.RepostOf.Uploads
                                                          .Select(u => u.Media.Path)
@@ -91,6 +99,10 @@ namespace Krea.Infrastructure.Services {
                                      Content = p.Content!,
                                      AuthorId = p.AuthorPostId,
                                      AuthorUsername = p.AuthorPost.DisplayName,
+                                     AuthorProfilePictureUrl = _context.Media
+                                         .Where(m => m.Id == p.AuthorPost.ProfilePictureId)
+                                         .Select(m => m.Path)
+                                         .FirstOrDefault(),
                                      UploadedAt = p.UploadedAt,
                                      MediaPreviewUrl = p.RepostOfId == null
                                          ? p.Uploads.Select(u => u.Media.Path).FirstOrDefault()
@@ -113,6 +125,10 @@ namespace Krea.Infrastructure.Services {
                                              Id = p.RepostOf.Id,
                                              AuthorId = p.RepostOf.AuthorPostId,
                                              AuthorUsername = p.RepostOf.AuthorPost.DisplayName,
+                                             AuthorProfilePictureUrl = _context.Media
+                                                 .Where(m => m.Id == p.RepostOf.AuthorPost.ProfilePictureId)
+                                                 .Select(m => m.Path)
+                                                 .FirstOrDefault(),
                                              Title = p.RepostOf.Title,
                                              Content = p.RepostOf.Content!,
                                              UploadedAt = p.RepostOf.UploadedAt,
@@ -156,6 +172,10 @@ namespace Krea.Infrastructure.Services {
                                      Content = x.Post.Content!,
                                      AuthorId = x.Post.AuthorPostId,
                                      AuthorUsername = x.Post.AuthorPost.DisplayName,
+                                     AuthorProfilePictureUrl = _context.Media
+                                         .Where(m => m.Id == x.Post.AuthorPost.ProfilePictureId)
+                                         .Select(m => m.Path)
+                                         .FirstOrDefault(),
                                      UploadedAt = x.Post.UploadedAt,
                                      MediaPreviewUrl = x.Post.RepostOfId == null
                                          ? x.Post.Uploads.Select(u => u.Media.Path).FirstOrDefault()
@@ -183,6 +203,10 @@ namespace Krea.Infrastructure.Services {
                                              Content = x.Post.RepostOf.Content!,
                                              AuthorId = x.Post.RepostOf.AuthorPostId,
                                              AuthorUsername = x.Post.RepostOf.AuthorPost.DisplayName,
+                                             AuthorProfilePictureUrl = _context.Media
+                                                 .Where(m => m.Id == x.Post.RepostOf.AuthorPost.ProfilePictureId)
+                                                 .Select(m => m.Path)
+                                                 .FirstOrDefault(),
                                              UploadedAt = x.Post.RepostOf.UploadedAt,
                                              MediaPreviewUrl = x.Post.RepostOf.Uploads
                                                                 .Select(u => u.Media.Path)
