@@ -321,7 +321,7 @@ export default function PublicProfilePage() {
   // Redirigir si es el propio perfil
   useEffect(() => {
     if (currentUser && userId === currentUser.id) {
-      navigate("/profile/me", { replace: true });
+      navigate("/profile", { replace: true });
     }
   }, [currentUser, userId, navigate]);
 
