@@ -5,7 +5,8 @@ namespace Krea.Application.Features.Admin.Reports {
     using Domain.Entities;
     using Domain.Repositories;
 
-    public sealed class GetAdminReportsOverviewHandler : IRequestHandler<GetAdminReportsOverviewQuery, AdminReportsOverviewDto> {
+    public sealed class
+        GetAdminReportsOverviewHandler : IRequestHandler<GetAdminReportsOverviewQuery, AdminReportsOverviewDto> {
         private readonly IUserRepository _userRepository;
         private readonly IPostRepository _postRepository;
         private readonly IFollowRepository _followRepository;
@@ -55,7 +56,9 @@ namespace Krea.Application.Features.Admin.Reports {
             activity.AddRange(recentPosts.Select(p => new AdminActivityLogItemDto(
                 "Moderacion",
                 "Contenido Publicado",
-                identitiesById.TryGetValue(p.AuthorPostId, out UserIdentity? identity) ? identity.UserName : p.AuthorPostId.ToString(),
+                identitiesById.TryGetValue(p.AuthorPostId, out UserIdentity? identity)
+                    ? identity.UserName
+                    : p.AuthorPostId.ToString(),
                 string.IsNullOrWhiteSpace(p.Title) ? "Publicacion creada" : p.Title,
                 p.UploadedAt,
                 "Info")));
@@ -75,17 +78,17 @@ namespace Krea.Application.Features.Admin.Reports {
             }));
 
             IReadOnlyList<AdminActivityLogItemDto> orderedActivity = activity
-                .OrderByDescending(a => a.OccurredAt)
-                .Take(25)
-                .ToList();
+                                                                     .OrderByDescending(a => a.OccurredAt)
+                                                                     .Take(25)
+                                                                     .ToList();
 
             return new AdminReportsOverviewDto(
-                ActiveUsers: Math.Max(0, totalUsers - suspendedUsers),
-                SuspendedUsers: suspendedUsers,
-                TotalPublications: totalPublications,
-                FederationInteractions: federationInteractions,
-                ModerationActions: moderationActions,
-                Activity: orderedActivity);
+                Math.Max(0, totalUsers - suspendedUsers),
+                suspendedUsers,
+                totalPublications,
+                federationInteractions,
+                moderationActions,
+                orderedActivity);
         }
     }
 }

@@ -8,28 +8,27 @@ namespace Krea.Application.Features.Auth.ChangePassword {
         IIdentityService identityService,
         IUserRepository userRepository,
         IUnitOfWork unitOfWork
-        ) : IRequestHandler<ChangePasswordCommand, bool> {
+    ) : IRequestHandler<ChangePasswordCommand, bool> {
         public async Task<bool> Handle(ChangePasswordCommand request, CancellationToken cancellationToken) {
-            
             UserIdentity? identityUser = identityService.FindByIdAsync(request.UserId).Result;
-            if (identityUser == null) 
+            if (identityUser == null)
                 return false;
-            
+
             bool passwordChanged = identityService.ChangePasswordAsync(
-                identityUser, 
-                request.CurrentPassword, 
+                identityUser,
+                request.CurrentPassword,
                 request.NewPassword).Result;
-            if (!passwordChanged) 
+            if (!passwordChanged)
                 return false;
-            
+
             User? domainUser = userRepository.GetByIdAsync(request.UserId, cancellationToken).Result;
             if (domainUser == null)
                 return false;
-            
+
             domainUser.SetPasswordReset();
-            await  userRepository.UpdateAsync(domainUser, cancellationToken);
+            await userRepository.UpdateAsync(domainUser, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
-            
+
             return true;
         }
     }

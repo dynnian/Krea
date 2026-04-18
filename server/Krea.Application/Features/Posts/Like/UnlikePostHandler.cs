@@ -1,27 +1,25 @@
 namespace Krea.Application.Features.Posts.Like {
     using Domain.Abstractions;
+    using Domain.Entities;
     using Domain.Repositories;
     using Dto;
 
     public sealed class UnlikePostHandler
-        : IRequestHandler<UnlikePostCommand, Unit>
-    {
+        : IRequestHandler<UnlikePostCommand, Unit> {
         private readonly IPostRepository _postRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public UnlikePostHandler(
             IPostRepository postRepository,
-            IUnitOfWork unitOfWork)
-        {
+            IUnitOfWork unitOfWork) {
             _postRepository = postRepository;
             _unitOfWork = unitOfWork;
         }
 
         public async Task<Unit> Handle(
             UnlikePostCommand command,
-            CancellationToken ct)
-        {
-            var post = await _postRepository
+            CancellationToken ct) {
+            Post? post = await _postRepository
                 .GetFullPostAsync(command.PostId, ct);
 
             if (post is null)

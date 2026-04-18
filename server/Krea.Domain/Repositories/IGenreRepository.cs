@@ -5,6 +5,7 @@ namespace Krea.Domain.Repositories {
     public interface IGenreRepository {
         Task<IReadOnlyList<Genre>> GetAllAsync(CancellationToken cancellationToken = default);
 
-        Task<IReadOnlyList<Genre>> GetByIdsAsync( IReadOnlyList<Guid> ids, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<Genre>>
+            GetByIdsAsync(IReadOnlyList<Guid> ids, CancellationToken cancellationToken = default);
     }
 }

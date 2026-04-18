@@ -60,7 +60,6 @@ namespace Krea.Application {
 
     public static class DependencyInjection {
         public static IServiceCollection AddApplication(this IServiceCollection services) {
-
             services.AddAutoMapper(cfg => { }, typeof(DirectMessageProfile));
 
             // Auth
@@ -70,18 +69,27 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<ChangePasswordCommand, bool>, ChangePasswordCommandHandler>();
             services.AddScoped<IRequestHandler<RefreshTokenCommand, AuthResponse?>, RefreshTokenCommandHandler>();
             services.AddScoped<IRequestHandler<RevokeTokenCommand, bool>, RevokeTokenCommandHandler>();
-            
+
             //User
             services.AddScoped<IRequestHandler<FollowUserCommand, Unit>, FollowUserHandler>();
             services.AddScoped<IRequestHandler<UnfollowUserCommand, Unit>, UnfollowUserHandler>();
             services.AddScoped<IRequestHandler<GetUserProfileQuery, UserProfileDto?>, GetUserProfileQueryHandler>();
-            services.AddScoped<IRequestHandler<GetPublicUserProfileQuery, PublicUserProfileResponse?>, GetPublicUserProfileQueryHandler>();
+            services
+                .AddScoped<IRequestHandler<GetPublicUserProfileQuery, PublicUserProfileResponse?>,
+                    GetPublicUserProfileQueryHandler>();
             services.AddScoped<IRequestHandler<UpdateUserProfileCommand, UserDto>, UpdateUserProfileCommandHandler>();
-            services.AddScoped<IRequestHandler<GetPublicUserProfileQuery, PublicUserProfileResponse?>, GetPublicUserProfileQueryHandler>();
+            services
+                .AddScoped<IRequestHandler<GetPublicUserProfileQuery, PublicUserProfileResponse?>,
+                    GetPublicUserProfileQueryHandler>();
             services.AddScoped<IRequestHandler<GetFollowersQuery, FollowListResponse>, GetFollowersQueryHandler>();
-            services.AddScoped<IRequestHandler<GetFollowingUsersQuery, FollowListResponse>, GetFollowingUsersQueryHandler>();
-            services.AddScoped<IRequestHandler<SearchUsersQuery, PaginatedList<UserSearchItemDto>>, SearchUsersHandler>();
-            services.AddScoped<IRequestHandler<UploadUserProfilePictureCommand, UploadUserProfilePictureResponse>, UploadUserProfilePictureCommandHandler>();
+            services
+                .AddScoped<IRequestHandler<GetFollowingUsersQuery, FollowListResponse>,
+                    GetFollowingUsersQueryHandler>();
+            services
+                .AddScoped<IRequestHandler<SearchUsersQuery, PaginatedList<UserSearchItemDto>>, SearchUsersHandler>();
+            services
+                .AddScoped<IRequestHandler<UploadUserProfilePictureCommand, UploadUserProfilePictureResponse>,
+                    UploadUserProfilePictureCommandHandler>();
 
             // Admin
             services.AddScoped<IRequestHandler<GetAdminUsersQuery, AdminUsersPageDto>, GetAdminUsersHandler>();
@@ -89,27 +97,50 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<UpdateAdminUserRoleCommand, Unit>, UpdateAdminUserRoleHandler>();
             services.AddScoped<IRequestHandler<DeleteAdminUserCommand, Unit>, DeleteAdminUserHandler>();
             services.AddScoped<IRequestHandler<GetAdminDashboardQuery, AdminDashboardDto>, GetAdminDashboardHandler>();
-            services.AddScoped<IRequestHandler<GetAdminReportsOverviewQuery, AdminReportsOverviewDto>, GetAdminReportsOverviewHandler>();
-            services.AddScoped<IRequestHandler<GetAdminPostModerationReportsQuery, AdminPostModerationReportsPageDto>, GetAdminPostModerationReportsHandler>();
-            services.AddScoped<IRequestHandler<EvaluateAdminPostModerationReportCommand, Unit>, EvaluateAdminPostModerationReportHandler>();
-            services.AddScoped<IRequestHandler<GetAdminInstanceConfigurationQuery, AdminInstanceConfigurationDto>, GetAdminInstanceConfigurationHandler>();
-            services.AddScoped<IRequestHandler<UpdateAdminInstanceConfigurationCommand, AdminInstanceConfigurationDto>, UpdateAdminInstanceConfigurationHandler>();
-            
+            services
+                .AddScoped<IRequestHandler<GetAdminReportsOverviewQuery, AdminReportsOverviewDto>,
+                    GetAdminReportsOverviewHandler>();
+            services
+                .AddScoped<IRequestHandler<GetAdminPostModerationReportsQuery, AdminPostModerationReportsPageDto>,
+                    GetAdminPostModerationReportsHandler>();
+            services
+                .AddScoped<IRequestHandler<EvaluateAdminPostModerationReportCommand, Unit>,
+                    EvaluateAdminPostModerationReportHandler>();
+            services
+                .AddScoped<IRequestHandler<GetAdminInstanceConfigurationQuery, AdminInstanceConfigurationDto>,
+                    GetAdminInstanceConfigurationHandler>();
+            services
+                .AddScoped<IRequestHandler<UpdateAdminInstanceConfigurationCommand, AdminInstanceConfigurationDto>,
+                    UpdateAdminInstanceConfigurationHandler>();
+
             //Feed
             services.AddScoped<GetRecentFeedHandler>();
             services.AddScoped<GetTrendingFeedHandler>();
             services.AddScoped<GetFollowingFeedHandler>();
-            
+
             //Collection
-            services.AddScoped<IRequestHandler<CreateCollectionCommand, CreateCollectionResponse>, CreateCollectionHandler>();
-            services.AddScoped<IRequestHandler<GetUserCollectionsQuery, IReadOnlyList<UserCollectionDto>>, GetUserCollectionsHandler>();
+            services
+                .AddScoped<IRequestHandler<CreateCollectionCommand, CreateCollectionResponse>,
+                    CreateCollectionHandler>();
+            services
+                .AddScoped<IRequestHandler<GetUserCollectionsQuery, IReadOnlyList<UserCollectionDto>>,
+                    GetUserCollectionsHandler>();
             services.AddScoped<IRequestHandler<DeleteCollectionCommand, Unit>, DeleteCollectionHandler>();
-            services.AddScoped<IRequestHandler<AddPostToCollectionCommand, AddPostToCollectionResponse>, AddPostToCollectionHandler>();
-            services.AddScoped<IRequestHandler<RemovePostFromCollectionCommand, Unit>,RemovePostFromCollectionHandler>();
-            services.AddScoped<IRequestHandler<GetCollectionByIdQuery, CollectionDetailDto?>, GetCollectionByIdQueryHandler>();
-            services.AddScoped<IRequestHandler<UploadCollectionCoverCommand, UploadCollectionCoverResponse>, UploadCollectionCoverHandler >();
-            services.AddScoped<IRequestHandler<UpdateCollectionTitleCommand, UpdateCollectionTitleResponse>, UpdateCollectionTitleCommandHandler>();
-            
+            services
+                .AddScoped<IRequestHandler<AddPostToCollectionCommand, AddPostToCollectionResponse>,
+                    AddPostToCollectionHandler>();
+            services
+                .AddScoped<IRequestHandler<RemovePostFromCollectionCommand, Unit>, RemovePostFromCollectionHandler>();
+            services
+                .AddScoped<IRequestHandler<GetCollectionByIdQuery, CollectionDetailDto?>,
+                    GetCollectionByIdQueryHandler>();
+            services
+                .AddScoped<IRequestHandler<UploadCollectionCoverCommand, UploadCollectionCoverResponse>,
+                    UploadCollectionCoverHandler>();
+            services
+                .AddScoped<IRequestHandler<UpdateCollectionTitleCommand, UpdateCollectionTitleResponse>,
+                    UpdateCollectionTitleCommandHandler>();
+
             // Posts
             services.AddScoped<IRequestHandler<GetAllPostsQuery, IReadOnlyList<PostDto>>, GetAllPostsHandler>();
             services.AddScoped<IRequestHandler<GetPostsByUserQuery, IReadOnlyList<PostDto>>, GetPostsByUserHandler>();
@@ -121,7 +152,9 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<RepostPostCommand, Guid>, RepostHandler>();
             services.AddScoped<IRequestHandler<LikePostCommand, Unit>, LikePostHandler>();
             services.AddScoped<IRequestHandler<UnlikePostCommand, Unit>, UnlikePostHandler>();
-            services.AddScoped<IRequestHandler<CreatePostUploadCommand, CreatePostUploadResponse>, CreatePostUploadHandler>();
+            services
+                .AddScoped<IRequestHandler<CreatePostUploadCommand, CreatePostUploadResponse>,
+                    CreatePostUploadHandler>();
             services.AddScoped<IRequestHandler<ExploreQuery, PagedResult<ExplorePostDto>>, ExploreHandler>();
             services.AddScoped<IRequestHandler<AssignGenresToUploadCommand, Unit>, AssignGenresToUploadHandler>();
             services.AddScoped<IRequestHandler<AddHashtagCommand, Unit>, AddHashtagHandler>();
@@ -129,22 +162,33 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<GetAllHashtagsQuery, IReadOnlyList<Hashtag>>, GetAllHashtagsHandler>();
             services.AddScoped<IRequestHandler<AddPostToFavoritesCommand, bool>, AddPostToFavoritesHandler>();
             services.AddScoped<IRequestHandler<RemovePostFromFavoritesCommand, bool>, RemovePostFromFavoritesHandler>();
-            services.AddScoped<IRequestHandler<GetUserFavoritesQuery, FavoritePostsResponse>, GetUserFavoritesHandler>();
+            services
+                .AddScoped<IRequestHandler<GetUserFavoritesQuery, FavoritePostsResponse>, GetUserFavoritesHandler>();
             services.AddScoped<IRequestHandler<TogglePostFavoriteCommand, bool>, TogglePostFavoriteHandler>();
 
             // Reports
-            services.AddScoped<IRequestHandler<CreatePostModerationReportCommand, CreatePostModerationReportResponse>, CreatePostModerationReportHandler>();
-            services.AddScoped< IRequestHandler<GetMyPostModerationReportsQuery, GetMyPostModerationReportsResponse>, GetMyPostModerationReportsHandler>();
-            
+            services
+                .AddScoped<IRequestHandler<CreatePostModerationReportCommand, CreatePostModerationReportResponse>,
+                    CreatePostModerationReportHandler>();
+            services
+                .AddScoped<IRequestHandler<GetMyPostModerationReportsQuery, GetMyPostModerationReportsResponse>,
+                    GetMyPostModerationReportsHandler>();
+
             services.AddScoped<ISender, Sender>();
-            
+
             // Messaging
-            services.AddScoped< IRequestHandler<GetConversationQuery, ConversationDto>, GetConversationQueryHandler>();
-            services.AddScoped< IRequestHandler<MarkMessageAsReadCommand, bool>, MarkMessageAsReadCommandHandler>();
-            services.AddScoped< IRequestHandler<SendDirectMessageCommand, DirectMessageDto>, SendDirectMessageCommandHandler>();
-            services.AddScoped<IRequestHandler<GetUserConversationsQuery, List<ConversationPreviewDto>>, GetUserConversationsQueryHandler>();
-            services.AddScoped<IRequestHandler<GetConversationMessagesQuery, List<DirectMessageDto>>, GetConversationMessagesQueryHandler>();
-            
+            services.AddScoped<IRequestHandler<GetConversationQuery, ConversationDto>, GetConversationQueryHandler>();
+            services.AddScoped<IRequestHandler<MarkMessageAsReadCommand, bool>, MarkMessageAsReadCommandHandler>();
+            services
+                .AddScoped<IRequestHandler<SendDirectMessageCommand, DirectMessageDto>,
+                    SendDirectMessageCommandHandler>();
+            services
+                .AddScoped<IRequestHandler<GetUserConversationsQuery, List<ConversationPreviewDto>>,
+                    GetUserConversationsQueryHandler>();
+            services
+                .AddScoped<IRequestHandler<GetConversationMessagesQuery, List<DirectMessageDto>>,
+                    GetConversationMessagesQueryHandler>();
+
             return services;
         }
     }

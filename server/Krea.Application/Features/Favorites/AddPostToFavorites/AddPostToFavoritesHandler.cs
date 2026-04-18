@@ -4,20 +4,15 @@ namespace Krea.Application.Features.Favorites.AddPostToFavorites {
     using Domain.Repositories;
 
     public sealed class AddPostToFavoritesHandler
-        : IRequestHandler<AddPostToFavoritesCommand, bool>
-    {
+        : IRequestHandler<AddPostToFavoritesCommand, bool> {
         private readonly IPostFavoriteRepository _repository;
 
-        public AddPostToFavoritesHandler(IPostFavoriteRepository repository)
-        {
-            _repository = repository;
-        }
+        public AddPostToFavoritesHandler(IPostFavoriteRepository repository) => _repository = repository;
 
         public async Task<bool> Handle(
             AddPostToFavoritesCommand request,
-            CancellationToken cancellationToken)
-        {
-            var exists = await _repository.ExistsAsync(
+            CancellationToken cancellationToken) {
+            bool exists = await _repository.ExistsAsync(
                 request.UserId,
                 request.PostId);
 

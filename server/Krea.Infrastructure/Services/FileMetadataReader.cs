@@ -6,6 +6,7 @@ namespace Krea.Infrastructure.Services {
     using VersOne.Epub;
     using UglyToad.PdfPig;
     using TagLib;
+    using UglyToad.PdfPig.Content;
 
     public sealed class FileMetadataReader : IFileMetadataReader {
         public async Task<ParsedUploadMetadata> ReadAsync(
@@ -42,10 +43,7 @@ namespace Krea.Infrastructure.Services {
             string extension = Path.GetExtension(fileName).ToLowerInvariant();
 
             return new ParsedUploadMetadata {
-                Width = image.Width, 
-                Height = image.Height, 
-                FileSize = stream.Length, 
-                Format = extension
+                Width = image.Width, Height = image.Height, FileSize = stream.Length, Format = extension
             };
         }
 
@@ -71,13 +69,13 @@ namespace Krea.Infrastructure.Services {
                                  FileMode.Create,
                                  FileAccess.Write,
                                  FileShare.None,
-                                 bufferSize: 81920,
-                                 useAsync: true)) {
+                                 81920,
+                                 true)) {
                     await stream.CopyToAsync(tempFileStream, cancellationToken);
                     await tempFileStream.FlushAsync(cancellationToken);
                 }
 
-                using var tagFile = TagLib.File.Create(tempPath);
+                using var tagFile = File.Create(tempPath);
 
                 int durationSec = (int)Math.Ceiling(tagFile.Properties.Duration.TotalSeconds);
                 int bitrateKbps = tagFile.Properties.AudioBitrate;
@@ -132,7 +130,7 @@ namespace Krea.Infrastructure.Services {
             using var reader = new StreamReader(
                 stream,
                 Encoding.UTF8,
-                detectEncodingFromByteOrderMarks: true,
+                true,
                 leaveOpen: true);
 
             string content = await reader.ReadToEndAsync();
@@ -155,16 +153,16 @@ namespace Krea.Infrastructure.Services {
                                  FileMode.Create,
                                  FileAccess.Write,
                                  FileShare.None,
-                                 bufferSize: 81920,
-                                 useAsync: true)) {
+                                 81920,
+                                 true)) {
                     await stream.CopyToAsync(tempFileStream, cancellationToken);
                     await tempFileStream.FlushAsync(cancellationToken);
                 }
 
                 var builder = new StringBuilder();
 
-                using (var document = PdfDocument.Open(tempPath)) {
-                    foreach (var page in document.GetPages()) {
+                using (PdfDocument document = PdfDocument.Open(tempPath)) {
+                    foreach (Page page in document.GetPages()) {
                         builder.Append(' ');
                         builder.Append(page.Text);
                     }
@@ -195,8 +193,8 @@ namespace Krea.Infrastructure.Services {
                                  FileMode.Create,
                                  FileAccess.Write,
                                  FileShare.None,
-                                 bufferSize: 81920,
-                                 useAsync: true)) {
+                                 81920,
+                                 true)) {
                     await stream.CopyToAsync(tempFileStream);
                     await tempFileStream.FlushAsync();
                 }
@@ -205,7 +203,7 @@ namespace Krea.Infrastructure.Services {
 
                 var builder = new StringBuilder();
 
-                foreach (var textFile in book.ReadingOrder) {
+                foreach (EpubLocalTextContentFile textFile in book.ReadingOrder) {
                     if (!string.IsNullOrWhiteSpace(textFile.Content)) {
                         builder.Append(' ');
                         builder.Append(textFile.Content);
@@ -235,8 +233,8 @@ namespace Krea.Infrastructure.Services {
                 return 0;
 
             return text
-                .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
-                .Length;
+                   .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
+                   .Length;
         }
     }
 }

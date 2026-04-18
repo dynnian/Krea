@@ -19,7 +19,6 @@ namespace Krea.Infrastructure.Data.Configurations {
             // Evita duplicados (#music, #Music)
             builder.HasIndex(h => h.Name)
                    .IsUnique();
-
         }
     }
 }

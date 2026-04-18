@@ -10,4 +10,5 @@ namespace Krea.Application.Features.Posts.CreatePost {
         bool IsWork,
         bool IsLocal
         //IReadOnlyList<string>? Hashtags
-    ) : IRequest<CreatePostResponse>;}
+    ) : IRequest<CreatePostResponse>;
+}

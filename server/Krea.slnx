@@ -1,7 +1,7 @@
 <Solution>
-  <Project Path="Krea.API/Krea.API.csproj" />
-  <Project Path="Krea.API.Tests/Krea.API.Tests.csproj" />
-  <Project Path="Krea.Application/Krea.Application.csproj" />
-  <Project Path="Krea.Domain/Krea.Domain.csproj" />
-  <Project Path="Krea.Infrastructure/Krea.Infrastructure.csproj" />
+    <Project Path="Krea.API/Krea.API.csproj"/>
+    <Project Path="Krea.API.Tests/Krea.API.Tests.csproj"/>
+    <Project Path="Krea.Application/Krea.Application.csproj"/>
+    <Project Path="Krea.Domain/Krea.Domain.csproj"/>
+    <Project Path="Krea.Infrastructure/Krea.Infrastructure.csproj"/>
 </Solution>

@@ -1,4 +1,4 @@
-namespace Krea.Application.Features.Posts.Dto { 
+namespace Krea.Application.Features.Posts.Dto {
     public sealed class PostFeedResponse {
         public Guid Id { get; set; }
         public string Title { get; set; } = string.Empty;
@@ -19,5 +19,5 @@ namespace Krea.Application.Features.Posts.Dto {
 
         public Guid? RepostOfId { get; set; }
         public RepostFeedReferenceDto? RepostOf { get; set; }
-    } 
+    }
 }

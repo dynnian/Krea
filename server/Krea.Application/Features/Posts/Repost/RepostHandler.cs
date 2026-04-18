@@ -4,23 +4,20 @@ namespace Krea.Application.Features.Posts.Repost {
     using Domain.Repositories;
 
     public sealed class RepostHandler
-        : IRequestHandler<RepostPostCommand, Guid>
-    {
+        : IRequestHandler<RepostPostCommand, Guid> {
         private readonly IPostRepository _postRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public RepostHandler(
             IPostRepository postRepository,
-            IUnitOfWork unitOfWork)
-        {
+            IUnitOfWork unitOfWork) {
             _postRepository = postRepository;
             _unitOfWork = unitOfWork;
         }
 
         public async Task<Guid> Handle(
             RepostPostCommand command,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             Post? original = await _postRepository
                 .GetByIdAsync(command.OriginalPostId, cancellationToken);
 

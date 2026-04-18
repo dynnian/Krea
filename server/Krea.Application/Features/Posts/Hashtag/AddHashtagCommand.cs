@@ -1,8 +1,8 @@
-namespace Krea.Application.Features.Posts.Hashtag;
+namespace Krea.Application.Features.Posts.Hashtag {
+    using Domain.Abstractions;
 
-using Domain.Abstractions;
-
-public sealed record AddHashtagCommand(
-    Guid PostId,
-    string Name
-) : IRequest<Unit>;
+    public sealed record AddHashtagCommand(
+        Guid PostId,
+        string Name
+    ) : IRequest<Unit>;
+}

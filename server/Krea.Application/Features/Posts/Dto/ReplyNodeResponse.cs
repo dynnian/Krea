@@ -1,6 +1,5 @@
 namespace Krea.Application.Features.Posts.Dto {
-    public sealed class ReplyNodeResponse
-    {
+    public sealed class ReplyNodeResponse {
         public Guid Id { get; init; }
         public Guid AuthorId { get; init; }
         public string AuthorName { get; init; }

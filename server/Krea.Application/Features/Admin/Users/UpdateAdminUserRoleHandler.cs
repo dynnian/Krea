@@ -24,7 +24,8 @@ namespace Krea.Application.Features.Admin.Users {
             string targetRole = request.Role.Trim();
 
             // Guardrail: admin should not be able to demote themselves out of Admin.
-            if (request.ActorUserId == request.UserId && !targetRole.Equals("Admin", StringComparison.OrdinalIgnoreCase)) {
+            if (request.ActorUserId == request.UserId &&
+                !targetRole.Equals("Admin", StringComparison.OrdinalIgnoreCase)) {
                 throw new InvalidOperationException("You cannot remove your own Admin role.");
             }
 

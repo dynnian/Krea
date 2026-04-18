@@ -73,20 +73,19 @@ namespace Krea.Infrastructure.Repositories {
             _context.DomainUsers.Remove(user);
             return Task.CompletedTask;
         }
-        
+
         public async Task<User?> GetByIdWithPicturesAsync(
             Guid userId,
             CancellationToken cancellationToken = default) =>
             await _context.DomainUsers
-                .AsNoTracking()
-                .Include(u => u.ProfilePicture)
-                .Include(u => u.BannerPicture)
-                .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
-        
+                          .AsNoTracking()
+                          .Include(u => u.ProfilePicture)
+                          .Include(u => u.BannerPicture)
+                          .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+
         public async Task<IReadOnlyList<User>> SearchByDisplayNameAsync(
             string query,
-            CancellationToken cancellationToken = default)
-        {
+            CancellationToken cancellationToken = default) {
             if (string.IsNullOrWhiteSpace(query))
                 return Array.Empty<User>();
 
@@ -94,11 +93,11 @@ namespace Krea.Infrastructure.Repositories {
             string containsPattern = $"%{query}%";
 
             return await _context.DomainUsers
-                .AsNoTracking()
-                .Include(u => u.ProfilePicture)
-                .Where(u => !u.IsBanned && !u.IsDisabled)
-                .Where(u => EF.Functions.ILike(u.DisplayName, containsPattern))
-                .ToListAsync(cancellationToken);
+                                 .AsNoTracking()
+                                 .Include(u => u.ProfilePicture)
+                                 .Where(u => !u.IsBanned && !u.IsDisabled)
+                                 .Where(u => EF.Functions.ILike(u.DisplayName, containsPattern))
+                                 .ToListAsync(cancellationToken);
         }
     }
 }

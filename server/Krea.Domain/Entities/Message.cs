@@ -3,16 +3,16 @@ using Krea.Domain.ValueObjects;
 namespace Krea.Domain.Entities {
     public sealed class Message {
         public Guid Id { get; private set; }
-        
+
         public Guid UserId { get; private set; }
         public User User { get; private set; }
-        
+
         public Guid ConversationId { get; private set; }
         public Conversation Conversation { get; private set; }
-        
+
         public MessageContentType ContentType { get; private set; }
         public string? TextContent { get; private set; }
-        
+
         private readonly List<Media> _mediaAttachments = new();
         public IReadOnlyCollection<Media> MediaAttachments => _mediaAttachments;
 
@@ -91,7 +91,7 @@ namespace Krea.Domain.Entities {
 
             return message;
         }
-        
+
         public void EditText(string newText) {
             if (ContentType != MessageContentType.Text && ContentType != MessageContentType.System)
                 throw new InvalidOperationException("Only text or system messages can be edited.");

@@ -74,13 +74,14 @@ namespace Krea.Application.Features.Posts.UserReports {
                 report.CreatedAt
             );
         }
-        
-        private static string NormalizeReason(string reason)
-        {
+
+        private static string NormalizeReason(string reason) {
             string trimmed = reason.Trim();
 
-            var match = PostModerationReportReasons.Allowed
-                .FirstOrDefault(r => string.Equals(r, trimmed, StringComparison.OrdinalIgnoreCase));
+            string? match = PostModerationReportReasons.Allowed
+                                                       .FirstOrDefault(r =>
+                                                           string.Equals(r, trimmed,
+                                                               StringComparison.OrdinalIgnoreCase));
 
             if (match is null)
                 throw new ArgumentException("Invalid report reason.", nameof(reason));

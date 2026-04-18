@@ -1,6 +1,5 @@
 namespace Krea.Application.Features.Posts.UserReports {
-    public static class PostModerationReportReasons
-    {
+    public static class PostModerationReportReasons {
         public const string Spam = "Spam";
         public const string Harassment = "Harassment";
         public const string HateSpeech = "HateSpeech";
@@ -10,8 +9,7 @@ namespace Krea.Application.Features.Posts.UserReports {
         public const string Misinformation = "Misinformation";
         public const string Other = "Other";
 
-        public static readonly HashSet<string> Allowed = new(StringComparer.OrdinalIgnoreCase)
-        {
+        public static readonly HashSet<string> Allowed = new(StringComparer.OrdinalIgnoreCase) {
             Spam,
             Harassment,
             HateSpeech,

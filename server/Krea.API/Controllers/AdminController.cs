@@ -15,9 +15,7 @@ namespace Krea.API.Controllers {
     public sealed class AdminController : ControllerBase {
         private readonly ISender _sender;
 
-        public AdminController(ISender sender) {
-            _sender = sender;
-        }
+        public AdminController(ISender sender) => _sender = sender;
 
         [HttpGet("dashboard")]
         public async Task<ActionResult<AdminDashboardDto>> GetDashboard(CancellationToken cancellationToken) {
@@ -40,7 +38,9 @@ namespace Krea.API.Controllers {
             }
 
             if (!TryParseSortBy(sortBy, out AdminUserSortBy parsedSortBy)) {
-                return BadRequest(new { error = "Invalid sortBy. Allowed values: CreatedAt, Username, Email, DisplayName, Role, Status." });
+                return BadRequest(new {
+                    error = "Invalid sortBy. Allowed values: CreatedAt, Username, Email, DisplayName, Role, Status."
+                });
             }
 
             if (!TryParseSortDirection(sortDirection, out AdminSortDirection parsedSortDirection)) {
@@ -78,7 +78,8 @@ namespace Krea.API.Controllers {
             [FromBody] UpdateAdminUserRoleRequest request,
             CancellationToken cancellationToken) {
             try {
-                await _sender.Send(new UpdateAdminUserRoleCommand(GetCurrentUserId(), userId, request.Role), cancellationToken);
+                await _sender.Send(new UpdateAdminUserRoleCommand(GetCurrentUserId(), userId, request.Role),
+                    cancellationToken);
                 return NoContent();
             }
             catch (InvalidOperationException ex) {
@@ -139,13 +140,17 @@ namespace Krea.API.Controllers {
             Guid reportId,
             [FromBody] EvaluateAdminPostModerationReportRequest request,
             CancellationToken cancellationToken) {
-            if (!TryParseModerationAction(request.Action, out Domain.ValueObjects.PostModerationDecisionAction action)) {
-                return BadRequest(new { error = "Invalid action. Allowed values: Dismiss, DeletePost, SuspendAuthor." });
+            if (!TryParseModerationAction(request.Action,
+                    out Domain.ValueObjects.PostModerationDecisionAction action)) {
+                return BadRequest(new {
+                    error = "Invalid action. Allowed values: Dismiss, DeletePost, SuspendAuthor."
+                });
             }
 
             try {
                 await _sender.Send(
-                    new EvaluateAdminPostModerationReportCommand(GetCurrentUserId(), reportId, action, request.ModeratorNote),
+                    new EvaluateAdminPostModerationReportCommand(GetCurrentUserId(), reportId, action,
+                        request.ModeratorNote),
                     cancellationToken);
 
                 return NoContent();
@@ -162,7 +167,8 @@ namespace Krea.API.Controllers {
         }
 
         [HttpGet("configuration")]
-        public async Task<ActionResult<AdminInstanceConfigurationDto>> GetConfiguration(CancellationToken cancellationToken) {
+        public async Task<ActionResult<AdminInstanceConfigurationDto>> GetConfiguration(
+            CancellationToken cancellationToken) {
             AdminInstanceConfigurationDto result = await _sender.Send(
                 new GetAdminInstanceConfigurationQuery(),
                 cancellationToken);
@@ -220,7 +226,8 @@ namespace Krea.API.Controllers {
             return Enum.TryParse(sortDirection, true, out parsedSortDirection);
         }
 
-        private static bool TryParseReportStatus(string? status, out Domain.ValueObjects.PostModerationReportStatus? parsedStatus) {
+        private static bool TryParseReportStatus(string? status,
+                                                 out Domain.ValueObjects.PostModerationReportStatus? parsedStatus) {
             parsedStatus = null;
 
             if (string.IsNullOrWhiteSpace(status))
@@ -233,7 +240,9 @@ namespace Krea.API.Controllers {
             return true;
         }
 
-        private static bool TryParseModerationAction(string? action, out Domain.ValueObjects.PostModerationDecisionAction parsedAction) {
+        private static bool TryParseModerationAction(string? action,
+                                                     out Domain.ValueObjects.PostModerationDecisionAction
+                                                         parsedAction) {
             if (string.IsNullOrWhiteSpace(action)) {
                 parsedAction = default;
                 return false;

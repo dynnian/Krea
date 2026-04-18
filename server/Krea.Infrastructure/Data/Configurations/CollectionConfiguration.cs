@@ -20,10 +20,10 @@ namespace Krea.Infrastructure.Data.Configurations {
 
             builder.Property(c => c.Description)
                    .HasMaxLength(1000);
-            
+
             builder.Property(c => c.Type)
-                .IsRequired()
-                .HasConversion<int>();
+                   .IsRequired()
+                   .HasConversion<int>();
 
             builder.Property(c => c.CreatedAt)
                    .IsRequired();

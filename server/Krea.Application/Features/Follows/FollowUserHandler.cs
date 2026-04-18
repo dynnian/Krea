@@ -3,24 +3,21 @@ namespace Krea.Application.Features.Follows {
     using Domain.Entities;
     using Domain.Repositories;
 
-    public sealed class FollowUserHandler 
-        : IRequestHandler<FollowUserCommand, Unit>
-    {
+    public sealed class FollowUserHandler
+        : IRequestHandler<FollowUserCommand, Unit> {
         private readonly IFollowRepository _followRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public FollowUserHandler(
             IFollowRepository followRepository,
-            IUnitOfWork unitOfWork)
-        {
+            IUnitOfWork unitOfWork) {
             _followRepository = followRepository;
             _unitOfWork = unitOfWork;
         }
 
         public async Task<Unit> Handle(
             FollowUserCommand command,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             if (command.SourceId == command.TargetId)
                 throw new InvalidOperationException("User cannot follow himself.");
 

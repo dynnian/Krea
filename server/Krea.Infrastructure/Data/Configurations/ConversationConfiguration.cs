@@ -9,58 +9,58 @@ namespace Krea.Infrastructure.Data.Configurations {
 
             builder.HasKey(c => c.Id);
             builder.Property(c => c.Id)
-                .ValueGeneratedNever();
+                   .ValueGeneratedNever();
 
             builder.Property(c => c.Type)
-                .HasConversion<string>()
-                .HasColumnName("type")
-                .HasMaxLength(30)
-                .IsRequired();
+                   .HasConversion<string>()
+                   .HasColumnName("type")
+                   .HasMaxLength(30)
+                   .IsRequired();
 
             builder.Property(c => c.Title)
-                .HasColumnName("title")
-                .HasMaxLength(32)
-                .IsRequired(false);
+                   .HasColumnName("title")
+                   .HasMaxLength(32)
+                   .IsRequired(false);
 
             builder.Property(c => c.Description)
-                .HasColumnName("description")
-                .HasMaxLength(256)
-                .IsRequired(false);
+                   .HasColumnName("description")
+                   .HasMaxLength(256)
+                   .IsRequired(false);
 
             builder.Property(c => c.CreatedAt)
-                .HasColumnName("created_at")
-                .IsRequired();
+                   .HasColumnName("created_at")
+                   .IsRequired();
 
             builder.Property(c => c.UpdatedAt)
-                .HasColumnName("updated_at")
-                .IsRequired();
+                   .HasColumnName("updated_at")
+                   .IsRequired();
 
             // Icon (Media)
             builder.Property<Guid?>("IconId")
-                .HasColumnName("icon_id");
+                   .HasColumnName("icon_id");
 
             builder.HasOne(c => c.Icon)
-                .WithMany()
-                .HasForeignKey("icon_id")
-                .OnDelete(DeleteBehavior.SetNull);
+                   .WithMany()
+                   .HasForeignKey("icon_id")
+                   .OnDelete(DeleteBehavior.SetNull);
 
             // Participants
             builder.HasMany(c => c.Participants)
-                .WithOne(p => p.Conversation)
-                .HasForeignKey(p => p.ConversationId)
-                .OnDelete(DeleteBehavior.Cascade);
+                   .WithOne(p => p.Conversation)
+                   .HasForeignKey(p => p.ConversationId)
+                   .OnDelete(DeleteBehavior.Cascade);
 
             builder.Navigation(c => c.Participants)
-                .UsePropertyAccessMode(PropertyAccessMode.Field);
+                   .UsePropertyAccessMode(PropertyAccessMode.Field);
 
             // Messages
             builder.HasMany(c => c.Messages)
-                .WithOne(m => m.Conversation)
-                .HasForeignKey(m => m.ConversationId)
-                .OnDelete(DeleteBehavior.Cascade);
+                   .WithOne(m => m.Conversation)
+                   .HasForeignKey(m => m.ConversationId)
+                   .OnDelete(DeleteBehavior.Cascade);
 
             builder.Navigation(c => c.Messages)
-                .UsePropertyAccessMode(PropertyAccessMode.Field);
+                   .UsePropertyAccessMode(PropertyAccessMode.Field);
 
             // Índices
             builder.HasIndex(c => c.Type);

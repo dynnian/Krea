@@ -10,8 +10,7 @@ namespace Krea.Application.Features.Posts.Explore {
             IReadOnlyList<T> items,
             int totalCount,
             int page,
-            int pageSize)
-        {
+            int pageSize) {
             Items = items;
             TotalCount = totalCount;
             Page = page;

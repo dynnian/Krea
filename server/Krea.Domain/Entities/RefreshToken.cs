@@ -1,6 +1,5 @@
 namespace Krea.Domain.Entities {
-    public sealed class RefreshToken
-    {
+    public sealed class RefreshToken {
         public Guid Id { get; private set; }
         public string Token { get; private set; }
         public Guid UserId { get; private set; }
@@ -10,13 +9,12 @@ namespace Krea.Domain.Entities {
         public string? ReplacedByToken { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public DateTime? RevokedAt { get; private set; }
-        
+
         #pragma warning disable CS8618
         private RefreshToken() { }
         #pragma warning restore CS8618
-        
-        public RefreshToken(string token, Guid userId, DateTime expiresAt)
-        {
+
+        public RefreshToken(string token, Guid userId, DateTime expiresAt) {
             Id = Guid.NewGuid();
             Token = token ?? throw new ArgumentNullException(nameof(token));
             UserId = userId;
@@ -26,14 +24,12 @@ namespace Krea.Domain.Entities {
             IsUsed = false;
         }
 
-        public void MarkAsUsed(string replacedByToken)
-        {
+        public void MarkAsUsed(string replacedByToken) {
             IsUsed = true;
             ReplacedByToken = replacedByToken;
         }
 
-        public void Revoke()
-        {
+        public void Revoke() {
             IsRevoked = true;
             RevokedAt = DateTime.UtcNow;
         }

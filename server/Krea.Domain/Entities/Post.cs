@@ -44,7 +44,7 @@ namespace Krea.Domain.Entities {
 
         private readonly List<Collection> _collections = new();
         public IReadOnlyCollection<Collection> Collections => _collections.AsReadOnly();
-        
+
         public ICollection<PostFavorite> Favorites { get; set; } = new List<PostFavorite>();
 
         #pragma warning disable CS8618
@@ -128,8 +128,7 @@ namespace Krea.Domain.Entities {
         }
 
 
-        public void Repost(Guid postId)
-        {
+        public void Repost(Guid postId) {
             if (IsDeleted)
                 throw new InvalidOperationException("Cannot repost a deleted post");
 
@@ -176,9 +175,8 @@ namespace Krea.Domain.Entities {
             return upload;
         }
 
-        public void RemoveUpload(Guid mediaId)
-        {
-            var upload = _uploads.FirstOrDefault(u => u.MediaId == mediaId);
+        public void RemoveUpload(Guid mediaId) {
+            PostUpload? upload = _uploads.FirstOrDefault(u => u.MediaId == mediaId);
             if (upload is null)
                 return;
 
@@ -206,9 +204,8 @@ namespace Krea.Domain.Entities {
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("All arguments are required");
         }
-        
-        public void AddLike(Guid userId)
-        {
+
+        public void AddLike(Guid userId) {
             if (_likes.Any(l => l.UserId == userId))
                 return;
 
@@ -216,10 +213,9 @@ namespace Krea.Domain.Entities {
             _likes.Add(like);
             UpdatedAt = DateTime.UtcNow;
         }
-        
-        public void RemoveLike(Guid userId)
-        {
-            var like = _likes.FirstOrDefault(l => l.UserId == userId);
+
+        public void RemoveLike(Guid userId) {
+            Like? like = _likes.FirstOrDefault(l => l.UserId == userId);
             if (like is null)
                 return;
 

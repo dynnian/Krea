@@ -1,7 +1,6 @@
 namespace Krea.Application.Abstractions {
-    public enum ReplyMode
-    {
+    public enum ReplyMode {
         Flat,
         Tree
-    }     
+    }
 }

@@ -8,4 +8,5 @@ namespace Krea.Application.Features.Posts.ReplyPost.GetReplies {
         int Page,
         int PageSize,
         ReplyMode Mode // "flat" | "tree"
-    ) : IRequest<RepliesResponse>;}
+    ) : IRequest<RepliesResponse>;
+}

@@ -12,14 +12,10 @@ namespace Krea.Application.Features.Posts.GetPostById {
         int UploadCount,
         int LikesCount,
         DateTime UploadedAt,
-
         IReadOnlyList<PostMediaDto> Media,
-
         bool IsLikedByCurrentUser,
         bool IsRetweetedByCurrentUser,
-
         IReadOnlyList<ReplyDto> Replies,
-
         Guid? RepostOfId,
         RepostReferenceDto? RepostOf
     );

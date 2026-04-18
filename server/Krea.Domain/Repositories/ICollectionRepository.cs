@@ -1,8 +1,7 @@
 using Krea.Domain.Entities;
 
 namespace Krea.Domain.Repositories {
-    public interface ICollectionRepository
-    {
+    public interface ICollectionRepository {
         Task<Collection?> GetByIdAsync(Guid id, CancellationToken ct = default);
 
         Task<Collection?> GetByIdWithPostsAsync(Guid id, CancellationToken ct = default);

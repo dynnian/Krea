@@ -27,8 +27,7 @@ namespace Krea.Application.Features.Collections.UploadCollectionCover {
 
         public async Task<UploadCollectionCoverResponse> Handle(
             UploadCollectionCoverCommand command,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             // Validar archivo
             FileValidator.Validate(
                 "image",
@@ -37,7 +36,7 @@ namespace Krea.Application.Features.Collections.UploadCollectionCover {
                 command.Size);
 
             // Obtener coleccion
-            var collection = await _collectionRepository
+            Collection? collection = await _collectionRepository
                 .GetByIdAsync(command.CollectionId, cancellationToken);
 
             if (collection is null)
@@ -46,8 +45,7 @@ namespace Krea.Application.Features.Collections.UploadCollectionCover {
             Media? oldMedia = null;
 
             // Obtener imagen anterior
-            if (collection.MediaId is not null)
-            {
+            if (collection.MediaId is not null) {
                 oldMedia = await _mediaRepository
                     .GetByIdAsync(collection.MediaId.Value, cancellationToken);
             }
@@ -59,7 +57,7 @@ namespace Krea.Application.Features.Collections.UploadCollectionCover {
             );
 
             // Subir archivo
-            var storageResult = await _fileStorage.SaveAsync(
+            FileStorageResult storageResult = await _fileStorage.SaveAsync(
                 command.FileStream,
                 media.FileName,
                 command.ContentType,
@@ -74,8 +72,7 @@ namespace Krea.Application.Features.Collections.UploadCollectionCover {
             collection.UpdateImage(media);
 
             // Eliminar anterior (si existe)
-            if (oldMedia is not null)
-            {
+            if (oldMedia is not null) {
                 await _fileStorage.DeleteAsync(oldMedia.FileName, cancellationToken);
 
                 _mediaRepository.Remove(oldMedia);
@@ -83,11 +80,7 @@ namespace Krea.Application.Features.Collections.UploadCollectionCover {
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return new UploadCollectionCoverResponse
-            {
-                MediaId = media.Id,
-                Url = media.Path
-            };
+            return new UploadCollectionCoverResponse { MediaId = media.Id, Url = media.Path };
         }
     }
 }

@@ -5,50 +5,43 @@ namespace Krea.Infrastructure.Repositories {
     using Domain.Repositories;
     using Microsoft.EntityFrameworkCore;
 
-    public sealed class PostFavoriteRepository : IPostFavoriteRepository
-    {
+    public sealed class PostFavoriteRepository : IPostFavoriteRepository {
         private readonly AppDbContext _context;
 
         public PostFavoriteRepository(AppDbContext context) => _context = context;
 
-        public async Task<bool> ExistsAsync(Guid userId, Guid postId)
-        {
-            return await _context.PostFavorites
-                .AnyAsync(x => x.UserId == userId && x.PostId == postId);
-        }
+        public async Task<bool> ExistsAsync(Guid userId, Guid postId) =>
+            await _context.PostFavorites
+                          .AnyAsync(x => x.UserId == userId && x.PostId == postId);
 
-        public async Task AddAsync(PostFavorite favorite, CancellationToken ct)
-        {
+        public async Task AddAsync(PostFavorite favorite, CancellationToken ct) {
             await _context.PostFavorites.AddAsync(favorite, ct);
             await _context.SaveChangesAsync(ct);
         }
 
-        public async Task<PostFavorite?> GetByUserAndPostAsync(Guid userId, Guid postId)
-        {
-            return await _context.PostFavorites
-                .FirstOrDefaultAsync(x => x.UserId == userId && x.PostId == postId);
-        }
+        public async Task<PostFavorite?> GetByUserAndPostAsync(Guid userId, Guid postId) =>
+            await _context.PostFavorites
+                          .FirstOrDefaultAsync(x => x.UserId == userId && x.PostId == postId);
 
-        public void Delete(PostFavorite favorite)
-        {
+        public void Delete(PostFavorite favorite) {
             _context.PostFavorites.Remove(favorite);
             _context.SaveChanges();
         }
-        
+
         public async Task<PaginatedList<Post>> GetUserFavoritesAsync(
             Guid userId,
             int page,
             int pageSize,
-            CancellationToken ct)
-        {
-            var query = _context.Posts
-                .AsNoTracking()
-                .Where(p => p.Favorites.Any(f => f.UserId == userId) && !p.IsDeleted)
-                .Include(p => p.AuthorPost)
-                .Include(p => p.Likes)
-                .Include(p => p.Uploads)
-                .ThenInclude(u => u.Media)
-                .OrderByDescending(p => p.UploadedAt);
+            CancellationToken ct) {
+            IOrderedQueryable<Post> query = _context.Posts
+                                                    .AsNoTracking()
+                                                    .Where(p => p.Favorites.Any(f => f.UserId == userId) &&
+                                                                !p.IsDeleted)
+                                                    .Include(p => p.AuthorPost)
+                                                    .Include(p => p.Likes)
+                                                    .Include(p => p.Uploads)
+                                                    .ThenInclude(u => u.Media)
+                                                    .OrderByDescending(p => p.UploadedAt);
 
             return await PaginatedList<Post>.CreateAsync(query, page, pageSize, ct);
         }

@@ -4,19 +4,15 @@ namespace Krea.Application.Features.User.GetReportsByUser {
     using Domain.Repositories;
 
     public sealed class GetMyPostModerationReportsHandler
-        : IRequestHandler<GetMyPostModerationReportsQuery, GetMyPostModerationReportsResponse>
-    {
+        : IRequestHandler<GetMyPostModerationReportsQuery, GetMyPostModerationReportsResponse> {
         private readonly IPostModerationReportRepository _reportRepository;
 
-        public GetMyPostModerationReportsHandler(IPostModerationReportRepository reportRepository)
-        {
+        public GetMyPostModerationReportsHandler(IPostModerationReportRepository reportRepository) =>
             _reportRepository = reportRepository;
-        }
 
         public async Task<GetMyPostModerationReportsResponse> Handle(
             GetMyPostModerationReportsQuery request,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             if (request.ReporterUserId == Guid.Empty)
                 throw new ArgumentException("ReporterUserId is required.", nameof(request.ReporterUserId));
 
@@ -36,13 +32,11 @@ namespace Krea.Application.Features.User.GetReportsByUser {
                 request.PageSize,
                 cancellationToken);
 
-            return new GetMyPostModerationReportsResponse
-            {
+            return new GetMyPostModerationReportsResponse {
                 Page = request.Page,
                 PageSize = request.PageSize,
                 TotalCount = totalCount,
-                Items = reports.Select(r => new MyPostModerationReportItemResponse
-                {
+                Items = reports.Select(r => new MyPostModerationReportItemResponse {
                     ReportId = r.Id,
                     PostId = r.PostId,
                     Reason = r.Reason,

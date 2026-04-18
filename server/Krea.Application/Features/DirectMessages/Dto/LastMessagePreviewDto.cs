@@ -1,6 +1,5 @@
 namespace Krea.Application.Features.DirectMessages.Dto {
-    public record LastMessagePreviewDto
-    {
+    public record LastMessagePreviewDto {
         public Guid Id { get; set; }
         public Guid SenderId { get; set; }
         public string SenderDisplayName { get; set; } = string.Empty;

@@ -64,9 +64,8 @@ namespace Krea.API.Controllers {
         /// <response code="404">The profile could not be found.</response>
         [HttpGet("me/profile")]
         public async Task<ActionResult<UserProfileDto>> GetMyProfile(
-            CancellationToken cancellationToken)
-        {
-            var profile = await _sender.Send(
+            CancellationToken cancellationToken) {
+            UserProfileDto? profile = await _sender.Send(
                 new GetUserProfileQuery(GetCurrentUserId()),
                 cancellationToken);
 
@@ -103,8 +102,7 @@ namespace Krea.API.Controllers {
         [HttpGet("{userId:guid}/profile")]
         public async Task<ActionResult<PublicUserProfileResponse>> GetPublicProfile(
             Guid userId,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             PublicUserProfileResponse? profile = await _sender.Send(
                 new GetPublicUserProfileQuery(userId),
                 cancellationToken);
@@ -146,7 +144,7 @@ namespace Krea.API.Controllers {
                 return NotFound(new { error = ex.Message });
             }
         }
-        
+
         /// <summary>
         /// Gets the list of followers of the currently authenticated user.
         /// </summary>
@@ -166,17 +164,16 @@ namespace Krea.API.Controllers {
         public async Task<ActionResult<FollowListResponse>> GetMyFollowers(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            CancellationToken cancellationToken = default)
-        {
-            var currentUserId = GetCurrentUserId();
+            CancellationToken cancellationToken = default) {
+            Guid currentUserId = GetCurrentUserId();
 
-            var response = await _sender.Send(
+            FollowListResponse response = await _sender.Send(
                 new GetFollowersQuery(currentUserId, currentUserId, page, pageSize),
                 cancellationToken);
 
             return Ok(response);
         }
-        
+
         /// <summary>
         /// Gets the list of users followed by the currently authenticated user.
         /// </summary>
@@ -196,17 +193,16 @@ namespace Krea.API.Controllers {
         public async Task<ActionResult<FollowListResponse>> GetMyFollowing(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            CancellationToken cancellationToken = default)
-        {
-            var currentUserId = GetCurrentUserId();
+            CancellationToken cancellationToken = default) {
+            Guid currentUserId = GetCurrentUserId();
 
-            var response = await _sender.Send(
+            FollowListResponse response = await _sender.Send(
                 new GetFollowingUsersQuery(currentUserId, currentUserId, page, pageSize),
                 cancellationToken);
 
             return Ok(response);
         }
-        
+
         /// <summary>
         /// Gets the list of followers of a specific user.
         /// </summary>
@@ -228,8 +224,7 @@ namespace Krea.API.Controllers {
             Guid userId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            CancellationToken cancellationToken = default)
-        {
+            CancellationToken cancellationToken = default) {
             PublicUserProfileResponse? user = await _sender.Send(
                 new GetPublicUserProfileQuery(userId),
                 cancellationToken);
@@ -237,13 +232,13 @@ namespace Krea.API.Controllers {
             if (user is null)
                 return NotFound();
 
-            var response = await _sender.Send(
+            FollowListResponse response = await _sender.Send(
                 new GetFollowersQuery(userId, TryGetCurrentUserId(), page, pageSize),
                 cancellationToken);
 
             return Ok(response);
         }
-        
+
         /// <summary>
         /// Gets the list of users followed by a specific user.
         /// </summary>
@@ -265,8 +260,7 @@ namespace Krea.API.Controllers {
             Guid userId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            CancellationToken cancellationToken = default)
-        {
+            CancellationToken cancellationToken = default) {
             PublicUserProfileResponse? user = await _sender.Send(
                 new GetPublicUserProfileQuery(userId),
                 cancellationToken);
@@ -274,13 +268,13 @@ namespace Krea.API.Controllers {
             if (user is null)
                 return NotFound();
 
-            var response = await _sender.Send(
+            FollowListResponse response = await _sender.Send(
                 new GetFollowingUsersQuery(userId, TryGetCurrentUserId(), page, pageSize),
                 cancellationToken);
 
             return Ok(response);
         }
-        
+
         /// <summary>
         /// Searches users by username or display name.
         /// </summary>
@@ -326,8 +320,7 @@ namespace Krea.API.Controllers {
             [FromQuery] string query,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            CancellationToken ct = default)
-        {
+            CancellationToken ct = default) {
             if (string.IsNullOrWhiteSpace(query))
                 return BadRequest("Query is required.");
 
@@ -369,10 +362,10 @@ namespace Krea.API.Controllers {
             if (file is null || file.Length == 0)
                 return BadRequest(new { error = "File is required." });
 
-            await using var stream = file.OpenReadStream();
+            await using Stream stream = file.OpenReadStream();
 
             try {
-                var result = await _sender.Send(
+                UploadUserProfilePictureResponse result = await _sender.Send(
                     new UploadUserProfilePictureCommand(
                         GetCurrentUserId(),
                         file.FileName,
@@ -393,7 +386,7 @@ namespace Krea.API.Controllers {
                 return NotFound(new { error = ex.Message });
             }
         }
-        
+
         private Guid GetCurrentUserId() {
             string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid userId))
@@ -401,7 +394,7 @@ namespace Krea.API.Controllers {
 
             return userId;
         }
-        
+
         private Guid? TryGetCurrentUserId() {
             string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 

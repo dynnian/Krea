@@ -28,14 +28,12 @@ namespace Krea.API.Controllers {
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             CancellationToken ct = default) {
-            
             Guid? currentUserId = null;
 
-            if (User.Identity?.IsAuthenticated == true)
-            {
+            if (User.Identity?.IsAuthenticated == true) {
                 currentUserId = GetCurrentUserId();
             }
-            
+
             var query = new GetRecentFeedQuery(currentUserId, page, pageSize);
 
             IReadOnlyList<PostFeedResponse> result = await _recentHandler.Handle(query, ct);
@@ -48,8 +46,7 @@ namespace Krea.API.Controllers {
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             CancellationToken ct = default) {
-            
-            var currentUserId = GetCurrentUserId();
+            Guid currentUserId = GetCurrentUserId();
 
             var query = new GetTrendingFeedQuery(currentUserId, page, pageSize);
 
@@ -63,9 +60,8 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> GetFollowing(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            CancellationToken ct = default)
-        {
-            var currentUserId = GetCurrentUserId();
+            CancellationToken ct = default) {
+            Guid currentUserId = GetCurrentUserId();
 
             var query = new GetFollowingFeedQuery(currentUserId, page, pageSize);
 
@@ -73,7 +69,7 @@ namespace Krea.API.Controllers {
 
             return Ok(result);
         }
-        
+
         private Guid GetCurrentUserId() {
             string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid userId)) {

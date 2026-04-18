@@ -8,9 +8,7 @@ namespace Krea.Application.Features.Posts.GetPostById {
         : IRequestHandler<GetPostByIdCommand, GetPostByIdResponse?> {
         private readonly IPostRepository _postRepository;
 
-        public GetPostByIdHandler(IPostRepository postRepository) {
-            _postRepository = postRepository;
-        }
+        public GetPostByIdHandler(IPostRepository postRepository) => _postRepository = postRepository;
 
         public async Task<GetPostByIdResponse?> Handle(
             GetPostByIdCommand request,
@@ -24,8 +22,8 @@ namespace Krea.Application.Features.Posts.GetPostById {
             Guid? currentUserId = request.CurrentUserId;
 
             IReadOnlyList<PostMediaDto> media = post.Uploads
-                .Select(MapPostMedia)
-                .ToList();
+                                                    .Select(MapPostMedia)
+                                                    .ToList();
 
             bool isLiked = currentUserId is not null &&
                            post.Likes.Any(l => l.UserId == currentUserId);
@@ -40,21 +38,21 @@ namespace Krea.Application.Features.Posts.GetPostById {
                     cancellationToken);
             }
 
-            var (replyPosts, _) = await _postRepository.GetRepliesAsync(
+            (IReadOnlyList<Post> replyPosts, _) = await _postRepository.GetRepliesAsync(
                 post.Id,
-                page: 1,
-                pageSize: 10,
+                1,
+                10,
                 cancellationToken);
 
             IReadOnlyList<ReplyDto> replies = replyPosts
-                .Select(r => new ReplyDto(
-                    r.Id,
-                    r.AuthorPostId,
-                    r.AuthorPost.DisplayName,
-                    r.Content,
-                    r.UploadedAt
-                ))
-                .ToList();
+                                              .Select(r => new ReplyDto(
+                                                  r.Id,
+                                                  r.AuthorPostId,
+                                                  r.AuthorPost.DisplayName,
+                                                  r.Content,
+                                                  r.UploadedAt
+                                              ))
+                                              .ToList();
 
             RepostReferenceDto? repostOf = post.RepostOf is null
                 ? null
@@ -95,7 +93,7 @@ namespace Krea.Application.Features.Posts.GetPostById {
         }
 
         private static PostMediaDto MapPostMedia(PostUpload upload) =>
-            new PostMediaDto {
+            new() {
                 Id = upload.Id,
                 FileName = upload.Media.FileName,
                 MimeType = upload.Media.MimeType,

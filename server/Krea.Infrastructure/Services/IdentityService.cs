@@ -53,8 +53,8 @@ namespace Krea.Infrastructure.Services {
             if (!string.IsNullOrWhiteSpace(search)) {
                 string normalized = search.Trim().ToLowerInvariant();
                 query = query.Where(u =>
-                    u.UserName != null && u.UserName.ToLower().Contains(normalized) ||
-                    u.Email != null && u.Email.ToLower().Contains(normalized));
+                    (u.UserName != null && u.UserName.ToLower().Contains(normalized)) ||
+                    (u.Email != null && u.Email.ToLower().Contains(normalized)));
             }
 
             if (!string.IsNullOrWhiteSpace(role)) {
@@ -86,10 +86,10 @@ namespace Krea.Infrastructure.Services {
                 return (false, ["User not found."]);
 
             List<string> normalizedRoles = roles
-                .Where(r => !string.IsNullOrWhiteSpace(r))
-                .Select(r => r.Trim())
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
+                                           .Where(r => !string.IsNullOrWhiteSpace(r))
+                                           .Select(r => r.Trim())
+                                           .Distinct(StringComparer.OrdinalIgnoreCase)
+                                           .ToList();
 
             if (normalizedRoles.Count == 0)
                 return (false, ["At least one role is required."]);
@@ -130,7 +130,7 @@ namespace Krea.Infrastructure.Services {
                           join identityRole in _context.Roles on userRole.RoleId equals identityRole.Id
                           where identityRole.NormalizedName == normalizedRole
                           select userRole)
-                         .CountAsync(cancellationToken);
+                .CountAsync(cancellationToken);
         }
 
         public async Task<UserIdentity?> FindByUsernameAsync(string username) {
@@ -156,12 +156,11 @@ namespace Krea.Infrastructure.Services {
             SignInResult result = await _signInManager.CheckPasswordSignInAsync(appUser, password, false);
             return result.Succeeded;
         }
-        
-        public async Task<bool> ChangePasswordAsync(UserIdentity user, string currentPassword, string newPassword)
-        {
-            var appUser = await _userManager.FindByIdAsync(user.Id.ToString());
+
+        public async Task<bool> ChangePasswordAsync(UserIdentity user, string currentPassword, string newPassword) {
+            AppUser? appUser = await _userManager.FindByIdAsync(user.Id.ToString());
             if (appUser == null) return false;
-            var result = await _userManager.ChangePasswordAsync(appUser, currentPassword, newPassword);
+            IdentityResult result = await _userManager.ChangePasswordAsync(appUser, currentPassword, newPassword);
             return result.Succeeded;
         }
 

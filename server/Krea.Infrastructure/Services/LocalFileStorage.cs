@@ -1,5 +1,4 @@
-namespace Krea.Infrastructure.Services
-{
+namespace Krea.Infrastructure.Services {
     using Application.Abstractions.FileStorage;
     using Microsoft.AspNetCore.Hosting;
 

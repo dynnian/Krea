@@ -1,8 +1,7 @@
 namespace Krea.Application.Features.User.GetReportsByUser {
     using Domain.ValueObjects;
 
-    public sealed class MyPostModerationReportItemResponse
-    {
+    public sealed class MyPostModerationReportItemResponse {
         public Guid ReportId { get; init; }
         public Guid PostId { get; init; }
         public string Reason { get; init; } = default!;

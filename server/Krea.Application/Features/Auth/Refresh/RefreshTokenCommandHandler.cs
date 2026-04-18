@@ -11,10 +11,8 @@ namespace Krea.Application.Features.Auth.Refresh {
         ITokenService tokenService,
         IIdentityService identityService,
         IUserRepository userRepository)
-        : IRequestHandler<RefreshTokenCommand, AuthResponse?> 
-    {
-        public async Task<AuthResponse?> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
-        {
+        : IRequestHandler<RefreshTokenCommand, AuthResponse?> {
+        public async Task<AuthResponse?> Handle(RefreshTokenCommand request, CancellationToken cancellationToken) {
             TokenGenerationResult? tokens = await tokenService.RefreshAuthTokensAsync(request.RefreshToken);
             if (tokens == null)
                 return null;

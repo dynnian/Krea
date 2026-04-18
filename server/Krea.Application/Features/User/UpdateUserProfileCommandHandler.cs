@@ -54,7 +54,8 @@ namespace Krea.Application.Features.User {
 
             if (request.ProfilePictureIdIsSet) {
                 if (request.ProfilePictureId.HasValue) {
-                    Media? profilePicture = await _mediaRepository.GetByIdAsync(request.ProfilePictureId.Value, cancellationToken);
+                    Media? profilePicture =
+                        await _mediaRepository.GetByIdAsync(request.ProfilePictureId.Value, cancellationToken);
                     if (profilePicture is null)
                         throw new KeyNotFoundException("Profile picture not found.");
 
@@ -67,7 +68,8 @@ namespace Krea.Application.Features.User {
 
             if (request.BannerPictureIdIsSet) {
                 if (request.BannerPictureId.HasValue) {
-                    Media? bannerPicture = await _mediaRepository.GetByIdAsync(request.BannerPictureId.Value, cancellationToken);
+                    Media? bannerPicture =
+                        await _mediaRepository.GetByIdAsync(request.BannerPictureId.Value, cancellationToken);
                     if (bannerPicture is null)
                         throw new KeyNotFoundException("Banner picture not found.");
 

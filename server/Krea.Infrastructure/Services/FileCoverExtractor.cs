@@ -42,13 +42,13 @@ namespace Krea.Infrastructure.Services {
                                  FileMode.Create,
                                  FileAccess.Write,
                                  FileShare.None,
-                                 bufferSize: 81920,
-                                 useAsync: true)) {
+                                 81920,
+                                 true)) {
                     await audioStream.CopyToAsync(tempFileStream, cancellationToken);
                     await tempFileStream.FlushAsync(cancellationToken);
                 }
 
-                using var tagFile = TagLib.File.Create(tempPath);
+                using var tagFile = File.Create(tempPath);
 
                 IPicture? picture = tagFile.Tag.Pictures?.FirstOrDefault();
                 if (picture is null || picture.Data is null || picture.Data.Count == 0)
@@ -114,8 +114,8 @@ namespace Krea.Infrastructure.Services {
                                  FileMode.Create,
                                  FileAccess.Write,
                                  FileShare.None,
-                                 bufferSize: 81920,
-                                 useAsync: true)) {
+                                 81920,
+                                 true)) {
                     await epubStream.CopyToAsync(tempFileStream, cancellationToken);
                     await tempFileStream.FlushAsync(cancellationToken);
                 }
@@ -151,16 +151,14 @@ namespace Krea.Infrastructure.Services {
             }
         }
 
-        private static byte[]? TryGetEpubCoverBytes(EpubBook book)
-        {
+        private static byte[]? TryGetEpubCoverBytes(EpubBook book) {
             // Camino principal: portada ya resuelta por la librería
             if (book.CoverImage is { Length: > 0 })
                 return book.CoverImage;
 
             // Fallback: buscar una imagen "cover" en el contenido local
-            if (book.Content?.Images?.Local is not null && book.Content.Images.Local.Count > 0)
-            {
-                var preferredCover = book.Content.Images.Local.FirstOrDefault(file =>
+            if (book.Content?.Images?.Local is not null && book.Content.Images.Local.Count > 0) {
+                EpubLocalByteContentFile? preferredCover = book.Content.Images.Local.FirstOrDefault(file =>
                     !string.IsNullOrWhiteSpace(file.Key) &&
                     !string.IsNullOrWhiteSpace(file.ContentMimeType) &&
                     file.ContentMimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) &&
@@ -170,7 +168,7 @@ namespace Krea.Infrastructure.Services {
                 if (preferredCover is not null)
                     return preferredCover.Content;
 
-                var firstImage = book.Content.Images.Local.FirstOrDefault(file =>
+                EpubLocalByteContentFile? firstImage = book.Content.Images.Local.FirstOrDefault(file =>
                     !string.IsNullOrWhiteSpace(file.ContentMimeType) &&
                     file.ContentMimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) &&
                     file.Content is { Length: > 0 });
@@ -197,13 +195,12 @@ namespace Krea.Infrastructure.Services {
             };
         }
 
-        private static string GetExtensionFromContentType(string contentType) {
-            return contentType.ToLowerInvariant() switch {
+        private static string GetExtensionFromContentType(string contentType) =>
+            contentType.ToLowerInvariant() switch {
                 "image/png" => ".png",
                 "image/webp" => ".webp",
                 _ => ".jpg"
             };
-        }
 
         private static string DetectImageContentType(byte[] bytes) {
             if (bytes.Length >= 8 &&

@@ -1,26 +1,24 @@
 namespace Krea.Application.Features.Collections.UpdateCollectionTitle {
     using Domain.Abstractions;
+    using Domain.Entities;
     using Domain.Repositories;
 
     public sealed class UpdateCollectionTitleCommandHandler
-        : IRequestHandler<UpdateCollectionTitleCommand, UpdateCollectionTitleResponse>
-    {
+        : IRequestHandler<UpdateCollectionTitleCommand, UpdateCollectionTitleResponse> {
         private readonly ICollectionRepository _collectionRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public UpdateCollectionTitleCommandHandler(
             ICollectionRepository collectionRepository,
-            IUnitOfWork unitOfWork)
-        {
+            IUnitOfWork unitOfWork) {
             _collectionRepository = collectionRepository;
             _unitOfWork = unitOfWork;
         }
 
         public async Task<UpdateCollectionTitleResponse> Handle(
             UpdateCollectionTitleCommand request,
-            CancellationToken cancellationToken)
-        {
-            var collection = await _collectionRepository.GetByIdAsync(
+            CancellationToken cancellationToken) {
+            Collection? collection = await _collectionRepository.GetByIdAsync(
                 request.CollectionId,
                 cancellationToken);
 

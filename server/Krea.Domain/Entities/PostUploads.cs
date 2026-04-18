@@ -2,8 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Krea.Domain.Entities {
     public sealed class PostUpload {
-        [Key]
-        public Guid Id { get; private set; }
+        [Key] public Guid Id { get; private set; }
 
         public Guid PostId { get; private set; }
         public Post Post { get; private set; } = default!;
@@ -22,27 +21,17 @@ namespace Krea.Domain.Entities {
         private PostUpload() { }
         #pragma warning restore CS8618
 
-        public PostUpload(Guid postId, Guid mediaId, bool isWorkMedia)
-        {
+        public PostUpload(Guid postId, Guid mediaId, bool isWorkMedia) {
             Id = Guid.NewGuid();
             PostId = postId;
             MediaId = mediaId;
             IsWorkMedia = isWorkMedia;
         }
 
-        public void SetMetadata(Metadata metadata)
-        {
-            Metadata = metadata;
-        }
+        public void SetMetadata(Metadata metadata) => Metadata = metadata;
 
-        public void SetCover(Guid coverMediaId)
-        {
-            CoverMediaId = coverMediaId;
-        }
+        public void SetCover(Guid coverMediaId) => CoverMediaId = coverMediaId;
 
-        public void RemoveCover()
-        {
-            CoverMediaId = null;
-        }
+        public void RemoveCover() => CoverMediaId = null;
     }
 }

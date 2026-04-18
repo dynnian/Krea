@@ -14,8 +14,7 @@ namespace Krea.Domain.Entities {
         private Like() { }
         #pragma warning restore CS8618
 
-        public Like(Guid postId, Guid userId)
-        {
+        public Like(Guid postId, Guid userId) {
             Id = Guid.NewGuid();
             PostId = postId;
             UserId = userId;
