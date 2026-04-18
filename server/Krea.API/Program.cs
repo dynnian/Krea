@@ -114,15 +114,27 @@ namespace Krea.API {
             string? publicUrl = configuration["PublicUrl"];
             List<string> configuredOrigins = new();
 
-            if (!string.IsNullOrWhiteSpace(publicUrl) && Uri.TryCreate(publicUrl, UriKind.Absolute, out Uri? uri)) {
-                configuredOrigins.Add(uri.GetLeftPart(UriPartial.Authority));
-                
-                // Also allow the non-HTTPS version if it's HTTPS, or vice-versa, 
-                // to be more resilient during migration/setup if needed.
-                if (uri.Scheme == Uri.UriSchemeHttps) {
-                    configuredOrigins.Add($"http://{uri.Authority}");
-                } else if (uri.Scheme == Uri.UriSchemeHttp) {
-                    configuredOrigins.Add($"https://{uri.Authority}");
+            if (!string.IsNullOrWhiteSpace(publicUrl)) {
+                // If the user forgot the protocol, try to be helpful
+                if (!publicUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && 
+                    !publicUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) {
+                    
+                    if (Uri.TryCreate($"https://{publicUrl}", UriKind.Absolute, out Uri? httpsUri)) {
+                        configuredOrigins.Add(httpsUri.GetLeftPart(UriPartial.Authority));
+                        configuredOrigins.Add($"http://{httpsUri.Authority}");
+                    } else if (Uri.TryCreate($"http://{publicUrl}", UriKind.Absolute, out Uri? httpUri)) {
+                        configuredOrigins.Add(httpUri.GetLeftPart(UriPartial.Authority));
+                        configuredOrigins.Add($"https://{httpUri.Authority}");
+                    }
+                }
+                else if (Uri.TryCreate(publicUrl, UriKind.Absolute, out Uri? uri)) {
+                    configuredOrigins.Add(uri.GetLeftPart(UriPartial.Authority));
+                    
+                    if (uri.Scheme == Uri.UriSchemeHttps) {
+                        configuredOrigins.Add($"http://{uri.Authority}");
+                    } else if (uri.Scheme == Uri.UriSchemeHttp) {
+                        configuredOrigins.Add($"https://{uri.Authority}");
+                    }
                 }
             }
 
