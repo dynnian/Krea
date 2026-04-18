@@ -1,310 +1,48 @@
 // profile.tsx
 // deno-lint-ignore-file
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { postsApi } from "../services/postsService.ts";
+import PostCard from "../components/Posts/PostCard.tsx";
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Avatar, Tabs, Typography, Grid, message, Spin, Dropdown } from 'antd';
-import type { MenuProps } from 'antd';
+import { Tabs, Typography, Grid, message, Spin, Dropdown } from 'antd';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import DigitalPortfolio from "../components/Profile/DigitalPortfolio.tsx";
+import EditCollectionView from "../components/Profile/Collections/EditCollectionView.tsx";
+import type { MockImageCollection } from "../data/mockImageCollections.ts";
+import { collectionsApi } from "../services/collectionsService.ts";
 import MusicPortfolio from "../components/Profile/MusicPortfolio.tsx";
 import type { MusicAlbum, MusicSong } from "../components/Profile/MusicPortfolio.tsx";
 import WriterPortfolio from "../components/Profile/WriterPortfolio.tsx";
-import type { WriterWork } from "../components/Profile/WriterPortfolio.tsx";
+import { ChevronDown } from "lucide-react";
+import type {
+  WriterWork,
+  WriterCollectionPreview,
+} from "../components/Profile/WriterPortfolio.tsx";
 import { settingsRepository } from "../services/settingsRepository.ts";
 import CreatePortfolioPostModal from "../components/Posts/CreatePortfolioPostModal.tsx";
+import CreateCollectionModal from "../components/Profile/Collections/CreateCollectionModal.tsx";
 import axiosClient from "../lib/axios.ts";
 import type { UploadMediaType } from "../types/api.ts";
 import { PostType as PortfolioPostType } from "../types/common.ts";
-
+import ProfileHeader from "../components/Profile/ProfileHeader.tsx";
+import { saveEditedCollectionChanges } from "../utils/saveEditedCollectionChanges.ts";
+import type {
+  ProfileData,
+  VisualPortfolioItem,
+} from "../types/profile.ts";
+import type { MenuProps } from "antd";
 import {
-  Heart,
-  MessageCircle,
-  Repeat2,
-  Bookmark,
-  MoreHorizontal,
-  User,
-  Check,
-  Play,
-  Pause,
-  Edit,
-} from 'lucide-react';
-import WaveSurfer from 'wavesurfer.js';
+  mapPostsToMusicSongs,
+  mapPostsToVisualPortfolioItems,
+  mapPostsToWriterWorks,
+  normalizeApiPosts,
+} from "../utils/profileMapper.ts";
 
 const { useBreakpoint } = Grid;
-const { Title, Text } = Typography;
-
-// ---------- Tipos (basados en el backend) ----------
-export enum PostType {
-  IMAGE = 'image',
-  AUDIO = 'audio',
-  LINK = 'link',
-}
-
-interface Author {
-  id?: string;
-  name: string;
-  handle: string;
-  avatar?: string;
-  isVerified?: boolean;
-}
-
-interface Media {
-  id: string;
-  originalFileName: string;
-  fileName: string;
-  mimeType: string;
-  path: string;
-  uploadedAt: string;
-  coverUrl?: string;
-  coverMediaId?: string;
-}
-
-interface PostMedia {
-  postId: number;
-  mediaId: string;
-  isWorkMedia: boolean;
-  media: Media;
-}
-
-interface Post {
-  id: number;
-  userPostId: number;
-  type: PostType;
-  title: string | null;
-  content: string;
-  isWork: boolean;
-  isDeleted: boolean;
-  isLocal: boolean;
-  postRepliedTo: number | null;
-  postRepostOf: number | null;
-  createdAt: string;
-  updatedAt: string;
-  author: Author;
-  media: PostMedia[];
-  likesCount: number;
-  favoritesCount: number;
-  replies: any[];
-  backendId?: string;
-}
-
-interface ProfileData {
-  user: Author;
-  bio: string;
-  followingCount: number;
-  followersCount: number;
-  isFollowing?: boolean;
-  isSubscribed?: boolean;
-  posts: Post[];
-}
-
-interface VisualPortfolioItem {
-  id: string;
-  title: string;
-  imageUrl: string;
-}
-
-interface ApiPostMedia {
-  id: string;
-  fileName: string;
-  mimeType: string;
-  url: string;
-  isWorkMedia: boolean;
-  coverUrl?: string;
-  coverMediaId?: string;
-}
-
-interface ApiPost {
-  id?: string;
-  postId?: string;
-  userId: string;
-  authorUsername: string;
-  title: string | null;
-  content: string;
-  createdAt: string;
-  media: ApiPostMedia[];
-}
+const { Text } = Typography;
 
 
-
-// ---------- Funciones API (debes implementar) ----------
-async function fetchProfile(username: string): Promise<ProfileData> {
-  // Simular llamada API
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const mockProfile: ProfileData = {
-        user: {
-          name: username === 'me' ? 'Mi Usuario' : 'Usuario',
-          handle: username === 'me' ? 'mi_usuario' : username,
-          avatar: undefined,
-          isVerified: true,
-        },
-        bio: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididu.',
-        followingCount: 10,
-        followersCount: 10,
-        isFollowing: false,
-        isSubscribed: false,
-        posts: [
-          // Post con múltiples imágenes (isWork = true)
-          {
-            id: 1,
-            userPostId: 1,
-            type: PostType.IMAGE,
-            title: null,
-            content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis',
-            isWork: true,
-            isDeleted: false,
-            isLocal: false,
-            postRepliedTo: null,
-            postRepostOf: null,
-            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-            updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-            author: {
-              name: username === 'me' ? 'Mi Usuario' : 'Usuario',
-              handle: username === 'me' ? 'mi_usuario' : username,
-              avatar: undefined,
-            },
-            media: [
-              {
-                postId: 1,
-                mediaId: '101',
-                isWorkMedia: true,
-                media: {
-                  id: '101',
-                  originalFileName: 'imagen1.jpg',
-                  fileName: 'imagen1.jpg',
-                  mimeType: 'image/jpeg',
-                  path: 'https://placehold.co/294x431',
-                  uploadedAt: new Date().toISOString(),
-                },
-              },
-              {
-                postId: 1,
-                mediaId: '102',
-                isWorkMedia: true,
-                media: {
-                  id: '102',
-                  originalFileName: 'imagen2.jpg',
-                  fileName: 'imagen2.jpg',
-                  mimeType: 'image/jpeg',
-                  path: 'https://placehold.co/294x211',
-                  uploadedAt: new Date().toISOString(),
-                },
-              },
-              {
-                postId: 1,
-                mediaId: '103',
-                isWorkMedia: true,
-                media: {
-                  id: '103',
-                  originalFileName: 'imagen3.jpg',
-                  fileName: 'imagen3.jpg',
-                  mimeType: 'image/jpeg',
-                  path: 'https://placehold.co/294x211',
-                  uploadedAt: new Date().toISOString(),
-                },
-              },
-            ],
-            likesCount: 5,
-            favoritesCount: 2,
-            replies: [],
-          },
-          // Post con imagen grande (isWork = false)
-          {
-            id: 2,
-            userPostId: 2,
-            type: PostType.IMAGE,
-            title: null,
-            content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis',
-            isWork: false,
-            isDeleted: false,
-            isLocal: false,
-            postRepliedTo: null,
-            postRepostOf: null,
-            createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-            updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-            author: {
-              name: username === 'me' ? 'Mi Usuario' : 'Usuario',
-              handle: username === 'me' ? 'mi_usuario' : username,
-              avatar: undefined,
-            },
-            media: [
-              {
-                postId: 2,
-                mediaId: '201',
-                isWorkMedia: false,
-                media: {
-                  id: '201',
-                  originalFileName: 'imagen.jpg',
-                  fileName: 'imagen.jpg',
-                  mimeType: 'image/jpeg',
-                  path: 'https://placehold.co/596x321',
-                  uploadedAt: new Date().toISOString(),
-                },
-              },
-            ],
-            likesCount: 3,
-            favoritesCount: 1,
-            replies: [],
-          },
-          // Post con audio (isWork = true)
-          {
-            id: 3,
-            userPostId: 3,
-            type: PostType.AUDIO,
-            title: 'Mi canción',
-            content: 'Escucha mi nuevo tema',
-            isWork: true,
-            isDeleted: false,
-            isLocal: false,
-            postRepliedTo: null,
-            postRepostOf: null,
-            createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-            updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-            author: {
-              name: username === 'me' ? 'Mi Usuario' : 'Usuario',
-              handle: username === 'me' ? 'mi_usuario' : username,
-              avatar: undefined,
-            },
-            media: [
-              {
-                postId: 3,
-                mediaId: '301',
-                isWorkMedia: true,
-                media: {
-                  id: '301',
-                  originalFileName: 'audio.mp3',
-                  fileName: 'audio.mp3',
-                  mimeType: 'audio/mpeg',
-                  path: '/assets/audio-sample.mp3',
-                  uploadedAt: new Date().toISOString(),
-                },
-              },
-              {
-                postId: 3,
-                mediaId: '302',
-                isWorkMedia: true,
-                media: {
-                  id: '302',
-                  originalFileName: 'cover.jpg',
-                  fileName: 'cover.jpg',
-                  mimeType: 'image/jpeg',
-                  path: 'https://placehold.co/596x321',
-                  uploadedAt: new Date().toISOString(),
-                },
-              },
-            ],
-            likesCount: 5,
-            favoritesCount: 2,
-            replies: [],
-          },
-        ],
-      };
-      resolve(mockProfile);
-    }, 500);
-  });
-}
 
 async function fetchMyProfileFromApi() {
   const res = await axiosClient.get("/users/me/profile");
@@ -312,598 +50,9 @@ async function fetchMyProfileFromApi() {
 }
 
 async function fetchPostsByAuthorFromApi(authorId: string) {
-  const res = await axiosClient.get(`/posts/user/${authorId}?page=1&pageSize=100`);
+  const res = await postsApi.getUserPosts(authorId, 1, 100);
   return res.data;
 }
-
-async function deletePostFromApi(postId: string) {
-  await postsApi.deletePost(postId);
-}
-async function followUser(targetId: string) {
-  await axiosClient.post(`/users/${targetId}/follow`);
-}
-
-async function unfollowUser(targetId: string) {
-  await axiosClient.delete(`/users/${targetId}/unfollow`);
-}
-
-async function subscribeUser(username: string) {
-  console.log('Subscribe', username);
-}
-
-async function unsubscribeUser(username: string) {
-  console.log('Unsubscribe', username);
-}
-
-async function likePost(postId: number) {
-  console.log('Like', postId);
-}
-
-async function unlikePost(postId: number) {
-  console.log('Unlike', postId);
-}
-
-async function repostPost(postId: number) {
-  console.log('Repost', postId);
-}
-
-async function unRepostPost(postId: number) {
-  console.log('Unrepost', postId);
-}
-
-async function bookmarkPost(postId: number) {
-  console.log('Bookmark', postId);
-}
-
-async function unbookmarkPost(postId: number) {
-  console.log('Unbookmark', postId);
-}
-
-
-
-function mapPostsToVisualPortfolioItems(posts: Post[]): VisualPortfolioItem[] {
-  return posts
-    .filter((post) => {
-     const hasImage = post.media?.some((m) =>
-      isImageMime(m.media?.mimeType)
-    );
-      return post.isWork && hasImage;
-    })
-    .map((post) => {
-      const firstImage = post.media.find((m) =>
-        isImageMime(m.media?.mimeType)
-      );
-
-      return {
-        id: String(post.backendId ?? post.id),
-        title: post.title ?? 'Sin título',
-        imageUrl: firstImage?.media.path ?? '',
-      };
-    })
-    .filter((item) => item.imageUrl);
-}
-
-const isImageMime = (mime?: string) => !!mime && mime.startsWith("image/");
-const isAudioMime = (mime?: string) =>
-  !!mime && (mime.startsWith("audio/") || mime.startsWith("music/"));
-const isDocumentMime = (mime?: string) =>
-  !!mime && (
-    mime === "application/pdf" ||
-    mime === "application/epub+zip" ||
-    mime === "text/plain"
-  );
-
-
-  
-function mapPostsToMusicSongs(posts: Post[]): MusicSong[] {
-  return posts
-    .filter((post) => {
-      const hasAudio = post.media?.some((m) =>
-        isAudioMime(m.media?.mimeType)
-      );
-      return post.isWork && post.type === PostType.AUDIO && hasAudio;
-    })
-    .map((post) => {
-      const audioMedia = post.media.find((m) =>
-        isAudioMime(m.media?.mimeType)
-      );
-
-      const coverMedia = post.media.find((m) =>
-        isImageMime(m.media?.mimeType)
-      );
-
-      if (!audioMedia) return null;
-
-      return {
-        id: String(post.backendId ?? post.id),
-        postId: String(post.backendId ?? post.id),
-        title: post.title ?? "Sin título",
-        genre: "Sin género",
-        coverUrl:
-          audioMedia?.media.coverUrl ??
-          coverMedia?.media.path ??
-          "https://placehold.co/240x240?text=Cover",
-        audioUrl: audioMedia.media.path,
-        likesCount: post.likesCount ?? 0,
-        isLiked: false,
-      };
-    })
-    .filter((song): song is MusicSong => song !== null);
-}
-
-
-function mapPostsToWriterWorks(posts: Post[]): WriterWork[] {
-  return posts
-    .filter((post) => {
-      const hasDocument = post.media?.some((m) =>
-        isDocumentMime(m.media?.mimeType)
-      );
-
-      return post.isWork && post.type === PostType.LINK && hasDocument;
-    })
-    .map((post) => {
-      const documentMedia = post.media.find((m) =>
-        isDocumentMime(m.media?.mimeType)
-      );
-
-      const coverMedia = post.media.find((m) =>
-        isImageMime(m.media?.mimeType)
-      );
-
-      return {
-        id: String(post.backendId ?? post.id),
-        postId: String(post.backendId ?? post.id),
-        title: post.title ?? "Sin título",
-        coverUrl:
-          documentMedia?.media.coverUrl ??
-          coverMedia?.media.path ??
-          "https://placehold.co/240x360?text=Libro",
-        chaptersCount: 1,
-        genre: "Sin género",
-        description: post.content ?? "",
-        likesCount: post.likesCount ?? 0,
-        isLiked: false,
-      };
-    });
-}
-
-
-// ---------- Componentes reutilizables ----------
-interface ActionButtonProps {
-  icon: React.ReactNode;
-  onClick?: () => void;
-  active?: boolean;
-  count?: number;
-}
-
-const ActionButton: React.FC<ActionButtonProps> = ({ icon, onClick, active, count }) => (
-  <button
-    onClick={onClick}
-    className="flex items-center gap-1 text-gray-700 hover:text-blue-600 transition-colors"
-  >
-    <span className={active ? 'text-blue-600' : ''}>{icon}</span>
-    {count !== undefined && <span className="text-xs">{count}</span>}
-  </button>
-);
-
-interface FollowButtonProps {
-  isFollowing: boolean;
-  onClick?: () => void;
-}
-
-const FollowButton: React.FC<FollowButtonProps> = ({ isFollowing, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`px-5 py-1 rounded-full text-xs font-medium border transition-colors ${
-      isFollowing
-        ? 'bg-[#1351AA] text-white border-[#1B1C1E]'
-        : 'bg-[#F3F3F1] text-[#1B1C1E] border-[#1B1C1E]'
-    }`}
-  >
-    {isFollowing ? 'Siguiendo' : 'Seguir'}
-  </button>
-);
-
-interface SubscribeButtonProps {
-  isSubscribed: boolean;
-  onClick?: () => void;
-}
-
-const SubscribeButton: React.FC<SubscribeButtonProps> = ({ isSubscribed, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`px-5 py-1 rounded-full text-xs font-medium border transition-colors ${
-      isSubscribed
-        ? 'bg-[#1351AA] text-white border-[#1B1C1E]'
-        : 'bg-[#F3F3F1] text-[#1B1C1E] border-[#1B1C1E]'
-    }`}
-  >
-    <span className="text-[11px] font-medium leading-5 text-[#1B1C1E]"> 
-      {isSubscribed ? 'Subscrito' : 'Subscribirse'}
-  </span>
-  </button>
-);
-
-interface CommissionButtonProps {
-  onClick?: () => void;
-}
-
-const CommissionButton: React.FC<CommissionButtonProps> = ({ onClick }) => (
-  <button
-    onClick={onClick}
-    className="px-5 py-1 rounded-full text-xs font-medium bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E]"
-  >
-    <span className="text-[11px] font-medium leading-5 text-[#1B1C1E]">
-    Comisión
-    </span>
-  </button>
-);
-
-interface ConfigurationButtonProps {
-  onClick?: () => void;
-}
-
-const ConfigurationButton: React.FC<ConfigurationButtonProps> = ({ onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className="px-5 py-1 rounded-full cursor-pointer transition hover:bg-[#E6E5E2] bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] flex items-center gap-1"
-  >
-    <Edit size={14} />
-    <span className="text-[13px]  font-medium leading-5 text-[#1B1C1E]">
-       Configuración
-    </span> 
-  </button>
-);
-
-interface FavoritesButtonProps {
-  onClick?: () => void;
-}
-
-const FavoritesButton: React.FC<FavoritesButtonProps> = ({ onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className="px-5 py-1 rounded-full cursor-pointer transition hover:bg-[#E6E5E2] bg-[#F3F3F1] text-[#1B1C1E] border border-[#1B1C1E] flex items-center gap-1"
-  >
-    <Bookmark size={14} />
-    <span className="text-[13px] font-medium leading-5 text-[#1B1C1E]">
-     Guardados
-    </span>
-  </button>
-);
-
-interface MoreButtonProps {
-  onClick?: () => void;
-  variant?: "circle" | "plain";
-}
-
-const MoreButton: React.FC<MoreButtonProps> = ({
-  onClick,
-  variant = "circle",
-}) => (
-  <button
-    onClick={onClick}
-    className={
-      variant === "circle"
-        ? "w-7 h-7 rounded-full bg-[#F3F3F1] border border-[#1B1C1E] flex items-center justify-center"
-        : "text-[#1B1C1E] flex items-center justify-center cursor-pointer rounded-full p-[4px] hover:bg-[#C0CFE4] ring-inset hover:bosrder-[1px] hover:border-[#000000]"
-    }
-  >
-    <MoreHorizontal size={16} />
-  </button>
-);
-
-interface WaveformPlayerProps {
-  audioUrl: string;
-  coverUrl?: string;
-}
-
-const WaveformPlayer: React.FC<WaveformPlayerProps> = ({ audioUrl, coverUrl }) => {
-  const waveformRef = useRef<HTMLDivElement>(null);
-  const wavesurfer = useRef<WaveSurfer | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  useEffect(() => {
-    if (waveformRef.current && !wavesurfer.current) {
-      wavesurfer.current = WaveSurfer.create({
-        container: waveformRef.current,
-        waveColor: '#0B5107',
-        progressColor: '#1351AA',
-        cursorColor: 'transparent',
-        barWidth: 2,
-        barGap: 1,
-        height: 40,
-        // responsive: true,
-        url: audioUrl,
-      });
-
-      wavesurfer.current.on('play', () => setIsPlaying(true));
-      wavesurfer.current.on('pause', () => setIsPlaying(false));
-      wavesurfer.current.on('finish', () => setIsPlaying(false));
-    }
-
-    return () => {
-      wavesurfer.current?.destroy();
-    };
-  }, [audioUrl]);
-
-  const togglePlayPause = () => {
-    wavesurfer.current?.playPause();
-  };
-
-  return (
-    <div className="flex items-center gap-2 w-full">
-      {coverUrl && (
-        <img src={coverUrl} alt="cover" className="w-10 h-10 rounded object-cover" />
-      )}
-      <div ref={waveformRef} className="flex-1" />
-      <button
-        onClick={togglePlayPause}
-        className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-          isPlaying ? 'bg-[#0B5107] text-white' : 'bg-[#E9FDE8] text-[#0B5107] border border-[#0B5107]'
-        }`}
-      >
-        {isPlaying ? <Pause size={18} /> : <Play size={18} />}
-      </button>
-    </div>
-  );
-};
-
-
-
-// ---------- PostCard ----------
-interface PostCardProps {
-  post: Post;
-  canDelete?: boolean;
-  onDelete?: (post: Post) => void;
-}
-
-
-
-const PostCard: React.FC<PostCardProps> = ({ post, canDelete = false, onDelete }) => {
-  const { t } = useTranslation();
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [liked, setLiked] = useState(post.likesCount > 0);
-  const [likesCount, setLikesCount] = useState(post.likesCount);
-  const [reposted, setReposted] = useState(false);
-  const [repostsCount, setRepostsCount] = useState(post.favoritesCount);
-  const [bookmarked, setBookmarked] = useState(false);
-  const [bookmarksCount, setBookmarksCount] = useState(0);
-  
-
-
-  const requireAuth = () => {
-    if (!user) {
-      message.warning(t('profile.auth_required'));
-      navigate('/login');
-      return false;
-    }
-    return true;
-  };
-
-  const handleLike = async () => {
-    if (!requireAuth()) return;
-    const previous = liked;
-    setLiked(!previous);
-    setLikesCount(prev => (previous ? prev - 1 : prev + 1));
-    try {
-      if (previous) {
-        await unlikePost(post.id);
-      } else {
-        await likePost(post.id);
-      }
-    } catch {
-      setLiked(previous);
-      setLikesCount(prev => (previous ? prev + 1 : prev - 1));
-    }
-  };
-
-  const handleRepost = async () => {
-    if (!requireAuth()) return;
-    const previous = reposted;
-    setReposted(!previous);
-    setRepostsCount(prev => (previous ? prev - 1 : prev + 1));
-    try {
-      if (previous) {
-        await unRepostPost(post.id);
-      } else {
-        await repostPost(post.id);
-      }
-    } catch {
-      setReposted(previous);
-      setRepostsCount(prev => (previous ? prev + 1 : prev - 1));
-    }
-  };
-
-  const handleBookmark = async () => {
-    if (!requireAuth()) return;
-    const previous = bookmarked;
-    setBookmarked(!previous);
-    setBookmarksCount(prev => (previous ? prev - 1 : prev + 1));
-    try {
-      if (previous) {
-        await unbookmarkPost(post.id);
-      } else {
-        await bookmarkPost(post.id);
-      }
-    } catch {
-      setBookmarked(previous);
-      setBookmarksCount(prev => (previous ? prev + 1 : prev - 1));
-    }
-  };
-
-
-
-  const formatDate = (iso: string) => {
-    const date = new Date(iso);
-    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-  };
-
-  const imageMedia = post.media.find(m => isImageMime(m.media?.mimeType));
-  const audioMedia = post.media.find(m => isAudioMime(m.media?.mimeType));
-  const openPostDetail = () => {
-  const targetId = post.backendId ?? String(post.id);
-    navigate(`/post/${targetId}`);
-  };
-
-    const handleDeletePost = async () => {
-    if (!post.backendId) {
-      message.error('Esta publicación no tiene un ID válido de backend.');
-      return;
-    }
-
-    try {
-      await deletePostFromApi(post.backendId);
-      message.success('Publicación eliminada.');
-      onDelete?.(post);
-    } catch (error) {
-      console.error('Error deleting post:', error);
-      message.error('No se pudo eliminar la publicación.');
-    }
-  };
-
-  const postMenuItems: MenuProps["items"] = canDelete
-    ? [
-        {
-          key: "delete",
-          label: "Eliminar publicación",
-          danger: true,
-        },
-      ]
-    : [];
-
-  const handlePostMenuClick: MenuProps["onClick"] = ({ key }) => {
-    if (key === "delete") {
-      void handleDeletePost();
-    }
-  };
-
-  return (
-    <div className="w-full">
-      <div className="flex gap-3">
-        <Avatar
-          src={post.author.avatar}
-          icon={!post.author.avatar && <User size={24} />}
-          size={45}
-          className="bg-white border border-gray-800 flex-shrink-0"
-        />
-        <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-3">
-        <div
-          className="flex items-center gap-2 flex-wrap min-w-0 cursor-pointer"
-          onClick={openPostDetail}
-        >
-          <span className="font-medium text-gray-900">{post.author.name}</span>
-          <span className="text-gray-500">·</span>
-          <span className="text-gray-500">@{post.author.handle}</span>
-          <span className="text-gray-500">·</span>
-          <span className="text-gray-500">{formatDate(post.createdAt)}</span>
-        </div>
-
-          <Dropdown
-            menu={{ items: postMenuItems, onClick: handlePostMenuClick }}
-            trigger={["click"]}
-            placement="bottomRight"
-          >
-            <div>
-              <MoreButton variant="plain" onClick={() => {}} />
-            </div>
-          </Dropdown>
-        </div>
-          <p
-            className="text-gray-800 mt-1 text-[16px] text-justify pr-[20px] pt-[5px] cursor-pointer"
-            onClick={openPostDetail}
-          >
-            {post.content}
-          </p>
-          {post.type === PostType.IMAGE && post.media.length > 0 && (
-            <div className="mt-3 pr-[20px]">
-              {post.media.length === 1 ? (
-                <img
-                  src={post.media[0].media.path}
-                  alt="post"
-                  className="w-full rounded-lg"
-                  style={{ maxHeight: 400, objectFit: 'cover' }}
-                />
-              ) : (
-                <div className="flex gap-2">
-                  <img
-                    src={post.media[0].media.path}
-                    alt="post"
-                    className="flex-1 object-cover rounded-lg"
-                    style={{ height: 200 }}
-                  />
-                  <div className="flex flex-col gap-2 flex-1">
-                    {post.media.slice(1).map((m, idx) => (
-                      <img
-                        key={idx}
-                        src={m.media.path}
-                        alt="post"
-                        className="w-full object-cover rounded-lg"
-                        style={{ height: 95 }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            
-
-
-          )}
-
-          {post.type === PostType.AUDIO && audioMedia && (
-            <div className="mt-3">
-              <WaveformPlayer
-                audioUrl={audioMedia.media.path}
-                coverUrl={audioMedia?.media.coverUrl ?? imageMedia?.media.path}
-              />
-            </div>
-          )}
-
-          {post.type === PostType.LINK && (
-            <div className="mt-3">
-              <a
-                href={post.media[0]?.media.path}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline break-all"
-              >
-                {post.media[0]?.media.path}
-              </a>
-            </div>
-          )}
-
-          <div className="flex items-center gap-6 mt-3 text-gray-600">
-            <ActionButton
-              icon={<Heart size={18} fill={liked ? 'currentColor' : 'none'} />}
-              onClick={handleLike}
-              active={liked}
-              count={likesCount}
-            />
-            <ActionButton
-              icon={<MessageCircle size={18} />}
-              count={post.replies.length}
-            />
-            <ActionButton
-              icon={<Repeat2 size={18} fill={reposted ? 'currentColor' : 'none'} />}
-              onClick={handleRepost}
-              active={reposted}
-              count={repostsCount}
-            />
-            <ActionButton
-              icon={<Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />}
-              onClick={handleBookmark}
-              active={bookmarked}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 
 // ---------- Componente principal Profile ----------
 const Profile: React.FC = () => {
@@ -923,20 +72,28 @@ const Profile: React.FC = () => {
   const [musicSongs, setMusicSongs] = useState<MusicSong[]>([]);
   const [musicAlbums, setMusicAlbums] = useState<MusicAlbum[]>([]);
   const [writerWorks, setWriterWorks] = useState<WriterWork[]>([]);
-  const [portfolioSettings, setPortfolioSettings] = useState <{
-  imagesEnabled: boolean;
- musicEnabled: boolean;
-  literatureEnabled: boolean;
+  const [writerCollections, setWriterCollections] = useState<WriterCollectionPreview[]>([]);
+  const [editingWriterCollection, setEditingWriterCollection] = useState<MockImageCollection | null>(null);
+  const [portfolioSettings, setPortfolioSettings] = useState<{
+    imagesEnabled: boolean;
+    musicEnabled: boolean;
+    literatureEnabled: boolean;
   } | null>(null);
+  const username = usernameParam ?? "me";
+  const [activeMainTab, setActiveMainTab] = useState('portfolio');
+  const portfolioStorageKey = `profile:${username}:lastPortfolioTab`;
 
-const [activeMainTab, setActiveMainTab] = useState('portfolio');
-const [activePortfolioSubTab, setActivePortfolioSubTab] = useState("images");
-const [activeMusicTab, setActiveMusicTab] = useState<"songs" | "albums">("songs");
-const [isFollowing, setIsFollowing] = useState(false);
-const [isSubscribed, setIsSubscribed] = useState(false);
+const [activePortfolioSubTab, setActivePortfolioSubTab] = useState(() => {
+  return localStorage.getItem(portfolioStorageKey) ?? "images";
+});
 const [modalVisible, setModalVisible] = useState(false);
 const [portfolioModalType, setPortfolioModalType] = useState<UploadMediaType>(PortfolioPostType.IMAGE);
-
+const [isCreateCollectionModalOpen, setIsCreateCollectionModalOpen] = useState(false);
+const [editingImageCollection, setEditingImageCollection] = useState<MockImageCollection | null>(null);
+const [editingImageMoveTargets, setEditingImageMoveTargets] = useState<
+  { id: string; title: string; coverUrl?: string }[]
+>([]);
+const [editingMusicCollection, setEditingMusicCollection] = useState<MockImageCollection | null>(null);
 
 const handleGoToSettings = () => {
   navigate("/settings");
@@ -948,8 +105,6 @@ const handleGoToSaved = () => {
 // Determinar si es el perfil propio (ruta /profile/me)
 // const isOwnProfile = username === 'me';
 
-const username = usernameParam ?? "me";
-const isOwnProfile = username === "me";
   useEffect(() => {
     const loadProfile = async () => {
       if (!username) {
@@ -958,142 +113,140 @@ const isOwnProfile = username === "me";
         return;
       }
 
-try {
-setLoading(true);
-  let profileData: ProfileData;
-  let nextPostsError: string | null = null;
-  let resolvedVisualPortfolioItems: VisualPortfolioItem[] = [];
-  let resolvedMusicSongs: MusicSong[] = [];
-  let resolvedMusicAlbums: MusicAlbum[] = [];
-  let resolvedWriterWorks: WriterWork[] = [];
+      try {
+        setLoading(true);
 
-        
-      if (isOwnProfile) {
         if (!user) {
-          navigate('/login');
+          navigate("/login");
           return;
         }
 
-  const mockProfile = await fetchProfile('me');
-  const apiProfile = await fetchMyProfileFromApi();
+        let nextPostsError: string | null = null;
 
-  let apiPosts = null;
+        let resolvedVisualPortfolioItems: VisualPortfolioItem[] = [];
+        let resolvedMusicSongs: MusicSong[] = [];
+        let resolvedMusicAlbums: MusicAlbum[] = [];
+        let resolvedWriterWorks: WriterWork[] = [];
 
-  try {
-    apiPosts = await fetchPostsByAuthorFromApi(apiProfile.id);
-    console.log("apiPosts", apiPosts);
-  } catch (postsErr: any) {
-    console.error("fetchPostsByAuthorFromApi error:", postsErr);
-    console.error("posts response data:", postsErr?.response?.data);
-    console.error("posts response status:", postsErr?.response?.status);
+        //  Fetch perfil 
+        const apiProfile = await fetchMyProfileFromApi();
 
-    nextPostsError =
-      postsErr?.response?.data?.message ||
-      "No se pudieron cargar las publicaciones.";
-  }
+        let literatureCollectionsRaw: Awaited<
+          ReturnType<typeof collectionsApi.getUserCollections>
+        > = [];
 
-  const rawPosts = Array.isArray(apiPosts?.items)
-    ? apiPosts.items
-    : Array.isArray(apiPosts)
-      ? apiPosts
-      : [];
+        try {
+          const userCollections = await collectionsApi.getUserCollections(apiProfile.id);
 
-  const resolvedPosts = normalizeApiPosts(
-    rawPosts,
-    apiProfile.displayName || apiProfile.username
-    
-  );
+          const musicCollections = userCollections.filter((c) => c.type === 1);
+          literatureCollectionsRaw = userCollections.filter((c) => c.type === 2);
 
-function normalizeApiPosts(apiPosts: ApiPost[], displayName: string): Post[] {
-  return apiPosts.map((post, index) => {
-    const hasAudio = post.media.some((m) => isAudioMime(m.mimeType));
-    const hasImage = post.media.some((m) => isImageMime(m.mimeType));
-    const hasDocument = post.media.some((m) => isDocumentMime(m.mimeType));
+          resolvedMusicAlbums = musicCollections.map((collection) => ({
+            id: collection.id,
+            title: collection.title,
+            releaseDate: collection.updatedAt,
+            songsCount: collection.itemCount,
+            coverUrl:
+              collection.coverUrl ??
+              "https://placehold.co/240x240?text=Album",
+            tracks: [],
+          }));
+        } catch (err) {
+          console.error("Error fetching music/literature collections:", err);
+        }
+        
+        //  Fetch posts
+        let rawPosts: any[] = [];
+        try {
+          rawPosts = await fetchPostsByAuthorFromApi(apiProfile.id);
+        } catch (err) {
+          console.error("Error fetching posts:", err);
+          nextPostsError = "No se pudieron cargar las publicaciones";
+        }
 
-    return {
-      backendId: post.postId ?? post.id,
-      id: Number.isFinite(Number(post.postId ?? post.id))
-        ? Number(post.postId ?? post.id)
-        : index + 1,
-      userPostId: Number.isFinite(Number(post.postId ?? post.id))
-        ? Number(post.postId ?? post.id)
-        : index + 1,
-      type: hasAudio
-        ? PostType.AUDIO
-        : hasDocument
-          ? PostType.LINK
-          : hasImage
-            ? PostType.IMAGE
-            : PostType.LINK,
-      title: post.title,
-      content: post.content,
-      isWork: post.media.some((m) => m.isWorkMedia),
-      isDeleted: false,
-      isLocal: true,
-      postRepliedTo: null,
-      postRepostOf: null,
-      createdAt: post.createdAt,
-      updatedAt: post.createdAt,
-      author: {
-        id: post.userId,
-        name: displayName,
-        handle: post.authorUsername,
-        avatar: undefined,
-        isVerified: true,
-      },
-      media: post.media.map((m) => ({
-        postId: Number.NaN,
-        mediaId: m.id,
-        isWorkMedia: m.isWorkMedia,
-        media: {
-          id: m.id,
-          originalFileName: m.fileName,
-          fileName: m.fileName,
-          mimeType: m.mimeType,
-          path: m.url,
-          uploadedAt: post.createdAt,
+        //  Normalizar posts
+        const resolvedPosts = normalizeApiPosts(
+          rawPosts,
+          apiProfile.displayName || apiProfile.username,
+        );
 
-          coverUrl: m.coverUrl,
-          coverMediaId: m.coverMediaId,
-        },
-      })),
-      likesCount: 0,
-      favoritesCount: 0,
-      replies: [],
-    };
-  });
-}
+        // Mapear portfolios
+        resolvedVisualPortfolioItems = mapPostsToVisualPortfolioItems(resolvedPosts);
+        resolvedMusicSongs = mapPostsToMusicSongs(resolvedPosts);
+        resolvedWriterWorks = mapPostsToWriterWorks(resolvedPosts);
 
-  resolvedVisualPortfolioItems = mapPostsToVisualPortfolioItems(resolvedPosts);
-  resolvedMusicSongs = mapPostsToMusicSongs(resolvedPosts);
-  resolvedMusicAlbums = [];
-  resolvedWriterWorks = mapPostsToWriterWorks(resolvedPosts);
+        try {
+          const literatureCollectionsWithPreview = await Promise.all(
+            literatureCollectionsRaw.map(async (collection) => {
+              try {
+                const detail = await collectionsApi.getCollectionById(collection.id);
 
-  profileData = {
-    ...mockProfile,
-    user: {
-      ...mockProfile.user,
-      id: apiProfile.id,
-      name: apiProfile.displayName || apiProfile.username,
-      handle: apiProfile.username,
-    },
-    bio: apiProfile.biography ?? "",
-    followersCount: 0,
-    followingCount: 0,
-    posts: resolvedPosts,
-  };
+                const collectionWorks = detail.posts
+                  .map((post) => {
+                    const matchingWork = resolvedWriterWorks.find(
+                      (work) => work.postId === post.id
+                    );
 
-  } else {
-    profileData = await fetchProfile(username);
-  }
+                    if (!matchingWork) return null;
 
+                    return matchingWork;
+                  })
+                  .filter((work): work is NonNullable<typeof work> => work !== null);
+
+                const latestThreeBooks = collectionWorks.slice(0, 3);
+
+                return {
+                  id: collection.id,
+                  title: collection.title,
+                  workIds: collectionWorks.map((work) => work.id),
+                  coverUrl:
+                    collection.coverUrl ??
+                    collectionWorks[0]?.coverUrl ??
+                    "",
+                  previewCovers: latestThreeBooks.map((work) => work.coverUrl),
+                };
+              } catch (collectionError) {
+                console.error(
+                  "Error loading literature collection preview:",
+                  collection.id,
+                  collectionError
+                );
+                return null;
+              }
+            })
+          );
+
+          setWriterCollections(
+            literatureCollectionsWithPreview.filter(
+              (collection): collection is WriterCollectionPreview =>
+                collection !== null && !!collection.coverUrl
+            )
+          );
+        } catch (error) {
+          console.error("Error resolving literature collections with works:", error);
+          setWriterCollections([]);
+        }
+
+        //  Construir profileData SIN MOCK
+        const profileData: ProfileData = {
+          user: {
+            id: apiProfile.id,
+            name: apiProfile.displayName || apiProfile.username,
+            handle: apiProfile.username,
+            avatar: apiProfile.profilePictureUrl ?? apiProfile.ProfilePictureUrl ?? undefined,
+            isVerified: true,
+          },
+          bio: apiProfile.biography ?? "",
+          followingCount: apiProfile.followingCount ?? apiProfile.FollowingCount ?? 0,
+          followersCount: apiProfile.followersCount ?? apiProfile.FollowersCount ?? 0,
+          posts: resolvedPosts,
+        };
+        // Set states
         setProfile(profileData);
         setVisualPortfolioItems(resolvedVisualPortfolioItems);
         setMusicSongs(resolvedMusicSongs);
         setMusicAlbums(resolvedMusicAlbums);
         setWriterWorks(resolvedWriterWorks);
-        setIsFollowing(profileData.isFollowing || false);
-        setIsSubscribed(profileData.isSubscribed || false);
         setPostsError(nextPostsError);
         setError(null);
       } catch (err: any) {
@@ -1104,6 +257,7 @@ function normalizeApiPosts(apiPosts: ApiPost[], displayName: string): Post[] {
         setMusicSongs([]);
         setMusicAlbums([]);
         setWriterWorks([]);
+        setWriterCollections([]);
         setError(err?.response?.data?.message || err.message);
       } finally {
         setLoading(false);
@@ -1111,78 +265,21 @@ function normalizeApiPosts(apiPosts: ApiPost[], displayName: string): Post[] {
     };
 
     loadProfile();
-  }, [username, user, navigate, isOwnProfile]);
+  }, [username, user, navigate]);
+
 
     useEffect(() => {
-    const loadPortfolioSettings = async () => {
-      const settings = await settingsRepository.getSettings();
-      setPortfolioSettings(settings.portfolio);
-    };
+      const loadPortfolioSettings = async () => {
+        const settings = await settingsRepository.getSettings();
+        setPortfolioSettings(settings.portfolio);
+      };
 
-  void loadPortfolioSettings();
-}, []);
+    void loadPortfolioSettings();
+  }, []);
 
-const handleFollow = async () => {
-  if (!user) {
-    message.warning(t('profile.auth_required'));
-    navigate('/login');
-    return;
-  }
-
-  const targetId = profile?.user.id;
-  if (!targetId) {
-    message.error('Este perfil no tiene un ID válido para seguir/dejar de seguir.');
-    return;
-  }
-
-  const previous = isFollowing;
-  setIsFollowing(!previous);
-
-  try {
-    if (previous) {
-      await unfollowUser(targetId);
-      setProfile((prev) =>
-        prev
-          ? {
-              ...prev,
-              followersCount: Math.max(0, prev.followersCount - 1),
-            }
-          : prev
-      );
-    } else {
-      await followUser(targetId);
-      setProfile((prev) =>
-        prev
-          ? {
-              ...prev,
-              followersCount: prev.followersCount + 1,
-            }
-          : prev
-      );
-    }
-  } catch {
-    setIsFollowing(previous);
-  }
-};
-
-  const handleSubscribe = async () => {
-    if (!user) {
-      message.warning(t('profile.auth_required'));
-      navigate('/login');
-      return;
-    }
-    const previous = isSubscribed;
-    setIsSubscribed(!previous);
-    try {
-      if (previous) {
-        await unsubscribeUser(username!);
-      } else {
-        await subscribeUser(username!);
-      }
-    } catch {
-      setIsSubscribed(previous);
-    }
-  };
+  useEffect(() => {
+    localStorage.setItem(portfolioStorageKey, activePortfolioSubTab);
+  }, [portfolioStorageKey, activePortfolioSubTab]);
 
   if (loading) {
     return (
@@ -1200,27 +297,104 @@ const handleFollow = async () => {
     );
   }
 
-  const mainTabItems  = [
-    { key: 'portfolio', label: t('Portafolio') },
-    { key: 'publications', label: t('Publicaciones') },
-    { key: 'members', label: t('Miembros') },
-  ];
 
-const portfolioSubTabs = [
-  { key: "images", label: "Imágenes" },
-  { key: "music", label: "Música" },
-  { key: "literature", label: "Literatura" },
-];
+
+const hasIntegratedPortfolioSettings =
+  portfolioSettings &&
+  (
+    portfolioSettings.imagesEnabled ||
+    portfolioSettings.musicEnabled ||
+    portfolioSettings.literatureEnabled
+  );
+
+const portfolioOptions = hasIntegratedPortfolioSettings
+  ? [
+      ...(portfolioSettings.imagesEnabled
+        ? [{ key: "images", label: "Imágenes" }]
+        : []),
+      ...(portfolioSettings.musicEnabled
+        ? [{ key: "music", label: "Música" }]
+        : []),
+      ...(portfolioSettings.literatureEnabled
+        ? [{ key: "literature", label: "Literatura" }]
+        : []),
+    ]
+  : [
+      { key: "images", label: "Imágenes" },
+      { key: "music", label: "Música" },
+      { key: "literature", label: "Literatura" },
+    ];
+
 
 const effectivePortfolioTab =
-  portfolioSubTabs.find((tab) => tab.key === activePortfolioSubTab)?.key ??
-  portfolioSubTabs[0]?.key ??
-  "";
+  portfolioOptions.find((tab) => tab.key === activePortfolioSubTab)?.key ??
+  portfolioOptions[0]?.key ??
+  "images";
+
+const portfolioDropdownItems: MenuProps["items"] = portfolioOptions.map((tab) => ({
+  key: tab.key,
+  label: tab.label,
+}));
+
+const handlePortfolioTabClick = () => {
+  setActiveMainTab("portfolio");
+
+  if (!portfolioOptions.some((tab) => tab.key === activePortfolioSubTab)) {
+    setActivePortfolioSubTab(portfolioOptions[0]?.key ?? "images");
+  }
+};
+
+const handlePortfolioDropdownClick: MenuProps["onClick"] = ({ key }) => {
+  setActiveMainTab("portfolio");
+  setActivePortfolioSubTab(String(key));
+};
+
+const mainTabItems = [
+  {
+    key: "portfolio",
+    label: (
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            handlePortfolioTabClick();
+          }}
+          className="bg-transparent border-none p-0 m-0 cursor-pointer"
+        >
+          {t("Portafolio")}
+        </button>
+
+        {portfolioOptions.length > 1 && (
+          <Dropdown
+            menu={{
+              items: portfolioDropdownItems,
+              onClick: handlePortfolioDropdownClick,
+            }}
+            trigger={["click"]}
+          >
+            <button
+              type="button"
+              onClick={(e) => e.stopPropagation()}
+              className="bg-transparent border-none p-0 m-0 flex items-center cursor-pointer"
+            >
+              <ChevronDown size={14} />
+            </button>
+          </Dropdown>
+        )}
+      </div>
+    ),
+  },
+    { key: "publications", label: t("Publicaciones") },
+    { key: "members", label: t("Miembros") },
+  ];
 
 const getFilteredPosts = () => {
+  if (!profile) return [];
+
   let posts = profile.posts;
 
- if (activeMainTab === "members") {
+  if (activeMainTab === "members") {
     posts = [];
   } else if (activeMainTab === "portfolio") {
     posts = [];
@@ -1230,25 +404,6 @@ const getFilteredPosts = () => {
 };
   const filteredPosts = getFilteredPosts();
   const isPortfolioView = activeMainTab === "portfolio";
-  const getActivePortfolioFormRoute = () => {
-    if (activeMainTab !== "portfolio") return null;
-
-    if (activePortfolioSubTab === "images") {
-      return `/profile/${username}/portfolio/update/artist`;
-    }
-
-    if (activePortfolioSubTab === "literature") {
-      return `/profile/${username}/portfolio/update/writer`;
-    }
-
-    if (activePortfolioSubTab === "music") {
-      return activeMusicTab === "albums"
-        ? `/profile/${username}/portfolio/update/music/albums`
-        : `/profile/${username}/portfolio/update/music/songs`;
-    }
-
-    return null;
-  };
 
 const handleUpdatePortfolioClick = () => {
   if (activePortfolioSubTab === "images") {
@@ -1262,9 +417,190 @@ const handleUpdatePortfolioClick = () => {
   setModalVisible(true);
 };
 
+const collectionModalItemsByType = {
+  images: visualPortfolioItems.map((item) => ({
+    id: item.id,
+    title: item.title,
+  })),
+  music: musicSongs.map((song) => ({
+    id: song.postId,
+    title: song.title,
+  })),
+  literature: writerWorks.map((work) => ({
+    id: work.postId,
+    title: work.title,
+  })),
+};
 
-const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
-  
+
+const getEditingCollectionConfig = () => {
+  if (editingImageCollection) {
+    return {
+      collection: editingImageCollection,
+      allItems: visualPortfolioItems,
+      moveTargets: editingImageMoveTargets,
+      collectionType: undefined,
+      onCancel: () => {
+        setEditingImageCollection(null);
+        setEditingImageMoveTargets([]);
+      },
+      onSave: async ({
+        updatedCollection,
+        stagedMoves,
+        coverFile,
+      }: {
+        updatedCollection: MockImageCollection;
+        stagedMoves: Record<string, { id: string; title: string; imageUrl: string }[]>;
+        coverFile?: File | null;
+      }) => {
+        try {
+          await saveEditedCollectionChanges({
+            originalCollection: editingImageCollection,
+            updatedCollection,
+            stagedMoves,
+            entityLabel: "la colección",
+          });
+
+          if (coverFile) {
+            await collectionsApi.uploadCollectionCover(
+              editingImageCollection.id,
+              coverFile
+            );
+          }
+
+          setEditingImageCollection(null);
+          setEditingImageMoveTargets([]);
+          window.location.reload();
+        } catch (error) {
+          console.error("Error saving edited image collection:", error);
+          message.error("No se pudieron guardar los cambios de la colección.");
+        }
+      },
+    };
+  }
+
+  if (editingWriterCollection) {
+    return {
+      collection: editingWriterCollection,
+      allItems: writerWorks.map((work) => ({
+        id: work.postId,
+        title: work.title,
+        imageUrl: work.coverUrl,
+      })),
+      moveTargets: writerCollections
+        .filter((collection) => collection.id !== editingWriterCollection.id)
+        .map((collection) => ({
+          id: collection.id,
+          title: collection.title,
+          coverUrl: collection.coverUrl,
+        })),
+      collectionType: "literature" as const,
+      onCancel: () => setEditingWriterCollection(null),
+      onSave: async ({
+        updatedCollection,
+        stagedMoves,
+        coverFile,
+      }: {
+        updatedCollection: MockImageCollection;
+        stagedMoves: Record<string, { id: string; title: string; imageUrl: string }[]>;
+        coverFile?: File | null;
+      }) => {
+        try {
+          await saveEditedCollectionChanges({
+            originalCollection: editingWriterCollection,
+            updatedCollection,
+            stagedMoves,
+            entityLabel: "la colección",
+          });
+
+          if (coverFile) {
+            await collectionsApi.uploadCollectionCover(
+              editingWriterCollection.id,
+              coverFile
+            );
+          }
+
+          setEditingWriterCollection(null);
+          window.location.reload();
+        } catch (error) {
+          console.error("Error saving edited writer collection:", error);
+          message.error("No se pudieron guardar los cambios de la colección.");
+        }
+      },
+    };
+  }
+
+  if (editingMusicCollection) {
+    return {
+      collection: editingMusicCollection,
+      allItems: musicSongs.map((song) => ({
+        id: song.postId,
+        title: song.title,
+        imageUrl: song.coverUrl,
+      })),
+      moveTargets: musicAlbums
+        .filter((album) => album.id !== editingMusicCollection.id)
+        .map((album) => ({
+          id: album.id,
+          title: album.title,
+          coverUrl: album.coverUrl,
+        })),
+      collectionType: "music" as const,
+      onCancel: () => setEditingMusicCollection(null),
+      onSave: async ({
+        updatedCollection,
+        stagedMoves,
+        coverFile,
+      }: {
+        updatedCollection: MockImageCollection;
+        stagedMoves: Record<string, { id: string; title: string; imageUrl: string }[]>;
+        coverFile?: File | null;
+      }) => {
+        try {
+          await saveEditedCollectionChanges({
+            originalCollection: editingMusicCollection,
+            updatedCollection,
+            stagedMoves,
+            entityLabel: "el album",
+          });
+
+          if (coverFile) {
+            await collectionsApi.uploadCollectionCover(
+              editingMusicCollection.id,
+              coverFile
+            );
+          }
+
+          setEditingMusicCollection(null);
+          window.location.reload();
+        } catch (error) {
+          console.error("Error saving edited music collection:", error);
+          message.error("No se pudieron guardar los cambios del album.");
+        }
+      },
+    };
+  }
+
+  return null;
+};
+
+const editingCollectionConfig = getEditingCollectionConfig();
+
+  if (editingCollectionConfig) {
+    return (
+      <div className="w-full min-h-screen bg-[#E3E2DE]">
+        <EditCollectionView
+          collection={editingCollectionConfig.collection}
+          allItems={editingCollectionConfig.allItems}
+          moveTargets={editingCollectionConfig.moveTargets}
+          collectionType={editingCollectionConfig.collectionType}
+          onCancel={editingCollectionConfig.onCancel}
+          onSave={editingCollectionConfig.onSave}
+        />
+      </div>
+    );
+  }
+
  return (
   <div className="w-[870px] flex flex-col items-center-safe h-full min-h-screen">
     <div
@@ -1274,73 +610,25 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
         : "bg-transparent "
     }`}
   >
-      <div className=" pt-6 ">
-        {/* Perfil header */}
-        <div className="flex flex-col md:flex-row gap-6 px-[70px] BBBBBBBB" >
-          <div className="flex justify-center md:justify-start">
-            <Avatar
-              src={profile.user.avatar}
-              icon={!profile.user.avatar && <User size={60} />}
-              size={141}
-              className="bg-white border-2 border-gray-800"
-            />
-          </div>
-
-          <div className="flex-1">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <Title level={3} className="!mb-0">
-                    {profile.user.name}
-                  </Title>
-                  {profile.user.isVerified && (
-                    <div className="w-5 h-5 bg-[#0B5107] rounded-full flex items-center justify-center border border-gray-800">
-                      <Check size={12} className="text-white" />
-                    </div>
-                  )}
-                </div>
-                <Text type="secondary">@{profile.user.handle}</Text>
-              </div>
-
-            <div className="flex flex-wrap gap-2">
-              {isOwnProfile ? (
-                <>
-                  <ConfigurationButton onClick={handleGoToSettings} />
-                  <FavoritesButton onClick={handleGoToSaved} />
-                  <MoreButton variant="circle" />
-                </>
-              ) : (
-                <>
-                  <CommissionButton />
-                  <SubscribeButton
-                    isSubscribed={isSubscribed}
-                    onClick={handleSubscribe}
-                  />
-                  <FollowButton
-                    isFollowing={isFollowing}
-                    onClick={handleFollow}
-                  />
-                  <MoreButton />
-                </>
-              )}
-            </div>
-            </div>
-
-            <p className="text-gray-800 text-sm text-justify mt-4 leading-relaxed">
-              {profile.bio}
-            </p>
-
-            <div className="flex gap-6 mt-4 text-sm">
-              <span>{profile.followingCount} Seguidos</span>
-              <span>{profile.followersCount} Seguidores</span>
-            </div>
-          </div>
-        </div>
+    <div className=" pt-6 ">
+      {/* Perfil header */}
+      <ProfileHeader
+        profile={profile}
+        onGoToSettings={handleGoToSettings}
+        onGoToSaved={handleGoToSaved}
+      />
 
         <div className=" krea-tabs">
           <Tabs
             activeKey={activeMainTab}
-            onChange={setActiveMainTab}
+            onChange={(key) => {
+              if (key === "portfolio") {
+                handlePortfolioTabClick();
+                return;
+              }
+
+              setActiveMainTab(key);
+            }}
             items={mainTabItems}
             centered={!isMobile}
             tabBarStyle={{ borderBottom: "none" }}
@@ -1350,117 +638,240 @@ const shouldShowUpdatePortfolioButton = activeMainTab === "portfolio";
 
 {activeMainTab === "portfolio" && (
   <>
-    <div className="krea-tabs">
-      <Tabs
-        activeKey={effectivePortfolioTab}
-        onChange={setActivePortfolioSubTab}
-        items={portfolioSubTabs}
-        centered={!isMobile}
-        tabBarStyle={{ borderBottom: "none" }}
-        tabBarGutter={46}
-        size="small"
-      />
-    </div>
 
-    {shouldShowUpdatePortfolioButton && (
-      <div className="px-[70px] mt-[-6px] mb-[10px] flex justify-end">
-       <div className="ml-[500px] -mt-[30px] relative z-20 "> 
+    {activeMainTab === "portfolio" && (
+      
+      <div className="px-[70px] mt-[-10px] mb-[10px] flex justify-end pr-[0px]">
+        <div className="flex items-center gap-[10px] -mt-[30px] relative z-20 translate-x-[55px]">
+        <button
+          type="button"
+          onClick={() => {
+            setIsCreateCollectionModalOpen(true);
+          }}
+          className="rounded-full bg-[#0B5107] cursor-pointer transition hover:bg-[#093B05] px-[14px] py-[6px] text-[11px] border border-[#1B1C1E]"
+        >
+          <span className="text-[13px] font-medium leading-5 text-[#E3E2DE]">
+            Crear colección
+          </span>
+        </button>
+
           <button
             type="button"
             onClick={handleUpdatePortfolioClick}
             className="rounded-full bg-[#0B5107] cursor-pointer transition hover:bg-[#093B05] px-[14px] py-[6px] text-[11px] border border-[#1B1C1E]"
           >
             <span className="text-[13px] font-medium leading-5 text-[#E3E2DE]">
-                  Actualizar Portafolio
+              Actualizar Portafolio
             </span>
-           </button>
+          </button>
         </div>
       </div>
-              )}
-              </>
-          )}
-    </div>
-        
-         {/*LINEA DEL DIABLO*/}
-   
+    )}
+    </>
+    )}
+  </div> 
 
-        <div className={` ${
-            isPortfolioView
-              ? "pt-[20px]"
-              : ""
-          }`}
-        >
+  <div className={` ${
+      isPortfolioView
+        ? "pt-[20px]"
+        : ""
+    }`}
+  >
 
-          {activeMainTab === "portfolio" && effectivePortfolioTab === "images" && (
-           <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-          <DigitalPortfolio items={visualPortfolioItems} />
-           </div>
-          )}
+    {activeMainTab === "portfolio" && effectivePortfolioTab === "images" && (
+     <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+    <DigitalPortfolio
+      userId={profile.user.id ?? ""}
+      items={visualPortfolioItems}
+      onEditCollection={(collection, moveTargets) => {
+        setEditingImageCollection(collection);
+        setEditingImageMoveTargets(moveTargets);
+      }}
+    />
+     </div>
+    )}
 
-          {activeMainTab === "portfolio" && effectivePortfolioTab === "music" && (
-            <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
-              <MusicPortfolio songs={musicSongs} albums={musicAlbums} error={postsError} />
-            </div>
-          )}
-          
-          {activeMainTab === "portfolio" && effectivePortfolioTab === "literature" && (
-            <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
-              <WriterPortfolio works={writerWorks} error={postsError} />
-            </div>
-          )}
+    {activeMainTab === "portfolio" && effectivePortfolioTab === "music" && (
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
+       <MusicPortfolio
+        songs={musicSongs}
+        albums={musicAlbums}
+        error={postsError}
+onEditAlbum={async (album) => {
+  try {
+    const collectionDetail = await collectionsApi.getCollectionById(album.id);
 
-            {activeMainTab !== "portfolio" && (
-            <div className="space-y-[] ">
-              {activeMainTab === "publications" && postsError ? (
-                <div className="text-center text-red-500 py-8">
-                  {postsError}
-                </div>
-              ) : (
-                <>
-                  {filteredPosts.map((post) => (
-                    <div key={post.id} className="mt-[15px] bg-[#E9F1FC] p-[22px] w-full border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]  AAAAAAAAAAAAAAAA">
-                      <PostCard
-                        post={post}
-                        canDelete={isOwnProfile && activeMainTab === "publications"}
-                        onDelete={(deletedPost) => {
-                          setProfile((prev) =>
-                            prev
-                              ? {
-                                  ...prev,
-                                  posts: prev.posts.filter((p) =>
-                                    deletedPost.backendId
-                                      ? p.backendId !== deletedPost.backendId
-                                      : p.id !== deletedPost.id
-                                  ),
-                                }
-                              : prev
-                          );
-                        }}
-                      />
-                      
-                    </div>
-                  ))}
-                  {filteredPosts.length === 0 && (
-                    <div className="text-center text-gray-500 py-8 ">
-                      {t("profile.no_posts")}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-            </div>
-                  <CreatePortfolioPostModal
-        visible={modalVisible}
-        initialPostType={portfolioModalType}
-        onClose={() => setModalVisible(false)}
-        onSuccess={() => {
-          setModalVisible(false);
-          window.location.reload();
-        }}
-      />
+    setEditingMusicCollection({
+      id: collectionDetail.id,
+      title: collectionDetail.title,
+      description: collectionDetail.description ?? "",
+      itemCount: collectionDetail.itemCount,
+      updatedAt: collectionDetail.createdAt,
+      coverUrl: collectionDetail.coverUrl ?? album.coverUrl,
+      posts: collectionDetail.posts.map((post) => {
+        const matchingSong = musicSongs.find((song) => song.postId === post.id);
+
+        return {
+          id: post.id,
+          title: post.title,
+          imageUrl:
+            post.mediaPreviewUrl ??
+            matchingSong?.coverUrl ??
+            album.coverUrl,
+          createdAt: post.uploadedAt,
+        };
+      }),
+    });
+  } catch (error) {
+    console.error("Error loading album detail for edit:", error);
+    message.error("No se pudo cargar el album para editar.");
+  }
+}}
+        />
+      </div>
+    )}
+    
+      {activeMainTab === "portfolio" && effectivePortfolioTab === "literature" && (
+        <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
+          <WriterPortfolio
+            works={writerWorks}
+            collections={writerCollections}
+            error={postsError}
+            onEditCollection={async (collectionId) => {
+              try {
+                const collectionDetail = await collectionsApi.getCollectionById(collectionId);
+
+                setEditingWriterCollection({
+                  id: collectionDetail.id,
+                  title: collectionDetail.title,
+                  description: collectionDetail.description ?? "",
+                  itemCount: collectionDetail.itemCount,
+                  updatedAt: collectionDetail.createdAt,
+                  coverUrl:
+                    collectionDetail.coverUrl ??
+                    writerCollections.find((collection) => collection.id === collectionId)?.coverUrl ??
+                    null,
+                  posts: collectionDetail.posts
+                    .map((post) => {
+                      const matchingWork = writerWorks.find((work) => work.postId === post.id);
+
+                      if (!matchingWork) return null;
+
+                      return {
+                        id: post.id,
+                        title: post.title,
+                        imageUrl:
+                          post.mediaPreviewUrl ??
+                          matchingWork.coverUrl,
+                        createdAt: post.uploadedAt,
+                      };
+                    })
+                    .filter((post): post is NonNullable<typeof post> => post !== null),
+                });
+              } catch (error) {
+                console.error("Error loading literature collection for edit:", error);
+                message.error("No se pudo cargar la colección para editar.");
+              }
+            }}
+            onDeleteCollection={async (collectionId) => {
+              try {
+                await collectionsApi.deleteCollection(collectionId);
+                setWriterCollections((prev) =>
+                  prev.filter((collection) => collection.id !== collectionId)
+                );
+                message.success("Colección eliminada.");
+              } catch (error) {
+                console.error("Error deleting literature collection:", error);
+                message.error("No se pudo eliminar la colección.");
+              }
+            }}
+          />
         </div>
+      )}
+
+      {activeMainTab !== "portfolio" && (
+      <div className="space-y-[] ">
+        {activeMainTab === "publications" && postsError ? (
+          <div className="text-center text-red-500 py-8">
+            {postsError}
+          </div>
+        ) : (
+          <>
+            {filteredPosts.map((post) => (
+              <div key={post.id} className="mt-[15px] w-full">
+                <PostCard
+                  post={{
+                    id: post.backendId ?? String(post.id),
+                    authorPostId: post.author.id ?? String(post.id),
+                    authorName: post.author.name,
+                    uploadedAt: post.createdAt,
+                    uploadCount: post.userPostId,
+                    title: post.title,
+                    content: post.content,
+                    isWork: post.isWork,
+                    isLocal: post.isLocal,
+                    media: post.media.map((m) => ({
+                      id: m.media.id,
+                      url: m.media.path,
+                      mimeType: m.media.mimeType,
+                      fileName: m.media.fileName,
+                      isWorkMedia: m.isWorkMedia,
+                      coverUrl: m.media.coverUrl,
+                      coverMediaId: m.media.coverMediaId,
+                    })),
+                    likesCount: post.likesCount,
+                    isLikedByCurrentUser: post.isLikedByCurrentUser ?? false,
+                    isFavoritedByCurrentUser: false,
+                    isRetweetedByCurrentUser: false,
+                    replies: post.replies ?? [],
+                  }}
+                  canDelete={activeMainTab === "publications"}
+                  onDelete={(deletedPostId) => {
+                    setProfile((prev) =>
+                      prev
+                        ? {
+                            ...prev,
+                            posts: prev.posts.filter(
+                              (p) => (p.backendId ?? String(p.id)) !== deletedPostId
+                            ),
+                          }
+                        : prev
+                    );
+                  }}
+                />
+              </div>
+            ))}
+            {filteredPosts.length === 0 && (
+              <div className="text-center text-gray-500 py-8 ">
+                {t("profile.no_posts")}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    )}
+      </div>
+  <CreatePortfolioPostModal
+    visible={modalVisible}
+    initialPostType={portfolioModalType}
+    onClose={() => setModalVisible(false)}
+    onSuccess={() => {
+      setModalVisible(false);
+      window.location.reload();
+    }}
+  />
+  <CreateCollectionModal
+    open={isCreateCollectionModalOpen}
+    onClose={() => setIsCreateCollectionModalOpen(false)}
+    ownerId={profile.user.id ?? ""}
+    availableItemsByType={collectionModalItemsByType}
+    onSuccess={() => {
+      setIsCreateCollectionModalOpen(false);
+      window.location.reload();
+    }}
+  />
   </div>
+</div>
 );
 }
 export default Profile;

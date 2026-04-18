@@ -1,9 +1,12 @@
+// deno-lint-ignore-file
 import React, { useEffect, useRef, useState } from "react";
 import { Bookmark, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { message } from "antd";
+import { Dropdown, Modal, message } from "antd";
+import type { MenuProps } from "antd";
 import { useAuth } from "../../contexts/AuthContext.tsx";
 import { postsApi } from "../../services/postsService.ts";
+import { ChevronLeft, MoreHorizontal } from "lucide-react";
 
 export type WriterWork = {
   id: string;
@@ -15,6 +18,7 @@ export type WriterWork = {
   description: string;
   likesCount: number;
   isLiked: boolean;
+  createdAt: string;
 };
 
 const WriterCard: React.FC<{ work: WriterWork }> = ({ work }) => {
@@ -25,6 +29,11 @@ const WriterCard: React.FC<{ work: WriterWork }> = ({ work }) => {
   const [liked, setLiked] = useState(work.isLiked);
   const [likesCount, setLikesCount] = useState(work.likesCount);
   const [actionLoading, setActionLoading] = useState(false);
+
+  useEffect(() => {
+    setLiked(work.isLiked);
+    setLikesCount(work.likesCount);
+  }, [work.postId, work.isLiked, work.likesCount]);
 
   const openPostDetail = () => {
     navigate(`/post/${work.postId}`);
@@ -156,15 +165,283 @@ useEffect(() => {
 	);
 };
 
+export type WriterCollectionPreview = {
+  id: string;
+  title: string;
+  workIds: string[];
+  coverUrl: string;
+  previewCovers: string[];
+};
+
 type WriterPortfolioProps = {
   works?: WriterWork[];
   error?: string | null;
+  collections?: WriterCollectionPreview[];
+  onEditCollection?: (collectionId: string) => void;
+  onDeleteCollection?: (collectionId: string) => void;
 };
 
-export default function WriterPortfolio({
-  works = [],
-  error = null,
-}: WriterPortfolioProps) {
+function getLatestPortfolioBooks(works: WriterWork[]) {
+  return works.slice(0, 5);
+}
+
+
+function PortfolioViewHeader({
+  title,
+  onBack,
+}: {
+  title: string;
+  onBack: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-[10px] pb-[18px]">
+      <button
+        type="button"
+        onClick={onBack}
+        className="flex items-center justify-center w-[32px] h-[32px] hover:bg-gray-200 rounded-full transition cursor-pointer"
+      >
+        <ChevronLeft size={20} />
+      </button>
+
+      <div className="pt-[10px]">
+        <h1 className="text-[20px] font-medium text-gray-800 leading-none">
+          {title}
+        </h1>
+      </div>
+    </div>
+  );
+}
+
+function WriterPortfolioGeneralCard({
+  works,
+  onOpen,
+}: {
+  works: WriterWork[];
+  onOpen: () => void;
+}) {
+  const latestFiveBooks = getLatestPortfolioBooks(works);
+
+  const firstBook = latestFiveBooks[4];  // más viejo de los 5
+  const secondBook = latestFiveBooks[3];
+  const thirdBook = latestFiveBooks[2];
+  const fourthBook = latestFiveBooks[1];
+  const fifthBook = latestFiveBooks[0];  // más reciente (derecha)
+
+  return (
+    <div className="w-[287px] text-left bg-transparent ">
+      <div className="w-full">
+        <div
+          className="relative h-[225px] cursor-pointer"
+          onClick={onOpen}
+        >
+          <div className="absolute left-[0px] top-[0px] w-[105px] h-[162px] overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
+            {firstBook && (
+              <img
+                src={firstBook.coverUrl}
+                alt={firstBook.title}
+                className="w-full h-full object-cover"
+              />
+            )}
+          </div>
+
+          <div className="absolute left-[46px] top-[16px] w-[105px] h-[162px] overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
+            {secondBook && (
+              <img
+                src={secondBook.coverUrl}
+                alt={secondBook.title}
+                className="w-full h-full object-cover"
+              />
+            )}
+          </div>
+
+          <div className="absolute left-[91px] top-[32px] w-[105px] h-[162px] overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
+            {thirdBook && (
+              <img
+                src={thirdBook.coverUrl}
+                alt={thirdBook.title}
+                className="w-full h-full object-cover"
+              />
+            )}
+          </div>
+
+          <div className="absolute left-[137px] top-[47px] w-[105px] h-[162px] overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
+            {fourthBook && (
+              <img
+                src={fourthBook.coverUrl}
+                alt={fourthBook.title}
+                className="w-full h-full object-cover"
+              />
+            )}
+          </div>
+
+          <div className="absolute left-[182px] top-[63px] w-[105px] h-[162px] overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
+            {fifthBook && (
+              <img
+                src={fifthBook.coverUrl}
+                alt={fifthBook.title}
+                className="w-full h-full object-cover"
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-start justify-between pl-[4px] py-[14px]">
+          <div>
+            <h3
+              className="text-[24px] font-medium leading-[22px] text-[#1B1C1E] cursor-pointer hover:underline"
+              onClick={onOpen}
+            >
+              Portafolio general
+            </h3>
+
+            <h3 className="text-[14px] font-medium leading-[14px] text-[#1B1C1E] mt-[8px]">
+              {works.length} Obras
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WriterCollectionCard({
+  collection,
+  itemCount,
+  onOpen,
+  onEdit,
+  onDelete,
+}: {
+  collection: WriterCollectionPreview;
+  itemCount: number;
+  onOpen: (collectionId: string) => void;
+  onEdit: (collectionId: string) => void;
+  onDelete: (collectionId: string) => void;
+}) {
+  const rightTop = collection.previewCovers[2];
+  const rightMiddle = collection.previewCovers[1];
+  const rightBottom = collection.previewCovers[0];
+
+  const collectionMenuItems: MenuProps["items"] = [
+    {
+      key: "edit",
+      label: "Editar colección",
+    },
+    {
+      key: "delete",
+      label: "Eliminar colección",
+      danger: true,
+    },
+  ];
+
+  const handleCollectionMenuClick: MenuProps["onClick"] = ({ key }) => {
+    if (key === "edit") {
+      onEdit(collection.id);
+      return;
+    }
+
+    if (key === "delete") {
+      Modal.confirm({
+        title: "¿Eliminar colección?",
+        content: "Esta acción no se puede deshacer.",
+        okText: "Eliminar",
+        okType: "danger",
+        cancelText: "Cancelar",
+        centered: true,
+        onOk: () => {
+          onDelete?.(collection.id);
+        },
+        okButtonProps: {
+          className: "krea-cancel-button",
+        },
+        cancelButtonProps: {
+          className: "krea-white-button",
+        },
+      });
+    }
+  };
+
+  return (
+    <div className="w-[287px] text-left bg-transparent ">
+      <div className="w-full">
+        <div
+          className="relative h-[225px] cursor-pointer"
+          onClick={() => onOpen(collection.id)}
+        >
+          <div className="absolute left-0 top-0 w-[196px] h-[225px] rounded-[10px] overflow-hidden bg-[#D9D9D9] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
+            <img
+              src={collection.coverUrl}
+              alt={collection.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          <div className="absolute right-[0px] top-[0px] w-[69px] h-[107px] rounded-[0px] overflow-hidden bg-[#D9D9D9] shadow-[4px_4px_8px_rgba(0,0,0,0.18)]">
+            {rightTop && (
+              <img
+                src={rightTop}
+                alt={collection.title}
+                className="w-full h-full object-cover"
+              />
+            )}
+          </div>
+
+          <div className="absolute right-[7px] top-[59px] w-[69px] h-[107px] rounded-[0px] overflow-hidden bg-[#D9D9D9] shadow-[4px_4px_8px_rgba(0,0,0,0.18)]">
+            {rightMiddle && (
+              <img
+                src={rightMiddle}
+                alt={collection.title}
+                className="w-full h-full object-cover"
+              />
+            )}
+          </div>
+
+          <div className="absolute right-[14px] top-[118px] w-[69px] h-[107px] rounded-[0px] overflow-hidden bg-[#D9D9D9] shadow-[4px_4px_8px_rgba(0,0,0,0.18)]">
+            {rightBottom && (
+              <img
+                src={rightBottom}
+                alt={collection.title}
+                className="w-full h-full object-cover"
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-start justify-between pl-[4px] py-[14px]">
+          <div className="flex flex-col">
+            <h3
+              className="text-[24px] font-medium leading-[22px] text-[#1B1C1E] cursor-pointer hover:underline"
+              onClick={() => onOpen(collection.id)}
+            >
+              {collection.title}
+            </h3>
+
+            <h3 className="text-[14px] font-medium leading-[14px] text-[#1B1C1E] mt-[8px]">
+              {itemCount} Obras
+            </h3>
+          </div>
+
+          <Dropdown
+            menu={{ items: collectionMenuItems, onClick: handleCollectionMenuClick }}
+            trigger={["click"]}
+            placement="bottomRight"
+          >
+            <button
+              type="button"
+              className="h-[20px] w-[20px] flex items-center justify-center rounded-full cursor-pointer"
+              onClick={(event) => {
+                event.stopPropagation();
+              }}
+            >
+              <MoreHorizontal size={16} />
+            </button>
+          </Dropdown>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WriterPortfolioWorksGrid({ works }: { works: WriterWork[] }) {
   const leftColumn = works.filter((_, index) => index % 2 === 0);
   const rightColumn = works.filter((_, index) => index % 2 !== 0);
 
@@ -184,13 +461,98 @@ export default function WriterPortfolio({
             ))}
           </div>
         </div>
-      ) : error ? (
-        <div className="text-center text-red-500 py-8">{error}</div>
       ) : (
         <div className="text-center text-gray-500 py-8">
           No hay obras literarias disponibles.
         </div>
       )}
+    </div>
+  );
+}
+
+export default function WriterPortfolio({
+  works = [],
+  error = null,
+  collections = [],
+  onEditCollection,
+  onDeleteCollection,
+}: WriterPortfolioProps) {
+  const [showGeneralPortfolio, setShowGeneralPortfolio] = useState(false);
+  const [activeCollectionId, setActiveCollectionId] = useState<string | null>(null);
+
+  const activeCollection = collections.find(
+    (collection) => collection.id === activeCollectionId
+  );
+
+  const handleEditCollection = (collectionId: string) => {
+    onEditCollection?.(collectionId);
+  };
+
+  const handleDeleteCollection = (collectionId: string) => {
+    onDeleteCollection?.(collectionId);
+  };
+
+  const filteredCollectionWorks = activeCollection
+    ? works.filter((work) => activeCollection.workIds.includes(work.id))
+    : [];
+
+  if (error) {
+    return <div className="text-center text-red-500 py-8">{error}</div>;
+  }
+
+  if (showGeneralPortfolio) {
+    return (
+      <div className="w-full -mt-[60px]">
+        <div className="max-w-[1388px] mx-auto">
+          <PortfolioViewHeader
+            title="Portafolio General"
+            onBack={() => setShowGeneralPortfolio(false)}
+          />
+        </div>
+
+        <WriterPortfolioWorksGrid works={works} />
+      </div>
+    );
+  }
+
+  if (activeCollection) {
+    return (
+      <div className="w-full -mt-[60px]">
+        <div className="max-w-[1388px] mx-auto">
+          <PortfolioViewHeader
+            title={activeCollection.title}
+            onBack={() => setActiveCollectionId(null)}
+          />
+        </div>
+
+        <WriterPortfolioWorksGrid works={filteredCollectionWorks} />
+      </div>
+    );
+  }
+
+  if (collections.length === 0) {
+    return <WriterPortfolioWorksGrid works={works} />;
+  }
+
+  return (
+    <div className="w-full px-[20px] md:px-[241px] pb-[30px]">
+      <div className="grid justify-center gap-x-[35px] gap-y-[20px] [grid-template-columns:repeat(auto-fit,320px)]">
+        <WriterPortfolioGeneralCard
+          works={works}
+          onOpen={() => setShowGeneralPortfolio(true)}
+        />
+
+      {collections.map((collection) => (
+        <WriterCollectionCard
+          key={collection.id}
+          collection={collection}
+          itemCount={collection.workIds.length}
+          onOpen={setActiveCollectionId}
+          onEdit={handleEditCollection}
+          onDelete={handleDeleteCollection}
+        />
+      ))}
+      </div>
     </div>
   );
 }

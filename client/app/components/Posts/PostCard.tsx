@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 import { Avatar, message, Modal, Dropdown} from 'antd';
@@ -15,6 +15,8 @@ interface PostCardProps {
   onRepost?: (postId: string) => void;
   onComment?: () => void;
   onBookmark?: () => void;
+  canDelete?: boolean;
+  onDelete?: (postId: string) => void;
 }
 
 const getMediaType = (mimeType?: string): 'image' | 'audio' | 'pdf' | 'text' => {
@@ -26,7 +28,7 @@ const getMediaType = (mimeType?: string): 'image' | 'audio' | 'pdf' | 'text' => 
 };
 
 
-export default function PostCard({ post, onLike, onRepost, onComment, onBookmark }: PostCardProps) {
+export default function PostCard({ post, onLike, onRepost, onComment, onBookmark, canDelete = false, onDelete, }: PostCardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -44,6 +46,15 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(post.isFavoritedByCurrentUser ?? false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
+
+  useEffect(() => {
+    setLiked(originalPost.isLikedByCurrentUser ?? false);
+    setLikesCount(originalPost.likesCount ?? 0);
+  }, [originalPost.id, originalPost.isLikedByCurrentUser, originalPost.likesCount]);
+
+  useEffect(() => {
+    setIsBookmarked(post.isFavoritedByCurrentUser ?? false);
+  }, [post.id, post.isFavoritedByCurrentUser]);
 
   const requireAuth = () => {
     if (!user) {
@@ -122,13 +133,36 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
     setReportModalOpen(true);
   };
 
+  const handleDeletePost = async () => {
+    if (!requireAuth()) return;
+
+    try {
+      await postsApi.deletePost(originalPost.id);
+      message.success("Publicación eliminada.");
+      onDelete?.(originalPost.id);
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      message.error("No se pudo eliminar la publicación.");
+    }
+  };
+
   const menuItems = [];
+
   if (!isOwnPost) {
     menuItems.push({
       key: 'report',
       label: t('post.report'),
       icon: <Flag size={16} />,
       onClick: handleReportClick,
+    });
+  }
+
+  if (canDelete) {
+    menuItems.push({
+      key: 'delete',
+      label: 'Eliminar publicación',
+      danger: true,
+      onClick: handleDeletePost,
     });
   }
 
@@ -171,7 +205,7 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
               <span className="text-[#1B1C1E]">·</span>
               <span className="text-[#1B1C1E]">{formattedDate}</span>
             </div>
-            <p className="text-[#1B1C1E] text-justify text-[16px] leading-7 mt-1">{originalPost.content}</p>
+            <p className="text-[#1B1C1E] text-justify text-[16px] leading-6 mt-1">{originalPost.content}</p>
           </div>
         </Link>
         <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">

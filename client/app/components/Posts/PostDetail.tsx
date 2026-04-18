@@ -3,13 +3,13 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Spin, message, Alert, Avatar, Dropdown } from 'antd';
 import { ArrowLeft, Heart, MessageCircle, Repeat2, User, MoreHorizontal, Bookmark, Flag } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import TagsSidebar from '../Home/TagsSidebar';
-import PostImageDetail from './PostImageDetail';
-import PostAudioDetail from './PostAudioDetail';
-import CommentSection from './CommentSection';
-import { postsApi } from '../../services/postsService';
-import type { PostDto } from '../../types/api';
+import { useAuth } from '../../contexts/AuthContext.tsx';
+import TagsSidebar from '../Home/TagsSidebar.tsx';
+import PostImageDetail from './PostImageDetail.tsx';
+import PostAudioDetail from './PostAudioDetail.tsx';
+import CommentSection from './CommentSection.tsx';
+import { postsApi } from '../../services/postsService.ts';
+import type { PostDto } from '../../types/api.ts';
 import ReportModal from "../Reports/ReportModal.tsx";
 
 const getMediaType = (mimeType?: string): 'image' | 'audio' | 'pdf' | 'text' => {
@@ -232,7 +232,7 @@ export default function PostDetail() {
                 </Dropdown>
               </div>
 
-              <p className="text-[#1B1C1E] text-justify text-[16px] leading-[28px] mt-4 mb-6">
+              <p className="text-[#1B1C1E] text-justify text-[16px] leading-6 mt-4 mb-6">
                 {originalPost.content}
               </p>
 

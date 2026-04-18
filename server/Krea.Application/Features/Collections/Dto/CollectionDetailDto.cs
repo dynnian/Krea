@@ -12,10 +12,14 @@ namespace Krea.Application.Features.Collections.Dto {
         public Guid OwnerId { get; init; }
 
         public int ItemCount { get; init; }
-        
+
         public CollectionType Type { get; init; }
 
         public DateTime CreatedAt { get; init; }
+
+        public Guid? CoverMediaId { get; init; }
+
+        public string? CoverUrl { get; init; }
 
         public IReadOnlyList<CollectionPostDto> Posts { get; init; } = [];
     }

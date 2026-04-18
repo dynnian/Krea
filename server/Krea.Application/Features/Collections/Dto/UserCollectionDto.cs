@@ -12,5 +12,9 @@ namespace Krea.Application.Features.Collections.Dto {
         public CollectionType Type { get; init; }
 
         public DateTime UpdatedAt { get; init; }
+
+        public Guid? CoverMediaId { get; init; }
+
+        public string? CoverUrl { get; init; }
     }
 }
