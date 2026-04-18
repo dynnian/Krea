@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import React, { useEffect, useRef, useState } from "react";
 import { Bookmark, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +29,11 @@ const WriterCard: React.FC<{ work: WriterWork }> = ({ work }) => {
   const [liked, setLiked] = useState(work.isLiked);
   const [likesCount, setLikesCount] = useState(work.likesCount);
   const [actionLoading, setActionLoading] = useState(false);
+
+  useEffect(() => {
+    setLiked(work.isLiked);
+    setLikesCount(work.likesCount);
+  }, [work.postId, work.isLiked, work.likesCount]);
 
   const openPostDetail = () => {
     navigate(`/post/${work.postId}`);

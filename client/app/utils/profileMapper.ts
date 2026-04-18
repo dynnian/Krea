@@ -22,47 +22,56 @@ export const isDocumentMime = (mime?: string) =>
   );
 
 export function normalizeApiPosts(
-  apiPosts: ApiPost[],
+  apiPosts: any[],
   displayName: string,
 ): Post[] {
   return apiPosts.map((post, index) => {
-    const hasAudio = post.media.some((m) => isAudioMime(m.mimeType));
-    const hasImage = post.media.some((m) => isImageMime(m.mimeType));
-    const hasDocument = post.media.some((m) => isDocumentMime(m.mimeType));
+    const hasAudio = post.media?.some((m: any) => isAudioMime(m.mimeType));
+    const hasImage = post.media?.some((m: any) => isImageMime(m.mimeType));
+    const hasDocument = post.media?.some((m: any) => isDocumentMime(m.mimeType));
+
+    const backendId = post.id ?? String(index + 1);
+    const uploadedAt = post.uploadedAt ?? post.createdAt ?? new Date().toISOString();
 
     return {
-      backendId: post.postId ?? post.id,
-      id: Number.isFinite(Number(post.postId ?? post.id))
-        ? Number(post.postId ?? post.id)
-        : index + 1,
-      userPostId: Number.isFinite(Number(post.postId ?? post.id))
-        ? Number(post.postId ?? post.id)
-        : index + 1,
-        type: hasAudio
+      backendId,
+      id: Number.isFinite(Number(backendId)) ? Number(backendId) : index + 1,
+      userPostId: typeof post.uploadCount === "number"
+        ? post.uploadCount
+        : Number.isFinite(Number(post.authorPostId))
+          ? Number(post.authorPostId)
+          : index + 1,
+      type: hasAudio
         ? PostType.AUDIO
         : hasDocument
-            ? PostType.LINK
-            : hasImage
+          ? PostType.LINK
+          : hasImage
             ? PostType.IMAGE
             : PostType.LINK,
-      title: post.title,
-      content: post.content,
-      isWork: post.media.some((m) => m.isWorkMedia),
+      title: post.title ?? null,
+      content: post.content ?? "",
+      isWork: post.isWork ?? post.media?.some((m: any) => m.isWorkMedia) ?? false,
       isDeleted: false,
-      isLocal: true,
-      postRepliedTo: null,
-      postRepostOf: null,
-      createdAt: post.createdAt,
-      updatedAt: post.createdAt,
+      isLocal: post.isLocal ?? true,
+      postRepliedTo: post.postRepliedTo ? Number(post.postRepliedTo) : null,
+      postRepostOf: post.postRepostOf ? Number(post.postRepostOf) : null,
+      createdAt: uploadedAt,
+      updatedAt: post.updatedAt ?? uploadedAt,
       author: {
-        id: post.userId,
-        name: displayName,
-        handle: post.authorUsername,
-        avatar: undefined,
+        id: post.author?.id ?? post.authorPostId ?? backendId,
+        name:
+          post.author?.displayName ??
+          post.authorName ??
+          displayName,
+        handle:
+          post.author?.username ??
+          post.authorName ??
+          displayName,
+        avatar: post.author?.avatar,
         isVerified: true,
       },
-      media: post.media.map((m) => ({
-        postId: Number.NaN,
+      media: (post.media ?? []).map((m: any) => ({
+        postId: Number.isFinite(Number(backendId)) ? Number(backendId) : Number.NaN,
         mediaId: m.id,
         isWorkMedia: m.isWorkMedia,
         media: {
@@ -71,14 +80,14 @@ export function normalizeApiPosts(
           fileName: m.fileName,
           mimeType: m.mimeType,
           path: m.url,
-          uploadedAt: post.createdAt,
+          uploadedAt,
           coverUrl: m.coverUrl,
           coverMediaId: m.coverMediaId,
         },
       })),
       likesCount: post.likesCount ?? 0,
       favoritesCount: post.favoritesCount ?? 0,
-      replies: [],
+      replies: post.replies ?? [],
       isLikedByCurrentUser: post.isLikedByCurrentUser ?? false,
     };
   });

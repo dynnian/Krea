@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 import { Avatar, message, Modal, Dropdown} from 'antd';
@@ -45,6 +45,15 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(post.isFavoritedByCurrentUser ?? false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
+
+  useEffect(() => {
+    setLiked(originalPost.isLikedByCurrentUser ?? false);
+    setLikesCount(originalPost.likesCount ?? 0);
+  }, [originalPost.id, originalPost.isLikedByCurrentUser, originalPost.likesCount]);
+
+  useEffect(() => {
+    setIsBookmarked(post.isFavoritedByCurrentUser ?? false);
+  }, [post.id, post.isFavoritedByCurrentUser]);
 
   const requireAuth = () => {
     if (!user) {

@@ -1,5 +1,5 @@
 // deno-lint-ignore-file
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dropdown, message } from "antd";
 import type { MenuProps } from "antd";
@@ -45,75 +45,6 @@ type MusicPortfolioProps = {
   onEditAlbum?: (album: MusicAlbum) => void;
 };
 
-const MOCK_ALBUMS: MusicAlbum[] = [
-  {
-    id: "mock-album-1",
-    title: "Trouble’s Coming",
-    releaseDate: "2025-01-01",
-    songsCount: 10,
-    coverUrl: "https://upload.wikimedia.org/wikipedia/en/b/b0/Royal_Blood_-_Royal_Blood_%28Artwork%29.jpg",
-    tracks: [],
-  },
-  {
-    id: "mock-album-2",
-    title: "Figure It Out",
-    releaseDate: "2025-01-01",
-    songsCount: 8,
-    coverUrl: "https://upload.wikimedia.org/wikipedia/en/1/1a/Royal_Blood_-_Typhoons.png",
-    tracks: [],
-  },
-  {
-    id: "mock-album-3",
-    title: "Out of the Black",
-    releaseDate: "2025-01-01",
-    songsCount: 9,
-    coverUrl: "https://spillmagazine.com/wp-content/uploads/2023/09/Royal-Blood.jpg",
-    tracks: [],
-  },
-  {
-    id: "mock-album-4",
-    title: "Come on Over",
-    releaseDate: "2025-01-01",
-    songsCount: 7,
-    coverUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQl_qHAjrHkEb1My6yB3cNuTfC5VSbMJug9Pg&s",
-    tracks: [],
-  },
-  {
-    id: "mock-album-5",
-    title: "Boilermaker",
-    releaseDate: "2025-01-01",
-    songsCount: 11,
-    coverUrl: "https://www.musicmaniarecords.be/media/coverart-big/216247-royal-blood-10th-anniversary-edition.jpg",
-    tracks: [],
-  },
-  {
-    id: "mock-album-6",
-    title: "Honeybrains",
-    releaseDate: "2025-01-01",
-    songsCount: 6,
-    coverUrl: "https://i.scdn.co/image/ab67616d00001e02cd079688b6a17846497bd28f",
-    tracks: [],
-  },
-  {
-    id: "mock-album-7",
-    title: "Typhoons",
-    releaseDate: "2025-01-01",
-    songsCount: 12,
-    coverUrl: "https://images.genius.com/41573306b54bc0db63fe65c6add8414d.1000x1000x1.png",
-    tracks: [],
-  },
-  {
-    id: "mock-album-8",
-    title: "Mountains at Midnight",
-    releaseDate: "2025-01-01",
-    songsCount: 5,
-    coverUrl: "https://i.scdn.co/image/ab67616d00001e02b6fcb3266d0cc2d58185dd83",
-    tracks: [],
-  },
-
-
-];
-
 const SongCard: React.FC<{ song: MusicSong }> = ({ song }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -122,6 +53,11 @@ const SongCard: React.FC<{ song: MusicSong }> = ({ song }) => {
   const [likesCount, setLikesCount] = useState(song.likesCount);
   const [actionLoading, setActionLoading] = useState(false);
   const [isWaveReady, setIsWaveReady] = useState(false);
+
+  useEffect(() => {
+    setLiked(song.isLiked);
+    setLikesCount(song.likesCount);
+  }, [song.postId, song.isLiked, song.likesCount]);
 
   const waveformControls = useRef<{
     playPause: () => void;
