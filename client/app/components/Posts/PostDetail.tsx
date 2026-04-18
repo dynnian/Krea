@@ -12,12 +12,19 @@ import { postsApi } from '../../services/postsService.ts';
 import type { PostDto } from '../../types/api.ts';
 import ReportModal from "../Reports/ReportModal.tsx";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5101';
+
 const getMediaType = (mimeType?: string): 'image' | 'audio' | 'pdf' | 'text' => {
   if (!mimeType) return 'text';
   if (mimeType.startsWith('image/')) return 'image';
   if (mimeType === 'music/mpeg' || mimeType === 'audio/mpeg') return 'audio';
   if (mimeType === 'application/pdf') return 'pdf';
   return 'text';
+};
+
+const toAbsoluteUrl = (url?: string | null): string | undefined => {
+  if (!url) return undefined;
+  return url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
 };
 
 
@@ -188,6 +195,7 @@ const isOwnPost = !!originalPost && user?.id === originalPost.authorPostId;
 
   const authorName = originalPost.authorName || `Usuario ${originalPost.authorPostId.slice(0, 8)}`;
   const authorHandle = originalPost.authorName ? `@${originalPost.authorName}` : originalPost.authorPostId.slice(0, 8);
+  const authorAvatar = toAbsoluteUrl(originalPost.author?.avatar ?? originalPost.authorProfilePictureUrl);
 
   return (
     <div className="min-h-screen bg-[#E3E2DE]">
@@ -214,6 +222,7 @@ const isOwnPost = !!originalPost && user?.id === originalPost.authorPostId;
               <div className="flex justify-between items-start mb-[20px]">
                 <div className="flex gap-3">
                   <Avatar
+                    src={authorAvatar}
                     icon={<User />}
                     size={48}
                     className="bg-white border border-black rounded-full"
