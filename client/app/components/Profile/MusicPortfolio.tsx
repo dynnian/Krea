@@ -252,7 +252,7 @@ function PortfolioViewHeader({
   onBack: () => void;
 }) {
   return (
-    <div className="flex items-center gap-[10px] px-[24px] md:px-[34px] pb-[18px]">
+    <div className="flex items-center gap-[10px] pb-[18px]">
       <button
         onClick={onBack}
         className="flex items-center justify-center w-[32px] h-[32px] hover:bg-gray-200 rounded-full transition cursor-pointer"
@@ -482,16 +482,17 @@ export default function MusicPortfolio({
     onEditAlbum?.(album);
   };
 
-  if (showGeneralPortfolio) {
-    return (
-      <div className=" w-full -mt-[60px]">
-        <div className="pl-[430px]">
+if (showGeneralPortfolio) {
+  return (
+    <div className="w-full -mt-[60px]">
+      <div className="max-w-[975px] mx-auto">
         <PortfolioViewHeader
           title="Portafolio General"
           onBack={() => setShowGeneralPortfolio(false)}
         />
       </div>
-        <div className="max-w-[975px] mx-auto space-y-4">
+
+      <div className="max-w-[975px] mx-auto space-y-4">
           {songs.length > 0 ? (
             songs.map((song) => (
               <SongCard key={song.id} song={song} />

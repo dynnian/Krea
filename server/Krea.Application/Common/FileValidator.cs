@@ -6,7 +6,7 @@ namespace Krea.Application.Common {
         private static readonly Dictionary<string, Rule> Rules = new()
         {
             ["image"] = new Rule(
-                5 * 1024 * 1024,
+                10 * 1024 * 1024,
                 new[] { "image/png", "image/jpeg", "image/webp" },
                 new[] { ".png", ".jpg", ".jpeg", ".webp" }
             ),
@@ -18,7 +18,7 @@ namespace Krea.Application.Common {
             ),
 
             ["text"] = new Rule(
-                15 * 1024 * 1024,
+                20 * 1024 * 1024,
                 new[] { "application/pdf", "text/plain", "application/epub+zip" },
                 new[] { ".pdf", ".txt", ".epub" }
             )

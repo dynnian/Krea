@@ -51,7 +51,7 @@ const COLLECTION_TYPE_CONFIG: Record<
     coverLabel: "Cover de la colección",
     titleLabel: "Titulo de la colección",
     titlePlaceholder: "Titulo de la colección",
-    moveModalLabel: "Mover x obras a:",
+    moveModalLabel: "Mover obras a:",
     addModalLabel: "Agregar obras",
     addListLabel: "Otras obras",
     itemWordSingular: "obra",
@@ -63,7 +63,7 @@ const COLLECTION_TYPE_CONFIG: Record<
     coverLabel: "Cover de la colección",
     titleLabel: "Titulo de la colección",
     titlePlaceholder: "Titulo de la colección",
-    moveModalLabel: "Mover x obras a:",
+    moveModalLabel: "Mover obras a:",
     addModalLabel: "Agregar obras",
     addListLabel: "Otras obras",
     itemWordSingular: "obra",
@@ -75,7 +75,7 @@ const COLLECTION_TYPE_CONFIG: Record<
     coverLabel: "Cover del album",
     titleLabel: "Titulo del album",
     titlePlaceholder: "Titulo del album",
-    moveModalLabel: "Mover x canciones a:",
+    moveModalLabel: "Mover canciones a:",
     addModalLabel: "Agregar canciones",
     addListLabel: "Otras canciones",
     itemWordSingular: "cancion",
@@ -224,6 +224,71 @@ function SelectableMusicGrid({
             <p 
             onClick={() => onToggle(item)}
             className="pt-[5px] text-[18px] leading-[30px] font-medium text-[#1B1C1E] truncate cursor-pointer hover:underline">
+              {item.title}
+            </p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function SelectableLiteratureGrid({
+  items,
+  selectedIds,
+  onToggle,
+}: {
+  items: CollectionItem[];
+  selectedIds: string[];
+  onToggle: (item: CollectionItem) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 cursor-pointer md:grid-cols-3 xl:grid-cols-6 gap-x-[12px] gap-y-[10px] px-0 pb-[1px]">
+      {items.map((item) => {
+        const isSelected = selectedIds.includes(item.id);
+
+        return (
+          <div key={item.id} className="w-full">
+            <div className="relative group ">
+              
+              {/*  Cover libro */}
+              <div className="w-full  aspect-[2/3] shadow-[4px_4px_13px_rgba(0,0,0,0.18)]">
+                <img
+                  src={item.imageUrl}
+                  alt={item.title}
+                  className={`w-full h-full object-cover transition ${
+                    isSelected ? "opacity-80 " : " group-hover:scale-[1.03]"
+                  }`}
+                />
+              </div>
+
+              {/* overlay */}
+              <div
+                onClick={() => onToggle(item)}
+                className={`absolute inset-0 transition ${
+                  isSelected
+                    ? "bg-[#0B5107]/25"
+                    : "bg-transparent group-hover:bg-black/10"
+                }`}
+              />
+
+              {/* check */}
+              <div
+                className={`absolute top-[10px] right-[10px] flex items-center justify-center w-[24px] h-[24px] rounded-full border transition ${
+                  isSelected
+                    ? "bg-[#0B5107] border-[#0B5107] text-white"
+                    : "bg-white/90 border-[#1B1C1E] text-transparent"
+                }`}
+              >
+                <Check size={14} />
+              </div>
+            </div>
+
+            {/* título */}
+            <p
+              onClick={() => onToggle(item)}
+              className="pt-[6px] text-[15px]  cursor-pointer leading-[20px] font-medium text-[#1B1C1E] truncate cursor-pointer hover:underline"
+            >
               {item.title}
             </p>
           </div>
@@ -543,7 +608,11 @@ const handleSave = () => {
 
     if (collectionType === "literature") {
       return (
-        <PlaceholderGrid message="Vista de literatura pendiente de conectar." />
+        <SelectableLiteratureGrid
+          items={stagedItems}
+          selectedIds={selectedIds}
+          onToggle={handleToggleSelection}
+        />
       );
     }
 
@@ -710,6 +779,7 @@ const handleSave = () => {
         onToggleItem={handleToggleAddItem}
         title={config.addModalLabel}
         listLabel={config.addListLabel}
+        collectionType={collectionType}
       />
     </div>
     

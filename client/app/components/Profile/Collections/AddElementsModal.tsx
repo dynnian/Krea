@@ -19,6 +19,7 @@ type AddElementsModalProps = {
   onToggleItem: (itemId: string) => void;
   title: string;
   listLabel: string;
+  collectionType?: "images" | "literature" | "music";
 };
 
 export default function AddElementsModal({
@@ -32,10 +33,12 @@ export default function AddElementsModal({
   onToggleItem,
   title,
   listLabel,
+  collectionType = "images",
 }: AddElementsModalProps) {
   const filteredItems = availableItems.filter((item) =>
     item.title.toLowerCase().includes(searchValue.toLowerCase())
   );
+  const isLiterature = collectionType === "literature";
 
   return (
     <ConfigProvider
@@ -95,7 +98,11 @@ export default function AddElementsModal({
                           : "hover:bg-[#DCE9F9]"
                       }`}
                       >
-                      <div className="w-[66px] h-[66px] rounded-[5px] overflow-hidden bg-[#D9D9D9] shrink-0 border border-[#95ACCC] border-[1px]">
+                      <div
+                        className={`rounded-[5px] overflow-hidden bg-[#D9D9D9] shrink-0 border border-[#95ACCC] border-[1px] ${
+                          isLiterature ? "w-[50px] h-[75px]" : "w-[66px] h-[66px]"
+                        }`}
+                      >
                         {item.imageUrl ? (
                           <img
                             src={item.imageUrl}

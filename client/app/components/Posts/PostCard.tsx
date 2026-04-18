@@ -15,6 +15,8 @@ interface PostCardProps {
   onRepost?: (postId: string) => void;
   onComment?: () => void;
   onBookmark?: () => void;
+  canDelete?: boolean;
+  onDelete?: (postId: string) => void;
 }
 
 const getMediaType = (mimeType?: string): 'image' | 'audio' | 'pdf' | 'text' => {
@@ -26,7 +28,7 @@ const getMediaType = (mimeType?: string): 'image' | 'audio' | 'pdf' | 'text' => 
 };
 
 
-export default function PostCard({ post, onLike, onRepost, onComment, onBookmark }: PostCardProps) {
+export default function PostCard({ post, onLike, onRepost, onComment, onBookmark, canDelete = false, onDelete, }: PostCardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -117,6 +119,19 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
     setReportModalOpen(true);
   };
 
+  const handleDeletePost = async () => {
+    if (!requireAuth()) return;
+
+    try {
+      await postsApi.deletePost(originalPost.id);
+      message.success("Publicación eliminada.");
+      onDelete?.(originalPost.id);
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      message.error("No se pudo eliminar la publicación.");
+    }
+  };
+
   const menuItems = [
     {
       key: 'report',
@@ -124,6 +139,16 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
       icon: <Flag size={16} />,
       onClick: () => handleReportClick(),
     },
+    ...(canDelete
+      ? [
+          {
+            key: 'delete',
+            label: 'Eliminar publicación',
+            danger: true,
+            onClick: () => handleDeletePost(),
+          },
+        ]
+      : []),
   ];
 
   const firstMedia = originalPost.media?.[0];
