@@ -18,8 +18,10 @@ const { useBreakpoint } = Grid;
 import "antd/dist/reset.css";
 import "./app.css";
 import { NotificationProvider } from "./contexts/NotificationContext.tsx";
+import faviconIcon from "../assets/icon.svg";
 
 export const links: Route.LinksFunction = () => [
+  { rel: "icon", href: faviconIcon, type: "image/svg+xml" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",

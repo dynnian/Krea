@@ -1,4 +1,5 @@
 namespace Krea.Infrastructure {
+    using System;
     using Data;
     using Identity;
     using Repositories;
@@ -20,14 +21,32 @@ namespace Krea.Infrastructure {
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
     using Minio;
 
     public static class DependencyInjection {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services,
                                                            IConfiguration configuration) {
+            string environment = configuration["ASPNETCORE_ENVIRONMENT"]
+                                 ?? configuration["DOTNET_ENVIRONMENT"]
+                                 ?? Environments.Production;
+            bool isDevelopment = environment.Equals(Environments.Development, StringComparison.OrdinalIgnoreCase);
+
+            string connectionString = configuration.GetConnectionString("DefaultConnection")
+                                      ?? throw new InvalidOperationException(
+                                          "ConnectionStrings:DefaultConnection is required.");
+
             // DbContext
-            services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<AppDbContext>(options => {
+                options.UseNpgsql(connectionString,
+                    npgsql => npgsql.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(10),
+                        errorCodesToAdd: null));
+
+                if (isDevelopment) {
+                    options.EnableDetailedErrors();
+                    options.EnableSensitiveDataLogging();
+                }
+            });
 
             // Seeding
             services.Configure<SeedingOptions>(
@@ -74,7 +93,6 @@ namespace Krea.Infrastructure {
             services.AddScoped<IMediaRepository, MediaRepository>();
             services.AddScoped<IHashtagRepository, HashtagRepository>();
             services.AddScoped<IFollowRepository, FollowRepository>();
-            services.AddScoped<ICollectionRepository, CollectionRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IInstanceConfigurationRepository, InstanceConfigurationRepository>();
             services.AddScoped<IPostModerationReportRepository, PostModerationReportRepository>();
@@ -83,7 +101,7 @@ namespace Krea.Infrastructure {
             services.AddScoped<IIdentityService, IdentityService>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IInstanceSettingsService, InstanceSettingsService>();
-            bool useFakeEmail = configuration.GetValue<bool>("UseFakeEmail");
+            bool useFakeEmail = configuration.GetValue<bool?>("UseFakeEmail") ?? isDevelopment;
             if (useFakeEmail) {
                 services.AddScoped<IEmailService, FakeEmailService>();
             }
@@ -91,36 +109,43 @@ namespace Krea.Infrastructure {
                 services.AddScoped<IEmailService, EmailService>();
             }
 
-            //MinIO
-            services.AddSingleton<IMinioClient>(sp => {
-                var configuration = sp.GetRequiredService<IConfiguration>();
+            string minioEndpoint = GetRequiredConfiguration(configuration, "Minio:Endpoint");
+            string minioAccessKey = GetRequiredConfiguration(configuration, "Minio:AccessKey");
+            string minioSecretKey = GetRequiredConfiguration(configuration, "Minio:SecretKey");
+            string minioBaseUrl = GetRequiredConfiguration(configuration, "Minio:BaseUrl");
+            string minioBucket = configuration["Minio:Bucket"] ?? "uploads";
+            bool minioUseSsl = configuration.GetValue<bool>("Minio:UseSsl");
 
+            // MinIO
+            services.AddSingleton<IMinioClient>(sp => {
                 return new MinioClient()
-                       .WithEndpoint(configuration["Minio:Endpoint"])
-                       .WithCredentials(
-                           configuration["Minio:AccessKey"],
-                           configuration["Minio:SecretKey"])
-                       .WithSSL(false)
+                       .WithEndpoint(minioEndpoint)
+                       .WithCredentials(minioAccessKey, minioSecretKey)
+                       .WithSSL(minioUseSsl)
                        .Build();
             });
 
             services.AddScoped<IFileStorage>(sp => {
                 var minioClient = sp.GetRequiredService<IMinioClient>();
-                var configuration = sp.GetRequiredService<IConfiguration>();
-
-                string baseUrl = configuration["Minio:BaseUrl"]
-                                 ?? throw new Exception("Minio:BaseUrl is not configured");
-
-                return new MinioFileStorage(minioClient, baseUrl);
+                return new MinioFileStorage(minioClient, minioBaseUrl, minioBucket);
             });
+
             services.AddScoped<IFeedQueryService, FeedQueryService>();
-            //services.AddScoped<IFileStorage, LocalFileStorage>();
             services.AddScoped<ICollectionQueries, CollectionQueries>();
             services.AddScoped<IFileMetadataReader, FileMetadataReader>();
             services.AddScoped<IFileCoverExtractor, FileCoverExtractor>();
             services.AddScoped<ISender, Sender>();
 
             return services;
+        }
+
+        private static string GetRequiredConfiguration(IConfiguration configuration, string key) {
+            string? value = configuration[key];
+            if (string.IsNullOrWhiteSpace(value)) {
+                throw new InvalidOperationException($"Missing required configuration value: {key}");
+            }
+
+            return value;
         }
     }
 }

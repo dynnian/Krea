@@ -9,11 +9,12 @@ namespace Krea.Infrastructure.Services {
 
         private readonly IMinioClient _minioClient;
         private readonly string _baseUrl;
-        private const string BucketName = "uploads";
+        private readonly string _bucketName;
 
-        public MinioFileStorage(IMinioClient minioClient, string baseUrl) {
+        public MinioFileStorage(IMinioClient minioClient, string baseUrl, string bucketName) {
             _minioClient = minioClient;
             _baseUrl = baseUrl;
+            _bucketName = string.IsNullOrWhiteSpace(bucketName) ? "uploads" : bucketName;
         }
 
         public async Task<FileStorageResult> SaveAsync(
@@ -42,7 +43,7 @@ namespace Krea.Infrastructure.Services {
 
                 await _minioClient.PutObjectAsync(
                     new PutObjectArgs()
-                        .WithBucket(BucketName)
+                        .WithBucket(_bucketName)
                         .WithObject(objectName)
                         .WithStreamData(fileStream)
                         .WithObjectSize(size)
@@ -50,7 +51,7 @@ namespace Krea.Infrastructure.Services {
                     cancellationToken);
 
                 string cleanBaseUrl = _baseUrl.Trim('\"', ' ').TrimEnd('/');
-                string url = $"{cleanBaseUrl}/{BucketName}/{objectName}";
+                string url = $"{cleanBaseUrl}/{_bucketName}/{objectName}";
 
                 Logger.Info("File uploaded: {ObjectName}", objectName);
 
@@ -68,7 +69,7 @@ namespace Krea.Infrastructure.Services {
             try {
                 await _minioClient.RemoveObjectAsync(
                     new RemoveObjectArgs()
-                        .WithBucket(BucketName)
+                        .WithBucket(_bucketName)
                         .WithObject(fileName),
                     cancellationToken);
             }
@@ -79,14 +80,14 @@ namespace Krea.Infrastructure.Services {
 
         private async Task EnsureBucketExists(CancellationToken cancellationToken) {
             bool found = await _minioClient.BucketExistsAsync(
-                new BucketExistsArgs().WithBucket(BucketName),
+                new BucketExistsArgs().WithBucket(_bucketName),
                 cancellationToken);
 
             if (!found) {
-                Logger.Warn("Bucket '{BucketName}' not found. Creating...", BucketName);
+                Logger.Warn("Bucket '{BucketName}' not found. Creating...", _bucketName);
 
                 await _minioClient.MakeBucketAsync(
-                    new MakeBucketArgs().WithBucket(BucketName),
+                    new MakeBucketArgs().WithBucket(_bucketName),
                     cancellationToken);
             }
         }

@@ -43,7 +43,7 @@ export interface AuthUser {
 }
 
 export interface LoginDTO {
-  email: string;
+  emailOrUsername: string;
   password: string;
 }
 
@@ -60,7 +60,7 @@ export interface RegisterDTO {
 interface AuthContextType {
   user: AuthUser | undefined;
   login: (credentials: LoginDTO, rememberMe?: boolean) => Promise<void>;
-  register: (data: RegisterDTO, rememberMe?: boolean) => Promise<void>;
+  register: (data: RegisterDTO, rememberMe?: boolean) => Promise<LoginResponse>;
   confirmEmail: (userId: string, token: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (credentials: LoginDTO, rememberMe = false) => {
     try {
       const response = await axiosClient.post('/Auth/login', {
-        emailOrUsername: credentials.email,
+        emailOrUsername: credentials.emailOrUsername,
         password: credentials.password,
       });
 
@@ -157,7 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         const data = error.response.data;
-        const message = data?.message || data?.title || 'Login failed';
+        const message = data?.error || data?.message || data?.title || 'Login failed';
         throw new Error(message);
       }
       throw new Error('Network error');
@@ -166,12 +166,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (data: RegisterDTO, rememberMe = false) => {
     try {
-      await axiosClient.post('/Auth/register', data);
-      // No hay token, solo registro
+      const response = await axiosClient.post('/Auth/register', data);
+      return response.data as LoginResponse;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         const data = error.response.data;
-        const message = data?.message || data?.title || 'Registration failed';
+        const message = data?.error || data?.message || data?.title || 'Registration failed';
         throw new Error(message);
       }
       throw new Error('Network error');
