@@ -24,19 +24,19 @@ namespace Krea.Application.Features.Collections.AddPostToCollection {
             AddPostToCollectionCommand request,
             CancellationToken cancellationToken)
         {
-            var collection = await _collections.GetByIdAsync(
+            var collection = await _collections.GetByIdWithPostsAsync(
                 request.CollectionId,
                 cancellationToken);
 
             if (collection is null)
-                throw new Exception("Collection not found");
+                throw new KeyNotFoundException("Collection not found.");
 
             var post = await _posts.GetByIdAsync(
                 request.PostId,
                 cancellationToken);
 
             if (post is null)
-                throw new Exception("Post not found");
+                throw new KeyNotFoundException("Post not found.");
 
             collection.AddPost(post);
 
