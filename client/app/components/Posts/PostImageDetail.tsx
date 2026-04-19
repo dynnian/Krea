@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Modal } from 'antd';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import type { PostDto } from '../../types/api';
+import type { PostDto } from '../../types/api.ts';
 
 interface PostImageDetailProps {
   post: PostDto;
@@ -115,12 +115,14 @@ export default function PostImageDetail({ post }: PostImageDetailProps) {
           {images.length > 1 && (
             <>
               <button
+                type="button"
                 onClick={handlePrev}
                 className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
               >
                 <ChevronLeft size={24} />
               </button>
               <button
+                type="button"
                 onClick={handleNext}
                 className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
               >

@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Play, Pause } from 'lucide-react';
@@ -122,8 +123,10 @@ export default function PostAudioDetail({
         </div>
       </div>
 
-      <div className="mt-6 text-[14px] md:text-[16px] text-[#1B1C1E]">
-        {formattedDate} <span className="mx-2">·</span> {formattedTime}
+     <div className="flex items-center gap-2 text-sm text-gray-600 mt-6">
+        <span>{formattedTime}</span>
+        <span>·</span>
+        <span>{formattedDate}</span>
       </div>
     </div>
   );

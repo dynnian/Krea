@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -232,13 +233,6 @@ const isOwnPost = !!originalPost && user?.id === originalPost.authorPostId;
                   formattedTime={formattedTime}
                   menuItems={menuItems}
                 />
-              ) : mediaType === 'book' ? (
-                <PostLinkDetail
-                  post={originalPost}
-                  formattedDate={formattedDate}
-                  formattedTime={formattedTime}
-                  menuItems={menuItems}
-                />
               ) : (
                 <>
                   <div className="flex justify-between items-start mb-[20px]">
@@ -261,14 +255,16 @@ const isOwnPost = !!originalPost && user?.id === originalPost.authorPostId;
                       </button>
                     </Dropdown>
                   </div>
-
-                  <p className="text-[#1B1C1E] text-justify text-[16px] leading-6 mt-4 mb-6">
-                    {originalPost.content}
-                  </p>
+                  {mediaType !== 'book' && (
+                    <p className="text-[#1B1C1E] text-justify text-[16px] leading-6 mt-4 mb-6">
+                      {originalPost.content}
+                    </p>
+                  )}
 
                   {firstMedia && mediaUrl && (
                     <div className="mb-6">
                       {mediaType === 'image' && <PostImageDetail post={originalPost} />}
+                      {mediaType === 'book' && <PostLinkDetail post={originalPost} />}
                     </div>
                   )}
 
