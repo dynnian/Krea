@@ -43,6 +43,7 @@ namespace Krea.Application {
     using Features.Favorites.RemovePostFromFavorites;
     using Features.Favorites.TogglePostFavorite;
     using Features.Genres;
+    using Features.Genres.GetAllGenres;
     using Features.Posts.CreatePost;
     using Features.Posts.DeletePost;
     using Features.Posts.Explore;
@@ -151,18 +152,16 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<RepostPostCommand, Guid>, RepostHandler>();
             services.AddScoped<IRequestHandler<LikePostCommand, Unit>, LikePostHandler>();
             services.AddScoped<IRequestHandler<UnlikePostCommand, Unit>, UnlikePostHandler>();
-            services
-                .AddScoped<IRequestHandler<CreatePostUploadCommand, CreatePostUploadResponse>,
-                    CreatePostUploadHandler>();
+            services.AddScoped<IRequestHandler<CreatePostUploadCommand, CreatePostUploadResponse>, CreatePostUploadHandler>();
             services.AddScoped<IRequestHandler<ExploreQuery, PagedResult<ExplorePostDto>>, ExploreHandler>();
             services.AddScoped<IRequestHandler<AssignGenresToUploadCommand, Unit>, AssignGenresToUploadHandler>();
+            services.AddScoped< IRequestHandler<GetAllGenresCommand, IReadOnlyList<GenreDto>>, GetAllGenresHandler>();
             services.AddScoped<IRequestHandler<AddHashtagCommand, Unit>, AddHashtagHandler>();
             services.AddScoped<IRequestHandler<RemoveHashtagCommand, Unit>, RemoveHashtagHandler>();
             services.AddScoped<IRequestHandler<GetAllHashtagsQuery, IReadOnlyList<Hashtag>>, GetAllHashtagsHandler>();
             services.AddScoped<IRequestHandler<AddPostToFavoritesCommand, bool>, AddPostToFavoritesHandler>();
             services.AddScoped<IRequestHandler<RemovePostFromFavoritesCommand, bool>, RemovePostFromFavoritesHandler>();
-            services
-                .AddScoped<IRequestHandler<GetUserFavoritesQuery, FavoritePostsResponse>, GetUserFavoritesHandler>();
+            services .AddScoped<IRequestHandler<GetUserFavoritesQuery, FavoritePostsResponse>, GetUserFavoritesHandler>();
             services.AddScoped<IRequestHandler<TogglePostFavoriteCommand, bool>, TogglePostFavoriteHandler>();
 
             // Reports

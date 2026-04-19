@@ -6,6 +6,7 @@ namespace Krea.API.Controllers {
     using Application.Features.Favorites.RemovePostFromFavorites;
     using Application.Features.Favorites.TogglePostFavorite;
     using Application.Features.Genres;
+    using Application.Features.Genres.GetAllGenres;
     using Application.Features.Posts.CreatePost;
     using Application.Features.Posts.DeletePost;
     using Application.Features.Posts.Dto;
@@ -352,6 +353,49 @@ namespace Krea.API.Controllers {
             [FromQuery] ExploreQuery query,
             CancellationToken cancellationToken) {
             PagedResult<ExplorePostDto> result = await _sender.Send(query, cancellationToken);
+            return Ok(result);
+        }
+        
+        /// <summary>
+        /// Retrieves all available genres.
+        /// </summary>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>
+        /// Returns the complete list of genres registered in the system.
+        /// </returns>
+        /// <remarks>
+        /// This endpoint returns all genres that can be used across the platform,
+        /// including their identifier, display name and type.
+        /// 
+        ///<para><b>Possible genre types:</b></para>
+        /// <list type="bullet">
+        /// <item><description>Image</description></item>
+        /// <item><description>Music</description></item>
+        /// <item><description>Text</description></item>
+        /// </list>
+        /// Example request:
+        ///
+        ///     GET /api/genres
+        ///
+        /// Example response:
+        ///
+        ///     [
+        ///       {
+        ///         "id": "11",
+        ///         "name": "Rock",
+        ///         "type": "Music"
+        ///       }, {...}
+        ///     ]
+        /// </remarks>
+        /// <response code="200">Genres retrieved successfully.</response>
+        [HttpGet]
+        [ProducesResponseType(typeof(IReadOnlyList<GenreDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAll(CancellationToken ct)
+        {
+            IReadOnlyList<GenreDto> result = await _sender.Send(
+                new GetAllGenresCommand(),
+                ct);
+
             return Ok(result);
         }
 
