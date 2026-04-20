@@ -16,6 +16,8 @@ namespace Krea.Infrastructure {
     using Application.Abstractions.FileStorage;
     using Application.Abstractions.Filter;
     using Application.Abstractions.Identity;
+    using Application.Abstractions.Notification;
+    using Application.Features.Notifications;
     using Configuration;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
@@ -96,6 +98,9 @@ namespace Krea.Infrastructure {
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IInstanceConfigurationRepository, InstanceConfigurationRepository>();
             services.AddScoped<IPostModerationReportRepository, PostModerationReportRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<INotificationPreferenceRepository, NotificationPreferenceRepository>();
+            services.AddScoped<INotificationGlobalPreferenceRepository, NotificationGlobalPreferenceRepository>();
 
             // Servicios de aplicación (infraestructura)
             services.AddScoped<IIdentityService, IdentityService>();
@@ -134,6 +139,7 @@ namespace Krea.Infrastructure {
             services.AddScoped<ICollectionQueries, CollectionQueries>();
             services.AddScoped<IFileMetadataReader, FileMetadataReader>();
             services.AddScoped<IFileCoverExtractor, FileCoverExtractor>();
+            services.AddSingleton<INotificationStream, InMemoryNotificationStream>();
             services.AddScoped<ISender, Sender>();
 
             return services;
