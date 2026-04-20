@@ -49,7 +49,9 @@ namespace Krea.Infrastructure.Data {
         public DbSet<CommissionOffering> CommissionOfferings => Set<CommissionOffering>();
         public DbSet<CommissionRequest> CommissionRequests => Set<CommissionRequest>();
 
-        // public DbSet<Notification> Notifications => Set<Notification>();
+        public DbSet<Notification> Notifications => Set<Notification>();
+        public DbSet<NotificationPreference> NotificationPreferences => Set<NotificationPreference>();
+        public DbSet<NotificationGlobalPreference> NotificationGlobalPreferences => Set<NotificationGlobalPreference>();
 
         #endregion
 
