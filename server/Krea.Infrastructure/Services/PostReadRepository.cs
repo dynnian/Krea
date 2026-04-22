@@ -15,53 +15,67 @@ namespace Krea.Infrastructure.Services {
         public async Task<PagedResult<ExplorePostDto>> ExploreAsync(
             ExploreQuery request,
             CancellationToken cancellationToken) {
-            IQueryable<Post> query = _context.Posts
-                .AsNoTracking()
-                .Where(p => !p.IsDeleted);
+            DateTime now = DateTime.UtcNow;
+            int diff = (7 + (now.DayOfWeek - DayOfWeek.Monday)) % 7;
+            DateTime startOfWeek = now.Date.AddDays(-diff);
 
-            // Category (usando PostType)
+            IQueryable<Post> baseQuery = _context.Posts
+                .AsNoTracking()
+                .Where(p => !p.IsDeleted
+                            && p.RepliedToId == null
+                            && p.RepostOfId == null);
+
+            // Category
             if (!string.IsNullOrWhiteSpace(request.Category) &&
                 Enum.TryParse<PostType>(request.Category, true, out var category)) {
-                query = query.Where(p => p.Type == category);
+                baseQuery = baseQuery.Where(p => p.Type == category);
             }
 
             // Genres
-            if (request.Genres != null && request.Genres.Any()) {
+            if (request.Genres is { Count: > 0 }) {
                 var normalizedGenres = request.Genres
                     .Where(x => !string.IsNullOrWhiteSpace(x))
                     .Select(x => x.Trim().ToLower())
+                    .Distinct()
                     .ToList();
 
-                query = query.Where(p =>
-                    p.Uploads.Any(u =>
-                        u.Metadata != null &&
-                        u.Metadata.Genres.Any(g =>
-                            normalizedGenres.Contains(g.Name.ToLower()))
-                    )
-                );
+                if (normalizedGenres.Count > 0) {
+                    baseQuery = baseQuery.Where(p =>
+                        p.Uploads.Any(u =>
+                            u.Metadata != null &&
+                            u.Metadata.Genres.Any(g =>
+                                normalizedGenres.Contains(g.Name.ToLower()))));
+                }
             }
 
-            // Hashtags en Post
-            if (request.Tags != null && request.Tags.Any()) {
+            // Tags
+            if (request.Tags is { Count: > 0 }) {
                 var normalizedTags = request.Tags
                     .Where(x => !string.IsNullOrWhiteSpace(x))
                     .Select(x => x.Trim().ToLower())
+                    .Distinct()
                     .ToList();
 
-                query = query.Where(p =>
-                    p.Hashtags.Any(h => normalizedTags.Contains(h.Name.ToLower()))
-                );
+                if (normalizedTags.Count > 0) {
+                    baseQuery = baseQuery.Where(p =>
+                        p.Hashtags.Any(h => normalizedTags.Contains(h.Name.ToLower())));
+                }
             }
 
-            // Ordenar
-            query = request.SortBy switch {
-                "popular" => query.OrderByDescending(p => p.Likes.Count),
-                _ => query.OrderByDescending(p => p.UploadedAt)
+            int total = await baseQuery.CountAsync(cancellationToken);
+
+            IQueryable<Post> orderedQuery = (request.SortBy?.Trim().ToLower()) switch {
+                "popular" or "trending" => baseQuery
+                    .Select(p => new { Post = p, WeeklyLikes = p.Likes.Count(l => l.CreatedAt >= startOfWeek) })
+                    .OrderByDescending(x => x.WeeklyLikes)
+                    .ThenByDescending(x => x.Post.UploadedAt)
+                    .Select(x => x.Post),
+
+                _ => baseQuery
+                    .OrderByDescending(p => p.UploadedAt)
             };
 
-            int total = await query.CountAsync(cancellationToken);
-
-            List<ExplorePostDto> items = await query
+            List<ExplorePostDto> items = await orderedQuery
                 .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .Select(p => new ExplorePostDto {
