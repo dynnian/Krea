@@ -184,7 +184,12 @@ namespace Krea.API {
                                 StringValues accessToken = context.Request.Query["access_token"];
                                 PathString path = context.HttpContext.Request.Path;
 
-                                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs")) {
+                                if (!string.IsNullOrEmpty(accessToken) &&
+                                    (
+                                        path.StartsWithSegments("/hubs") ||
+                                        path.StartsWithSegments("/api/notifications/stream")
+                                    ))
+                                {
                                     context.Token = accessToken;
                                 }
 
