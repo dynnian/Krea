@@ -15,6 +15,7 @@ namespace Krea.API {
     using Infrastructure.Setup;
     using Microsoft.Extensions.Primitives;
     using Services;
+    using Services.Krea.API.Services;
 
     internal static class Program {
         private const string CorsPolicyName = "AllowFrontend";

@@ -78,28 +78,26 @@ namespace Krea.Infrastructure {
             
             // Pagos
             services.AddScoped<IPaymentQueryService, PaymentQueryService>();
-        // Identity
-        services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
-            {
-                options.Password.RequireDigit = true;
-                options.Password.RequiredLength = 6;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireLowercase = true;
-                options.User.RequireUniqueEmail = true;
-                options.SignIn.RequireConfirmedEmail = false;
-            })
-            .AddRoles<IdentityRole<Guid>>()
-            .AddEntityFrameworkStores<AppDbContext>()
-            .AddDefaultTokenProviders();
-        
-        // Pagos
-        services.AddScoped<IPaymentQueryService, PaymentQueryService>();
-        // Register PaymentGateway
+            // Identity
+            services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
+                {
+                    options.Password.RequireDigit = true;
+                    options.Password.RequiredLength = 6;
+                    options.Password.RequireNonAlphanumeric = false;
+                    options.Password.RequireUppercase = true;
+                    options.Password.RequireLowercase = true;
+                    options.User.RequireUniqueEmail = true;
+                    options.SignIn.RequireConfirmedEmail = false;
+                })
+                .AddRoles<IdentityRole<Guid>>()
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
+            
+            // Pagos
+            services.AddScoped<IPaymentQueryService, PaymentQueryService>();
 
             // Repositorios
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<IDonationRepository, DonationRepository>();
             services.AddScoped<IMembershipPlanRepository, MembershipPlanRepository>();
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();

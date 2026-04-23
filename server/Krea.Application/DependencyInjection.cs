@@ -80,6 +80,7 @@ namespace Krea.Application {
     using Features.Posts.ReplyPost.GetReplies;
     using Features.Posts.Repost;
     using Features.Posts.UserReports;
+    using PostsPagedResult = Features.Posts.Explore.PagedResult<Features.Posts.Dto.ExplorePostDto>;
     using Features.User.GetReportsByUser;
     using Features.User.SearchUser;
     using Features.User.UploadUserProfilePicture;
@@ -179,7 +180,7 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<LikePostCommand, Unit>, LikePostHandler>();
             services.AddScoped<IRequestHandler<UnlikePostCommand, Unit>, UnlikePostHandler>();
             services.AddScoped<IRequestHandler<CreatePostUploadCommand, CreatePostUploadResponse>, CreatePostUploadHandler>();
-            services.AddScoped<IRequestHandler<ExploreQuery, PagedResult<ExplorePostDto>>, ExploreHandler>();
+            services.AddScoped<IRequestHandler<ExploreQuery, PostsPagedResult>, ExploreHandler>();
             services.AddScoped<IRequestHandler<AssignGenresToUploadCommand, Unit>, AssignGenresToUploadHandler>();
             services.AddScoped< IRequestHandler<GetAllGenresCommand, IReadOnlyList<GenreDto>>, GetAllGenresHandler>();
             services.AddScoped<IRequestHandler<AddHashtagCommand, Unit>, AddHashtagHandler>();
