@@ -155,7 +155,8 @@
     "loading": "Cargando...",
     "total": "Total",
     "items": "items",
-    "submit": "Enviar"
+    "submit": "Enviar",
+    "send": "Enviar"
   },
   "explore": {
     "tabs": {
@@ -286,7 +287,24 @@
       "saving": "Guardando..."
     },
     "commission_button": "Comisión",
-    "edit_profile_button": "Editar perfil"
+    "edit_profile_button": "Editar perfil",
+     "load_error": "Error al cargar el perfil",
+    "login_to_follow": "Inicia sesión para seguir a este usuario",
+    "followed": "Ahora sigues a este usuario",
+    "unfollowed": "Has dejado de seguir a este usuario",
+    "follow_error": "Error al actualizar el seguimiento",
+    "follow": "Seguir",
+    "unfollow": "Dejar de seguir",
+    "edit_profile": "Editar perfil",
+    "no_portfolio": "Este usuario aún no tiene obras en su portafolio.",
+    "posts_error": "Error al cargar las publicaciones",
+    "follow_list_error": "Error al cargar la lista",
+    "message": "Mensaje",
+    "send_message_to": "Enviar mensaje a",
+    "dm_empty": "Escribe un mensaje antes de enviar",
+    "dm_sent": "Mensaje enviado",
+    "dm_error": "Error al enviar el mensaje",
+    "dm_placeholder": "Escribe tu mensaje aquí..."
   },
   "bookmarks": {
     "title": "Guardados",

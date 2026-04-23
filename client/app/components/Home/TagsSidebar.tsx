@@ -8,8 +8,15 @@ const categoryTags = {
   literature: ["#Novela", "#Poesía", "#Cuento", "#Ensayo", "#Ficción", "#Historia"],
 };
 
-const CategoryBlock = ({ title, tags, seeMoreLink }: { title: string; tags: string[]; seeMoreLink: string }) => {
+const getTabFromCategory = (category: string): string => {
+  if (category === "illustration") return "images";
+  if (category === "music") return "music";
+  return "literature";
+};
+
+const CategoryBlock = ({ title, tags, category }: { title: string; tags: string[]; category: string }) => {
   const { t } = useTranslation();
+  const tab = getTabFromCategory(category);
 
   return (
     <div className="bg-[#E8F1FC] rounded-[15px] outline outline-[1.5px] outline-[#95ACCC] p-4 shadow-md">
@@ -18,14 +25,14 @@ const CategoryBlock = ({ title, tags, seeMoreLink }: { title: string; tags: stri
         {tags.map((tag) => (
           <Link
             key={tag}
-            to={`/explore?tag=${encodeURIComponent(tag)}`}
+            to={`/explore?tab=${tab}&tag=${encodeURIComponent(tag.replace("#", ""))}`}
             className="text-sm text-gray-700 hover:text-[#1351AA] hover:underline"
           >
             {tag}
           </Link>
         ))}
         <Link
-          to={seeMoreLink}
+          to={`/explore?tab=${tab}`}
           className="text-sm text-[#1351AA] text-left mt-2 hover:underline"
         >
           {t("tags.see_more", "Ver más...")}
@@ -43,17 +50,17 @@ export default function TagsSidebar() {
       <CategoryBlock
         title={t("tags.latest_illustration", "Lo último en Ilustración")}
         tags={categoryTags.illustration}
-        seeMoreLink="/explore?category=illustration"
+        category="illustration"
       />
       <CategoryBlock
         title={t("tags.latest_music", "Lo último en Música")}
         tags={categoryTags.music}
-        seeMoreLink="/explore?category=music"
+        category="music"
       />
       <CategoryBlock
         title={t("tags.latest_literature", "Lo último en Literatura")}
         tags={categoryTags.literature}
-        seeMoreLink="/explore?category=literature"
+        category="literature"
       />
     </aside>
   );
