@@ -5,6 +5,7 @@ namespace Krea.Application.Features.Posts.GetPostsByUser {
     public sealed record GetPostsByUserQuery(
         Guid AuthorPostId,
         int Page,
-        int PageSize
-    ) : IRequest<IReadOnlyList<PostDto>>;
+        int PageSize,
+        Guid? CurrentUserId
+    ) : IRequest<IReadOnlyList<PostDtoV2>>;
 }

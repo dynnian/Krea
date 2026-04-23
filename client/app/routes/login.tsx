@@ -9,23 +9,28 @@ import {
   Grid,
 } from "antd";
 import { useAuth } from "../contexts/AuthContext";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useI18n } from "../contexts/I18nContext";
-import axios from 'axios';
+import backgroundImage from "../../assets/landscape.jpg";
+import BrandLogo from "../components/BrandLogo";
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
 
-const logoImage = "/assets/Logotipo 1.png";
-const backgroundImage = "/assets/landscape.jpg";
-
 export default function LoginRoute() {
   const { login, user, isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { setLanguage } = useI18n();
+
+  const prefilledIdentifier =
+    (location.state as { email?: string } | null)?.email ?? "";
+  const [registrationNotice, setRegistrationNotice] = useState<string | null>(
+    (location.state as { registrationNotice?: string } | null)?.registrationNotice ?? null
+  );
   
   const [isMounted, setIsMounted] = useState(false);
   const screens = useBreakpoint();
@@ -50,36 +55,38 @@ export default function LoginRoute() {
     formState: { errors, isSubmitting },
   } = useForm<{ emailOrUsername: string; password: string }>({
     mode: "onBlur",
-    defaultValues: { emailOrUsername: "", password: "" },
+    defaultValues: { emailOrUsername: prefilledIdentifier, password: "" },
   });
 
   // Mapeo de mensajes de error comunes del backend a claves de traducción
   const translateBackendError = (message: string): string => {
-    const errorMap: Record<string, string> = {
-      "Invalid credentials": t("errors.invalid_credentials"),
-      "Email not confirmed": t("errors.email_not_confirmed"),
-      "User not found": t("errors.user_not_found"),
-    };
-    return errorMap[message] || message;
+    if (message.includes("Invalid credentials")) {
+      return t("errors.invalid_credentials");
+    }
+    if (message.includes("Email not confirmed")) {
+      return t("errors.email_not_confirmed");
+    }
+    if (message.includes("User not found")) {
+      return t("errors.user_not_found");
+    }
+    return message;
   };
 
   const onSubmit = async (data: { emailOrUsername: string; password: string }) => {
     setAuthError(null);
-    const trimmedEmail = data.emailOrUsername.trim();
-    if (!trimmedEmail) {
-      setAuthError(t("errors.email_required"));
+    const trimmedIdentifier = data.emailOrUsername.trim();
+    if (!trimmedIdentifier) {
+      setAuthError(t("errors.username_or_email_required"));
       return;
     }
     try {
-      await login({ email: trimmedEmail, password: data.password }, rememberMe);
+      await login({ emailOrUsername: trimmedIdentifier, password: data.password }, rememberMe);
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        const responseData = error.response.data;
-        const rawMessage = responseData?.error || responseData?.message || responseData?.title || t("errors.auth_failed");
-        setAuthError(translateBackendError(rawMessage));
-      } else {
-        setAuthError(t("errors.network_error"));
-      }
+      const rawMessage =
+        error instanceof Error && error.message
+          ? error.message
+          : t("errors.network_error");
+      setAuthError(translateBackendError(rawMessage));
     }
   };
 
@@ -102,23 +109,24 @@ export default function LoginRoute() {
               <div className="w-full max-w-md">
                 <div className="bg-white rounded-2xl shadow-xl p-8">
                   <div className="text-center mb-8">
-                    <img src={logoImage} alt="Logo" className="w-48 h-auto mx-auto mb-6" />
+                    <BrandLogo ariaLabel="Logo" color="#1351AA" width={192} className="mx-auto mb-6" />
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">{t("login.title")}</h1>
                     <p className="text-gray-600">{t("login.welcome")}</p>
                   </div>
                   <Form layout="vertical" onFinish={handleSubmit(onSubmit)} autoComplete="off" size="large">
+                    {registrationNotice && <Alert type="info" message={registrationNotice} showIcon closable onClose={() => setRegistrationNotice(null)} className="mb-6" />}
                     {authError && <Alert type="error" message={authError} showIcon closable onClose={() => setAuthError(null)} className="mb-6" />}
-                    <Form.Item label={t("login.email_placeholder")} validateStatus={errors.emailOrUsername ? "error" : ""} help={errors.emailOrUsername?.message} required className="mb-6">
-                      <Controller name="emailOrUsername" control={control} rules={{ required: t("errors.email_required") }} render={({ field }) => <Input {...field} placeholder={t("login.email_placeholder")} className="text-base rounded-xl" disabled={isSubmitting} />} />
+                    <Form.Item label={t("login.username_or_email_placeholder")} validateStatus={errors.emailOrUsername ? "error" : ""} help={errors.emailOrUsername?.message} required className="mb-6">
+                      <Controller name="emailOrUsername" control={control} rules={{ required: t("errors.username_or_email_required") }} render={({ field }) => <Input {...field} placeholder={t("login.username_or_email_placeholder")} className="text-base rounded-xl" disabled={isSubmitting} />} />
                     </Form.Item>
                     <Form.Item label={t("login.password_placeholder")} validateStatus={errors.password ? "error" : ""} help={errors.password?.message} required className="mb-6">
                       <Controller name="password" control={control} rules={{ required: t("errors.password_required"), minLength: { value: 6, message: t("errors.password_min_length") } }} render={({ field }) => <Input.Password {...field} placeholder={t("login.password_placeholder")} className="text-base rounded-xl" disabled={isSubmitting} />} />
                     </Form.Item>
                     <div className="flex items-center justify-between mb-8">
                       <Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)}>
-                        <span className="text-white">{t("login.remember_me")}</span>
+                        <span className="text-gray-600">{t("login.remember_me")}</span>
                       </Checkbox>
-                      <a href="#" className="text-sm text-white hover:text-gray-300">
+                      <a href="#" className="text-sm text-gray-600 hover:text-gray-900">
                         {t("login.forgot_password")}
                       </a>
                     </div>
@@ -132,15 +140,16 @@ export default function LoginRoute() {
               <div className="w-full max-w-6xl mx-auto p-4">
                 <div className="grid lg:grid-cols-2 gap-8 items-center">
                   <div className="text-center lg:text-left">
-                    <img src={logoImage} alt="Logo" className="w-full max-w-md mx-auto lg:mx-0 mb-8" />
+                    <BrandLogo ariaLabel="Logo" color="#F3F3F1" width="100%" className="w-full max-w-md mx-auto lg:mx-0 mb-8" />
                     <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4">{t("login.title")}</h1>
                     <p className="text-xl text-gray-300">{t("login.welcome")}</p>
                   </div>
                   <div className="bg-black/40 backdrop-blur-sm rounded-3xl p-8 lg:p-12">
                     <Form layout="vertical" onFinish={handleSubmit(onSubmit)} autoComplete="off" size="large">
+                      {registrationNotice && <Alert type="info" message={registrationNotice} showIcon closable onClose={() => setRegistrationNotice(null)} className="mb-8" />}
                       {authError && <Alert type="error" message={authError} showIcon closable onClose={() => setAuthError(null)} className="mb-8" />}
-                      <Form.Item label={<span className="text-white text-lg">{t("login.email_placeholder")}</span>} validateStatus={errors.emailOrUsername ? "error" : ""} help={errors.emailOrUsername && <span className="text-red-300">{errors.emailOrUsername.message}</span>} required className="mb-8">
-                        <Controller name="emailOrUsername" control={control} rules={{ required: t("errors.email_required") }} render={({ field }) => <Input {...field} placeholder={t("login.email_placeholder")} className="h-14 text-lg bg-white/10 border-white/20 text-white placeholder:text-white/60 rounded-xl" disabled={isSubmitting} />} />
+                      <Form.Item label={<span className="text-white text-lg">{t("login.username_or_email_placeholder")}</span>} validateStatus={errors.emailOrUsername ? "error" : ""} help={errors.emailOrUsername && <span className="text-red-300">{errors.emailOrUsername.message}</span>} required className="mb-8">
+                        <Controller name="emailOrUsername" control={control} rules={{ required: t("errors.username_or_email_required") }} render={({ field }) => <Input {...field} placeholder={t("login.username_or_email_placeholder")} className="h-14 text-lg bg-white/10 border-white/20 text-white placeholder:text-white/60 rounded-xl" disabled={isSubmitting} />} />
                       </Form.Item>
                       <Form.Item label={<span className="text-white text-lg">{t("login.password_placeholder")}</span>} validateStatus={errors.password ? "error" : ""} help={errors.password && <span className="text-red-300">{errors.password.message}</span>} required className="mb-8">
                         <Controller name="password" control={control} rules={{ required: t("errors.password_required"), minLength: { value: 6, message: t("errors.password_min_length") } }} render={({ field }) => <Input.Password {...field} placeholder={t("login.password_placeholder")} className="h-14 text-lg bg-white/10 border-white/20 text-white placeholder:text-white/60 rounded-xl" disabled={isSubmitting} />} />

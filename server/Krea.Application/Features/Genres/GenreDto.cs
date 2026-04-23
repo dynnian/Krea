@@ -1,7 +1,9 @@
 namespace Krea.Application.Features.Genres {
-    public sealed class GenreDto
-    {
+    using Domain.ValueObjects;
+
+    public sealed class GenreDto {
         public Guid Id { get; init; }
         public string Name { get; init; } = default!;
+        public GenreType Type { get; init; }
     }
 }

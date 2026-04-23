@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace Krea.Domain.Entities {
     public sealed class Permission {
         public Guid Id { get; private set; }

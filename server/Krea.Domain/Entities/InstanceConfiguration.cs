@@ -2,17 +2,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Krea.Domain.Entities {
     public sealed class InstanceConfiguration {
-        [Key]
-        public Guid Id { get; private set; }
+        [Key] public Guid Id { get; private set; }
 
-        [StringLength(128)]
-        public string PlatformName { get; private set; }
+        [StringLength(128)] public string PlatformName { get; private set; }
 
-        [StringLength(512)]
-        public string Description { get; private set; }
+        [StringLength(512)] public string Description { get; private set; }
 
-        [StringLength(256)]
-        public string AdministratorEmail { get; private set; }
+        [StringLength(256)] public string AdministratorEmail { get; private set; }
 
         public DateTime UpdatedAt { get; private set; }
 

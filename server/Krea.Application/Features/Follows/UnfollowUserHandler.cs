@@ -1,26 +1,24 @@
 namespace Krea.Application.Features.Follows {
     using Domain.Abstractions;
+    using Domain.Entities;
     using Domain.Repositories;
 
     public sealed class UnfollowUserHandler
-        : IRequestHandler<UnfollowUserCommand, Unit>
-    {
+        : IRequestHandler<UnfollowUserCommand, Unit> {
         private readonly IFollowRepository _followRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public UnfollowUserHandler(
             IFollowRepository followRepository,
-            IUnitOfWork unitOfWork)
-        {
+            IUnitOfWork unitOfWork) {
             _followRepository = followRepository;
             _unitOfWork = unitOfWork;
         }
 
         public async Task<Unit> Handle(
             UnfollowUserCommand command,
-            CancellationToken cancellationToken)
-        {
-            var follow = await _followRepository
+            CancellationToken cancellationToken) {
+            Follow? follow = await _followRepository
                 .GetAsync(command.SourceId, command.TargetId, cancellationToken);
 
             if (follow is null)

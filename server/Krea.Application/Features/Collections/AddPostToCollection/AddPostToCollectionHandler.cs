@@ -1,11 +1,10 @@
 namespace Krea.Application.Features.Collections.AddPostToCollection {
     using Domain.Abstractions;
+    using Domain.Entities;
     using Domain.Repositories;
-    using Dto;
 
     public sealed class AddPostToCollectionHandler
-        : IRequestHandler<AddPostToCollectionCommand, AddPostToCollectionResponse>
-    {
+        : IRequestHandler<AddPostToCollectionCommand, AddPostToCollectionResponse> {
         private readonly ICollectionRepository _collections;
         private readonly IPostRepository _posts;
         private readonly IUnitOfWork _unitOfWork;
@@ -13,8 +12,7 @@ namespace Krea.Application.Features.Collections.AddPostToCollection {
         public AddPostToCollectionHandler(
             ICollectionRepository collections,
             IPostRepository posts,
-            IUnitOfWork unitOfWork)
-        {
+            IUnitOfWork unitOfWork) {
             _collections = collections;
             _posts = posts;
             _unitOfWork = unitOfWork;
@@ -22,16 +20,15 @@ namespace Krea.Application.Features.Collections.AddPostToCollection {
 
         public async Task<AddPostToCollectionResponse> Handle(
             AddPostToCollectionCommand request,
-            CancellationToken cancellationToken)
-        {
-            var collection = await _collections.GetByIdWithPostsAsync(
+            CancellationToken cancellationToken) {
+            Collection? collection = await _collections.GetByIdWithPostsAsync(
                 request.CollectionId,
                 cancellationToken);
 
             if (collection is null)
                 throw new KeyNotFoundException("Collection not found.");
 
-            var post = await _posts.GetByIdAsync(
+            Post? post = await _posts.GetByIdAsync(
                 request.PostId,
                 cancellationToken);
 

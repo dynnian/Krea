@@ -48,7 +48,7 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
                 command.ContentType,
                 command.Size);
 
-            var post = await _postRepository.GetByIdAsync(command.PostId, cancellationToken);
+            Post? post = await _postRepository.GetByIdAsync(command.PostId, cancellationToken);
             if (post is null)
                 throw new ValidationException("Post not found.");
 
@@ -71,9 +71,9 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
                 command.FileName,
                 command.ContentType);
 
-            var storageFolder = GetPostStorageFolder(command.Type);
+            string storageFolder = GetPostStorageFolder(command.Type);
 
-            var storageResult = await _fileStorage.SaveAsync(
+            FileStorageResult storageResult = await _fileStorage.SaveAsync(
                 command.FileStream,
                 media.FileName,
                 command.ContentType,
@@ -158,10 +158,15 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
             List<Genre> genres) {
             ValidateParsedMetadata(command.Type, parsedMetadata);
 
+            string title = command.Title ?? string.Empty;
+            string languageCode = string.IsNullOrWhiteSpace(command.LanguageCode)
+                ? "und"
+                : command.LanguageCode;
+
             return command.Type.ToLowerInvariant() switch {
                 "image" => new ImageMetadata(
                     uploadId,
-                    command.Title,
+                    title,
                     command.Description,
                     parsedMetadata.Width!.Value,
                     parsedMetadata.Height!.Value,
@@ -171,7 +176,7 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
 
                 "music" => new MusicMetadata(
                     uploadId,
-                    command.Title,
+                    title,
                     command.Description,
                     parsedMetadata.BitrateKbps!.Value,
                     parsedMetadata.DurationSec!.Value,
@@ -179,11 +184,11 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
 
                 "text" => new TextMetadata(
                     uploadId,
-                    command.Title,
+                    title,
                     command.Description,
                     command.SortTitle,
                     command.Subtitle,
-                    command.LanguageCode,
+                    languageCode,
                     parsedMetadata.WordCount!.Value,
                     genres),
 
@@ -234,7 +239,7 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
                 command.CoverFileName!,
                 command.CoverContentType!);
 
-            var coverStorageResult = await _fileStorage.SaveAsync(
+            FileStorageResult coverStorageResult = await _fileStorage.SaveAsync(
                 command.CoverStream!,
                 coverMedia.FileName,
                 command.CoverContentType!,
@@ -276,7 +281,7 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
                 extractedCover.FileName,
                 extractedCover.ContentType);
 
-            var coverStorageResult = await _fileStorage.SaveAsync(
+            FileStorageResult coverStorageResult = await _fileStorage.SaveAsync(
                 extractedCover.Stream,
                 coverMedia.FileName,
                 extractedCover.ContentType,
@@ -314,16 +319,13 @@ namespace Krea.Application.Features.PostUploads.CreatePostUpload {
 
             stream.Position = 0;
         }
-        
-        private static string GetPostStorageFolder(string type)
-        {
-            return type.ToLowerInvariant() switch
-            {
+
+        private static string GetPostStorageFolder(string type) =>
+            type.ToLowerInvariant() switch {
                 "image" => "posts/images",
                 "music" => "posts/music",
                 "text" => "posts/text",
                 _ => "posts"
             };
-        }
     }
 }

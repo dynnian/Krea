@@ -4,8 +4,7 @@ namespace Krea.Application.Features.User {
     using Domain.Repositories;
 
     public sealed class GetPublicUserProfileQueryHandler
-        : IRequestHandler<GetPublicUserProfileQuery, PublicUserProfileResponse?>
-    {
+        : IRequestHandler<GetPublicUserProfileQuery, PublicUserProfileResponse?> {
         private readonly IUserRepository _userRepository;
         private readonly IFollowRepository _followRepository;
         private readonly IIdentityService _identityService;
@@ -13,8 +12,7 @@ namespace Krea.Application.Features.User {
         public GetPublicUserProfileQueryHandler(
             IUserRepository userRepository,
             IFollowRepository followRepository,
-            IIdentityService identityService)
-        {
+            IIdentityService identityService) {
             _userRepository = userRepository;
             _followRepository = followRepository;
             _identityService = identityService;
@@ -22,8 +20,7 @@ namespace Krea.Application.Features.User {
 
         public async Task<PublicUserProfileResponse?> Handle(
             GetPublicUserProfileQuery request,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             Domain.Entities.User? domainUser = await _userRepository
                 .GetByIdWithPicturesAsync(request.UserId, cancellationToken);
 

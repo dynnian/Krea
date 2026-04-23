@@ -37,7 +37,7 @@ namespace Krea.Domain.Repositories {
             int page,
             int pageSize,
             CancellationToken cancellationToken);
-        
+
         Task<HashSet<Guid>> GetFollowedTargetIdsAsync(
             Guid sourceId,
             IReadOnlyCollection<Guid> candidateTargetIds,

@@ -1,8 +1,7 @@
 namespace Krea.Domain.Abstractions {
     using Microsoft.EntityFrameworkCore;
 
-    public class PaginatedList<T>
-    {
+    public class PaginatedList<T> {
         public IReadOnlyList<T> Items { get; }
         public int Page { get; }
         public int PageSize { get; }
@@ -16,8 +15,7 @@ namespace Krea.Domain.Abstractions {
             IReadOnlyList<T> items,
             int count,
             int page,
-            int pageSize)
-        {
+            int pageSize) {
             Items = items;
             TotalCount = count;
             Page = page;
@@ -28,17 +26,16 @@ namespace Krea.Domain.Abstractions {
             IQueryable<T> source,
             int page,
             int pageSize,
-            CancellationToken ct = default)
-        {
+            CancellationToken ct = default) {
             page = page < 1 ? 1 : page;
             pageSize = pageSize < 1 ? 10 : pageSize;
 
-            var count = await source.CountAsync(ct);
+            int count = await source.CountAsync(ct);
 
-            var items = await source
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(ct);
+            List<T> items = await source
+                                  .Skip((page - 1) * pageSize)
+                                  .Take(pageSize)
+                                  .ToListAsync(ct);
 
             return new PaginatedList<T>(items, count, page, pageSize);
         }
@@ -47,8 +44,7 @@ namespace Krea.Domain.Abstractions {
             IReadOnlyList<T> items,
             int totalCount,
             int page,
-            int pageSize)
-        {
+            int pageSize) {
             page = page < 1 ? 1 : page;
             pageSize = pageSize < 1 ? 10 : pageSize;
 

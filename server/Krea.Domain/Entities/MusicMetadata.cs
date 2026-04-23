@@ -1,6 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using Microsoft.VisualBasic;
-
 namespace Krea.Domain.Entities {
     public sealed class MusicMetadata : Metadata {
         public int BitrateKbps { get; private set; }

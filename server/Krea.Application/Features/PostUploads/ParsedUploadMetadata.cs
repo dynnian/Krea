@@ -1,6 +1,5 @@
 namespace Krea.Application.Features.PostUploads {
-    public sealed class ParsedUploadMetadata
-    {
+    public sealed class ParsedUploadMetadata {
         public int? Width { get; init; }
         public int? Height { get; init; }
         public long? FileSize { get; init; }

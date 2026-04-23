@@ -1,48 +1,102 @@
-namespace Krea.API.Tests.Integration;
+namespace Krea.API.Tests.Integration {
+    using System.Net;
+    using System.Text.Json;
+    using TestSupport;
+    using Xunit;
 
-using System.Net;
-using System.Text.Json;
-using Krea.API.Tests.TestSupport;
-using Xunit;
+    [Collection(IntegrationTestCollection.Name)]
+    public sealed class FeedControllerIntegrationTests {
+        private readonly PostgresContainerFixture _postgres;
 
-public sealed class FeedControllerIntegrationTests {
-    [Fact]
-    public async Task RecentFeed_ReturnsSeededPost() {
-        TestDataSeeder.SeededUsers seeded = default!;
+        public FeedControllerIntegrationTests(PostgresContainerFixture postgres) {
+            _postgres = postgres;
+        }
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
-            seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
-            await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "Feed post");
-        });
+        [Fact]
+        public async Task RecentFeed_ReturnsSeededPost() {
+            TestDataSeeder.SeededUsers seeded = default!;
 
-        HttpResponseMessage response = await host.Client.GetAsync($"/api/feed/recent?currentUserId={seeded.AdminId}&page=1&pageSize=10");
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+                await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "Feed post");
+            });
 
-        string body = await response.Content.ReadAsStringAsync();
-        using var json = JsonDocument.Parse(body);
+            HttpResponseMessage response =
+                await host.Client.GetAsync($"/api/feed/recent?currentUserId={seeded.AdminId}&page=1&pageSize=10");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        Assert.True(json.RootElement.GetArrayLength() >= 1);
-        Assert.Contains(json.RootElement.EnumerateArray(), item => item.GetProperty("title").GetString() == "Feed post");
-    }
+            string body = await response.Content.ReadAsStringAsync();
+            using JsonDocument json = JsonDocument.Parse(body);
 
-    [Fact]
-    public async Task FollowingFeed_ReturnsPostsFromFollowedUsers() {
-        TestDataSeeder.SeededUsers seeded = default!;
+            Assert.True(json.RootElement.GetArrayLength() >= 1);
+            Assert.Contains(json.RootElement.EnumerateArray(),
+                item => item.GetProperty("title").GetString() == "Feed post");
+        }
 
-        await using var host = await IntegrationTestHost.CreateAsync(async services => {
-            seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
-            await TestDataSeeder.SeedFollowAsync(services, seeded.AdminId, seeded.ArtistId);
-            await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "Followed user post");
-            await TestDataSeeder.SeedPostAsync(services, seeded.OtherId, "Other user post");
-        });
+        [Fact]
+        public async Task FollowingFeed_ReturnsPostsFromFollowedUsers() {
+            TestDataSeeder.SeededUsers seeded = default!;
 
-        HttpResponseMessage response = await host.Client.GetAsync($"/api/feed/following?currentUserId={seeded.AdminId}&page=1&pageSize=20");
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+                await TestDataSeeder.SeedFollowAsync(services, seeded.AdminId, seeded.ArtistId);
+                await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "Followed user post");
+                await TestDataSeeder.SeedPostAsync(services, seeded.OtherId, "Other user post");
+            });
 
-        string body = await response.Content.ReadAsStringAsync();
-        using var json = JsonDocument.Parse(body);
+            HttpResponseMessage response = await IntegrationTestHost.SendAuthenticatedAsync(
+                host.Client,
+                HttpMethod.Get,
+                "/api/feed/following?page=1&pageSize=20",
+                seeded.AdminId,
+                "Artist");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        Assert.Contains(json.RootElement.EnumerateArray(), item => item.GetProperty("title").GetString() == "Followed user post");
-        Assert.DoesNotContain(json.RootElement.EnumerateArray(), item => item.GetProperty("title").GetString() == "Other user post");
+            string body = await response.Content.ReadAsStringAsync();
+            using JsonDocument json = JsonDocument.Parse(body);
+
+            Assert.Contains(json.RootElement.EnumerateArray(),
+                item => item.GetProperty("title").GetString() == "Followed user post");
+            Assert.DoesNotContain(json.RootElement.EnumerateArray(),
+                item => item.GetProperty("title").GetString() == "Other user post");
+        }
+
+        [Fact]
+        public async Task TrendingFeed_ReturnsOkForAuthenticatedUser() {
+            TestDataSeeder.SeededUsers seeded = default!;
+
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+                await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "Trending post");
+            });
+
+            HttpResponseMessage response = await IntegrationTestHost.SendAuthenticatedAsync(
+                host.Client,
+                HttpMethod.Get,
+                "/api/feed/trending?page=1&pageSize=10",
+                seeded.AdminId,
+                "Artist");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task RecentFeed_WithAuthenticatedUser_ReturnsOk() {
+            TestDataSeeder.SeededUsers seeded = default!;
+
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
+                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+                await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "Authenticated recent post");
+            });
+
+            HttpResponseMessage response = await IntegrationTestHost.SendAuthenticatedAsync(
+                host.Client,
+                HttpMethod.Get,
+                "/api/feed/recent?page=1&pageSize=10",
+                seeded.AdminId,
+                "Artist");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
     }
 }

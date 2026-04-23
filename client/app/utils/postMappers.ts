@@ -10,6 +10,11 @@ import { type AuthUser } from "../contexts/AuthContext";
 import { PostType } from "../types/common";
 import type { FeedItem } from "../types/feed.ts";
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:5101";
+
+function toAbsoluteUrl(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
+  return url.startsWith("http") ? url : `${API_BASE_URL}${url}`;
+}
 // Mapeo de números a enum PostType
 export function postTypeFromApi(apiType: number): PostType {
   const map: { [key: number]: PostType } = {
@@ -133,7 +138,7 @@ export function feedPostToPost(feedPost: FeedPost): Post {
       id: feedPost.authorId,
       name: feedPost.authorUsername,
       handle: feedPost.authorUsername,
-      avatar: undefined,
+      avatar: toAbsoluteUrl(feedPost.authorProfilePictureUrl),
       sub: feedPost.authorId,
       email: "",
     },
@@ -160,6 +165,7 @@ export function feedItemToPostDto(item: FeedItem): PostDto {
       id: item.authorId,
       username: item.authorUsername,
       displayName: item.authorUsername,          // fallback
+      avatar: toAbsoluteUrl(item.authorProfilePictureUrl),
     },
     title: item.title,
     content: item.content,

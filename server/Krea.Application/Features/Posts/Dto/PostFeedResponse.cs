@@ -1,10 +1,11 @@
-namespace Krea.Application.Features.Posts.Dto { 
+namespace Krea.Application.Features.Posts.Dto {
     public sealed class PostFeedResponse {
         public Guid Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public Guid AuthorId { get; set; }
         public string AuthorUsername { get; set; } = string.Empty;
+        public string? AuthorProfilePictureUrl { get; set; }
         public DateTime UploadedAt { get; set; }
 
         public string? MediaPreviewUrl { get; set; }
@@ -19,5 +20,5 @@ namespace Krea.Application.Features.Posts.Dto {
 
         public Guid? RepostOfId { get; set; }
         public RepostFeedReferenceDto? RepostOf { get; set; }
-    } 
+    }
 }

@@ -1,8 +1,4 @@
-namespace Krea.Infrastructure.Services
-{
-    using Application.Abstractions.FileStorage;
-    using Microsoft.AspNetCore.Hosting;
-
+namespace Krea.Infrastructure.Services {
     // public sealed class LocalFileStorage : IFileStorage
     // {
     //     // private readonly IWebHostEnvironment _environment;

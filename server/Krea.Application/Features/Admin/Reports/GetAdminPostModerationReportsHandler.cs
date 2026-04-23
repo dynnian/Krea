@@ -2,15 +2,13 @@ namespace Krea.Application.Features.Admin.Reports {
     using Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;
-    using Domain.ValueObjects;
 
     public sealed class GetAdminPostModerationReportsHandler
         : IRequestHandler<GetAdminPostModerationReportsQuery, AdminPostModerationReportsPageDto> {
         private readonly IPostModerationReportRepository _reportRepository;
 
-        public GetAdminPostModerationReportsHandler(IPostModerationReportRepository reportRepository) {
+        public GetAdminPostModerationReportsHandler(IPostModerationReportRepository reportRepository) =>
             _reportRepository = reportRepository;
-        }
 
         public async Task<AdminPostModerationReportsPageDto> Handle(
             GetAdminPostModerationReportsQuery request,
@@ -28,21 +26,21 @@ namespace Krea.Application.Features.Admin.Reports {
                 cancellationToken);
 
             IReadOnlyList<AdminPostModerationReportDto> items = reports
-                .Select(r => new AdminPostModerationReportDto(
-                    r.Id,
-                    r.PostId,
-                    r.Post.Title,
-                    r.ReporterUserId,
-                    r.ReporterUser.DisplayName,
-                    r.Reason,
-                    r.Details,
-                    r.Status,
-                    r.CreatedAt,
-                    r.ResolvedAt,
-                    r.ResolvedAction,
-                    r.ResolvedByUserId,
-                    r.ModeratorNote))
-                .ToList();
+                                                                .Select(r => new AdminPostModerationReportDto(
+                                                                    r.Id,
+                                                                    r.PostId,
+                                                                    r.Post.Title,
+                                                                    r.ReporterUserId,
+                                                                    r.ReporterUser.DisplayName,
+                                                                    r.Reason,
+                                                                    r.Details,
+                                                                    r.Status,
+                                                                    r.CreatedAt,
+                                                                    r.ResolvedAt,
+                                                                    r.ResolvedAction,
+                                                                    r.ResolvedByUserId,
+                                                                    r.ModeratorNote))
+                                                                .ToList();
 
             return new AdminPostModerationReportsPageDto(
                 page,

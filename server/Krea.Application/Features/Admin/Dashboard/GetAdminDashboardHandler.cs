@@ -21,7 +21,8 @@ namespace Krea.Application.Features.Admin.Dashboard {
             _identityService = identityService;
         }
 
-        public async Task<AdminDashboardDto> Handle(GetAdminDashboardQuery request, CancellationToken cancellationToken) {
+        public async Task<AdminDashboardDto>
+            Handle(GetAdminDashboardQuery request, CancellationToken cancellationToken) {
             DateTime todayUtc = DateTime.UtcNow.Date;
 
             int totalUsers = await _userRepository.CountAsync(cancellationToken);
@@ -55,7 +56,9 @@ namespace Krea.Application.Features.Admin.Dashboard {
             activity.AddRange(recentPosts.Select(p => new AdminActivityLogItemDto(
                 "Actividad de Usuario",
                 "Publicacion Creada",
-                identitiesById.TryGetValue(p.AuthorPostId, out UserIdentity? identity) ? identity.UserName : p.AuthorPostId.ToString(),
+                identitiesById.TryGetValue(p.AuthorPostId, out UserIdentity? identity)
+                    ? identity.UserName
+                    : p.AuthorPostId.ToString(),
                 string.IsNullOrWhiteSpace(p.Title) ? "Nueva publicacion" : p.Title,
                 p.UploadedAt,
                 "Info")));
@@ -79,9 +82,9 @@ namespace Krea.Application.Features.Admin.Dashboard {
             }));
 
             IReadOnlyList<AdminActivityLogItemDto> recentActivity = activity
-                .OrderByDescending(a => a.OccurredAt)
-                .Take(15)
-                .ToList();
+                                                                    .OrderByDescending(a => a.OccurredAt)
+                                                                    .Take(15)
+                                                                    .ToList();
 
             int moderationActions = suspendedUsers + bannedUsers;
 

@@ -4,18 +4,17 @@ namespace Krea.Infrastructure.Services {
     using Minio.DataModel.Args;
     using NLog;
 
-    public sealed class MinioFileStorage : IFileStorage
-    {
+    public sealed class MinioFileStorage : IFileStorage {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         private readonly IMinioClient _minioClient;
         private readonly string _baseUrl;
-        private const string BucketName = "uploads";
+        private readonly string _bucketName;
 
-        public MinioFileStorage(IMinioClient minioClient, string baseUrl)
-        {
+        public MinioFileStorage(IMinioClient minioClient, string baseUrl, string bucketName) {
             _minioClient = minioClient;
             _baseUrl = baseUrl;
+            _bucketName = string.IsNullOrWhiteSpace(bucketName) ? "uploads" : bucketName;
         }
 
         public async Task<FileStorageResult> SaveAsync(
@@ -24,20 +23,16 @@ namespace Krea.Infrastructure.Services {
             string contentType,
             long size,
             CancellationToken cancellationToken,
-            string? folder = null)
-        {
-            try
-            {
+            string? folder = null) {
+            try {
                 string objectName;
 
-                if (!string.IsNullOrWhiteSpace(folder))
-                {
-                    var normalizedFolder = folder.Trim().Trim('/');
-                    var safeFileName = Path.GetFileName(fileName);
+                if (!string.IsNullOrWhiteSpace(folder)) {
+                    string normalizedFolder = folder.Trim().Trim('/');
+                    string safeFileName = Path.GetFileName(fileName);
                     objectName = $"{normalizedFolder}/{safeFileName}";
                 }
-                else
-                {
+                else {
                     objectName = fileName.Replace("\\", "/").TrimStart('/');
                 }
 
@@ -48,61 +43,56 @@ namespace Krea.Infrastructure.Services {
 
                 await _minioClient.PutObjectAsync(
                     new PutObjectArgs()
-                        .WithBucket(BucketName)
+                        .WithBucket(_bucketName)
                         .WithObject(objectName)
                         .WithStreamData(fileStream)
                         .WithObjectSize(size)
                         .WithContentType(contentType),
                     cancellationToken);
 
-                var cleanBaseUrl = _baseUrl.Trim('\"', ' ').TrimEnd('/');
-                var url = $"{cleanBaseUrl}/{BucketName}/{objectName}";
+                string cleanBaseUrl = _baseUrl.Trim('\"', ' ').TrimEnd('/');
+                if (!cleanBaseUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && 
+                    !cleanBaseUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase) &&
+                    !cleanBaseUrl.StartsWith("//", StringComparison.OrdinalIgnoreCase)) {
+                    cleanBaseUrl = "https://" + cleanBaseUrl;
+                }
+                string url = $"{cleanBaseUrl}/{_bucketName}/{objectName}";
 
                 Logger.Info("File uploaded: {ObjectName}", objectName);
 
-                return new FileStorageResult
-                {
-                    Url = url,
-                    FileName = objectName,
-                    ContentType = contentType,
-                    Size = size
+                return new FileStorageResult {
+                    Url = url, FileName = objectName, ContentType = contentType, Size = size
                 };
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 Logger.Error(ex, "Error uploading file: {FileName}", fileName);
                 throw;
             }
         }
-        
-        public async Task DeleteAsync(string fileName, CancellationToken cancellationToken)
-        {
-            try
-            {
+
+        public async Task DeleteAsync(string fileName, CancellationToken cancellationToken) {
+            try {
                 await _minioClient.RemoveObjectAsync(
                     new RemoveObjectArgs()
-                        .WithBucket(BucketName)
+                        .WithBucket(_bucketName)
                         .WithObject(fileName),
                     cancellationToken);
             }
-            catch (Exception)
-            {
+            catch (Exception) {
                 // No se lanza error
             }
         }
 
-        private async Task EnsureBucketExists(CancellationToken cancellationToken)
-        {
-            var found = await _minioClient.BucketExistsAsync(
-                new BucketExistsArgs().WithBucket(BucketName),
+        private async Task EnsureBucketExists(CancellationToken cancellationToken) {
+            bool found = await _minioClient.BucketExistsAsync(
+                new BucketExistsArgs().WithBucket(_bucketName),
                 cancellationToken);
 
-            if (!found)
-            {
-                Logger.Warn("Bucket '{BucketName}' not found. Creating...", BucketName);
+            if (!found) {
+                Logger.Warn("Bucket '{BucketName}' not found. Creating...", _bucketName);
 
                 await _minioClient.MakeBucketAsync(
-                    new MakeBucketArgs().WithBucket(BucketName),
+                    new MakeBucketArgs().WithBucket(_bucketName),
                     cancellationToken);
             }
         }

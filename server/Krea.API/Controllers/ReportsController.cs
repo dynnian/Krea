@@ -6,7 +6,7 @@ namespace Krea.API.Controllers {
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using System.Security.Claims;
-    
+
     /// <summary>
     /// Controller responsible for managing user reports about posts within the platform.
     /// </summary>
@@ -18,8 +18,7 @@ namespace Krea.API.Controllers {
     [ApiController]
     [Authorize]
     [Route("api")]
-    public sealed class ReportsController : ControllerBase
-    {
+    public sealed class ReportsController : ControllerBase {
         private readonly ISender _sender;
 
         /// <summary>
@@ -28,10 +27,7 @@ namespace Krea.API.Controllers {
         /// <param name="sender">
         /// Mediator used to dispatch application commands and queries.
         /// </param>
-        public ReportsController(ISender sender)
-        {
-            _sender = sender;
-        }
+        public ReportsController(ISender sender) => _sender = sender;
 
         /// <summary>
         /// Creates a moderation report for a specific post.
@@ -87,8 +83,7 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> Create(
             Guid postId,
             [FromBody] CreatePostModerationReportRequest request,
-            CancellationToken ct)
-        {
+            CancellationToken ct) {
             Guid reporterUserId = GetCurrentUserId();
 
             var command = new CreatePostModerationReportCommand(
@@ -147,8 +142,7 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> GetMyReports(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            CancellationToken ct = default)
-        {
+            CancellationToken ct = default) {
             Guid reporterUserId = GetCurrentUserId();
 
             var query = new GetMyPostModerationReportsQuery(
@@ -162,8 +156,7 @@ namespace Krea.API.Controllers {
             return Ok(response);
         }
 
-        private Guid GetCurrentUserId()
-        {
+        private Guid GetCurrentUserId() {
             string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (string.IsNullOrWhiteSpace(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))

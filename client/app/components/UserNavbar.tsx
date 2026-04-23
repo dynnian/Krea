@@ -15,9 +15,9 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 import NotificationCenter from "./NotificationCenter";
 import { useNotifications } from "../contexts/NotificationContext";
+import BrandLogo from "./BrandLogo";
 
 const { useBreakpoint } = Grid;
-const logoImage = "/assets/Logotipo 1.png";
 
 export default function UserNavbar() {
   const { t } = useTranslation();
@@ -61,7 +61,7 @@ export default function UserNavbar() {
           /* 📱 MOBILE LAYOUT */
           <div className="flex items-center justify-between px-4 py-2">
             <Link to="/">
-              <img src={logoImage} alt="Logo" className="h-10 w-auto" />
+              <BrandLogo ariaLabel="Logo" color="#F3F3F1" height={40} className="block" />
             </Link>
 
             <div className="flex items-center gap-4">
@@ -105,7 +105,7 @@ export default function UserNavbar() {
             {/* Left: Logo & Nav */}
             <div className="flex items-center gap-8">
               <Link to="/">
-                <img src={logoImage} alt="Logo" className="h-10 w-auto" />
+                <BrandLogo ariaLabel="Logo" color="#F3F3F1" height={40} className="block" />
               </Link>
 
               <nav className="flex items-center gap-6">

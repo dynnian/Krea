@@ -1,6 +1,5 @@
 namespace Krea.Application.Features.Collections.Dto {
-    public sealed class CollectionPostDto
-    {
+    public sealed class CollectionPostDto {
         public Guid Id { get; init; }
 
         public string Title { get; init; } = default!;

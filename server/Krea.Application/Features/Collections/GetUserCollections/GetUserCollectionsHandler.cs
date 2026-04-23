@@ -4,23 +4,18 @@ namespace Krea.Application.Features.Collections.GetUserCollections {
     using Dto;
 
     public sealed class GetUserCollectionsHandler
-        : IRequestHandler<GetUserCollectionsQuery, IReadOnlyList<UserCollectionDto>>
-    {
+        : IRequestHandler<GetUserCollectionsQuery, IReadOnlyList<UserCollectionDto>> {
         private readonly ICollectionQueries _queries;
 
         public GetUserCollectionsHandler(
-            ICollectionQueries queries)
-        {
+            ICollectionQueries queries) =>
             _queries = queries;
-        }
 
         public async Task<IReadOnlyList<UserCollectionDto>> Handle(
             GetUserCollectionsQuery request,
-            CancellationToken cancellationToken)
-        {
-            return await _queries.GetUserCollectionsAsync(
+            CancellationToken cancellationToken) =>
+            await _queries.GetUserCollectionsAsync(
                 request.UserId,
                 cancellationToken);
-        }
     }
 }

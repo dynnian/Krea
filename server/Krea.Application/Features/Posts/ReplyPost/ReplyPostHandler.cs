@@ -4,24 +4,21 @@ namespace Krea.Application.Features.Posts.ReplyPost {
     using Domain.Repositories;
     using Domain.ValueObjects;
 
-    public sealed class ReplyPostHandler 
-        : IRequestHandler<ReplyPostCommand, Guid>
-    {
+    public sealed class ReplyPostHandler
+        : IRequestHandler<ReplyPostCommand, Guid> {
         private readonly IPostRepository _postRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public ReplyPostHandler(
             IPostRepository postRepository,
-            IUnitOfWork unitOfWork)
-        {
+            IUnitOfWork unitOfWork) {
             _postRepository = postRepository;
             _unitOfWork = unitOfWork;
         }
 
         public async Task<Guid> Handle(
             ReplyPostCommand command,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             Post? original = await _postRepository
                 .GetByIdAsync(command.ReplyToPostId, cancellationToken);
 

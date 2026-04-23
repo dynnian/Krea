@@ -22,7 +22,8 @@ namespace Krea.Application.Features.Admin.Reports {
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Unit> Handle(EvaluateAdminPostModerationReportCommand request, CancellationToken cancellationToken) {
+        public async Task<Unit> Handle(EvaluateAdminPostModerationReportCommand request,
+                                       CancellationToken cancellationToken) {
             PostModerationReport? report = await _reportRepository.GetByIdAsync(request.ReportId, cancellationToken);
             if (report is null)
                 throw new KeyNotFoundException("Report not found.");

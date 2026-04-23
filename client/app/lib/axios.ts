@@ -41,8 +41,15 @@ axiosClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const requestUrl = String(originalRequest?.url ?? '');
+    const hasAccessToken = !!storage.getToken();
+    const isAuthRequest =
+      requestUrl.includes('/Auth/login')
+      || requestUrl.includes('/Auth/register')
+      || requestUrl.includes('/Auth/refresh-token')
+      || requestUrl.includes('/Auth/confirm-email');
     
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && hasAccessToken && !isAuthRequest) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });

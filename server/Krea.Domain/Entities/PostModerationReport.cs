@@ -3,20 +3,17 @@ using Krea.Domain.ValueObjects;
 
 namespace Krea.Domain.Entities {
     public sealed class PostModerationReport {
-        [Key]
-        public Guid Id { get; private set; }
+        [Key] public Guid Id { get; private set; }
 
         public Guid PostId { get; private set; }
-        public Post Post { get; private set; }
+        public Post Post { get; private set; } = null!;
 
         public Guid ReporterUserId { get; private set; }
-        public User ReporterUser { get; private set; }
+        public User ReporterUser { get; private set; } = null!;
 
-        [StringLength(256)]
-        public string Reason { get; private set; }
+        [StringLength(256)] public string Reason { get; private set; }
 
-        [StringLength(2000)]
-        public string? Details { get; private set; }
+        [StringLength(2000)] public string? Details { get; private set; }
 
         public PostModerationReportStatus Status { get; private set; }
         public PostModerationDecisionAction? ResolvedAction { get; private set; }
@@ -24,15 +21,14 @@ namespace Krea.Domain.Entities {
         public Guid? ResolvedByUserId { get; private set; }
         public DateTime? ResolvedAt { get; private set; }
 
-        [StringLength(1000)]
-        public string? ModeratorNote { get; private set; }
+        [StringLength(1000)] public string? ModeratorNote { get; private set; }
 
         public DateTime CreatedAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
 
-#pragma warning disable CS8618
+        #pragma warning disable CS8618
         private PostModerationReport() { }
-#pragma warning restore CS8618
+        #pragma warning restore CS8618
 
         public PostModerationReport(Guid postId, Guid reporterUserId, string reason, string? details = null) {
             if (postId == Guid.Empty)

@@ -4,4 +4,5 @@ namespace Krea.Application.Features.Follows {
     public sealed record FollowUserCommand(
         Guid SourceId,
         Guid TargetId
-    ) : IRequest<Unit>;}
+    ) : IRequest<Unit>;
+}

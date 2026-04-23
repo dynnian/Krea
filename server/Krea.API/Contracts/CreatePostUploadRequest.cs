@@ -1,6 +1,5 @@
 namespace Krea.API.Contracts {
-    public sealed class CreatePostUploadRequest
-    {
+    public sealed class CreatePostUploadRequest {
         public IFormFile File { get; set; } = default!;
         public IFormFile? Cover { get; set; }
 

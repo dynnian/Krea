@@ -21,14 +21,12 @@ namespace Krea.API.Controllers {
     /// </remarks>
     [Authorize]
     [ApiController]
-    [Route("api/collections")] 
-    public sealed class CollectionsController : ControllerBase { 
+    [Route("api/collections")]
+    public sealed class CollectionsController : ControllerBase {
         private readonly ISender _sender;
-        
-        public CollectionsController(ISender sender) { 
-            _sender = sender; 
-        }
-        
+
+        public CollectionsController(ISender sender) => _sender = sender;
+
         /// <summary>
         /// Creates a new collection for a user.
         /// </summary>
@@ -44,8 +42,7 @@ namespace Krea.API.Controllers {
         [HttpPost]
         public async Task<IActionResult> Create(
             [FromForm] CreateCollectionRequest request,
-            CancellationToken ct)
-        {
+            CancellationToken ct) {
             Guid ownerId = GetCurrentUserId();
 
             using Stream? coverStream = request.Cover?.OpenReadStream();
@@ -61,7 +58,7 @@ namespace Krea.API.Controllers {
                 request.Cover?.Length
             );
 
-            var response = await _sender.Send(command, ct);
+            CreateCollectionResponse response = await _sender.Send(command, ct);
 
             return CreatedAtAction(
                 nameof(GetCollection),
@@ -79,16 +76,15 @@ namespace Krea.API.Controllers {
         /// </returns>
         /// <response code="200">Collections retrieved successfully.</response>
         /// <response code="404">User not found.</response>
-        [HttpGet("user/{userId:guid}")] 
+        [HttpGet("user/{userId:guid}")]
         public async Task<IActionResult> GetUserCollections(
-            Guid userId, 
-            CancellationToken ct) 
-        { 
-            var result = await _sender.Send(
-                new GetUserCollectionsQuery(userId), 
+            Guid userId,
+            CancellationToken ct) {
+            IReadOnlyList<UserCollectionDto> result = await _sender.Send(
+                new GetUserCollectionsQuery(userId),
                 ct);
-            
-            return Ok(result); 
+
+            return Ok(result);
         }
 
         /// <summary>
@@ -99,16 +95,15 @@ namespace Krea.API.Controllers {
         /// <returns>No content if the deletion was successful.</returns>
         /// <response code="204">Collection deleted successfully.</response>
         /// <response code="404">Collection not found.</response>
-        [HttpDelete("{collectionId:guid}")] 
+        [HttpDelete("{collectionId:guid}")]
         public async Task<IActionResult> DeleteCollection(
-            Guid collectionId, 
-            CancellationToken ct) 
-        { 
+            Guid collectionId,
+            CancellationToken ct) {
             await _sender.Send(
-                new DeleteCollectionCommand(collectionId), 
+                new DeleteCollectionCommand(collectionId),
                 ct);
-            
-            return NoContent(); 
+
+            return NoContent();
         }
 
         /// <summary>
@@ -122,19 +117,18 @@ namespace Krea.API.Controllers {
         /// </returns>
         /// <response code="200">Post added successfully.</response>
         /// <response code="404">Collection or post not found.</response>
-        [HttpPost("{collectionId:guid}/posts")] 
+        [HttpPost("{collectionId:guid}/posts")]
         public async Task<IActionResult> AddPost(
-            Guid collectionId, 
-            [FromBody] AddPostRequest request, 
-            CancellationToken ct) 
-        { 
-            var result = await _sender.Send(
+            Guid collectionId,
+            [FromBody] AddPostRequest request,
+            CancellationToken ct) {
+            AddPostToCollectionResponse result = await _sender.Send(
                 new AddPostToCollectionCommand(
-                    collectionId, 
-                    request.PostId), 
+                    collectionId,
+                    request.PostId),
                 ct);
-            
-            return Ok(result); 
+
+            return Ok(result);
         }
 
         /// <summary>
@@ -146,19 +140,18 @@ namespace Krea.API.Controllers {
         /// <returns>No content if the removal was successful.</returns>
         /// <response code="204">Post removed successfully.</response>
         /// <response code="404">Collection or post not found.</response>
-        [HttpDelete("{collectionId:guid}/posts/{postId:guid}")] 
+        [HttpDelete("{collectionId:guid}/posts/{postId:guid}")]
         public async Task<IActionResult> RemovePost(
-            Guid collectionId, 
-            Guid postId, 
-            CancellationToken ct) 
-        { 
+            Guid collectionId,
+            Guid postId,
+            CancellationToken ct) {
             await _sender.Send(
                 new RemovePostFromCollectionCommand(
-                    collectionId, 
-                    postId), 
+                    collectionId,
+                    postId),
                 ct);
-            
-            return NoContent(); 
+
+            return NoContent();
         }
 
         /// <summary>
@@ -173,26 +166,25 @@ namespace Krea.API.Controllers {
         /// </returns>
         /// <response code="200">Collection retrieved successfully.</response>
         /// <response code="404">Collection not found.</response>
-        [HttpGet("{collectionId:guid}")] 
+        [HttpGet("{collectionId:guid}")]
         public async Task<IActionResult> GetCollection(
-            Guid collectionId, 
-            int page = 1, 
-            int pageSize = 20, 
-            CancellationToken ct = default) 
-        { 
-            var result = await _sender.Send( 
-                new GetCollectionByIdQuery( 
-                    collectionId, 
-                    page, 
-                    pageSize), 
+            Guid collectionId,
+            int page = 1,
+            int pageSize = 20,
+            CancellationToken ct = default) {
+            CollectionDetailDto? result = await _sender.Send(
+                new GetCollectionByIdQuery(
+                    collectionId,
+                    page,
+                    pageSize),
                 ct);
-            
-            if (result is null) 
+
+            if (result is null)
                 return NotFound();
-            
-            return Ok(result); 
+
+            return Ok(result);
         }
-        
+
         /// <summary>
         /// Uploads or replaces the cover image of a collection.
         /// </summary>
@@ -224,12 +216,11 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> UploadCover(
             Guid collectionId,
             [FromForm] IFormFile file,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             if (file is null || file.Length == 0)
                 return BadRequest("File is required.");
 
-            await using var stream = file.OpenReadStream();
+            await using Stream stream = file.OpenReadStream();
 
             var command = new UploadCollectionCoverCommand(
                 collectionId,
@@ -238,7 +229,7 @@ namespace Krea.API.Controllers {
                 file.Length,
                 stream);
 
-            var result = await _sender.Send(command, cancellationToken);
+            UploadCollectionCoverResponse result = await _sender.Send(command, cancellationToken);
 
             return Ok(result);
         }
@@ -259,11 +250,10 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> UpdateTitle(
             Guid collectionId,
             [FromBody] UpdateCollectionTitleRequest request,
-            CancellationToken ct)
-        {
-            var currentUserId = GetCurrentUserId();
+            CancellationToken ct) {
+            Guid currentUserId = GetCurrentUserId();
             var command = new UpdateCollectionTitleCommand(collectionId, currentUserId, request.Title);
-            var result = await _sender.Send(command, ct);
+            UpdateCollectionTitleResponse result = await _sender.Send(command, ct);
             return Ok(result);
         }
 

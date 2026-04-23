@@ -5,6 +5,7 @@ namespace Krea.Application.Features.Posts.GetPostById {
         Guid Id,
         Guid AuthorPostId,
         string AuthorName,
+        string? AuthorProfilePictureUrl,
         string Title,
         string? Content,
         bool IsWork,
@@ -12,14 +13,10 @@ namespace Krea.Application.Features.Posts.GetPostById {
         int UploadCount,
         int LikesCount,
         DateTime UploadedAt,
-
         IReadOnlyList<PostMediaDto> Media,
-
         bool IsLikedByCurrentUser,
         bool IsRetweetedByCurrentUser,
-
         IReadOnlyList<ReplyDto> Replies,
-
         Guid? RepostOfId,
         RepostReferenceDto? RepostOf
     );

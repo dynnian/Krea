@@ -11,34 +11,34 @@ namespace Krea.Infrastructure.Data.Configurations {
             builder.Property(r => r.Id).ValueGeneratedNever();
 
             builder.Property(r => r.Reason)
-                .IsRequired()
-                .HasMaxLength(256);
+                   .IsRequired()
+                   .HasMaxLength(256);
 
             builder.Property(r => r.Details)
-                .HasMaxLength(2000);
+                   .HasMaxLength(2000);
 
             builder.Property(r => r.ModeratorNote)
-                .HasMaxLength(1000);
+                   .HasMaxLength(1000);
 
             builder.Property(r => r.Status)
-                .HasConversion<int>()
-                .IsRequired();
+                   .HasConversion<int>()
+                   .IsRequired();
 
             builder.Property(r => r.ResolvedAction)
-                .HasConversion<int?>();
+                   .HasConversion<int?>();
 
             builder.Property(r => r.CreatedAt).IsRequired();
             builder.Property(r => r.UpdatedAt).IsRequired();
 
             builder.HasOne(r => r.Post)
-                .WithMany()
-                .HasForeignKey(r => r.PostId)
-                .OnDelete(DeleteBehavior.Restrict);
+                   .WithMany()
+                   .HasForeignKey(r => r.PostId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(r => r.ReporterUser)
-                .WithMany()
-                .HasForeignKey(r => r.ReporterUserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                   .WithMany()
+                   .HasForeignKey(r => r.ReporterUserId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasIndex(r => r.PostId);
             builder.HasIndex(r => r.ReporterUserId);

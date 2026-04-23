@@ -6,4 +6,5 @@ namespace Krea.Application.Features.Collections.GetCollectionById {
         Guid CollectionId,
         int Page,
         int PageSize
-    ) : IRequest<CollectionDetailDto?>;}
+    ) : IRequest<CollectionDetailDto?>;
+}

@@ -6,10 +6,8 @@ namespace Krea.Infrastructure.Setup {
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Options;
 
-    public static class DatabaseInitializer
-    {
-        public static async Task InitializeAsync(IServiceProvider services)
-        {
+    public static class DatabaseInitializer {
+        public static async Task InitializeAsync(IServiceProvider services) {
             var context = services.GetRequiredService<AppDbContext>();
             await context.Database.MigrateAsync();
 
