@@ -4,4 +4,5 @@ namespace Krea.Application.Features.Collections.GetUserCollections {
 
     public sealed record GetUserCollectionsQuery(
         Guid UserId
-    ) : IRequest<IReadOnlyList<UserCollectionDto>>;}
+    ) : IRequest<IReadOnlyList<UserCollectionDto>>;
+}

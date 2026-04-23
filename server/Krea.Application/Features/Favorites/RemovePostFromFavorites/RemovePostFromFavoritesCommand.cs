@@ -4,4 +4,5 @@ namespace Krea.Application.Features.Favorites.RemovePostFromFavorites {
     public sealed record RemovePostFromFavoritesCommand(
         Guid UserId,
         Guid PostId
-    ) : IRequest<bool>;}
+    ) : IRequest<bool>;
+}

@@ -15,14 +15,16 @@ namespace Krea.Infrastructure.Repositories {
                              .Include(m => m.Conversation)
                              .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
 
-        public async Task<IReadOnlyList<Message>> GetByConversationAsync(Guid conversationId, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<Message>> GetByConversationAsync(
+            Guid conversationId, CancellationToken cancellationToken = default)
             => await _context.Messages
                              .Include(m => m.User)
                              .Where(m => EF.Property<Guid>(m, "ConversationId") == conversationId)
                              .OrderBy(m => m.SentAt)
                              .ToListAsync(cancellationToken);
 
-        public async Task<IReadOnlyList<Message>> GetByUserAsync(Guid userId, CancellationToken  cancellationToken = default)
+        public async Task<IReadOnlyList<Message>> GetByUserAsync(Guid userId,
+                                                                 CancellationToken cancellationToken = default)
             => await _context.Messages
                              .Include(m => m.Conversation)
                              .Where(m => EF.Property<Guid>(m, "UserId") == userId)

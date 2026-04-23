@@ -1,7 +1,6 @@
 namespace Krea.Application.Features.Auth.Login {
     using Abstractions.Identity;
     using Application.Abstractions.Auth;
-    using Common;
     using static Common.RoleHelper;
     using User;
     using Domain.Abstractions;
@@ -45,7 +44,7 @@ namespace Krea.Application.Features.Auth.Login {
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             TokenGenerationResult tokens = await _tokenService.GenerateAuthTokensAsync(identityUser, domainUser);
-            
+
             UserDto userDto = MapToDto(domainUser, identityUser);
 
             return new AuthResponse(tokens.AccessToken, tokens.AccessTokenExpiration, tokens.RefreshToken, userDto);

@@ -4,5 +4,5 @@ namespace Krea.Application.Features.Posts.Repost {
     public sealed record RepostPostCommand(
         Guid AuthorId,
         Guid OriginalPostId
-    ): IRequest<Guid>;
+    ) : IRequest<Guid>;
 }

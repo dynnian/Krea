@@ -4,4 +4,5 @@ namespace Krea.Application.Features.Favorites.AddPostToFavorites {
     public sealed record AddPostToFavoritesCommand(
         Guid UserId,
         Guid PostId
-    ) : IRequest<bool>;}
+    ) : IRequest<bool>;
+}

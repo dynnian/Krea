@@ -12,12 +12,12 @@ import {
   X,
   LogOut,
 } from "lucide-react";
-import { useAuth } from "../contexts/AuthContext";
-import NotificationCenter from "./NotificationCenter";
-import { useNotifications } from "../contexts/NotificationContext";
+import { useAuth } from "../contexts/AuthContext.tsx";
+import NotificationCenter from "./NotificationCenter.tsx";
+import { useNotifications } from "../contexts/NotificationContext.tsx";
+import { BrandLogoC }  from "./BrandLogo.tsx";
 
 const { useBreakpoint } = Grid;
-const logoImage = "/assets/Logotipo 1.png";
 
 export default function UserNavbar() {
   const { t } = useTranslation();
@@ -61,28 +61,30 @@ export default function UserNavbar() {
           /* 📱 MOBILE LAYOUT */
           <div className="flex items-center justify-between px-4 py-2">
             <Link to="/">
-              <img src={logoImage} alt="Logo" className="h-10 w-auto" />
+              <BrandLogoC ariaLabel="Logo" color="#F3F3F1" height={40} className="block" />
             </Link>
 
             <div className="flex items-center gap-4">
               <button
-                className="text-white p-1"
+                type="button"
+                className="text-[#F3F3F1] p-1"
                 onClick={() => setShowMobileSearch(!showMobileSearch)}
               >
-                {showMobileSearch ? <X size={20} /> : <Search size={20} />}
+                {showMobileSearch ? <X className="text-[#F3F3F1]" size={20} /> : <Search className="text-[#F3F3F1]" size={20} />}
               </button>
 
               {isAuthenticated && (
-                <Link to="/messages" className="text-white p-1">
+                <Link to="/messages" className="text-[#F3F3F1] p-1">
                   <MessageCircle size={20} />
                 </Link>
               )}
 
               <button
-                className="text-white p-1"
+                type="button"
+                className="p-1"
                 onClick={() => setDrawerOpen(true)}
               >
-                <Menu size={24} />
+                <Menu className="text-[#F3F3F1]" size={24} />
               </button>
             </div>
 
@@ -104,8 +106,8 @@ export default function UserNavbar() {
           <div className="flex items-center justify-between px-6 py-2">
             {/* Left: Logo & Nav */}
             <div className="flex items-center gap-8">
-              <Link to="/">
-                <img src={logoImage} alt="Logo" className="h-10 w-auto" />
+              <Link className="xl:absolute left-[30px] top-[8px] lg:static" to="/">
+                <BrandLogoC ariaLabel="Logo" color="#F3F3F1" height={40} className="block" />
               </Link>
 
               <nav className="flex items-center gap-6">
@@ -193,7 +195,7 @@ export default function UserNavbar() {
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
         styles={{
-          header: { backgroundColor: "#1351AA", borderBottom: "2px solid #8F8E8A" },
+          header: { backgroundColor: "#1351AA", borderBottom: "2px solid #95ACCC" },
           body: { backgroundColor: "#1351AA", padding: 0 },
         }}
         closeIcon={<X size={20} className="text-[#F3F3F1]" />}
@@ -201,14 +203,14 @@ export default function UserNavbar() {
         <div className="flex flex-col">
           <Link
             to="/"
-            className={`flex items-center gap-4 px-6 py-4 text-lg border-b border-[#8F8E8A] ${isHomeActive ? "bg-blue-800 text-[#8FB78E]" : "text-[#F3F3F1]"}`}
+            className={`flex items-center gap-4 px-6 py-4 text-lg border-b border-[#95ACCC]  ${isHomeActive ? "bg-blue-800 !text-[#8FB78E]" : "!text-[#F3F3F1]"}`}
             onClick={() => setDrawerOpen(false)}
           >
             <Home size={20} /> {t("navbar.home")}
           </Link>
           <Link
             to="/explore"
-            className={`flex items-center gap-4 px-6 py-4 text-lg border-b border-[#8F8E8A] ${isExploreActive ? "bg-blue-800 text-[#8FB78E]" : "text-[#F3F3F1]"}`}
+            className={`flex items-center gap-4 px-6 py-4 text-lg border-b border-[#95ACCC] ${isExploreActive ? "bg-blue-800 !text-[#8FB78E]" : "!text-[#F3F3F1]"}`}
             onClick={() => setDrawerOpen(false)}
           >
             <Search size={20} /> {t("navbar.explore")}
@@ -218,7 +220,7 @@ export default function UserNavbar() {
             <>
               <Link
                 to="/profile"
-                className={`flex items-center gap-4 px-6 py-4 text-lg border-b border-[#8F8E8A] ${isProfileActive ? "bg-blue-800 text-[#8FB78E]" : "text-[#F3F3F1]"}`}
+                className={`flex items-center gap-4 px-6 py-4 text-lg border-b border-[#95ACCC] ${isProfileActive ? "bg-blue-800 !text-[#8FB78E]" : "!text-[#F3F3F1]"}`}
                 onClick={() => setDrawerOpen(false)}
               >
                 <User size={20} /> {t("navbar.profile")}

@@ -1,22 +1,18 @@
 namespace Krea.Application.Features.Favorites.RemovePostFromFavorites {
     using Domain.Abstractions;
+    using Domain.Entities;
     using Domain.Repositories;
 
     public sealed class RemovePostFromFavoritesHandler
-        : IRequestHandler<RemovePostFromFavoritesCommand, bool>
-    {
+        : IRequestHandler<RemovePostFromFavoritesCommand, bool> {
         private readonly IPostFavoriteRepository _repository;
 
-        public RemovePostFromFavoritesHandler(IPostFavoriteRepository repository)
-        {
-            _repository = repository;
-        }
+        public RemovePostFromFavoritesHandler(IPostFavoriteRepository repository) => _repository = repository;
 
         public async Task<bool> Handle(
             RemovePostFromFavoritesCommand request,
-            CancellationToken cancellationToken)
-        {
-            var favorite = await _repository.GetByUserAndPostAsync(
+            CancellationToken cancellationToken) {
+            PostFavorite? favorite = await _repository.GetByUserAndPostAsync(
                 request.UserId,
                 request.PostId);
 

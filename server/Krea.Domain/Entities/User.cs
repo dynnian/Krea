@@ -45,10 +45,10 @@ namespace Krea.Domain.Entities {
 
         private readonly List<UserRole> _userRoles = new();
         public IReadOnlyCollection<UserRole> UserRoles => _userRoles.AsReadOnly();
-        
+
         private readonly List<ConversationParticipant> _conversations = new();
         public IReadOnlyCollection<ConversationParticipant> Conversations => _conversations;
-        
+
         public ICollection<PostFavorite> Favorites { get; set; } = new List<PostFavorite>();
 
         #pragma warning disable CS8618
@@ -130,11 +130,8 @@ namespace Krea.Domain.Entities {
             BannerPictureId = null;
             UpdatedAt = DateTime.UtcNow;
         }
-        
-        public void SetProfilePicture(Guid? mediaId)
-        {
-            ProfilePictureId = mediaId;
-        }
+
+        public void SetProfilePicture(Guid? mediaId) => ProfilePictureId = mediaId;
 
         public void UpdateBiography(string biography) {
             Biography = biography;

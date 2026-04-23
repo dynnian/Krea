@@ -21,7 +21,7 @@ namespace Krea.Domain.Repositories {
             Guid postId,
             Guid reporterUserId,
             CancellationToken cancellationToken = default);
-        
+
         Task<IReadOnlyList<PostModerationReport>> GetByReporterPagedAsync(
             Guid reporterUserId,
             int page,

@@ -4,21 +4,15 @@ namespace Krea.Application.Features.Posts.Hashtag {
     using Domain.Repositories;
     using Dto;
 
-    public sealed class GetAllHashtagsHandler 
-        : IRequestHandler<GetAllHashtagsQuery, IReadOnlyList<Hashtag>>
-    {
+    public sealed class GetAllHashtagsHandler
+        : IRequestHandler<GetAllHashtagsQuery, IReadOnlyList<Hashtag>> {
         private readonly IHashtagRepository _repository;
 
-        public GetAllHashtagsHandler(IHashtagRepository repository)
-        {
-            _repository = repository;
-        }
+        public GetAllHashtagsHandler(IHashtagRepository repository) => _repository = repository;
 
         public async Task<IReadOnlyList<Hashtag>> Handle(
             GetAllHashtagsQuery request,
-            CancellationToken cancellationToken)
-        {
-            return await _repository.GetAllAsync(cancellationToken);
-        }
+            CancellationToken cancellationToken) =>
+            await _repository.GetAllAsync(cancellationToken);
     }
 }

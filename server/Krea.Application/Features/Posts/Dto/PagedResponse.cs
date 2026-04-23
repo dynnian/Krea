@@ -1,6 +1,5 @@
 namespace Krea.Application.Features.Posts.Dto {
-    public sealed class PagedResponse<T>
-    {
+    public sealed class PagedResponse<T> {
         public IReadOnlyList<T> Items { get; }
         public int Page { get; }
         public int PageSize { get; }
@@ -10,8 +9,7 @@ namespace Krea.Application.Features.Posts.Dto {
             IReadOnlyList<T> items,
             int page,
             int pageSize,
-            int totalCount)
-        {
+            int totalCount) {
             Items = items;
             Page = page;
             PageSize = pageSize;

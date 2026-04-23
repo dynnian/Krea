@@ -2,34 +2,28 @@ namespace Krea.Application.Features.Posts.ReplyPost.GetReplies {
     using Domain.Entities;
     using Dto;
 
-    public static class ReplyTreeBuilder
-    {
+    public static class ReplyTreeBuilder {
         public static List<ReplyNodeResponse> Build(
             List<Post> posts,
-            Guid rootPostId)
-        {
-            var lookup = posts.ToDictionary(
+            Guid rootPostId) {
+            Dictionary<Guid, ReplyNodeResponse> lookup = posts.ToDictionary(
                 p => p.Id,
-                p => new ReplyNodeResponse
-                {
+                p => new ReplyNodeResponse {
                     Id = p.Id,
                     AuthorId = p.AuthorPostId,
                     AuthorName = p.AuthorPost.DisplayName,
-                    Content = p.Content,
+                    Content = p.Content ?? string.Empty,
                     CreatedAt = p.UploadedAt
                 });
 
             var result = new List<ReplyNodeResponse>();
 
-            foreach (var post in posts)
-            {
-                if (post.RepliedToId == rootPostId)
-                {
+            foreach (Post post in posts) {
+                if (post.RepliedToId == rootPostId) {
                     result.Add(lookup[post.Id]);
                 }
                 else if (post.RepliedToId != null &&
-                         lookup.ContainsKey(post.RepliedToId.Value))
-                {
+                         lookup.ContainsKey(post.RepliedToId.Value)) {
                     lookup[post.RepliedToId.Value]
                         .Replies.Add(lookup[post.Id]);
                 }

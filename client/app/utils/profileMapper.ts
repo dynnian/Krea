@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import type { MusicSong } from "../components/Profile/MusicPortfolio.tsx";
 import type { WriterWork } from "../components/Profile/WriterPortfolio.tsx";
 import type {

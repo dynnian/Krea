@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using Krea.Domain.Validators;
 
 namespace Krea.Domain.Entities {

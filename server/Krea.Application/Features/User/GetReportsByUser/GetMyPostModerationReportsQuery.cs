@@ -5,4 +5,5 @@ namespace Krea.Application.Features.User.GetReportsByUser {
         Guid ReporterUserId,
         int Page,
         int PageSize
-    ) : IRequest<GetMyPostModerationReportsResponse>;}
+    ) : IRequest<GetMyPostModerationReportsResponse>;
+}

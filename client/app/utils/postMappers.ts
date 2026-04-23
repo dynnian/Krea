@@ -4,10 +4,10 @@ import {
   type CreatePostData,
   type FeedPost,
   type PostDto,
-} from "../types/api";
-import { type Post } from "../types/post";
-import { type AuthUser } from "../contexts/AuthContext";
-import { PostType } from "../types/common";
+} from "../types/api.ts";
+import { type Post } from "../types/post.ts";
+import { type AuthUser } from "../contexts/AuthContext.tsx";
+import { PostType } from "../types/common.ts";
 import type { FeedItem } from "../types/feed.ts";
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:5101";
 // Mapeo de números a enum PostType

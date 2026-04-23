@@ -1,10 +1,12 @@
 namespace Krea.API.Controllers {
     using Application.Abstractions;
     using Application.Features.Favorites.AddPostToFavorites;
+    using Application.Features.Favorites.Dto;
     using Application.Features.Favorites.GetUserFavorites;
     using Application.Features.Favorites.RemovePostFromFavorites;
     using Application.Features.Favorites.TogglePostFavorite;
     using Application.Features.Genres;
+    using Application.Features.Genres.GetAllGenres;
     using Application.Features.Posts.CreatePost;
     using Application.Features.Posts.DeletePost;
     using Application.Features.Posts.Dto;
@@ -20,6 +22,7 @@ namespace Krea.API.Controllers {
     using Application.Features.PostUploads.CreatePostUpload;
     using Contracts;
     using Domain.Abstractions;
+    using Domain.Entities;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using System.Security.Claims;
@@ -72,10 +75,10 @@ namespace Krea.API.Controllers {
         /// <summary>
         /// Retrieves a paginated list of posts created by a specific user.
         /// </summary>
-        /// <param name="authorId">Identifier of the user whose posts will be retrieved.</param>
+        /// <param name="authorPostId">Identifier of the user whose posts will be retrieved.</param>
         /// <param name="page">Page number to retrieve. Default is 1.</param>
         /// <param name="pageSize">Number of posts per page. Default is 10.</param>
-        /// <param name="cancellationToken">Token used to cancel the request.</param>
+        /// <param name="ct">Token used to cancel the request.</param>
         /// <returns>
         /// A paginated collection of posts authored by the specified user.
         /// </returns>
@@ -85,10 +88,17 @@ namespace Krea.API.Controllers {
             Guid authorId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
-            CancellationToken cancellationToken = default) {
-            IReadOnlyList<PostDto> result = await _sender.Send(
-                new GetPostsByUserQuery(authorId, page, pageSize),
-                cancellationToken);
+            CancellationToken ct = default)
+        {
+            Guid? currentUserId = GetCurrentUserId();
+
+            var result = await _sender.Send(
+                new GetPostsByUserQuery(
+                    authorId,
+                    page,
+                    pageSize,
+                    currentUserId),
+                ct);
 
             return Ok(result);
         }
@@ -108,8 +118,7 @@ namespace Krea.API.Controllers {
             CancellationToken cancellationToken = default) {
             Guid? currentUserId = null;
 
-            if (User.Identity?.IsAuthenticated == true)
-            {
+            if (User.Identity?.IsAuthenticated == true) {
                 currentUserId = GetCurrentUserId();
             }
 
@@ -141,7 +150,7 @@ namespace Krea.API.Controllers {
             Guid authorPostId = GetCurrentUserId();
             if (command.AuthorPostId != authorPostId)
                 return Unauthorized();
-            
+
             CreatePostResponse result = await _sender.Send(command, cancellationToken);
 
             return CreatedAtAction(
@@ -194,7 +203,7 @@ namespace Krea.API.Controllers {
                 new { id = replyId },
                 new { ReplyPostId = replyId });
         }
-        
+
         /// <summary>
         /// Obtiene los comentarios (replies) de un post.
         /// </summary>
@@ -209,10 +218,9 @@ namespace Krea.API.Controllers {
             [FromQuery] ReplyMode? mode,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
-            CancellationToken cancellationToken = default)
-        {
-            var finalMode = mode ?? ReplyMode.Flat;
-            var result = await _sender.Send(
+            CancellationToken cancellationToken = default) {
+            ReplyMode finalMode = mode ?? ReplyMode.Flat;
+            RepliesResponse result = await _sender.Send(
                 new GetRepliesQuery(postId, page, pageSize, finalMode),
                 cancellationToken);
 
@@ -237,10 +245,7 @@ namespace Krea.API.Controllers {
             Guid currentUserId = GetCurrentUserId();
 
             Guid repostId = await _sender.Send(
-                command with {
-                    OriginalPostId = postId,
-                    AuthorId = currentUserId
-                },
+                command with { OriginalPostId = postId, AuthorId = currentUserId },
                 cancellationToken);
 
             return CreatedAtAction(
@@ -307,8 +312,7 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> CreateUpload(
             Guid postId,
             [FromForm] CreatePostUploadRequest request,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             await using Stream fileStream = request.File.OpenReadStream();
             await using Stream? coverStream = request.Cover?.OpenReadStream();
 
@@ -336,7 +340,7 @@ namespace Krea.API.Controllers {
 
             return Ok(result);
         }
-        
+
         /// <summary>
         /// Explora contenido filtrando por categoria, generos y etiquetas.
         /// </summary>
@@ -347,12 +351,54 @@ namespace Krea.API.Controllers {
         [AllowAnonymous]
         public async Task<IActionResult> Explore(
             [FromQuery] ExploreQuery query,
-            CancellationToken cancellationToken)
-        {
-            var result = await _sender.Send(query, cancellationToken);
+            CancellationToken cancellationToken) {
+            PagedResult<ExplorePostDto> result = await _sender.Send(query, cancellationToken);
             return Ok(result);
         }
         
+        /// <summary>
+        /// Retrieves all available genres.
+        /// </summary>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>
+        /// Returns the complete list of genres registered in the system.
+        /// </returns>
+        /// <remarks>
+        /// This endpoint returns all genres that can be used across the platform,
+        /// including their identifier, display name and type.
+        /// 
+        ///<para><b>Possible genre types:</b></para>
+        /// <list type="bullet">
+        /// <item><description>Image</description></item>
+        /// <item><description>Music</description></item>
+        /// <item><description>Text</description></item>
+        /// </list>
+        /// Example request:
+        ///
+        ///     GET /api/genres
+        ///
+        /// Example response:
+        ///
+        ///     [
+        ///       {
+        ///         "id": "11",
+        ///         "name": "Rock",
+        ///         "type": "Music"
+        ///       }, {...}
+        ///     ]
+        /// </remarks>
+        /// <response code="200">Genres retrieved successfully.</response>
+        [HttpGet]
+        [ProducesResponseType(typeof(IReadOnlyList<GenreDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAll(CancellationToken ct)
+        {
+            IReadOnlyList<GenreDto> result = await _sender.Send(
+                new GetAllGenresCommand(),
+                ct);
+
+            return Ok(result);
+        }
+
         /// <summary>
         /// Asigna géneros a un upload de un post.
         /// </summary>
@@ -367,15 +413,14 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> AssignGenres(
             Guid uploadId,
             [FromBody] AssignGenresRequest request,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             await _sender.Send(
                 new AssignGenresToUploadCommand(uploadId, request.GenreIds),
                 cancellationToken);
-        
+
             return NoContent();
         }
-        
+
         /// <summary>
         /// Añade un hashtag a un post.
         /// </summary>
@@ -384,15 +429,14 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> AddHashtag(
             Guid postId,
             [FromBody] AddHashtagRequest request,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             await _sender.Send(
                 new AddHashtagCommand(postId, request.Name),
                 cancellationToken);
 
             return NoContent();
         }
-        
+
         /// <summary>
         /// Elimina un hashtag de un post.
         /// </summary>
@@ -404,30 +448,27 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> RemoveHashtag(
             Guid postId,
             Guid hashtagId,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             await _sender.Send(
                 new RemoveHashtagCommand(postId, hashtagId),
                 cancellationToken);
 
             return NoContent();
         }
-        
+
         [HttpGet("hashtags")]
         [Authorize]
-        public async Task<IActionResult> GetAllHashtags()
-        {
-            var result = await _sender.Send(new GetAllHashtagsQuery());
+        public async Task<IActionResult> GetAllHashtags() {
+            IReadOnlyList<Hashtag> result = await _sender.Send(new GetAllHashtagsQuery());
             return Ok(result);
         }
-        
+
         [HttpPost("{postId}/favorite")]
         [Authorize]
-        public async Task<IActionResult> AddToFavorites(Guid postId)
-        {
-            var userId = GetCurrentUserId();
+        public async Task<IActionResult> AddToFavorites(Guid postId) {
+            Guid userId = GetCurrentUserId();
 
-            var result = await _sender.Send(
+            bool result = await _sender.Send(
                 new AddPostToFavoritesCommand(userId, postId));
 
             if (!result)
@@ -435,45 +476,42 @@ namespace Krea.API.Controllers {
 
             return Ok();
         }
-        
+
         [HttpDelete("{postId}/favorite")]
         [Authorize]
-        public async Task<IActionResult> RemoveFromFavorites(Guid postId)
-        {
-            var userId = GetCurrentUserId();
-        
-            var result = await _sender.Send(
+        public async Task<IActionResult> RemoveFromFavorites(Guid postId) {
+            Guid userId = GetCurrentUserId();
+
+            bool result = await _sender.Send(
                 new RemovePostFromFavoritesCommand(userId, postId));
-        
+
             if (!result)
                 return NotFound();
-        
+
             return NoContent();
         }
-        
+
         [HttpGet("me/favorites")]
         [Authorize]
         public async Task<IActionResult> GetFavorites(
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10)
-        {
-            var userId = GetCurrentUserId(); 
-            var result = await _sender.Send(new GetUserFavoritesQuery(userId, page, pageSize));
+            [FromQuery] int pageSize = 10) {
+            Guid userId = GetCurrentUserId();
+            FavoritePostsResponse result = await _sender.Send(new GetUserFavoritesQuery(userId, page, pageSize));
             return Ok(result);
         }
-        
+
         [HttpPost("{postId}/favorite/toggle")]
         [Authorize]
-        public async Task<IActionResult> ToggleFavorite(Guid postId)
-        {
-            var userId = GetCurrentUserId();
+        public async Task<IActionResult> ToggleFavorite(Guid postId) {
+            Guid userId = GetCurrentUserId();
 
-            var isFavorite = await _sender.Send(
+            bool isFavorite = await _sender.Send(
                 new TogglePostFavoriteCommand(userId, postId));
 
             return Ok(new { isFavorite });
         }
-        
+
         private Guid GetCurrentUserId() {
             string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid userId)) {

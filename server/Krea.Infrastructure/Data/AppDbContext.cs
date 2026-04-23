@@ -17,6 +17,7 @@ namespace Krea.Infrastructure.Data {
         public DbSet<Permission> Permissions => Set<Permission>();
 
         public DbSet<Scope> Scopes => Set<Scope>();
+
         // public DbSet<UserRole> UserRoles => Set<UserRole>();
         public DbSet<Follow> Follows => Set<Follow>();
 

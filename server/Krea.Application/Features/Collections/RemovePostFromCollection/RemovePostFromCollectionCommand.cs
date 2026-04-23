@@ -4,4 +4,5 @@ namespace Krea.Application.Features.Collections.RemovePostFromCollection {
     public sealed record RemovePostFromCollectionCommand(
         Guid CollectionId,
         Guid PostId
-    ) : IRequest<Unit>;}
+    ) : IRequest<Unit>;
+}

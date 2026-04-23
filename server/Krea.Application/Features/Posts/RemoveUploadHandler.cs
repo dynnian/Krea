@@ -4,24 +4,21 @@ namespace Krea.Application.Features.Posts {
     using Domain.Repositories;
     using Dto;
 
-    public sealed class RemoveUploadHandler
-    {
+    public sealed class RemoveUploadHandler {
         private readonly IPostRepository _postRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public RemoveUploadHandler(
             IPostRepository postRepository,
-            IUnitOfWork unitOfWork)
-        {
+            IUnitOfWork unitOfWork) {
             _postRepository = postRepository;
             _unitOfWork = unitOfWork;
         }
 
         public async Task Handle(
             RemoveUploadCommand command,
-            CancellationToken cancellationToken)
-        {
-            var post = await _postRepository
+            CancellationToken cancellationToken) {
+            Post? post = await _postRepository
                 .GetFullPostAsync(command.PostId, cancellationToken);
 
             if (post is null)

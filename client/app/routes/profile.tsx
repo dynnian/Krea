@@ -49,9 +49,21 @@ async function fetchMyProfileFromApi() {
   return res.data;
 }
 
+type UserPostsResponse =
+  | any[]
+  | { items?: any[]; posts?: any[] };
+
 async function fetchPostsByAuthorFromApi(authorId: string) {
   const res = await postsApi.getUserPosts(authorId, 1, 100);
-  return res.data;
+  const data: any = res.data;
+
+  console.log("getUserPosts raw response:", data);
+
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.items)) return data.items;
+  if (Array.isArray(data?.posts)) return data.posts;
+
+  return [];
 }
 
 // ---------- Componente principal Profile ----------
@@ -159,6 +171,8 @@ const handleGoToSaved = () => {
         let rawPosts: any[] = [];
         try {
           rawPosts = await fetchPostsByAuthorFromApi(apiProfile.id);
+          console.log("rawPosts:", rawPosts);
+          console.log("rawPosts length:", Array.isArray(rawPosts) ? rawPosts.length : "not-array");
         } catch (err) {
           console.error("Error fetching posts:", err);
           nextPostsError = "No se pudieron cargar las publicaciones";
@@ -169,6 +183,9 @@ const handleGoToSaved = () => {
           rawPosts,
           apiProfile.displayName || apiProfile.username,
         );
+
+        console.log("resolvedPosts:", resolvedPosts);
+console.log("resolvedPosts length:", resolvedPosts.length);
 
         // Mapear portfolios
         resolvedVisualPortfolioItems = mapPostsToVisualPortfolioItems(resolvedPosts);
@@ -227,6 +244,10 @@ const handleGoToSaved = () => {
           setWriterCollections([]);
         }
 
+
+        console.log("visualPortfolioItems:", resolvedVisualPortfolioItems);
+        console.log("musicSongs:", resolvedMusicSongs);
+        console.log("writerWorks:", resolvedWriterWorks);
         //  Construir profileData SIN MOCK
         const profileData: ProfileData = {
           user: {

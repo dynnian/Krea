@@ -55,7 +55,7 @@ namespace Krea.Application.Features.Collections.CreateCollection {
                     request.CoverFileName!,
                     request.CoverContentType!);
 
-                var storageResult = await _fileStorage.SaveAsync(
+                FileStorageResult storageResult = await _fileStorage.SaveAsync(
                     request.CoverStream!,
                     media.FileName,
                     request.CoverContentType!,

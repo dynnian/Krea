@@ -15,7 +15,8 @@ namespace Krea.Domain.Entities {
                 throw new ArgumentException("Name argument is missing");
 
             Id = Guid.NewGuid();
-            Name = name.Trim().ToLower();;
+            Name = name.Trim().ToLower();
+            ;
         }
 
         public Hashtag Load(

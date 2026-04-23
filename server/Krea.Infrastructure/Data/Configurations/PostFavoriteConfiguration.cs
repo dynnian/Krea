@@ -3,36 +3,34 @@ namespace Krea.Infrastructure.Data.Configurations {
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-    public sealed class PostFavoriteConfiguration 
-        : IEntityTypeConfiguration<PostFavorite>
-    {
-        public void Configure(EntityTypeBuilder<PostFavorite> builder)
-        {
+    public sealed class PostFavoriteConfiguration
+        : IEntityTypeConfiguration<PostFavorite> {
+        public void Configure(EntityTypeBuilder<PostFavorite> builder) {
             builder.ToTable("post_favorites");
 
             builder.HasKey(x => x.Id);
 
             builder.Property(x => x.UserId)
-                .IsRequired();
+                   .IsRequired();
 
             builder.Property(x => x.PostId)
-                .IsRequired();
+                   .IsRequired();
 
             builder.Property(x => x.CreatedAt)
-                .IsRequired();
+                   .IsRequired();
 
             builder.HasIndex(x => new { x.UserId, x.PostId })
-                .IsUnique();
+                   .IsUnique();
 
             builder.HasOne(x => x.User)
-                .WithMany(u => u.Favorites)
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                   .WithMany(u => u.Favorites)
+                   .HasForeignKey(x => x.UserId)
+                   .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(x => x.Post)
-                .WithMany(p => p.Favorites)
-                .HasForeignKey(x => x.PostId)
-                .OnDelete(DeleteBehavior.Cascade);
+                   .WithMany(p => p.Favorites)
+                   .HasForeignKey(x => x.PostId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -1,6 +1,5 @@
 namespace Krea.Application.Features.DirectMessages.Dto {
-    public class ConversationPreviewDto
-    {
+    public class ConversationPreviewDto {
         public Guid ConversationId { get; set; }
         public Guid OtherParticipantId { get; set; }
         public string OtherParticipantName { get; set; } = string.Empty;

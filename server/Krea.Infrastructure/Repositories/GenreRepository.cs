@@ -9,19 +9,16 @@ namespace Krea.Infrastructure.Repositories {
 
         public GenreRepository(AppDbContext context) => _context = context;
 
-        public async Task<IReadOnlyList<Genre>> GetAllAsync( CancellationToken cancellationToken) {
-            return await _context.Genres
-                .AsNoTracking()
-                .ToListAsync(cancellationToken);
-        }
+        public async Task<IReadOnlyList<Genre>> GetAllAsync(CancellationToken cancellationToken) =>
+            await _context.Genres
+                          .AsNoTracking()
+                          .ToListAsync(cancellationToken);
 
         public async Task<IReadOnlyList<Genre>> GetByIdsAsync(
             IReadOnlyList<Guid> ids,
-            CancellationToken cancellationToken)
-        {
-            return await _context.Genres
-                .Where(g => ids.Contains(g.Id))
-                .ToListAsync(cancellationToken);
-        }
+            CancellationToken cancellationToken) =>
+            await _context.Genres
+                          .Where(g => ids.Contains(g.Id))
+                          .ToListAsync(cancellationToken);
     }
 }

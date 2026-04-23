@@ -29,7 +29,7 @@ namespace Krea.Application.Features.User.UploadUserProfilePicture {
             if (request.Content is null)
                 throw new ArgumentException("File content is required.");
 
-            var user = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
+            User? user = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
             if (user is null)
                 throw new KeyNotFoundException("User was not found.");
 
@@ -46,9 +46,9 @@ namespace Krea.Application.Features.User.UploadUserProfilePicture {
             if (request.Content.CanSeek)
                 request.Content.Position = 0;
 
-            var storageFileName = $"users/{request.UserId}/profile/{media.FileName}";
+            string storageFileName = $"users/{request.UserId}/profile/{media.FileName}";
 
-            var storageResult = await _fileStorage.SaveAsync(
+            FileStorageResult storageResult = await _fileStorage.SaveAsync(
                 request.Content,
                 storageFileName,
                 request.ContentType,

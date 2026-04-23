@@ -6,9 +6,8 @@ namespace Krea.Application.Features.Admin.Configuration {
         : IRequestHandler<GetAdminInstanceConfigurationQuery, AdminInstanceConfigurationDto> {
         private readonly IInstanceSettingsService _instanceSettingsService;
 
-        public GetAdminInstanceConfigurationHandler(IInstanceSettingsService instanceSettingsService) {
+        public GetAdminInstanceConfigurationHandler(IInstanceSettingsService instanceSettingsService) =>
             _instanceSettingsService = instanceSettingsService;
-        }
 
         public async Task<AdminInstanceConfigurationDto> Handle(
             GetAdminInstanceConfigurationQuery request,

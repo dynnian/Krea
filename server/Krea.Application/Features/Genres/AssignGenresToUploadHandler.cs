@@ -1,10 +1,10 @@
 namespace Krea.Application.Features.Genres {
     using Domain.Abstractions;
+    using Domain.Entities;
     using Domain.Repositories;
 
-    public sealed class AssignGenresToUploadHandler 
-        : IRequestHandler<AssignGenresToUploadCommand, Unit>
-    {
+    public sealed class AssignGenresToUploadHandler
+        : IRequestHandler<AssignGenresToUploadCommand, Unit> {
         private readonly IPostUploadRepository _uploadRepository;
         private readonly IGenreRepository _genreRepository;
         private readonly IUnitOfWork _unitOfWork;
@@ -12,8 +12,7 @@ namespace Krea.Application.Features.Genres {
         public AssignGenresToUploadHandler(
             IPostUploadRepository uploadRepository,
             IGenreRepository genreRepository,
-            IUnitOfWork unitOfWork)
-        {
+            IUnitOfWork unitOfWork) {
             _uploadRepository = uploadRepository;
             _genreRepository = genreRepository;
             _unitOfWork = unitOfWork;
@@ -21,10 +20,9 @@ namespace Krea.Application.Features.Genres {
 
         public async Task<Unit> Handle(
             AssignGenresToUploadCommand request,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             // Primero obtener upload con metadata
-            var upload = await _uploadRepository
+            PostUpload? upload = await _uploadRepository
                 .GetByIdWithMetadataAsync(request.UploadId, cancellationToken);
 
             if (upload is null)
@@ -34,7 +32,7 @@ namespace Krea.Application.Features.Genres {
                 throw new Exception("Metadata not found");
 
             // Luego obtener generos
-            var genres = await _genreRepository
+            IReadOnlyList<Genre> genres = await _genreRepository
                 .GetByIdsAsync(request.GenreIds, cancellationToken);
 
             if (genres.Count != request.GenreIds.Count)
@@ -45,8 +43,7 @@ namespace Krea.Application.Features.Genres {
             // (si tienes lógica para eso)
 
             // Se asigna los generos
-            foreach (var genre in genres)
-            {
+            foreach (Genre genre in genres) {
                 upload.Metadata.AddGenre(genre);
             }
 

@@ -24,7 +24,7 @@ namespace Krea.Domain.Repositories {
         Task<int> CountAsync(CancellationToken cancellationToken = default);
 
         Task<IReadOnlyList<Post>> GetRecentAsync(int take, CancellationToken cancellationToken = default);
-        
+
         Task<(IReadOnlyList<Post> Posts, int TotalCount)> GetRepliesAsync(
             Guid postId,
             int page,
@@ -39,5 +39,10 @@ namespace Krea.Domain.Repositories {
             Guid originalPostId,
             Guid userId,
             CancellationToken cancellationToken = default);
+        
+        Task<HashSet<Guid>> GetRepostedTargetIdsAsync(
+            Guid userId,
+            IReadOnlyCollection<Guid> targetIds,
+            CancellationToken ct);
     }
 }

@@ -14,10 +14,10 @@ namespace Krea.Domain.Entities {
         public string? Description { get; private set; }
 
         public int ItemCount { get; private set; }
-        
-        public CollectionType  Type { get; private set; }
 
-        public User Owner { get; private set; }
+        public CollectionType Type { get; private set; }
+
+        public User Owner { get; private set; } = null!;
         public Guid OwnerId { get; private set; }
 
         private readonly List<Post> _posts = new();
@@ -80,8 +80,7 @@ namespace Krea.Domain.Entities {
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public void RemovePost(Guid postId)
-        {
+        public void RemovePost(Guid postId) {
             Post? post = _posts.FirstOrDefault(p => p.Id == postId);
 
             if (post is null)
@@ -103,9 +102,8 @@ namespace Krea.Domain.Entities {
             MediaId = image.Id;
             UpdatedAt = DateTime.UtcNow;
         }
-        
-        public void UpdateTitle(string title)
-        {
+
+        public void UpdateTitle(string title) {
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Title is required.", nameof(title));
 

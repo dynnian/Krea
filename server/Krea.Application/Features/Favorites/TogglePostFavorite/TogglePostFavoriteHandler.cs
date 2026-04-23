@@ -4,26 +4,20 @@ namespace Krea.Application.Features.Favorites.TogglePostFavorite {
     using Domain.Repositories;
 
     public sealed class TogglePostFavoriteHandler
-        : IRequestHandler<TogglePostFavoriteCommand, bool>
-    {
+        : IRequestHandler<TogglePostFavoriteCommand, bool> {
         private readonly IPostFavoriteRepository _repository;
 
-        public TogglePostFavoriteHandler(IPostFavoriteRepository repository)
-        {
-            _repository = repository;
-        }
+        public TogglePostFavoriteHandler(IPostFavoriteRepository repository) => _repository = repository;
 
         public async Task<bool> Handle(
             TogglePostFavoriteCommand request,
-            CancellationToken cancellationToken)
-        {
-            var exists = await _repository.ExistsAsync(
+            CancellationToken cancellationToken) {
+            bool exists = await _repository.ExistsAsync(
                 request.UserId,
                 request.PostId);
 
-            if (exists)
-            {
-                var favorite = await _repository.GetByUserAndPostAsync(
+            if (exists) {
+                PostFavorite? favorite = await _repository.GetByUserAndPostAsync(
                     request.UserId,
                     request.PostId);
 
@@ -39,7 +33,7 @@ namespace Krea.Application.Features.Favorites.TogglePostFavorite {
 
             await _repository.AddAsync(newFavorite, cancellationToken);
 
-            return true;  // Si es favorito
+            return true; // Si es favorito
         }
     }
 }

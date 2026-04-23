@@ -1,26 +1,24 @@
 namespace Krea.Application.Features.Collections.DeleteCollection {
     using Domain.Abstractions;
+    using Domain.Entities;
     using Domain.Repositories;
 
     public sealed class DeleteCollectionHandler
-        : IRequestHandler<DeleteCollectionCommand, Unit>
-    {
+        : IRequestHandler<DeleteCollectionCommand, Unit> {
         private readonly ICollectionRepository _collections;
         private readonly IUnitOfWork _unitOfWork;
 
         public DeleteCollectionHandler(
             ICollectionRepository collections,
-            IUnitOfWork unitOfWork)
-        {
+            IUnitOfWork unitOfWork) {
             _collections = collections;
             _unitOfWork = unitOfWork;
         }
 
         public async Task<Unit> Handle(
             DeleteCollectionCommand request,
-            CancellationToken cancellationToken)
-        {
-            var collection = await _collections.GetByIdAsync(
+            CancellationToken cancellationToken) {
+            Collection? collection = await _collections.GetByIdAsync(
                 request.CollectionId,
                 cancellationToken);
 

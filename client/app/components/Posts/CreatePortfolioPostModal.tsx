@@ -442,8 +442,8 @@ const resetForm = () => {
                     setSelectedGenreIds(values);
                     setGenres((options as { label: string; value: string }[]).map((option) => option.label));
                   }}
-                  className="w-full"
-                  rootClassName="w-full h-[56px]"
+                  className="w-full h-[56px]"
+                  rootClassName="w-full "
                   size="large"
                   showSearch
                   placeholder="Escribe y busca un género."

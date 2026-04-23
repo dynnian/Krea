@@ -4,4 +4,5 @@ namespace Krea.Application.Features.Favorites.TogglePostFavorite {
     public sealed record TogglePostFavoriteCommand(
         Guid UserId,
         Guid PostId
-    ) : IRequest<bool>;}
+    ) : IRequest<bool>;
+}

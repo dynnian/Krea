@@ -4,4 +4,5 @@ namespace Krea.Application.Features.Genres {
     public sealed record AssignGenresToUploadCommand(
         Guid UploadId,
         List<Guid> GenreIds
-    ) : IRequest<Unit>;}
+    ) : IRequest<Unit>;
+}

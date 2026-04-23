@@ -42,9 +42,8 @@ namespace Krea.Domain.Entities {
             };
             return media;
         }
-        
-        public void SetPath(string path)
-        {
+
+        public void SetPath(string path) {
             if (string.IsNullOrWhiteSpace(path))
                 throw new ArgumentException("Invalid path");
 

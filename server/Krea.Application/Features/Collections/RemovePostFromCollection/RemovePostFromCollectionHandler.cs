@@ -1,26 +1,24 @@
 namespace Krea.Application.Features.Collections.RemovePostFromCollection {
     using Domain.Abstractions;
+    using Domain.Entities;
     using Domain.Repositories;
 
     public sealed class RemovePostFromCollectionHandler
-        : IRequestHandler<RemovePostFromCollectionCommand, Unit>
-    {
+        : IRequestHandler<RemovePostFromCollectionCommand, Unit> {
         private readonly ICollectionRepository _collections;
         private readonly IUnitOfWork _unitOfWork;
 
         public RemovePostFromCollectionHandler(
             ICollectionRepository collections,
-            IUnitOfWork unitOfWork)
-        {
+            IUnitOfWork unitOfWork) {
             _collections = collections;
             _unitOfWork = unitOfWork;
         }
 
         public async Task<Unit> Handle(
             RemovePostFromCollectionCommand request,
-            CancellationToken cancellationToken)
-        {
-            var collection = await _collections.GetByIdWithPostsAsync(
+            CancellationToken cancellationToken) {
+            Collection? collection = await _collections.GetByIdWithPostsAsync(
                 request.CollectionId,
                 cancellationToken);
 

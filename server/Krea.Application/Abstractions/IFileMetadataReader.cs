@@ -1,8 +1,7 @@
 namespace Krea.Application.Abstractions {
     using Features.PostUploads;
 
-    public interface IFileMetadataReader
-    {
+    public interface IFileMetadataReader {
         Task<ParsedUploadMetadata> ReadAsync(
             Stream stream,
             string fileName,

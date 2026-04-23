@@ -22,16 +22,18 @@ namespace Krea.Application.Features.Admin.Users {
                 request.Role,
                 cancellationToken);
 
-            var identityByUserId = identities.ToDictionary(i => i.Id, i => i);
-            IReadOnlyList<User> users = await _userRepository.GetByIdsAsync(identityByUserId.Keys.ToList(), cancellationToken);
+            Dictionary<Guid, UserIdentity> identityByUserId = identities.ToDictionary(i => i.Id, i => i);
+            IReadOnlyList<User> users =
+                await _userRepository.GetByIdsAsync(identityByUserId.Keys.ToList(), cancellationToken);
 
             List<(User DomainUser, UserIdentity Identity)> merged = users
-                .Where(u => identityByUserId.ContainsKey(u.Id))
-                .Select(u => (u, identityByUserId[u.Id]))
-                .ToList();
+                                                                    .Where(u => identityByUserId.ContainsKey(u.Id))
+                                                                    .Select(u => (u, identityByUserId[u.Id]))
+                                                                    .ToList();
 
             if (request.Status.HasValue) {
-                merged = merged.Where(x => AdminUserStatusResolver.Resolve(x.DomainUser) == request.Status.Value).ToList();
+                merged = merged.Where(x => AdminUserStatusResolver.Resolve(x.DomainUser) == request.Status.Value)
+                               .ToList();
             }
 
             merged = ApplySorting(merged, request.SortBy, request.SortDirection);
@@ -40,31 +42,31 @@ namespace Krea.Application.Features.Admin.Users {
             int totalPages = totalCount == 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize);
 
             List<AdminUserListItemDto> items = merged
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(x => new AdminUserListItemDto(
-                    x.DomainUser.Id,
-                    x.Identity.UserName,
-                    x.Identity.Email,
-                    x.DomainUser.DisplayName,
-                    x.Identity.Roles.FirstOrDefault() ?? "Artist",
-                    AdminUserStatusResolver.Resolve(x.DomainUser),
-                    x.DomainUser.RegisteredAt))
-                .ToList();
+                                               .Skip((page - 1) * pageSize)
+                                               .Take(pageSize)
+                                               .Select(x => new AdminUserListItemDto(
+                                                   x.DomainUser.Id,
+                                                   x.Identity.UserName,
+                                                   x.Identity.Email,
+                                                   x.DomainUser.DisplayName,
+                                                   x.Identity.Roles.FirstOrDefault() ?? "Artist",
+                                                   AdminUserStatusResolver.Resolve(x.DomainUser),
+                                                   x.DomainUser.RegisteredAt))
+                                               .ToList();
 
             IReadOnlyList<string> availableRoles = await _identityService.GetAvailableRolesAsync();
 
             return new AdminUsersPageDto(
-                Page: page,
-                PageSize: pageSize,
-                TotalCount: totalCount,
-                TotalPages: totalPages,
-                HasPrevious: page > 1,
-                HasNext: totalPages > page,
-                SortBy: request.SortBy,
-                SortDirection: request.SortDirection,
-                AvailableRoles: availableRoles,
-                Items: items);
+                page,
+                pageSize,
+                totalCount,
+                totalPages,
+                page > 1,
+                totalPages > page,
+                request.SortBy,
+                request.SortDirection,
+                availableRoles,
+                items);
         }
 
         private static List<(User DomainUser, UserIdentity Identity)> ApplySorting(
