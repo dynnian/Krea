@@ -164,19 +164,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const register = async (data: RegisterDTO, rememberMe = false) => {
-    try {
-      const response = await axiosClient.post('/Auth/register', data);
-      return response.data as LoginResponse;
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        const data = error.response.data;
-        const message = data?.error || data?.message || data?.title || 'Registration failed';
-        throw new Error(message);
-      }
-      throw new Error('Network error');
+const register = async (data: RegisterDTO, rememberMe = false) => {
+  try {
+    const response = await axiosClient.post('/Auth/register', data);
+    return response.data as LoginResponse;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      const responseData = error.response.data;
+      const message =
+        responseData?.error ||
+        responseData?.message ||
+        responseData?.title ||
+        'Registration failed';
+
+      throw new Error(String(message).trim());
     }
-  };
+    throw new Error('Network error');
+  }
+};
 
   const confirmEmail = async (userId: string, token: string) => {
     try {
