@@ -203,3 +203,20 @@ export interface PublicUserProfile {
   languageCode: string;
   timeZoneId: string;
 }
+
+export interface ExplorePostDto {
+  id: string;
+  title: string;
+  uploadedAt: string;
+  userId: string;
+  authorUsername: string;
+  category: "Image" | "Music" | "Text" | "Plain";
+  genres: string[];
+  tags: string[];
+  previewUrl: string | null;
+}
+
+export interface TrendingResponse {
+  genres: string[];
+  tags: string[];
+}
