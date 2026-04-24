@@ -13,6 +13,7 @@ namespace Krea.Domain.Entities {
         public PaymentStatus Status { get; private set; }
         public ExternalPaymentRef ExternalRef { get; private set; }
         public DateTime? PaidAt { get; private set; }
+        public DateTime CreatedAt { get; private set; }
 
         #pragma warning disable CS8618
         private Payment() { }
@@ -38,6 +39,7 @@ namespace Krea.Domain.Entities {
 
             Status = PaymentStatus.Pending;
             PaidAt = null;
+            CreatedAt = DateTime.UtcNow;
         }
 
         // Constructores usados por las raices

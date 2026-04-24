@@ -1,6 +1,7 @@
 namespace Krea.Application {
     using Abstractions;
     using Abstractions.Feed;
+    using Abstractions.Payments; 
     using Domain.Abstractions;
     using Domain.Entities;
     using Features.Auth;
@@ -69,6 +70,11 @@ namespace Krea.Application {
     using Features.Commissions.GetSubmissions;
     using Features.Commissions.RequestChanges;
     using Features.Commissions.UpdateCommissionOffering;
+    using Features.Donations.Dtos;
+    using Features.Donations.GetUserDonations;
+    using Features.Payments.Dtos;
+    using Features.Payments.GetReceivedPayments;
+    using Features.Payments.GetSentPayments;
     using CommissionsPagedResult = Features.Commissions.GetSubmissions.PagedResult<Features.Commissions.Dtos.SubmissionDto>;
     using Features.Posts.CreatePost;
     using Features.Posts.DeletePost;
@@ -84,7 +90,7 @@ namespace Krea.Application {
     using Features.User.GetReportsByUser;
     using Features.User.SearchUser;
     using Features.User.UploadUserProfilePicture;
-
+    
     public static class DependencyInjection {
         public static IServiceCollection AddApplication(this IServiceCollection services) {
             services.AddAutoMapper(cfg => { }, typeof(DirectMessageProfile));
@@ -218,9 +224,12 @@ namespace Krea.Application {
             
             // Payments
             services.AddScoped<IRequestHandler<ConfirmPaymentCommand, Unit>, ConfirmPaymentCommandHandler>();
+            services.AddScoped<IRequestHandler<GetSentPaymentsQuery, Abstractions.Payments.PagedResult<PaymentSummaryDto>>, GetSentPaymentsQueryHandler>();
+            services.AddScoped<IRequestHandler<GetReceivedPaymentsQuery, Abstractions.Payments.PagedResult<PaymentSummaryDto>>, GetReceivedPaymentsQueryHandler>();
             
             // Donations
             services.AddScoped<IRequestHandler<CreateDonationCommand, CreateDonationResponse>, CreateDonationCommandHandler>();
+            services.AddScoped<IRequestHandler<GetUserDonationsQuery, Abstractions.Payments.PagedResult<DonationDto>>, GetUserDonationsQueryHandler>();
             
             // Commission Offering
             services.AddScoped<IRequestHandler<CreateCommissionOfferingCommand, CreateCommissionOfferingResponse>, CreateCommissionOfferingCommandHandler>();
