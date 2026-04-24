@@ -61,7 +61,11 @@ namespace Krea.API.Controllers {
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             CancellationToken ct = default) {
-            Guid currentUserId = GetCurrentUserId();
+            Guid? currentUserId = null;
+                
+            if (User.Identity?.IsAuthenticated == true) {
+                currentUserId = GetCurrentUserId();
+            }
 
             var query = new GetFollowingFeedQuery(currentUserId, page, pageSize);
 
