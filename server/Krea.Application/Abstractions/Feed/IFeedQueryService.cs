@@ -15,7 +15,7 @@ namespace Krea.Application.Abstractions.Feed {
             CancellationToken ct);
 
         Task<IReadOnlyList<PostFeedResponse>> GetTrendingAsync(
-            Guid currentUserId,
+            Guid? currentUserId,
             int page,
             int pageSize,
             CancellationToken ct);

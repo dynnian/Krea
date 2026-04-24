@@ -147,7 +147,7 @@ namespace Krea.Infrastructure.Services {
         }
 
         public async Task<IReadOnlyList<PostFeedResponse>> GetTrendingAsync(
-            Guid currentUserId,
+            Guid? currentUserId,
             int page,
             int pageSize,
             CancellationToken ct) {
@@ -184,13 +184,15 @@ namespace Krea.Infrastructure.Services {
                                          ? x.Post.Uploads.Select(u => u.Media.MimeType).FirstOrDefault()
                                          : x.Post.RepostOf!.Uploads.Select(u => u.Media.MimeType).FirstOrDefault(),
                                      LikeCount = x.Post.Likes.Count(),
-                                     IsLikedByCurrentUser =
-                                         x.Post.Likes.Any(l => l.UserId == currentUserId),
-                                     IsRetweetedByCurrentUser = _context.Posts.Any(r =>
-                                         !r.IsDeleted &&
-                                         r.AuthorPostId == currentUserId &&
-                                         r.RepostOfId == (x.Post.RepostOfId ?? x.Post.Id)),
-                                     IsFavorite = x.Post.Favorites.Any(f => f.UserId == currentUserId),
+                                     IsLikedByCurrentUser = currentUserId.HasValue &&
+                                                            x.Post.Likes.Any(l => l.UserId == currentUserId.Value),
+                                     IsRetweetedByCurrentUser = currentUserId.HasValue &&
+                                                                _context.Posts.Any(r =>
+                                                                    !r.IsDeleted &&
+                                                                    r.AuthorPostId == currentUserId.Value &&
+                                                                    r.RepostOfId == (x.Post.RepostOfId ?? x.Post.Id)),
+                                     IsFavorite = currentUserId.HasValue &&
+                                                  x.Post.Favorites.Any(f => f.UserId == currentUserId.Value),
                                      ReplyCount = _context.Posts.Count(r => r.RepliedToId == x.Post.Id),
                                      RepostCount =
                                          _context.Posts.Count(r => r.RepostOfId == (x.Post.RepostOfId ?? x.Post.Id)),
