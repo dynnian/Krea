@@ -1,5 +1,10 @@
 import type { CommissionDetail, CommissionsPageState } from "../types/commissions";
 
+/**
+ * Listado y detalle de la UI siguen en mock/localStorage hasta que existan GET en API.
+ * Flujo real de creación de ofertas, solicitudes, pagos (Stripe) y entregas: `commissionsApi.ts`
+ * (alineado con `feature/commissions`: commission-offerings, commission-requests, submissions).
+ */
 const STORAGE_KEY = "krea_commissions_page_draft_v1";
 
 const defaultCommissionsPageState: CommissionsPageState = {
