@@ -82,7 +82,7 @@ namespace Krea.API.Controllers {
         /// <returns>
         /// A paginated collection of posts authored by the specified user.
         /// </returns>
-        [HttpGet("user/{authorId:guid}")]
+        [HttpGet("user/{authorPostId:guid}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetByUser(
             Guid authorPostId,
