@@ -77,6 +77,7 @@ namespace Krea.API.Controllers {
         /// <response code="200">Collections retrieved successfully.</response>
         /// <response code="404">User not found.</response>
         [HttpGet("user/{userId:guid}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetUserCollections(
             Guid userId,
             CancellationToken ct) {
