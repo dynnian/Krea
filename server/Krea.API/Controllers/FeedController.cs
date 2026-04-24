@@ -41,6 +41,7 @@ namespace Krea.API.Controllers {
         }
 
         [HttpGet("trending")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetTrending(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,

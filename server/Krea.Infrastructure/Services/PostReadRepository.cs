@@ -96,6 +96,11 @@ namespace Krea.Infrastructure.Services {
                         .ToList(),
                     PreviewUrl = p.Uploads
                         .Select(u => u.Media.Path)
+                        .FirstOrDefault(),
+
+                    CoverUrl = p.Uploads
+                        .Where(u => u.CoverMedia != null)
+                        .Select(u => u.CoverMedia!.Path)
                         .FirstOrDefault()
                 })
                 .ToListAsync(cancellationToken);

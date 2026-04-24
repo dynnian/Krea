@@ -13,5 +13,6 @@ namespace Krea.Application.Features.Posts.Dto {
         public IReadOnlyList<string> Tags { get; init; } = [];
 
         public string? PreviewUrl { get; init; }
+        public string? CoverUrl { get; init; }
     }
 }
