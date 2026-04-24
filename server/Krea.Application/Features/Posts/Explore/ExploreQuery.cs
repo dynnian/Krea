@@ -8,6 +8,7 @@ namespace Krea.Application.Features.Posts.Explore {
         List<string>? Tags,
         string? SortBy,
         int Page = 1,
-        int PageSize = 10
+        int PageSize = 10,
+        Guid? CurrentUserId = null
     ) : IRequest<PagedResult<ExplorePostDto>>;
 }

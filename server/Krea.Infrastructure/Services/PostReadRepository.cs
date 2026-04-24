@@ -18,6 +18,8 @@ namespace Krea.Infrastructure.Services {
             DateTime now = DateTime.UtcNow;
             int diff = (7 + (now.DayOfWeek - DayOfWeek.Monday)) % 7;
             DateTime startOfWeek = now.Date.AddDays(-diff);
+            
+            Guid? currentUserId = request.CurrentUserId;
 
             IQueryable<Post> baseQuery = _context.Posts
                 .AsNoTracking()
@@ -74,26 +76,32 @@ namespace Krea.Infrastructure.Services {
                 _ => baseQuery
                     .OrderByDescending(p => p.UploadedAt)
             };
-
+            
             List<ExplorePostDto> items = await orderedQuery
                 .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .Select(p => new ExplorePostDto {
                     Id = p.Id,
                     Title = p.Title,
+                    Content = p.Content,
                     UploadedAt = p.UploadedAt,
+
                     UserId = p.AuthorPostId,
                     AuthorUsername = p.AuthorPost.DisplayName,
+
                     Category = p.Type.ToString(),
+
                     Genres = p.Uploads
                         .Where(u => u.Metadata != null)
                         .SelectMany(u => u.Metadata!.Genres)
                         .Select(g => g.Name)
                         .Distinct()
                         .ToList(),
+
                     Tags = p.Hashtags
                         .Select(h => h.Name)
                         .ToList(),
+
                     PreviewUrl = p.Uploads
                         .Select(u => u.Media.Path)
                         .FirstOrDefault(),
@@ -101,7 +109,28 @@ namespace Krea.Infrastructure.Services {
                     CoverUrl = p.Uploads
                         .Where(u => u.CoverMedia != null)
                         .Select(u => u.CoverMedia!.Path)
-                        .FirstOrDefault()
+                        .FirstOrDefault(),
+
+                    LikesCount = p.Likes.Count,
+
+                    IsLikedByCurrentUser = currentUserId != null &&
+                                           p.Likes.Any(l => l.UserId == currentUserId.Value),
+
+                    IsRetweetedByCurrentUser = currentUserId != null &&
+                                               _context.Posts.Any(r =>
+                                                   !r.IsDeleted &&
+                                                   r.AuthorPostId == currentUserId.Value &&
+                                                   r.RepostOfId == p.Id),
+
+                    IsFavorite = currentUserId != null &&
+                                 _context.Set<PostFavorite>().Any(f =>
+                                     f.UserId == currentUserId.Value &&
+                                     f.PostId == p.Id),
+
+                    IsFollowingAuthor = currentUserId != null &&
+                                        _context.Follows.Any(f =>
+                                            f.SourceId == currentUserId.Value &&
+                                            f.TargetId == p.AuthorPostId)
                 })
                 .ToListAsync(cancellationToken);
 

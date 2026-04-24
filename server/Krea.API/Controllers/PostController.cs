@@ -355,8 +355,19 @@ namespace Krea.API.Controllers {
         [AllowAnonymous]
         public async Task<IActionResult> Explore(
             [FromQuery] ExploreQuery query,
-            CancellationToken cancellationToken) {
-            PagedResult<ExplorePostDto> result = await _sender.Send(query, cancellationToken);
+            CancellationToken cancellationToken)
+        {
+            Guid? currentUserId = TryGetCurrentUserId();
+
+            ExploreQuery queryWithUser = query with
+            {
+                CurrentUserId = currentUserId
+            };
+
+            PagedResult<ExplorePostDto> result = await _sender.Send(
+                queryWithUser,
+                cancellationToken);
+
             return Ok(result);
         }
         
@@ -523,6 +534,15 @@ namespace Krea.API.Controllers {
             }
 
             return userId;
+        }
+        
+        private Guid? TryGetCurrentUserId()
+        {
+            string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+            return Guid.TryParse(userIdClaim, out Guid userId)
+                ? userId
+                : null;
         }
     }
 }
