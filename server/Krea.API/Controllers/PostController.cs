@@ -90,7 +90,11 @@ namespace Krea.API.Controllers {
             [FromQuery] int pageSize = 10,
             CancellationToken ct = default)
         {
-            Guid? currentUserId = GetCurrentUserId();
+            Guid? currentUserId = null;
+
+            if (User.Identity?.IsAuthenticated == true) {
+                currentUserId = GetCurrentUserId();
+            }
 
             var result = await _sender.Send(
                 new GetPostsByUserQuery(
