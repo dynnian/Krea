@@ -63,7 +63,7 @@ namespace Krea.Infrastructure.Data.Configurations {
                    .IsRequired();
 
             builder.Property(p => p.PaidAt).IsRequired(false);
-            builder.Property(p => p.CreatedAt).HasDefaultValue(DateTime.UtcNow);
+            builder.Property(p => p.CreatedAt);
 
             // Índices
             builder.HasIndex("SubscriptionId");
