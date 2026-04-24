@@ -139,8 +139,22 @@ export const feedApi = {
     axiosClient.get<FeedItem[]>("/feed/following", {
       params: { currentUserId, page, pageSize },
     }),
-  getTrending: (currentUserId?: string, page = 1, pageSize = 20) =>
-    axiosClient.get<TrendingResponse[]>("/feed/trending", {
-      params: { currentUserId, page, pageSize },
-    }),
+  getTrending: async () => {
+  try {
+    const response = await axiosClient.get("/feed/trending");
+    // Normalizar respuesta (si es array, extraer primer elemento)
+    let data = response.data;
+    if (Array.isArray(data) && data.length > 0) {
+      data = data[0];
+    }
+    if (!data || typeof data !== 'object') {
+      data = { genres: [], tags: [] };
+    }
+    return { ...response, data: data as { genres: string[]; tags: string[] } };
+  } catch (error) {
+    console.warn("Error fetching trending, returning empty", error);
+    // Retornar un objeto vacío en lugar de lanzar error
+    return { data: { genres: [], tags: [] } } as any;
+  }
+},
 };

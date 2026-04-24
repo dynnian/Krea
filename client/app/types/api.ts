@@ -215,7 +215,8 @@ export interface ExplorePostDto {
   category: "Image" | "Music" | "Text" | "Plain";
   genres: string[];
   tags: string[];
-  previewUrl: string | null;
+  previewUrl: string | null;   // Para música: URL del audio; para imagen: miniatura
+  coverUrl: string | null;     // Portada (opcional, ej. para libros)
 }
 
 export interface TrendingResponse {
