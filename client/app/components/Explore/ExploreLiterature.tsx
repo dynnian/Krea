@@ -4,15 +4,14 @@ import { Spin, message } from "antd";
 import { Link } from "react-router-dom";
 import { BookOpen } from "lucide-react";
 import { postsApi } from "../../services/postsService";
-import type { PostDto } from "../../types/api";
+import type { ExplorePostDto } from "../../types/api";
 
 interface ExploreLiteratureProps {
   selectedTag?: string | null;
-  selectedArtist?: string | null;
 }
 
-export default function ExploreLiterature({ selectedTag, selectedArtist }: ExploreLiteratureProps) {
-  const [books, setBooks] = useState<PostDto[]>([]);
+export default function ExploreLiterature({ selectedTag }: ExploreLiteratureProps) {
+  const [books, setBooks] = useState<ExplorePostDto[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,7 +29,7 @@ export default function ExploreLiterature({ selectedTag, selectedArtist }: Explo
       }
     };
     fetchBooks();
-  }, [selectedTag, selectedArtist]);
+  }, [selectedTag]);
 
   if (loading) return <div className="flex justify-center p-20"><Spin size="large" /></div>;
 
@@ -44,8 +43,10 @@ export default function ExploreLiterature({ selectedTag, selectedArtist }: Explo
           <h2 className="text-[36px] font-bold mb-4">Destacado</h2>
           <div className="bg-[#E8F1FC] border border-[#8F8E8A] p-6 rounded-[10px] flex gap-6">
             <div className="w-32 h-44 bg-white shrink-0 shadow-sm flex items-center justify-center border border-gray-200">
-              {featuredBook.media?.[0]?.coverUrl ? (
-                <img src={featuredBook.media[0].coverUrl} className="w-full h-full object-cover" alt="cover" />
+              {featuredBook.coverUrl ? (
+                <img src={featuredBook.coverUrl} className="w-full h-full object-cover" alt="cover" />
+              ) : featuredBook.previewUrl ? (
+                <img src={featuredBook.previewUrl} className="w-full h-full object-cover" alt="cover" />
               ) : (
                 <BookOpen size={40} className="text-gray-300" />
               )}
@@ -55,11 +56,11 @@ export default function ExploreLiterature({ selectedTag, selectedArtist }: Explo
                 <Link to={`/post/${featuredBook.id}`} className="text-xl font-bold text-[#1B1C1E] hover:underline">
                   {featuredBook.title}
                 </Link>
-                <Link to={`/user/${featuredBook.author.id}`} className="text-sm text-[#464749] mb-2 block hover:underline">
-                  @{featuredBook.author.username}
+                <Link to={`/user/${featuredBook.userId}`} className="text-sm text-[#464749] mb-2 block hover:underline">
+                  @{featuredBook.authorUsername}
                 </Link>
                 <div className="flex flex-wrap gap-1 mb-3">
-                  {featuredBook.genres?.map((g) => (
+                  {featuredBook.genres.map((g) => (
                     <span key={g} className="text-[10px] bg-white border px-2 py-0.5 rounded text-gray-500 uppercase">
                       {g}
                     </span>
@@ -79,8 +80,10 @@ export default function ExploreLiterature({ selectedTag, selectedArtist }: Explo
         {restBooks.map((book) => (
           <div key={book.id} className="bg-[#E8F1FC] border border-[#8F8E8A] p-6 rounded-[10px] flex gap-6 hover:shadow-md">
             <div className="w-32 h-44 bg-white shrink-0 shadow-sm flex items-center justify-center border border-gray-200">
-              {book.media?.[0]?.coverUrl ? (
-                <img src={book.media[0].coverUrl} className="w-full h-full object-cover" alt="cover" />
+              {book.coverUrl ? (
+                <img src={book.coverUrl} className="w-full h-full object-cover" alt="cover" />
+              ) : book.previewUrl ? (
+                <img src={book.previewUrl} className="w-full h-full object-cover" alt="cover" />
               ) : (
                 <BookOpen size={40} className="text-gray-300" />
               )}
@@ -90,11 +93,11 @@ export default function ExploreLiterature({ selectedTag, selectedArtist }: Explo
                 <Link to={`/post/${book.id}`} className="text-xl font-bold text-[#1B1C1E] hover:underline">
                   {book.title}
                 </Link>
-                <Link to={`/user/${book.author.id}`} className="text-sm text-[#464749] mb-2 block hover:underline">
-                  @{book.author.username}
+                <Link to={`/user/${book.userId}`} className="text-sm text-[#464749] mb-2 block hover:underline">
+                  @{book.authorUsername}
                 </Link>
                 <div className="flex flex-wrap gap-1 mb-3">
-                  {book.genres?.map((g) => (
+                  {book.genres.map((g) => (
                     <span key={g} className="text-[10px] bg-white border px-2 py-0.5 rounded text-gray-500 uppercase">
                       {g}
                     </span>

@@ -1,12 +1,12 @@
 // components/Explore/ExploreSongCard.tsx
 import React, { useRef, useState } from "react";
-import { Heart, Bookmark, Play, Pause } from "lucide-react";
+import { Play, Pause } from "lucide-react";
 import { Link } from "react-router-dom";
 import AudioWaveform from "../WaveSurfer/AudioWaveform";
-import type { PostDto } from "../../types/api";
+import type { ExplorePostDto } from "../../types/api.ts";
 
 interface ExploreSongCardProps {
-  song: PostDto;
+  song: ExplorePostDto;
 }
 
 export default function ExploreSongCard({ song }: ExploreSongCardProps) {
@@ -14,9 +14,20 @@ export default function ExploreSongCard({ song }: ExploreSongCardProps) {
   const [isWaveReady, setIsWaveReady] = useState(false);
   const waveformControls = useRef<{ playPause: () => void } | null>(null);
 
-  const audioMedia = song.media?.find(m => m.mimeType?.startsWith("audio/"));
-  const audioUrl = audioMedia?.url || "";
-  const coverUrl = song.media?.find(m => m.mimeType?.startsWith("image/"))?.url || "https://placehold.co/240x240";
+  const audioUrl = song.previewUrl; // Directo del DTO
+  const coverUrl = song.coverUrl || "https://placehold.co/240x240?text=No+cover";
+
+  if (!audioUrl) {
+    return (
+      <div className="w-full h-[240px] bg-[#E8F1FC] border border-[#8F8E8A] rounded-[10px] p-[20px] flex items-center justify-center">
+        <p className="text-gray-500">Audio no disponible</p>
+      </div>
+    );
+  }
+
+  const handlePlayPause = () => {
+    if (isWaveReady) waveformControls.current?.playPause();
+  };
 
   return (
     <div className="w-full h-[240px] bg-[#E8F1FC] border border-[#8F8E8A] rounded-[10px] shadow-[4px_4px_4px_rgba(0,0,0,0.15)] p-[20px]">
@@ -38,46 +49,34 @@ export default function ExploreSongCard({ song }: ExploreSongCardProps) {
             </span>
           </div>
           <div className="pb-[18px]">
-            <Link to={`/user/${song.author.id}`} className="hover:underline cursor-pointer text-[#6B6B6B] text-[20px]">
-              @{song.author.username}
+            <Link to={`/user/${song.userId}`} className="hover:underline cursor-pointer text-[#6B6B6B] text-[20px]">
+              @{song.authorUsername}
             </Link>
           </div>
-          {audioUrl ? (
-            <div className="px-[35px]">
-              <AudioWaveform
-                audioUrl={audioUrl}
-                showPlayButton={false}
-                showTime={true}
-                onPlayingChange={setIsPlaying}
-                onReady={(actions) => {
-                  waveformControls.current = actions;
-                  setIsWaveReady(true);
-                }}
-              />
-            </div>
-          ) : (
-            <div className="text-center text-gray-500">Audio no disponible</div>
-          )}
+          <div className="px-[35px]">
+            <AudioWaveform
+              audioUrl={audioUrl}
+              showPlayButton={false}
+              showTime={true}
+              onPlayingChange={setIsPlaying}
+              onReady={(actions) => {
+                waveformControls.current = actions;
+                setIsWaveReady(true);
+              }}
+            />
+          </div>
           <div className="flex justify-center gap-4 pt-[10px]">
-            <button className="w-11 h-11 rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center">
-              <Heart size={20} />
-            </button>
-            {audioUrl && (
-              <button
-                type="button"
-                disabled={!isWaveReady}
-                onClick={() => waveformControls.current?.playPause()}
-                className={`w-11 h-11 rounded-full border flex items-center justify-center ${
-                  isWaveReady
-                    ? "border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] cursor-pointer"
-                    : "border-gray-300 bg-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
-              >
-                {isPlaying ? <Pause size={22} /> : <Play size={22} />}
-              </button>
-            )}
-            <button className="w-11 h-11 rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center">
-              <Bookmark size={20} />
+            <button
+              type="button"
+              onClick={handlePlayPause}
+              disabled={!isWaveReady}
+              className={`w-11 h-11 rounded-full border flex items-center justify-center ${
+                isWaveReady
+                  ? "border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] cursor-pointer"
+                  : "border-gray-300 bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
+            >
+              {isPlaying ? <Pause size={22} /> : <Play size={22} />}
             </button>
           </div>
         </div>
