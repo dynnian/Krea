@@ -64,6 +64,10 @@ export default [
             file: "routes/commission-detail.tsx",
           },
           {
+            path: "/donations/:userId",
+            file: "routes/donation.tsx",
+          },
+          {
             path: "settings",
             file: "routes/settings.tsx",
           },
