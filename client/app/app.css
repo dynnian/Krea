@@ -120,5 +120,45 @@ html, body, #root {
   transition: background 0.1s ease;
 }
 
+/* scrollbar overlay reusable */
+.scroll-overlay {
+  overflow-y: auto;
+  padding-right: 10px;
+  margin-right: -10px;
+}
 
-/* 3. NO modifiques clases de Ant Design aquí */
+/* opcional: estilo scrollbar */
+.scroll-overlay::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-overlay::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-overlay::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.4);
+  border-radius: 999px;
+}
+
+/* scrollbar flotante REALISTA */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 999px;
+
+  /* 👇 esto es la magia */
+  border: 4px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.6);
+}

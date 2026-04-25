@@ -57,8 +57,6 @@ async function fetchPostsByAuthorFromApi(authorId: string) {
   const res = await postsApi.getUserPosts(authorId, 1, 100);
   const data: any = res.data;
 
-  console.log("getUserPosts raw response:", data);
-
   if (Array.isArray(data)) return data;
   if (Array.isArray(data?.items)) return data.items;
   if (Array.isArray(data?.posts)) return data.posts;
@@ -171,8 +169,6 @@ const handleGoToSaved = () => {
         let rawPosts: any[] = [];
         try {
           rawPosts = await fetchPostsByAuthorFromApi(apiProfile.id);
-          console.log("rawPosts:", rawPosts);
-          console.log("rawPosts length:", Array.isArray(rawPosts) ? rawPosts.length : "not-array");
         } catch (err) {
           console.error("Error fetching posts:", err);
           nextPostsError = "No se pudieron cargar las publicaciones";
@@ -183,9 +179,6 @@ const handleGoToSaved = () => {
           rawPosts,
           apiProfile.displayName || apiProfile.username,
         );
-
-        console.log("resolvedPosts:", resolvedPosts);
-console.log("resolvedPosts length:", resolvedPosts.length);
 
         // Mapear portfolios
         resolvedVisualPortfolioItems = mapPostsToVisualPortfolioItems(resolvedPosts);
@@ -245,10 +238,6 @@ console.log("resolvedPosts length:", resolvedPosts.length);
         }
 
 
-        console.log("visualPortfolioItems:", resolvedVisualPortfolioItems);
-        console.log("musicSongs:", resolvedMusicSongs);
-        console.log("writerWorks:", resolvedWriterWorks);
-        //  Construir profileData SIN MOCK
         const profileData: ProfileData = {
           user: {
             id: apiProfile.id,
@@ -845,7 +834,10 @@ onEditAlbum={async (album) => {
                     })),
                     likesCount: post.likesCount,
                     isLikedByCurrentUser: post.isLikedByCurrentUser ?? false,
-                    isFavoritedByCurrentUser: false,
+                    isFavoritedByCurrentUser:
+                      post.isFavoritedByCurrentUser ??
+                      post.isFavorite ??
+                      false,
                     isRetweetedByCurrentUser: false,
                     replies: post.replies ?? [],
                   }}

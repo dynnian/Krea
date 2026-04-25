@@ -1,11 +1,12 @@
 // deno-lint-ignore-file no-sloppy-imports jsx-button-has-type no-unused-vars
 import React, { useEffect, useState } from 'react';
-import { Modal, Upload, Input, Checkbox, message, Select, ConfigProvider } from 'antd';
+import { Modal, Upload, Input, message, Select, ConfigProvider } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import type { UploadFile, UploadProps } from 'antd/es/upload/interface';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { postsApi } from '../../services/postsService';
+import { genresApi, type GenreDto } from "../../services/genresService.ts";
 import {
   collectionsApi,
   type UserCollectionDto,
@@ -51,8 +52,9 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
   const [description, setDescription] = useState('');
   const [postType, setPostType] = useState<UploadMediaType>(initialPostType);
 
-  const [genres, setGenres] = useState<string[]>([]);
+  const [genres, setGenres] = useState<GenreDto[]>([]);
   const [selectedGenreIds, setSelectedGenreIds] = useState<string[]>([]);
+  const [genresLoading, setGenresLoading] = useState(false);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | undefined>(undefined);
   const [collections, setCollections] = useState<UserCollectionDto[]>([]);
   const [collectionsLoading, setCollectionsLoading] = useState(false);
@@ -86,14 +88,24 @@ useEffect(() => {
     }
   };
 
+  const loadGenres = async () => {
+    try {
+      setGenresLoading(true);
+      const data = await genresApi.getAll();
+      setGenres(data);
+    } catch (error) {
+      console.error("Error loading genres:", error);
+      message.error("No se pudieron cargar los géneros.");
+    } finally {
+      setGenresLoading(false);
+    }
+  };
+
   loadCollections();
+  loadGenres();
 }, [visible, initialPostType, user?.id]);
 
-const showGenresSection = postType === PostType.MUSIC || postType === PostType.TEXT;
-
-const removeGenre = (genreToRemove: string) => {
-  setGenres((prev) => prev.filter((genre) => genre !== genreToRemove));
-};
+const showGenresSection = postType === PostType.MUSIC || postType === PostType.TEXT
 
 const getInsertLabel = () => {
   return showGenresSection ? 'Inserte elemento' : 'Inserte 1 o varios elementos';
@@ -184,7 +196,7 @@ const getGenreLabel = () => {
         Description: description || '',
         IsWorkMedia: true,
         LanguageCode: user?.languageCode || 'es',
-        // GenreIds: selectedGenreIds,
+        GenreIds: selectedGenreIds,
     };
     // Metadatos según tipo
     if (postType === PostType.IMAGE) {
@@ -289,7 +301,6 @@ const resetForm = () => {
   setTitle('');
   setDescription('');
   setPostType(PostType.IMAGE);
-  setGenres([]);
   setSelectedGenreIds([]);
   setSelectedCollectionId(undefined);
   };
@@ -348,18 +359,35 @@ const resetForm = () => {
     accept: getAcceptType(),
   };
 
+  const getTargetGenreType = () => {
+    switch (postType) {
+      case PostType.IMAGE:
+        return 0;
+      case PostType.MUSIC:
+        return 1;
+      case PostType.TEXT:
+        return 2;
+      default:
+        return 0;
+    }
+  };
+
+  const filteredGenres = genres.filter(
+    (genre) => genre.type === getTargetGenreType()
+  );
+
   return (
     <ConfigProvider
-  theme={{
-    components: {
-      Modal: {
-        contentBg: 'transparent',
-        headerBg: 'transparent',
-        footerBg: 'transparent',
-      },
-    },
-  }}
->
+      theme={{
+        components: {
+          Modal: {
+            contentBg: 'transparent',
+            headerBg: 'transparent',
+            footerBg: 'transparent',
+          },
+        },
+      }}
+    >
     <Modal
       open={visible}
       title={null}
@@ -438,25 +466,19 @@ const resetForm = () => {
                 <Select
                   mode="multiple"
                   value={selectedGenreIds}
-                  onChange={(values, options) => {
+                  onChange={(values) => {
                     setSelectedGenreIds(values);
-                    setGenres((options as { label: string; value: string }[]).map((option) => option.label));
                   }}
                   className="w-full h-[56px]"
                   rootClassName="w-full "
                   size="large"
                   showSearch
                   placeholder="Escribe y busca un género."
-                  options={[
-                    { value: '11111111-1111-1111-1111-111111111111', label: 'Rock' },
-                    { value: '22222222-2222-2222-2222-222222222222', label: 'Pop' },
-                    { value: '33333333-3333-3333-3333-333333333333', label: 'Jazz' },
-                    { value: '44444444-4444-4444-4444-444444444444', label: 'EDM' },
-                    { value: '55555555-5555-5555-5555-555555555555', label: 'Indie' },
-                    { value: '66666666-6666-6666-6666-666666666666', label: 'Fantasía' },
-                    { value: '77777777-7777-7777-7777-777777777777', label: 'Romance' },
-                    { value: '88888888-8888-8888-8888-888888888888', label: 'Ciencia ficción' },
-                  ]}
+                  loading={genresLoading}
+                  options={filteredGenres.map((genre) => ({
+                    value: genre.id,
+                    label: genre.name,
+                  }))}
                 />
               </div>
 

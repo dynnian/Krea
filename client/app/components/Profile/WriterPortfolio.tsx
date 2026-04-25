@@ -19,6 +19,7 @@ export type WriterWork = {
   likesCount: number;
   isLiked: boolean;
   createdAt: string;
+  isBookmarked?: boolean;
 };
 
 const WriterCard: React.FC<{ work: WriterWork }> = ({ work }) => {
@@ -29,6 +30,8 @@ const WriterCard: React.FC<{ work: WriterWork }> = ({ work }) => {
   const [liked, setLiked] = useState(work.isLiked);
   const [likesCount, setLikesCount] = useState(work.likesCount);
   const [actionLoading, setActionLoading] = useState(false);
+  const [bookmarked, setBookmarked] = useState(work.isBookmarked ?? false);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
   useEffect(() => {
     setLiked(work.isLiked);
@@ -71,6 +74,24 @@ const WriterCard: React.FC<{ work: WriterWork }> = ({ work }) => {
       setActionLoading(false);
     }
   };
+
+  const handleBookmark = async () => {
+    if (!requireAuth() || bookmarkLoading) return;
+
+    setBookmarkLoading(true);
+    const wasBookmarked = bookmarked;
+    setBookmarked(!wasBookmarked);
+
+    try {
+      await postsApi.toggleFavorite(work.postId);
+    } catch {
+      setBookmarked(wasBookmarked);
+      message.error("No se pudo actualizar el guardado.");
+    } finally {
+      setBookmarkLoading(false);
+    }
+  };
+
 useEffect(() => {
   const el = descriptionRef.current;
   if (!el) return;
@@ -139,16 +160,21 @@ useEffect(() => {
 							className="px-[36px] py-[4px] cursor-pointer hover:bg-[#093B05] rounded-full bg-[#0B5107] border border-[#1B1C1E]"
 						>
 							<span className="text-[13px] font-medium leading-5 text-[#E3E2DE]">
-								Leer
+								Leer  
 							</span>
 						</button>
 
-						<button
-							type="button"
-							className="w-[30px] h-[30px] rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center"
-						>
-							<Bookmark size={16} />
-						</button>
+            <button
+              type="button"
+              onClick={handleBookmark}
+              disabled={bookmarkLoading}
+              className="w-[30px] h-[30px] rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center disabled:opacity-50"
+            >
+              <Bookmark
+                size={16}
+                className={bookmarked ? "fill-[#0B5107] text-[#0B5107]" : ""}
+              />
+            </button>
 
             <button
               type="button"

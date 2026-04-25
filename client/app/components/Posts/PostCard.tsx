@@ -55,7 +55,6 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
   const [reposted, setReposted] = useState(post.isRetweetedByCurrentUser);
   const [repostsCount, setRepostsCount] = useState(post.isRetweetedByCurrentUser ? 1 : 0);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(post.isFavoritedByCurrentUser ?? false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -271,18 +270,9 @@ const bookCoverUrl =
                 src={mediaUrl}
                 alt="Imagen"
                 className="w-full max-h-80 object-cover rounded-lg border border-gray-200 cursor-pointer"
-                onClick={() => setIsImageModalOpen(true)}
+                onClick={() => navigate(`?image=${originalPost.id}`)}
               />
-              <Modal
-                open={isImageModalOpen}
-                footer={null}
-                onCancel={() => setIsImageModalOpen(false)}
-                centered
-                width="fit-content"
-                styles={{ body: { padding: 0 } }}
-              >
-                <img src={mediaUrl} alt="Imagen completa" className="max-w-full max-h-screen" />
-              </Modal>
+
             </>
             )}
             {mediaType === 'audio' && (

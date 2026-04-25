@@ -1,13 +1,14 @@
+// deno-lint-ignore-file
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Spin, message, Alert, Grid } from 'antd';
 import { ArrowLeft } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import { postsApi } from '../services/postsService';
-import PostCard from '../components/Posts/PostCard';
-import TagsSidebar from '../components/Home/TagsSidebar';
-import type { PostDto } from '../types/api';
+import { useAuth } from '../contexts/AuthContext.tsx';
+import { postsApi } from '../services/postsService.ts';
+import PostCard from '../components/Posts/PostCard.tsx';
+import TagsSidebar from '../components/Home/TagsSidebar.tsx';
+import type { PostDto } from '../types/api.ts';
 
 export default function BookmarksPage() {
   const { useBreakpoint } = Grid;
@@ -28,8 +29,39 @@ export default function BookmarksPage() {
     const fetchFavorites = async () => {
       try {
         const res = await postsApi.getFavorites();
-        // res.data ya es un array plano de PostDto
-        const postsWithBookmark = res.data.map(post => ({ ...post, isFavoritedByCurrentUser: true }));
+        const data: any = res.data;
+        const favoritePosts = Array.isArray(data)
+          ? data
+          : data.items ?? data.posts ?? [];
+
+        const postsWithBookmark = favoritePosts.map((post: any) => ({
+          ...post,
+          isFavoritedByCurrentUser: true,
+          media: (post.media ?? post.Media ?? []).map((m: any) => ({
+            ...m,
+            id: m.id ?? m.Id,
+            fileName: m.fileName ?? m.FileName,
+            mimeType: m.mimeType ?? m.MimeType,
+            url: m.url ?? m.Url,
+            isWorkMedia: m.isWorkMedia ?? m.IsWorkMedia ?? false,
+            coverUrl:
+              m.coverUrl ??
+              m.CoverUrl ??
+              post.coverUrl ??
+              post.CoverUrl,
+            coverMediaId:
+              m.coverMediaId ??
+              m.CoverMediaId ??
+              post.coverMediaId ??
+              post.CoverMediaId,
+            coverMimeType:
+              m.coverMimeType ??
+              m.CoverMimeType ??
+              post.coverMimeType ??
+              post.CoverMimeType,
+          })),
+        }));
+
         setPosts(postsWithBookmark);
       } catch (err) {
         console.error(err);

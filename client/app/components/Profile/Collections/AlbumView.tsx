@@ -187,14 +187,35 @@ const [albumHeaderData, setAlbumHeaderData] = useState<{
     }
   };
 
-  const handleToggleBookmark = (trackId: string) => {
+  const handleToggleBookmark = async (trackId: string) => {
+    if (!user) {
+      message.warning("Debes iniciar sesión para guardar.");
+      navigate("/login");
+      return;
+    }
+
+    const track = albumTracks.find((item) => item.id === trackId);
+    if (!track) return;
+
+    const wasBookmarked = bookmarkedTrackIds.includes(trackId);
+
     setBookmarkedTrackIds((prev) =>
-      prev.includes(trackId)
+      wasBookmarked
         ? prev.filter((id) => id !== trackId)
         : [...prev, trackId]
     );
-  };
 
+    try {
+      await postsApi.toggleFavorite(track.postId);
+    } catch {
+      setBookmarkedTrackIds((prev) =>
+        wasBookmarked
+          ? [...prev, trackId]
+          : prev.filter((id) => id !== trackId)
+      );
+      message.error("No se pudo actualizar el guardado.");
+    }
+  };
   const formatDuration = (seconds: number) => {
   if (!Number.isFinite(seconds) || seconds <= 0) return "--:--";
 
@@ -292,7 +313,10 @@ const getAudioDurationFromWaveSurfer = async (audioUrl: string) => {
                 duration: "--:--",
                 likes: post.likesCount ?? 0,
                 isLiked: post.isLikedByCurrentUser ?? false,
-                isBookmarked: false,
+                isBookmarked:
+                  post.isFavoritedByCurrentUser ??
+                  post.isFavorite ??
+                  false,
               };
             } catch (trackError) {
               console.error("Error loading track post:", collectionPost.id, trackError);
@@ -308,6 +332,11 @@ const getAudioDurationFromWaveSurfer = async (audioUrl: string) => {
         setAlbumTracks(validTracks);
         setLikedTrackIds(
           validTracks.filter((track) => track.isLiked).map((track) => track.id)
+        );
+        setBookmarkedTrackIds(
+          validTracks
+            .filter((track) => track.isBookmarked)
+            .map((track) => track.id)
         );
         setIsLoadingAlbum(false);
       } catch (error) {
@@ -326,6 +355,14 @@ const getAudioDurationFromWaveSurfer = async (audioUrl: string) => {
 
     setLikedTrackIds(
       albumTracks.filter((track) => track.isLiked).map((track) => track.id)
+    );
+  }, [albumTracks]);
+
+  useEffect(() => {
+    if (albumTracks.length === 0) return;
+
+    setBookmarkedTrackIds(
+      albumTracks.filter((track) => track.isBookmarked).map((track) => track.id)
     );
   }, [albumTracks]);
 

@@ -18,6 +18,7 @@ export type MusicSong = {
   audioUrl: string;
   likesCount: number;
   isLiked: boolean;
+  isBookmarked: boolean;
 };
 
 export type AlbumTrack = {
@@ -53,6 +54,8 @@ const SongCard: React.FC<{ song: MusicSong }> = ({ song }) => {
   const [likesCount, setLikesCount] = useState(song.likesCount);
   const [actionLoading, setActionLoading] = useState(false);
   const [isWaveReady, setIsWaveReady] = useState(false);
+  const [bookmarked, setBookmarked] = useState(song.isBookmarked ?? false);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
   useEffect(() => {
     setLiked(song.isLiked);
@@ -100,6 +103,23 @@ const SongCard: React.FC<{ song: MusicSong }> = ({ song }) => {
       setActionLoading(false);
     }
   };
+
+const handleBookmark = async () => {
+  if (!requireAuth() || bookmarkLoading) return;
+
+  setBookmarkLoading(true);
+  const wasBookmarked = bookmarked;
+  setBookmarked(!wasBookmarked);
+
+  try {
+    await postsApi.toggleFavorite(song.postId);
+  } catch {
+    setBookmarked(wasBookmarked);
+    message.error("No se pudo actualizar el guardado.");
+  } finally {
+    setBookmarkLoading(false);
+  }
+};
 
   return (
     <div className="w-full bg-[#E8F1FC] border border-[#8F8E8A] rounded-[10px] shadow-[4px_4px_4px_rgba(0,0,0,0.15)] p-3 sm:p-4 md:p-5 md:h-[240px]">
@@ -167,9 +187,14 @@ const SongCard: React.FC<{ song: MusicSong }> = ({ song }) => {
 
             <button
               type="button"
-              className="w-10 h-10 rounded-full border cursor-pointer border-[#1B1C1E] bg-[#E9FDE8] flex items-center justify-center"
+              onClick={handleBookmark}
+              disabled={bookmarkLoading}
+              className="w-10 h-10 rounded-full border cursor-pointer border-[#1B1C1E] bg-[#E9FDE8] flex items-center justify-center disabled:opacity-50"
             >
-              <Bookmark size={18} />
+              <Bookmark
+                size={18}
+                className={bookmarked ? "fill-[#0B5107] text-[#0B5107]" : ""}
+              />
             </button>
           </div>
         </div>

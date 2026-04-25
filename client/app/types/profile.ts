@@ -1,4 +1,5 @@
 // profile.ts
+// deno-lint-ignore-file
 
 export enum PostType {
   IMAGE = "image",
@@ -52,6 +53,8 @@ export interface Post {
   replies: any[];
   backendId?: string;
   isLikedByCurrentUser?: boolean;
+  isFavorite?: boolean;
+  isFavoritedByCurrentUser?: boolean;
 }
 
 export interface ProfileData {

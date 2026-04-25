@@ -289,7 +289,7 @@ const isOwnPost = !!originalPost && user?.id === originalPost.authorPostId;
                 <span>{likesCount}</span>
               </button>
               <button
-                onClick={() => {}} // puedes enfocar el input si lo deseas
+                onClick={() => {}} 
                 className="flex items-center gap-2 text-gray-700 hover:text-blue-600 cursor-pointer"
               >
                 <MessageCircle size={22} />

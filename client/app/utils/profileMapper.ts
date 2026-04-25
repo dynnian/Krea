@@ -44,7 +44,12 @@ export function normalizeApiPosts(
     const isLikedByCurrentUser =
       post.isLikedByCurrentUser ?? post.IsLikedByCurrentUser ?? false;
     const favoritesCount = post.favoritesCount ?? post.FavoritesCount ?? 0;
-
+    const isFavorite =
+      post.isFavorite ??
+      post.IsFavorite ??
+      post.isFavoritedByCurrentUser ??
+      post.IsFavoritedByCurrentUser ??
+      false;
     return {
       backendId,
       id: Number.isFinite(Number(backendId)) ? Number(backendId) : index + 1,
@@ -115,10 +120,12 @@ export function normalizeApiPosts(
           coverMediaId: m.coverMediaId ?? m.CoverMediaId,
         },
       })),
-      likesCount,
-      favoritesCount,
-      replies: post.replies ?? post.Replies ?? [],
-      isLikedByCurrentUser,
+        likesCount,
+        favoritesCount,
+        replies: post.replies ?? post.Replies ?? [],
+        isLikedByCurrentUser,
+        isFavorite,
+        isFavoritedByCurrentUser: isFavorite,
     };
   });
 }
@@ -178,6 +185,10 @@ export function mapPostsToMusicSongs(posts: Post[]): MusicSong[] {
         audioUrl: audioMedia.media.path,
         likesCount: post.likesCount ?? 0,
         isLiked: post.isLikedByCurrentUser ?? false,
+        isBookmarked:
+          post.isFavoritedByCurrentUser ??
+          post.isFavorite ??
+          false,
       };
     })
     .filter((song): song is MusicSong => song !== null);
@@ -215,6 +226,10 @@ export function mapPostsToWriterWorks(posts: Post[]): WriterWork[] {
         likesCount: post.likesCount ?? 0,
         isLiked: post.isLikedByCurrentUser ?? false,
         createdAt: post.createdAt,
+        isBookmarked:
+          post.isFavoritedByCurrentUser ??
+          post.isFavorite ??
+          false,
       };
     });
 }

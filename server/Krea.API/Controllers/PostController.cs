@@ -90,7 +90,11 @@ namespace Krea.API.Controllers {
             [FromQuery] int pageSize = 10,
             CancellationToken ct = default)
         {
-            Guid? currentUserId = GetCurrentUserId();
+            Guid? currentUserId = null;
+
+            if (User.Identity?.IsAuthenticated == true) {
+                currentUserId = GetCurrentUserId();
+            }
 
             var result = await _sender.Send(
                 new GetPostsByUserQuery(
@@ -388,7 +392,7 @@ namespace Krea.API.Controllers {
         ///     ]
         /// </remarks>
         /// <response code="200">Genres retrieved successfully.</response>
-        [HttpGet]
+        [HttpGet("genres")]
         [ProducesResponseType(typeof(IReadOnlyList<GenreDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll(CancellationToken ct)
         {
