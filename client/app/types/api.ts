@@ -209,14 +209,31 @@ export interface PublicUserProfile {
 export interface ExplorePostDto {
   id: string;
   title: string;
+  content?: string; // para textos literarios o descripción
   uploadedAt: string;
   userId: string;
   authorUsername: string;
   category: "Image" | "Music" | "Text" | "Plain";
   genres: string[];
   tags: string[];
-  previewUrl: string | null;   // Para música: URL del audio; para imagen: miniatura
-  coverUrl: string | null;     // Portada (opcional, ej. para libros)
+  previewUrl: string | null;   // miniatura (imagen) o URL del audio
+  coverUrl: string | null;     // portada para libros/álbumes
+  likesCount: number;
+  isLikedByCurrentUser: boolean;
+  isFavorite: boolean;
+  isFollowingAuthor: boolean;
+  replyCount?: number;
+}
+export interface PublicCollectionDto {
+  id: string;
+  title: string;
+  description: string | null;
+  itemCount: number;
+  type: 0 | 1 | 2; // 0=images, 1=music, 2=literature
+  ownerId: string;
+  ownerName: string;
+  coverUrl: string | null;
+  createdAt: string;
 }
 
 export interface TrendingResponse {

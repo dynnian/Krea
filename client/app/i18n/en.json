@@ -156,7 +156,8 @@
     "total": "Total",
     "items": "items",
     "submit": "Submit",
-    "send": "Send"
+    "send": "Send",
+    "error": "Error"
   },
   "explore": {
     "tabs": {
@@ -176,14 +177,14 @@
       "song_artist": "Artist",
       "song_genres": "Jazz, Rock, etc...",
       "trending_genres": "Trending genres",
-      "trending_artists": "Trending artists"
+      "trending_artists": "Trending artists",
+      "no_audio": "Audio Unavailable"
     },
     "literature": {
       "featured": "Featured",
       "featured_title": "Book title",
       "featured_author": "Author",
-      "synopsis": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis.",
-      "synopsis_label": "Synopsis",
+      "synopsis": "Synopsis",
       "read_now": "Read now",
       "trending": "Trending",
       "book_title": "Book title",
@@ -191,9 +192,9 @@
       "recent": "Recently published",
       "recent_title": "Work title",
       "recent_author": "Author",
-      "recent_synopsis": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis.",
-      "chapters": "X Chapters",
+      "chapters": "Chapters",
       "read": "Read",
+      "read_now": "Read Now",
       "trending_genres": "Trending genres",
       "trending_authors": "Trending authors"
     },
@@ -304,7 +305,13 @@
     "dm_empty": "Please write a message before sending",
     "dm_sent": "Message sent",
     "dm_error": "Error sending message",
-    "dm_placeholder": "Write your message here..."
+    "dm_placeholder": "Write your message here...",
+    "donate": "donate"
+  },
+  "portfolio":{
+    "images": "Images",
+    "music": "Music",
+    "literature": "Literature"
   },
   "bookmarks": {
     "title": "Saved",
