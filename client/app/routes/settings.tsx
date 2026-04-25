@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Avatar, Button, Input, Select, Switch, message } from "antd";
-import { ImagePlus, User } from "lucide-react";
-import { settingsRepository } from "../services/settingsRepository";
+import { ImagePlus, User, LogOut } from "lucide-react";
+import { settingsRepository } from "../services/settingsRepository.ts";
 import type {
   ProfileSettings,
   SettingsSection,
   SettingsSectionKey,
   SettingsState,
-} from "../types/settings";
+} from "../types/settings.ts";
 import "./settings.css";
+import { useAuth } from "../contexts/AuthContext.tsx";
+import { useNavigate } from "react-router";
 
 const languageOptions = [
   { value: "1", label: "Español" },
@@ -42,6 +44,8 @@ const emptyProfileDraft: ProfileSettings = {
 };
 
 export default function SettingsRoute() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<SettingsSectionKey>("profile");
   const [settingsState, setSettingsState] = useState<SettingsState | null>(null);
   const [profileDraft, setProfileDraft] = useState<ProfileSettings>(emptyProfileDraft);
@@ -97,6 +101,11 @@ useEffect(() => {
 
 const handleOpenAvatarPicker = () => {
   fileInputRef.current?.click();
+};
+
+const handleLogout = async () => {
+  await logout();
+  navigate("/");
 };
 
 const handleProfilePictureSelected = async (
@@ -603,20 +612,31 @@ const renderProfileSection = () => (
         <div className="settings-shell">
           <aside className="settings-sidebar">
             <h1 className="settings-title">Configuración</h1>
-            <nav aria-label="Secciones de configuración" className="settings-nav">
-              {settingsSections.map((section) => (
+              <nav aria-label="Secciones de configuración" className="settings-nav">
+                {settingsSections.map((section) => (
+                  <button
+                    key={section.key}
+                    type="button"
+                    className={`settings-nav-item ${
+                      activeSection === section.key ? "settings-nav-item--active" : ""
+                    }`}
+                    onClick={() => setActiveSection(section.key)}
+                  >
+                    {section.label}
+                  </button>
+                ))}
+              </nav>
+
+              <div className="settings-logout-wrap">
                 <button
-                  key={section.key}
                   type="button"
-                  className={`settings-nav-item ${
-                    activeSection === section.key ? "settings-nav-item--active" : ""
-                  }`}
-                  onClick={() => setActiveSection(section.key)}
+                  className="settings-logout-button"
+                  onClick={() => void handleLogout()}
                 >
-                  {section.label}
+                  <LogOut size={18} />
+                  <span>Cerrar sesión</span>
                 </button>
-              ))}
-            </nav>
+              </div>
           </aside>
 
           <div className="settings-content">{renderSectionContent()}</div>
