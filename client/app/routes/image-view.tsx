@@ -45,7 +45,6 @@ export default function ImageView() {
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
 
   useEffect(() => {
-    console.log("ImageView mounted with postId:", postId);
 
     if (!postId) {
       setLoading(false);
@@ -55,10 +54,7 @@ export default function ImageView() {
       setLoading(true);
 
       try {
-        console.log("ImageView loading postId:", postId);
-console.log("About to fetch post:", postId);
-const response = await postsApi.getPost(postId);
-console.log("Post response:", response);
+        const response = await postsApi.getPost(postId);
         const postData = response.data ?? response;
 
         setPost(postData);

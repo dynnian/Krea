@@ -166,11 +166,6 @@ const getGenreLabel = () => {
 
   const handleUpload = async (postId: string, file: UploadFile) => {
     const origin = file.originFileObj;
-    console.log('Uploading file:', {
-      name: origin?.name,
-      type: origin?.type,
-      postType,
-    });
     
     if (!origin) {
       throw new Error('No se encontró el archivo original para subir.');
@@ -248,8 +243,6 @@ const getGenreLabel = () => {
       };
 
       const response: any = await postsApi.createPost(createData);
-      console.log("Respuesta createPost:", response);
-      
 
       const postId =
         response?.data?.postId ||
