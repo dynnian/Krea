@@ -4,13 +4,16 @@ import { User } from "lucide-react";
 type DonationDetailModalProps = {
   open: boolean;
   amount: string;
+  description: string;
   onCancel: () => void;
   onContinue: () => void;
 };
 
+
 export default function DonationDetailModal({
   open,
   amount,
+  description,
   onCancel,
   onContinue,
 }: DonationDetailModalProps) {
@@ -27,9 +30,7 @@ export default function DonationDetailModal({
         <div className="mb-6">
           <h3 className="font-bold mb-3">Descripción</h3>
           <p className="leading-8">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis
+              {description || "Sin descripción agregada."}
           </p>
         </div>
 
