@@ -39,6 +39,11 @@ export default [
         path: "album/:id",
         file: "routes/album.tsx",
       },
+      // Reader de literatura PDF/EPUB
+      {
+        path: "read/:postId",
+        file: "routes/read.tsx",
+      },
       // Exploración (búsqueda por tags/categorías)
       {
         path: "explore",

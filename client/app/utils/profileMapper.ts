@@ -233,10 +233,21 @@ export function mapPostsToWriterWorks(posts: Post[]): WriterWork[] {
         id: String(post.backendId ?? post.id),
         postId: String(post.backendId ?? post.id),
         title: post.title ?? "Sin título",
+
         coverUrl:
           documentMedia?.media.coverUrl ??
           coverMedia?.media.path ??
-          "https://placehold.co/240x360?text=Libro",
+          null,
+
+        documentUrl:
+          documentMedia?.media.path ??
+          null,
+
+        mimeType:
+          documentMedia?.media.mimeType ??
+          null,
+
+
         chaptersCount: 1,
         genre: genres.length ? genres.join(", ") : "Sin género",
         description: post.content ?? "",

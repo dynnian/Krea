@@ -8,6 +8,7 @@ import AudioWaveform from '../WaveSurfer/AudioWaveform.tsx';
 import { postsApi } from '../../services/postsService.ts';
 import type { PostDto } from '../../types/api.ts';
 import ReportModal from "../Reports/ReportModal.tsx";
+import LiteratureCover from "../LiteratureCover.tsx";
 
 interface PostCardProps {
   post: PostDto;
@@ -354,11 +355,13 @@ const bookCoverUrl =
                   
                   {/* COVER */}
                   <div className="w-[100px] h-[150px] sm:w-[120px] sm:h-[170px] md:w-[130px] md:h-[200px] shrink-0 overflow-hidden shadow-[4px_4px_8px_rgba(0,0,0,0.18)] bg-[#D9D9D9] cursor-pointer">
-                    <img
+                    <LiteratureCover
+                      title={originalPost.title}
+                      coverUrl={bookCoverUrl}
+                      documentUrl={mediaUrl}
+                      mimeType={mediaMime}
+                      width={130}
                       onClick={openPostDetail}
-                      src={bookCoverUrl || 'https://placehold.co/140x200'}
-                      alt={originalPost.title || 'Cover'}
-                      className="w-full h-full object-cover"
                     />
                   </div>
 
@@ -389,14 +392,13 @@ const bookCoverUrl =
 
                     {/* BOTÓN */}
                     <div className="mt-auto pt-3">
-                      <a
-                        href={mediaUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="krea-save-button inline-flex items-center border border-[#1B1C1E] justify-center px-[27px] py-[7px] rounded-full text-[14px] transition"
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/read/${originalPost.id}`)}
+                        className="krea-save-button inline-flex items-center border border-[#1B1C1E] justify-center px-[27px] py-[7px] rounded-full text-[14px] transition cursor-pointer"
                       >
                         Leer
-                      </a>
+                      </button>
                     </div>
                   </div>
 

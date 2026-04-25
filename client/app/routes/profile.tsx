@@ -64,6 +64,14 @@ async function fetchPostsByAuthorFromApi(authorId: string) {
   return [];
 }
 
+type EditableCollectionItem = {
+  id: string;
+  title: string;
+  imageUrl?: string | null;
+  documentUrl?: string | null;
+  mimeType?: string | null;
+};
+
 // ---------- Componente principal Profile ----------
 const Profile: React.FC = () => {
   const { t } = useTranslation();
@@ -101,7 +109,7 @@ const [portfolioModalType, setPortfolioModalType] = useState<UploadMediaType>(Po
 const [isCreateCollectionModalOpen, setIsCreateCollectionModalOpen] = useState(false);
 const [editingImageCollection, setEditingImageCollection] = useState<MockImageCollection | null>(null);
 const [editingImageMoveTargets, setEditingImageMoveTargets] = useState<
-  { id: string; title: string; coverUrl?: string }[]
+  { id: string; title: string; coverUrl?: string | null }[]
 >([]);
 const [editingMusicCollection, setEditingMusicCollection] = useState<MockImageCollection | null>(null);
 
@@ -443,6 +451,8 @@ const collectionModalItemsByType = {
 };
 
 
+
+
 const getEditingCollectionConfig = () => {
   if (editingImageCollection) {
     return {
@@ -460,14 +470,14 @@ const getEditingCollectionConfig = () => {
         coverFile,
       }: {
         updatedCollection: MockImageCollection;
-        stagedMoves: Record<string, { id: string; title: string; imageUrl: string }[]>;
+        stagedMoves: Record<string, EditableCollectionItem[]>;
         coverFile?: File | null;
       }) => {
         try {
           await saveEditedCollectionChanges({
             originalCollection: editingImageCollection,
             updatedCollection,
-            stagedMoves,
+            stagedMoves: stagedMoves as any,
             entityLabel: "la colección",
           });
 
@@ -495,31 +505,33 @@ const getEditingCollectionConfig = () => {
       allItems: writerWorks.map((work) => ({
         id: work.postId,
         title: work.title,
-        imageUrl: work.coverUrl,
+        imageUrl: work.coverUrl ?? undefined,
+        documentUrl: work.documentUrl ?? undefined,
+        mimeType: work.mimeType ?? undefined,
       })),
       moveTargets: writerCollections
         .filter((collection) => collection.id !== editingWriterCollection.id)
         .map((collection) => ({
           id: collection.id,
           title: collection.title,
-          coverUrl: collection.coverUrl,
+          coverUrl: collection.coverUrl ?? undefined,
         })),
       collectionType: "literature" as const,
       onCancel: () => setEditingWriterCollection(null),
-      onSave: async ({
-        updatedCollection,
-        stagedMoves,
-        coverFile,
-      }: {
-        updatedCollection: MockImageCollection;
-        stagedMoves: Record<string, { id: string; title: string; imageUrl: string }[]>;
-        coverFile?: File | null;
-      }) => {
+        onSave: async ({
+          updatedCollection,
+          stagedMoves,
+          coverFile,
+        }: {
+          updatedCollection: MockImageCollection;
+          stagedMoves: Record<string, EditableCollectionItem[]>;
+          coverFile?: File | null;
+        }) => {
         try {
           await saveEditedCollectionChanges({
             originalCollection: editingWriterCollection,
             updatedCollection,
-            stagedMoves,
+            stagedMoves: stagedMoves as any,
             entityLabel: "la colección",
           });
 
@@ -553,7 +565,7 @@ const getEditingCollectionConfig = () => {
         .map((album) => ({
           id: album.id,
           title: album.title,
-          coverUrl: album.coverUrl,
+          coverUrl: album.coverUrl ?? undefined,
         })),
       collectionType: "music" as const,
       onCancel: () => setEditingMusicCollection(null),
@@ -563,14 +575,14 @@ const getEditingCollectionConfig = () => {
         coverFile,
       }: {
         updatedCollection: MockImageCollection;
-        stagedMoves: Record<string, { id: string; title: string; imageUrl: string }[]>;
+        stagedMoves: Record<string, EditableCollectionItem[]>;
         coverFile?: File | null;
-      }) => {
+        }) => {
         try {
           await saveEditedCollectionChanges({
             originalCollection: editingMusicCollection,
             updatedCollection,
-            stagedMoves,
+            stagedMoves: stagedMoves as any,
             entityLabel: "el album",
           });
 
@@ -602,7 +614,11 @@ const editingCollectionConfig = getEditingCollectionConfig();
         <EditCollectionView
           collection={editingCollectionConfig.collection}
           allItems={editingCollectionConfig.allItems}
-          moveTargets={editingCollectionConfig.moveTargets}
+          moveTargets={editingCollectionConfig.moveTargets?.map((target) => ({
+            id: target.id,
+            title: target.title,
+            coverUrl: target.coverUrl ?? undefined,
+          }))}
           collectionType={editingCollectionConfig.collectionType}
           onCancel={editingCollectionConfig.onCancel}
           onSave={editingCollectionConfig.onSave}
@@ -775,11 +791,14 @@ onEditAlbum={async (album) => {
                         title: post.title,
                         imageUrl:
                           post.mediaPreviewUrl ??
-                          matchingWork.coverUrl,
+                          matchingWork.coverUrl ??
+                          undefined,
+                        documentUrl: matchingWork.documentUrl ?? undefined,
+                        mimeType: matchingWork.mimeType ?? undefined,
                         createdAt: post.uploadedAt,
                       };
                     })
-                    .filter((post): post is NonNullable<typeof post> => post !== null),
+                    .filter((post): post is NonNullable<typeof post> => post !== null) as any,
                 });
               } catch (error) {
                 console.error("Error loading literature collection for edit:", error);
