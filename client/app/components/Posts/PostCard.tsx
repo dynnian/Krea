@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
@@ -328,6 +329,7 @@ const bookCoverUrl =
                         <AudioWaveform
                           audioUrl={mediaUrl}
                           showPlayButton={false}
+                          showTime={true}
                           onPlayingChange={setIsAudioPlaying}
                           onReady={(actions) => {
                             waveformControls.current = actions;

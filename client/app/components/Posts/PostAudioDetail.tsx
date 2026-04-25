@@ -112,7 +112,7 @@ export default function PostAudioDetail({
               <AudioWaveform
                 audioUrl={audioUrl}
                 showPlayButton={false}
-                showTime={false}
+                showTime={true}
                 onPlayingChange={setIsPlaying}
                 onReady={(actions) => {
                   waveformControls.current = actions;
