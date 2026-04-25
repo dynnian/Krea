@@ -105,9 +105,6 @@ export default function DonationCheckoutForm({
             <p className="font-medium">
               Serás redirigido a PayPal para completar el pago.
             </p>
-            <p className="text-sm text-[#555] mt-1">
-              En este Happy Path solo simularemos la confirmación.
-            </p>
           </div>
         )}
 

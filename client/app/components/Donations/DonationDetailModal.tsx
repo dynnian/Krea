@@ -42,7 +42,7 @@ export default function DonationDetailModal({
 
           <div>
             <h3 className="font-bold mb-3">Cantidad</h3>
-            <p className="text-lg">{amount || "XX"}$</p>
+            <p className="text-lg">{amount || "XX"}DOP</p>
           </div>
         </div>
 

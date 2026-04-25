@@ -32,7 +32,7 @@ export default function DonationAmountModal({
               onClick={() => onAmountChange(String(value))}
               className="h-10 rounded-md border border-[#1F1F1F] bg-[#F3F3F1] text-base hover:bg-[#E3E2DE]"
             >
-              {value}$
+              {value}DOP
             </button>
           ))}
         </div>
@@ -44,7 +44,7 @@ export default function DonationAmountModal({
             type="number"
             value={amount}
             onChange={(e) => onAmountChange(e.target.value)}
-            placeholder="Cantidad en $"
+            placeholder="Cantidad en DOP"
             className="w-full h-14 rounded-lg border-2 border-[#1F1F1F] bg-[#F3F3F1] px-5 pr-12 text-base outline-none placeholder:text-[#8F8E8A]"
           />
 

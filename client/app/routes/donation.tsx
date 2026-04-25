@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import DonationCheckoutForm from "../components/Donations/DonationCheckoutForm";
-import DonationSummaryCard from "../components/Donations/DonationSummaryCard";
-import DonationAmountModal from "../components/Donations/DonationAmountModal";
-import DonationDetailModal from "../components/Donations/DonationDetailModal";
-import DonationSuccessModal from "../components/Donations/DonationSuccessModal";
+import DonationCheckoutForm from "@/components/Donations/DonationCheckoutForm.tsx";
+import DonationSummaryCard from "@/components/Donations/DonationSummaryCard.tsx";
+import DonationAmountModal from "@/components/Donations/DonationAmountModal.tsx";
+import DonationDetailModal from "@/components/Donations/DonationDetailModal.tsx";
+import DonationSuccessModal from "@/components/Donations/DonationSuccessModal.tsx";
 
 type PaymentMethod = "card" | "paypal";
 

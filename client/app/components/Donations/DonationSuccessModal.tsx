@@ -28,10 +28,6 @@ export default function DonationSuccessModal({
           <strong>{receiverName}</strong> fue procesada correctamente.
         </p>
 
-        <p className="text-sm text-[#555] mb-8">
-          Este es un flujo de prueba. Todavía no se ha enviado ningún pago real.
-        </p>
-
         <button
           type="button"
           onClick={onClose}
