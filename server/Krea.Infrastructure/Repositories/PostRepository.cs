@@ -82,6 +82,7 @@ namespace Krea.Infrastructure.Repositories {
                         .Take(pageSize)
                         .Include(p => p.AuthorPost)
                             .ThenInclude(u => u.ProfilePicture)
+                        .Include(p => p.Likes)
                         .Include(p => p.Uploads)
                         .ThenInclude(u => u.Media)
                         .Include(p => p.Uploads)
