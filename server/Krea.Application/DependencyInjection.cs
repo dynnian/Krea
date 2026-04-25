@@ -40,6 +40,7 @@ namespace Krea.Application {
     using Features.Admin.Dashboard;
     using Features.Admin.Reports;
     using Features.Admin.Users;
+    using Features.Collections.ExploreCollections;
     using Features.Collections.UpdateCollectionTitle;
     using Features.Collections.UploadCollectionCover;
     using Features.Favorites.AddPostToFavorites;
@@ -173,6 +174,9 @@ namespace Krea.Application {
             services
                 .AddScoped<IRequestHandler<UpdateCollectionTitleCommand, UpdateCollectionTitleResponse>,
                     UpdateCollectionTitleCommandHandler>();
+            services.AddScoped<
+                IRequestHandler<ExploreCollectionsQuery, PaginatedList<CollectionExploreDto>>,
+                ExploreCollectionsHandler>();
 
             // Posts
             services.AddScoped<IRequestHandler<GetAllPostsQuery, IReadOnlyList<PostDto>>, GetAllPostsHandler>();

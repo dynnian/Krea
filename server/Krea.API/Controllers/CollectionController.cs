@@ -3,6 +3,7 @@ namespace Krea.API.Controllers {
     using Application.Features.Collections.CreateCollection;
     using Application.Features.Collections.DeleteCollection;
     using Application.Features.Collections.Dto;
+    using Application.Features.Collections.ExploreCollections;
     using Application.Features.Collections.GetCollectionById;
     using Application.Features.Collections.GetUserCollections;
     using Application.Features.Collections.RemovePostFromCollection;
@@ -153,6 +154,38 @@ namespace Krea.API.Controllers {
                 ct);
 
             return NoContent();
+        }
+        
+        /// <summary>
+        /// Searches and retrieves public collections across all users.
+        /// </summary>
+        /// <remarks>
+        /// Allows anonymous users to explore collections globally.
+        ///
+        /// Supported sorting values:
+        /// - <c>newest</c>: newest collections first.
+        /// - <c>oldest</c>: oldest collections first.
+        ///
+        /// If no sorting value is provided, collections are ordered by newest first.
+        /// </remarks>
+        /// <param name="query">
+        /// Search, sorting and pagination parameters for exploring collections.
+        /// </param>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>
+        /// A paginated list of collections matching the provided filters.
+        /// </returns>
+        /// <response code="200">Collections retrieved successfully.</response>
+        [HttpGet("explore/collections")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(PaginatedList<CollectionExploreDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ExploreCollections(
+            [FromQuery] ExploreCollectionsQuery query,
+            CancellationToken ct)
+        {
+            PaginatedList<CollectionExploreDto> result = await _sender.Send(query, ct);
+
+            return Ok(result);
         }
 
         /// <summary>
