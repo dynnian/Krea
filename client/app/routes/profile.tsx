@@ -817,6 +817,12 @@ onEditAlbum={async (album) => {
                     id: post.backendId ?? String(post.id),
                     authorPostId: post.author.id ?? String(post.id),
                     authorName: post.author.name,
+                    author: {
+                      id: post.author.id ? String(post.author.id) : String(profile.user.id),
+                      username: post.author.handle ?? profile.user.handle ?? "",
+                      displayName: post.author.name ?? profile.user.name ?? "",
+                      avatar: post.author.avatar ?? profile.user.avatar ?? "",
+                    },
                     uploadedAt: post.createdAt,
                     uploadCount: post.userPostId,
                     title: post.title,

@@ -4,6 +4,7 @@ namespace Krea.Application.Features.Posts.Dto {
         Guid AuthorId,
         string AuthorName,
         string Content,
-        DateTime CreatedAt
+        DateTime CreatedAt,
+        string? AuthorProfilePictureUrl = null
     );
 }

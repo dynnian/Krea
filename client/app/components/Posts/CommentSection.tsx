@@ -1,11 +1,13 @@
+// deno-lint-ignore-file
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext.tsx';
 import { useNavigate } from 'react-router';
 import { Avatar, Input, Button, message } from 'antd';
 import { Heart, MessageCircle, Repeat2, Share2, MoreHorizontal, User } from 'lucide-react';
-import { postsApi } from '../../services/postsService';
-import type { ReplyDto } from '../../services/comments';
+import { postsApi } from '../../services/postsService.ts';
+import axiosClient from '../../lib/axios.ts';
+import type { ReplyDto } from '../../services/comments.ts';
 
 const { TextArea } = Input;
 
@@ -13,6 +15,22 @@ interface CommentSectionProps {
   postId: string;
   onCommentPosted?: () => void;
 }
+
+const getCurrentUserAvatar = (user: any) =>
+  user?.avatar ??
+  user?.profilePictureUrl ??
+  user?.ProfilePictureUrl ??
+  user?.profile?.avatar ??
+  user?.profile?.profilePictureUrl ??
+  null;
+
+const getCommentAvatar = (comment: any) =>
+  comment.authorAvatar ??
+  comment.authorProfilePictureUrl ??
+  comment.profilePictureUrl ??
+  comment.author?.avatar ??
+  comment.author?.profilePictureUrl ??
+  null;
 
 export default function CommentSection({ postId, onCommentPosted }: CommentSectionProps) {
   const { t } = useTranslation();
@@ -23,13 +41,40 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      setProfileAvatar(null);
+      return;
+    }
+
+    const loadCurrentUserProfile = async () => {
+      try {
+        const res = await axiosClient.get("/users/me/profile");
+        const apiProfile = res.data;
+
+        setProfileAvatar(
+          apiProfile.profilePictureUrl ??
+            apiProfile.ProfilePictureUrl ??
+            null
+        );
+      } catch (error) {
+        console.error("Error loading current user avatar for comments:", error);
+        setProfileAvatar(null);
+      }
+    };
+
+    void loadCurrentUserProfile();
+  }, [user]);
+
+  const currentUserAvatar = getCurrentUserAvatar(user) ?? profileAvatar;
 
   useEffect(() => {
     const fetchReplies = async () => {
       try {
         const res = await postsApi.getReplies(postId);
-        // Acceder a la propiedad 'flat' del objeto retornado por la API
-        const data = res.data?.flat?.items ?? [];
+        const data = (res.data as any)?.flat?.items ?? [];
         setComments(data);
       } catch (err) {
         console.error(err);
@@ -57,7 +102,8 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
       authorName: user.name || user.handle || user.email.split('@')[0],
       content: newComment,
       createdAt: new Date().toISOString(),
-    };
+      authorAvatar: currentUserAvatar,
+    } as ReplyDto;
     setComments(prev => [optimisticComment, ...prev]);
     const originalContent = newComment;
     setNewComment('');
@@ -85,7 +131,12 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
   return (
     <div>
       <div className="flex gap-3 mb-6 bg-[#E8F1FC] px-[22px] py-[15px] border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
-        <Avatar icon={<User />} size={40} className="bg-white border border-gray-800" />
+        <Avatar
+          src={currentUserAvatar ?? undefined}
+          icon={!currentUserAvatar && <User />}
+          size={40}
+          className="bg-white border border-gray-800"
+        />
         <div className="flex-1">
           <TextArea
             value={newComment}
@@ -103,9 +154,17 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
       </div>
 
       <div className="space-y-4">
-        {comments.map((comment) => (
-          <div key={comment.id} className="flex gap-3 bg-[#E8F1FC] p-[22px] border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
-            <Avatar icon={<User />} size={40} className="bg-white border border-gray-800" />
+        {comments.map((comment) => {
+          const commentAvatar = getCommentAvatar(comment);
+
+          return (
+            <div key={comment.id} className="flex gap-3 bg-[#E8F1FC] p-[22px] border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
+              <Avatar
+                src={commentAvatar ?? undefined}
+                icon={!commentAvatar && <User />}
+                size={40}
+                className="bg-white border border-gray-800"
+              />
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium text-gray-900">{comment.authorName}</span>
@@ -119,23 +178,32 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
               </div>
               <p className="text-gray-800 mt-1">{comment.content}</p>
               <div className="flex items-center gap-4 mt-2 text-gray-600">
-                <button className="flex items-center gap-1 hover:text-blue-600">
+                <button 
+                type="button"
+                className="flex items-center gap-1 hover:text-blue-600">
                   <Heart size={16} />
                   <span className="text-xs">0</span>
                 </button>
-                <button className="flex items-center gap-1 hover:text-blue-600">
+                <button 
+                type="button"
+                className="flex items-center gap-1 hover:text-blue-600">
                   <MessageCircle size={16} />
                 </button>
-                <button className="flex items-center gap-1 hover:text-blue-600">
+                <button 
+                type="button"
+                className="flex items-center gap-1 hover:text-blue-600">
                   <Repeat2 size={16} />
                 </button>
-                <button className="flex items-center gap-1 hover:text-blue-600">
+                <button 
+                type="button"
+                className="flex items-center gap-1 hover:text-blue-600">
                   <Share2 size={16} />
                 </button>
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

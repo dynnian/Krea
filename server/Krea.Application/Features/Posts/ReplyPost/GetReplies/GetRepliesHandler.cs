@@ -41,15 +41,15 @@ namespace Krea.Application.Features.Posts.ReplyPost.GetReplies {
                     cancellationToken);
 
             List<PostResponse> items = posts
-                                       .Select(p => new PostResponse(
-                                           p.Id,
-                                           p.AuthorPostId,
-                                           p.AuthorPost.DisplayName ?? "Unknown",
-                                           p.Content ?? "No Content",
-                                           p.UploadedAt
-                                       ))
-                                       .ToList();
-
+                                    .Select(p => new PostResponse(
+                                        p.Id,
+                                        p.AuthorPostId,
+                                        p.AuthorPost.DisplayName ?? "Unknown",
+                                        p.Content ?? "No Content",
+                                        p.UploadedAt,
+                                        p.AuthorPost.ProfilePicture?.Path
+                                    ))
+                                    .ToList();
             return new RepliesResponse {
                 Mode = ReplyMode.Flat.ToString().ToLower(),
                 Flat = new PagedResponse<PostResponse>(

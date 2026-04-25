@@ -9,6 +9,9 @@ namespace Krea.Application.Features.Favorites.Dto {
 
         [JsonPropertyName("authorName")] public string AuthorName { get; init; } = string.Empty;
 
+        [JsonPropertyName("authorProfilePictureUrl")]
+        public string? AuthorProfilePictureUrl { get; init; }
+
         [JsonPropertyName("title")] public string Title { get; init; } = string.Empty;
 
         [JsonPropertyName("content")] public string? Content { get; init; }
@@ -33,6 +36,7 @@ namespace Krea.Application.Features.Favorites.Dto {
                 Id = post.Id,
                 AuthorPostId = post.AuthorPostId,
                 AuthorName = post.AuthorPost?.DisplayName ?? "Unknown",
+                AuthorProfilePictureUrl = post.AuthorPost?.ProfilePicture?.Path,
                 Title = post.Title,
                 Content = post.Content,
                 UploadedAt = post.UploadedAt,

@@ -5,6 +5,7 @@ namespace Krea.Application.Features.Posts.Dto {
         public string Content { get; set; } = string.Empty;
         public Guid AuthorId { get; set; }
         public string AuthorUsername { get; set; } = string.Empty;
+        public string? AuthorProfilePictureUrl { get; set; }
         public DateTime UploadedAt { get; set; }
 
         public string? MediaPreviewUrl { get; set; }

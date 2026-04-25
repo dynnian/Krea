@@ -37,6 +37,7 @@ namespace Krea.Infrastructure.Repositories {
                 .AsNoTracking()
                 .Where(p => p.Favorites.Any(f => f.UserId == userId) && !p.IsDeleted)
                 .Include(p => p.AuthorPost)
+                    .ThenInclude(u => u.ProfilePicture)
                 .Include(p => p.Likes)
                 .Include(p => p.Uploads)
                     .ThenInclude(u => u.Media)

@@ -18,6 +18,13 @@ import type { PostDto } from "../types/api.ts";
 import CommentSection from "../components/Posts/CommentSection.tsx";
 import ReportModal from "../components/Reports/ReportModal.tsx";
 
+const getAuthorAvatar = (post: any) =>
+  post.author?.avatar ??
+  post.author?.profilePictureUrl ??
+  post.authorProfilePictureUrl ??
+  post.profilePictureUrl ??
+  null;
+
 export default function ImageView() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -226,6 +233,8 @@ console.log("Post response:", response);
     originalPost.authorPostId?.slice(0, 8) ||
     "Dominio";
 
+  const authorAvatar = getAuthorAvatar(originalPost);
+
   const menuItems = isOwnPost
     ? []
     : [
@@ -274,7 +283,8 @@ console.log("Post response:", response);
           <div className="flex justify-between items-start mb-4">
             <div className="flex gap-3">
               <Avatar
-                icon={<User />}
+                src={authorAvatar ?? undefined}
+                icon={!authorAvatar && <User />}
                 size={48}
                 className="bg-white border border-black rounded-full"
               />
@@ -310,7 +320,7 @@ console.log("Post response:", response);
             </Dropdown>
           </div>
 
-          <h1 className="text-[26px] font-bold leading-[26px] uppercase mb-3">
+          <h1 className="text-[26px] font-bold leading-[26px] mb-3">
             {originalPost.title}
           </h1>
 

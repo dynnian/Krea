@@ -15,6 +15,13 @@ interface PostAudioDetailProps {
 import { Dropdown, Avatar } from 'antd';
 import { MoreHorizontal, User } from 'lucide-react';
 
+const getAuthorAvatar = (post: any) =>
+  post.author?.avatar ??
+  post.author?.profilePictureUrl ??
+  post.authorProfilePictureUrl ??
+  post.profilePictureUrl ??
+  null;
+
 export default function PostAudioDetail({
   post,
   formattedDate,
@@ -41,7 +48,7 @@ export default function PostAudioDetail({
     imageMedia?.url ||
     null;
 
-
+  const authorAvatar = getAuthorAvatar(post);
 
   const togglePlay = () => {
     waveformControls.current?.playPause();
@@ -57,7 +64,8 @@ export default function PostAudioDetail({
             <div className="flex items-start gap-4 min-w-0">
               <Link to={`/profile/${post.authorPostId}`}>
                 <Avatar
-                  icon={<User />}
+                  src={authorAvatar ?? undefined}
+                  icon={!authorAvatar && <User />}
                   size={72}
                   className="bg-white border border-black rounded-full shrink-0 cursor-pointer"
                 />
@@ -70,7 +78,7 @@ export default function PostAudioDetail({
 
                 <Link
                   to={`/user/${post.authorPostId}`}
-                  className="mt-2 block text-[18px] md:text-[20px] leading-[1.2] text-[#1B1C1E] hover:underline"
+                  className="mt-2 block text-[18px] md:text-[20px] leading-[10px] text-[#1B1C1E] hover:underline"
                 >
                   <span>{post.authorName || `Usuario ${post.authorPostId.slice(0, 8)}`}</span>
                   <span className="mx-2">·</span>

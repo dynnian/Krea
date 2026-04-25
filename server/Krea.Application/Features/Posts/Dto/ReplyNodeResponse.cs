@@ -3,6 +3,7 @@ namespace Krea.Application.Features.Posts.Dto {
         public Guid Id { get; init; }
         public Guid AuthorId { get; init; }
         public string AuthorName { get; init; } = string.Empty;
+        public string? AuthorProfilePictureUrl { get; init; }
         public string Content { get; init; } = string.Empty;
         public DateTime CreatedAt { get; init; }
 

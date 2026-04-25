@@ -32,6 +32,9 @@ namespace Krea.Infrastructure.Services {
                     Content = p.Content!,
                     AuthorId = p.AuthorPostId,
                     AuthorUsername = p.AuthorPost.DisplayName,
+                    AuthorProfilePictureUrl = p.AuthorPost.ProfilePicture != null
+                        ? p.AuthorPost.ProfilePicture.Path
+                        : null,
                     UploadedAt = p.UploadedAt,
                     
                     MediaPreviewUrl = p.RepostOfId == null
@@ -82,6 +85,9 @@ namespace Krea.Infrastructure.Services {
                                 Content = p.RepostOf.Content!, 
                                 AuthorId = p.RepostOf.AuthorPostId, 
                                 AuthorUsername = p.RepostOf.AuthorPost.DisplayName, 
+                                AuthorProfilePictureUrl = p.RepostOf.AuthorPost.ProfilePicture != null
+                                    ? p.RepostOf.AuthorPost.ProfilePicture.Path
+                                    : null,
                                 UploadedAt = p.RepostOf.UploadedAt,
                                 MediaPreviewUrl = p.RepostOf.Uploads
                                     .Select(u => u.Media.Path)
@@ -120,6 +126,9 @@ namespace Krea.Infrastructure.Services {
                     Content = p.Content!,
                     AuthorId = p.AuthorPostId,
                     AuthorUsername = p.AuthorPost.DisplayName,
+                    AuthorProfilePictureUrl = p.AuthorPost.ProfilePicture != null
+                        ? p.AuthorPost.ProfilePicture.Path
+                        : null,
                     UploadedAt = p.UploadedAt,
                     
                     MediaPreviewUrl = p.RepostOfId == null 
@@ -151,7 +160,10 @@ namespace Krea.Infrastructure.Services {
                         : new RepostFeedReferenceDto { 
                             Id = p.RepostOf.Id, 
                             AuthorId = p.RepostOf.AuthorPostId, 
-                            AuthorUsername = p.RepostOf.AuthorPost.DisplayName, 
+                            AuthorUsername = p.RepostOf.AuthorPost.DisplayName,
+                            AuthorProfilePictureUrl = p.RepostOf.AuthorPost.ProfilePicture != null
+                                ? p.RepostOf.AuthorPost.ProfilePicture.Path
+                                : null, 
                             Title = p.RepostOf.Title, 
                             Content = p.RepostOf.Content!, 
                             UploadedAt = p.RepostOf.UploadedAt,

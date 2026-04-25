@@ -39,6 +39,12 @@ const getMediaType = (mimeType?: string): 'image' | 'audio' | 'book' | 'text' =>
   return 'text';
 };
 
+  const getAuthorAvatar = (post: any) =>
+    post.author?.avatar ??
+    post.author?.profilePictureUrl ??
+    post.authorProfilePictureUrl ??
+    post.profilePictureUrl ??
+    null;
 
 export default function PostCard({ post, onLike, onRepost, onComment, onBookmark, canDelete = false, onDelete, }: PostCardProps) {
   const { t } = useTranslation();
@@ -196,6 +202,7 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
       m.mimeType?.startsWith('audio/')
   );
 
+
 const imageMedia = originalPost.media?.find((m) => m.mimeType?.startsWith('image/'));
 const audioCoverUrl =
   audioMedia?.coverUrl ||
@@ -217,6 +224,15 @@ const bookCoverUrl =
 
   const authorName = originalPost.authorName || `Usuario ${originalPost.authorPostId.slice(0, 8)}`;
   const authorHandle = originalPost.authorName ? `@${originalPost.authorName}` : originalPost.authorPostId.slice(0, 8);
+  const authorAvatar = getAuthorAvatar(originalPost);
+  console.log("POSTCARD AVATAR DEBUG", {
+    postId: originalPost.id,
+    authorName: originalPost.authorName,
+    authorPostId: originalPost.authorPostId,
+    author: originalPost.author,
+    authorAvatar,
+    originalPost,
+  });
   const openPostDetail = () => {
     navigate(`/post/${originalPost.id}`);
   };
@@ -230,12 +246,12 @@ const bookCoverUrl =
       )}
       <div className="flex gap-3">
         <Link to={`/post/${originalPost.id}`} className="flex gap-3 flex-1">
-          <Avatar
-            src={originalPost.author?.avatar}
-            icon={!originalPost.author?.avatar && <User />}
-            size={48}
-            className="bg-white border border-black rounded-full"
-          />
+        <Avatar
+          src={authorAvatar ?? undefined}
+          icon={!authorAvatar && <User />}
+          size={48}
+          className="bg-white border border-black rounded-full"
+        />
           <div className="flex-1">
             <div className="flex items-center flex-wrap gap-2 text-sm">
               <Link to={`/user/${originalPost.authorPostId}`} className="font-bold text-[#1B1C1E] hover:text-[#1351AA]">

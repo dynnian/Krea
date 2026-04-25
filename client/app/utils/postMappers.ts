@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import {
   type ApiPost,
   type UserDto,
@@ -9,7 +10,26 @@ import { type Post } from "../types/post.ts";
 import { type AuthUser } from "../contexts/AuthContext.tsx";
 import { PostType } from "../types/common.ts";
 import type { FeedItem } from "../types/feed.ts";
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:5101";
+const API_BASE_URL =
+  (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:5101/api").replace(
+    /\/api\/?$/,
+    ""
+  );
+
+const normalizeAssetUrl = (url?: string | null) => {
+  if (!url) return undefined;
+
+  if (
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("blob:") ||
+    url.startsWith("data:")
+  ) {
+    return url;
+  }
+
+  return `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+};
 // Mapeo de números a enum PostType
 export function postTypeFromApi(apiType: number): PostType {
   const map: { [key: number]: PostType } = {
@@ -162,7 +182,15 @@ export function feedItemToPostDto(item: FeedItem): PostDto {
     author: {
       id: item.authorId,
       username: item.authorUsername,
-      displayName: item.authorUsername,          // fallback
+      displayName: item.authorUsername,
+      avatar: normalizeAssetUrl(
+        (item as any).authorProfilePictureUrl ??
+          (item as any).AuthorProfilePictureUrl ??
+          (item as any).profilePictureUrl ??
+          (item as any).ProfilePictureUrl ??
+          (item as any).avatarUrl ??
+          (item as any).AvatarUrl
+      ),
     },
     title: item.title,
     content: item.content,

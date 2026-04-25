@@ -34,6 +34,13 @@ const getMediaType = (mimeType?: string): 'image' | 'audio' | 'book' | 'text' =>
   return 'text';
 };
 
+const getAuthorAvatar = (post: any) =>
+  post.author?.avatar ??
+  post.author?.profilePictureUrl ??
+  post.authorProfilePictureUrl ??
+  post.profilePictureUrl ??
+  null;
+
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
@@ -202,6 +209,7 @@ const isOwnPost = !!originalPost && user?.id === originalPost.authorPostId;
 
   const authorName = originalPost.authorName || `Usuario ${originalPost.authorPostId.slice(0, 8)}`;
   const authorHandle = originalPost.authorName ? `@${originalPost.authorName}` : originalPost.authorPostId.slice(0, 8);
+  const authorAvatar = getAuthorAvatar(originalPost);
 
   return (
     <div className="min-h-screen bg-[#E3E2DE]">
@@ -237,15 +245,16 @@ const isOwnPost = !!originalPost && user?.id === originalPost.authorPostId;
                 <>
                   <div className="flex justify-between items-start mb-[20px]">
                     <div className="flex gap-3">
-                      <Avatar
-                        icon={<User />}
-                        size={48}
-                        className="bg-white border border-black rounded-full"
-                      />
+                    <Avatar
+                      src={authorAvatar ?? undefined}
+                      icon={!authorAvatar && <User />}
+                      size={48}
+                      className="bg-white border border-black rounded-full"
+                    />
                       <div>
                         <Link to={`/user/${originalPost.authorPostId}`} className="hover:text-[#1351AA]">
                           <div className="font-medium text-[#1B1C1E]">{authorName}</div>
-                          <div className="text-gray-500 text-sm">@{authorHandle}</div>
+                          <div className="text-gray-500 text-sm">{authorHandle}</div>
                         </Link>
                       </div>
                     </div>

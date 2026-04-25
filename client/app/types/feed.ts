@@ -5,6 +5,8 @@ export interface FeedItem {
   content: string | null;
   authorId: string;
   authorUsername: string;
+  authorProfilePictureUrl?: string | null;
+  profilePictureUrl?: string | null;
   uploadedAt: string;
   mediaPreviewUrl: string | null;
   mediaMimeType: string | null;
