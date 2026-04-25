@@ -119,7 +119,6 @@ const handleProfilePictureSelected = async (
 
     const uploaded = await settingsRepository.uploadProfilePicture(file);
 
-    console.log("uploaded profile picture", uploaded);
 
     setProfileDraft((prev) => {
       const next = {
@@ -128,7 +127,6 @@ const handleProfilePictureSelected = async (
         profilePictureUrl: uploaded.url,
       };
 
-      console.log("next profile draft", next);
       return next;
     });
 

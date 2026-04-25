@@ -79,12 +79,6 @@ export default function LiteratureReader() {
     documentMedia?.url ?? documentMedia?.Url ?? documentMedia?.path ?? documentMedia?.Path
   );
 
-  console.log("READER DOCUMENT DEBUG", {
-    title,
-    mimeType,
-    documentMedia,
-    documentUrl,
-  });
 
   if (loading) {
     return (

@@ -227,14 +227,6 @@ const bookCoverUrl =
   const authorName = originalPost.authorName || `Usuario ${originalPost.authorPostId.slice(0, 8)}`;
   const authorHandle = originalPost.authorName ? `@${originalPost.authorName}` : originalPost.authorPostId.slice(0, 8);
   const authorAvatar = getAuthorAvatar(originalPost);
-  console.log("POSTCARD AVATAR DEBUG", {
-    postId: originalPost.id,
-    authorName: originalPost.authorName,
-    authorPostId: originalPost.authorPostId,
-    author: originalPost.author,
-    authorAvatar,
-    originalPost,
-  });
   const openPostDetail = () => {
     navigate(`/post/${originalPost.id}`);
   };

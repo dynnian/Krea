@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { Avatar, Dropdown, message, Spin } from "antd";
-import { X } from "lucide-react";
+import { X, ChevronsLeft, ChevronsRight } from "lucide-react";
 import {
   Bookmark,
   Flag,
@@ -42,6 +42,7 @@ export default function ImageView() {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
 
   useEffect(() => {
     console.log("ImageView mounted with postId:", postId);
@@ -251,20 +252,56 @@ console.log("Post response:", response);
     className="fixed inset-0 z-[1000] bg-black/70 backdrop-blur-sm overflow-y-auto"
     onClick={() => navigate(-1)}
   >
-  <div className="min-h-full flex items-start">
+  <div className="min-h-full flex items-start relative">
     <button
-      onClick={() => navigate(0)}
-      className="sticky top-4 left-4 z-[1100] w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition cursor-pointer"
+      type="button"
+      onClick={(event) => {
+        event.stopPropagation();
+
+        if (isMobilePanelOpen) {
+          setIsMobilePanelOpen(false);
+          return;
+        }
+
+        navigate(-1);
+      }}
+      className={`fixed top-4 left-4 z-[1200] w-10 h-10 items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition cursor-pointer ${
+        isMobilePanelOpen ? "flex hidden" : "md:flex"
+      }`}
     >
       <X className="text-white" size={20} />
     </button>
-      <section className="flex-1 min-w-0 sticky -left-5 top-0 h-screen flex items-center justify-center px-8 py-6">
-        
+
+    <button
+      type="button"
+      onClick={(event) => {
+        event.stopPropagation();
+        setIsMobilePanelOpen((prev) => !prev);
+      }}
+      className={`md:hidden fixed top-4 z-[1200] w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 text-white shadow-lg active:scale-95 transition ${
+        isMobilePanelOpen ? "left-4" : "right-4"
+      }`}
+      aria-label={isMobilePanelOpen ? "Ocultar información" : "Mostrar información"}
+    >
+      {isMobilePanelOpen ? (
+        <ChevronsRight className="text-[#FFFFFF]" size={24} />
+      ) : (
+        <ChevronsLeft className="text-[#FFFFFF]" size={24} />
+      )}
+    </button>
+
+      <section
+        className={`flex-1 min-w-0 sticky top-0 h-screen flex items-center justify-center transition-all duration-200 ${
+          isMobilePanelOpen
+            ? "px-3 py-4 md:px-8 md:py-6"
+            : "px-0 py-0 md:px-8 md:py-6"
+        }`}
+      >        
         {imageUrl ? (
           <img
             src={imageUrl}
             alt={originalPost.title ?? ""}
-            className="max-h-[92vh] max-w-full object-contain"
+            className="max-h-[100vh] md:max-h-[92vh] max-w-full object-contain"
             onClick={(event) => event.stopPropagation()}
           />
         ) : (
@@ -273,7 +310,9 @@ console.log("Post response:", response);
       </section>
 
       <aside
-        className="w-[440px] min-h-screen text-[#1B1C1E] flex flex-col py-3 pr-3"
+        className={`fixed md:static top-0 right-0 z-[1150] h-screen md:min-h-screen w-[88vw] max-w-[440px] md:w-[440px] text-[#1B1C1E] flex flex-col py-3 pr-3 pl-3 md:pl-0 bg-black/0 transition-transform duration-200 ${
+          isMobilePanelOpen ? "translate-x-0" : "translate-x-full md:translate-x-0"
+        }`}
         onClick={(event) => event.stopPropagation()}
       >
         <div

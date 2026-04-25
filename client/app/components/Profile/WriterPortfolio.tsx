@@ -122,12 +122,6 @@ const WriterCard: React.FC<{ work: WriterWork }> = ({ work }) => {
   const [bookmarked, setBookmarked] = useState(work.isBookmarked ?? false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
-  console.log("WRITER WORK COVER DEBUG", {
-    title: work.title,
-    coverUrl: work.coverUrl,
-    documentUrl: work.documentUrl,
-    mimeType: work.mimeType,
-  });
 
   useEffect(() => {
     setLiked(work.isLiked);

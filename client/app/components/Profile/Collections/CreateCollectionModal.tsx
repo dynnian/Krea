@@ -138,7 +138,6 @@ const payload = {
   type: getBackendCollectionType(),
 };
 
-console.log("create collection payload", payload);
 
   const created = await collectionsApi.createCollection(payload);
 
