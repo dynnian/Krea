@@ -24,6 +24,7 @@ export interface Media {
   uploadedAt: string;
   coverUrl?: string;
   coverMediaId?: string;
+  genres?: string[];
 }
 
 export interface PostMedia {
@@ -37,6 +38,7 @@ export interface Post {
   id: number;
   userPostId: number;
   type: PostType;
+  genres?: string[];
   title: string | null;
   content: string;
   isWork: boolean;

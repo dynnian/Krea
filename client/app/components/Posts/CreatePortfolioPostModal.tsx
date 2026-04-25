@@ -1,20 +1,21 @@
-// deno-lint-ignore-file no-sloppy-imports jsx-button-has-type no-unused-vars
+// deno-lint-ignore-file
+
 import React, { useEffect, useState } from 'react';
 import { Modal, Upload, Input, message, Select, ConfigProvider } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import type { UploadFile, UploadProps } from 'antd/es/upload/interface';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../contexts/AuthContext';
-import { postsApi } from '../../services/postsService';
+import { useAuth } from '../../contexts/AuthContext.tsx';
+import { postsApi } from '../../services/postsService.ts';
 import { genresApi, type GenreDto } from "../../services/genresService.ts";
 import {
   collectionsApi,
   type UserCollectionDto,
   type CollectionType,
-} from '../../services/collectionsService';
-import { PostType } from '../../types/common';
-import type { CreatePostData, UploadMediaData } from '../../types/api';
-import type { UploadMediaType } from '../../types/api';
+} from '../../services/collectionsService.ts';
+import { PostType } from '../../types/common.ts';
+import type { CreatePostData, UploadMediaData } from '../../types/api.ts';
+import type { UploadMediaType } from '../../types/api.ts';
 import '../../app.css'
 
 
@@ -176,19 +177,7 @@ const getGenreLabel = () => {
     }
 
     let fileObj = origin as File;
-    /*
-    if (postType === PostType.MUSIC) {
-      if (fileObj.type === 'audio/mpeg') {
-        const arrayBuffer = await fileObj.arrayBuffer();
-        const newBlob = new Blob([arrayBuffer], { type: 'music/mpeg' });
-        fileObj = new File([newBlob], fileObj.name, { type: 'music/mpeg' });
-      } else if (fileObj.type === 'audio/wav') {
-        const arrayBuffer = await fileObj.arrayBuffer();
-        const newBlob = new Blob([arrayBuffer], { type: 'music/wav' });
-        fileObj = new File([newBlob], fileObj.name, { type: 'music/wav' });
-      }
-    }
-      */
+
     const uploadData: UploadMediaData = {
         File: fileObj,
         Type: postType,
@@ -415,6 +404,7 @@ const resetForm = () => {
             onChange={(value) => {
               setPostType(value);
               setSelectedCollectionId(undefined);
+              setSelectedGenreIds([]);
             }}
             className="w-full"
             size="large"
@@ -467,14 +457,27 @@ const resetForm = () => {
                   mode="multiple"
                   value={selectedGenreIds}
                   onChange={(values) => {
+                    if (values.length > 4) {
+                      message.warning("Solo puedes seleccionar hasta 4 géneros.");
+                      return;
+                    }
+
                     setSelectedGenreIds(values);
                   }}
                   className="w-full h-[56px]"
-                  rootClassName="w-full "
+                  rootClassName="w-full"
                   size="large"
                   showSearch
+                  allowClear
+                  maxTagCount={4}
                   placeholder="Escribe y busca un género."
                   loading={genresLoading}
+                  optionFilterProp="label"
+                  filterOption={(input, option) =>
+                    String(option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
                   options={filteredGenres.map((genre) => ({
                     value: genre.id,
                     label: genre.name,

@@ -40,6 +40,11 @@ export function normalizeApiPosts(
       post.CreatedAt ??
       new Date().toISOString();
 
+    const postGenres =
+      post.genres ??
+      post.Genres ??
+      [];
+
     const likesCount = post.likesCount ?? post.LikesCount ?? 0;
     const isLikedByCurrentUser =
       post.isLikedByCurrentUser ?? post.IsLikedByCurrentUser ?? false;
@@ -59,14 +64,15 @@ export function normalizeApiPosts(
         post.authorPostId ??
         post.AuthorPostId ??
         index + 1,
-      type: hasAudio
-        ? PostType.AUDIO
-        : hasDocument
-          ? PostType.LINK
-          : hasImage
-            ? PostType.IMAGE
-            : PostType.LINK,
-      title: post.title ?? post.Title ?? null,
+        type: hasAudio
+          ? PostType.AUDIO
+          : hasDocument
+            ? PostType.LINK
+            : hasImage
+              ? PostType.IMAGE
+              : PostType.LINK,
+        genres: postGenres,
+        title: post.title ?? post.Title ?? null,
       content: post.content ?? post.Content ?? "",
       isWork:
         post.isWork ??
@@ -118,6 +124,7 @@ export function normalizeApiPosts(
           uploadedAt,
           coverUrl: m.coverUrl ?? m.CoverUrl,
           coverMediaId: m.coverMediaId ?? m.CoverMediaId,
+          genres: m.genres ?? m.Genres ?? [],
         },
       })),
         likesCount,
@@ -171,13 +178,18 @@ export function mapPostsToMusicSongs(posts: Post[]): MusicSong[] {
         isImageMime(m.media?.mimeType)
       );
 
+      const genres =
+        audioMedia?.media.genres?.length
+          ? audioMedia.media.genres
+          : post.genres ?? [];
+
       if (!audioMedia) return null;
 
       return {
         id: String(post.backendId ?? post.id),
         postId: String(post.backendId ?? post.id),
         title: post.title ?? "Sin título",
-        genre: "Sin género",
+        genre: genres.length ? genres.join(", ") : "Sin género",
         coverUrl:
           audioMedia?.media.coverUrl ??
           coverMedia?.media.path ??
@@ -212,6 +224,11 @@ export function mapPostsToWriterWorks(posts: Post[]): WriterWork[] {
         isImageMime(m.media?.mimeType)
       );
 
+      const genres =
+        documentMedia?.media.genres?.length
+          ? documentMedia.media.genres
+          : post.genres ?? [];
+
       return {
         id: String(post.backendId ?? post.id),
         postId: String(post.backendId ?? post.id),
@@ -221,7 +238,7 @@ export function mapPostsToWriterWorks(posts: Post[]): WriterWork[] {
           coverMedia?.media.path ??
           "https://placehold.co/240x360?text=Libro",
         chaptersCount: 1,
-        genre: "Sin género",
+        genre: genres.length ? genres.join(", ") : "Sin género",
         description: post.content ?? "",
         likesCount: post.likesCount ?? 0,
         isLiked: post.isLikedByCurrentUser ?? false,
