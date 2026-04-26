@@ -21,7 +21,7 @@ type DonationDetailModalProps = {
 export default function DonationDetailModal({
   open,
   amount,
-  currency = "DOP",
+  currency = "USD",
   description,
   donor,
   recipient,

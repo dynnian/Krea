@@ -9,12 +9,12 @@ type DonationAmountModalProps = {
   onContinue: () => void;
 };
 
-const predefinedAmounts = [50, 100, 250, 500, 1000];
+const predefinedAmounts = [1, 5, 10, 15, 20];
 
 export default function DonationAmountModal({
   open,
   amount,
-  currency = "DOP",
+  currency = "USD",
   onAmountChange,
   onCancel,
   onContinue,

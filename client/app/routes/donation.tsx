@@ -80,7 +80,7 @@ export default function DonationRoute() {
       const response = await createDonation({
         recipientId: recipient.id,
         amount: Number(amount),
-        currency: "DOP",
+        currency: "USD",
         message: description,
         successUrl: `${globalThis.location.origin}/donations/success`,
         cancelUrl: `${globalThis.location.origin}/donations/cancel`,
@@ -121,7 +121,7 @@ export default function DonationRoute() {
       <DonationAmountModal
         open={amountModalOpen}
         amount={amount}
-        currency="DOP"
+        currency="USD"
         onAmountChange={setAmount}
         onCancel={() => navigate(-1)}
         onContinue={handleAmountContinue}
@@ -130,7 +130,7 @@ export default function DonationRoute() {
       <DonationDetailModal
         open={detailModalOpen}
         amount={amount}
-        currency="DOP"
+        currency="USD"
         description={description}
         donor={donorProfile}
         recipient={recipient}

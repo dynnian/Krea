@@ -417,7 +417,7 @@ export default function PublicProfilePage() {
     }
   };
   const handleDonation = () => {
-    navigate(`/donation/${userId}`);
+    navigate(`/donations/${userId}`);
   };
 
   // --- Configuración del dropdown de portafolio ---

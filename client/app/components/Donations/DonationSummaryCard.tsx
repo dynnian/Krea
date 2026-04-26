@@ -53,7 +53,7 @@ export default function DonationSummaryCard({
         <div className="flex justify-between items-center py-4 border-b border-[#1F1F1F]">
           <span className="text-xl">Pago Único</span>
           <span className="text-xl font-bold">
-            {amount ? `${amount}DOP` : "XDOP"}
+            {amount ? `${amount}USD` : "USD"}
           </span>
         </div>
       </div>
