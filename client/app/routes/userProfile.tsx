@@ -1,4 +1,3 @@
-// app/routes/userProfile.tsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -16,7 +15,7 @@ import {
   Input,
   Dropdown,
 } from "antd";
-import { UserOutlined, MailOutlined } from "@ant-design/icons";
+import { UserOutlined, MailOutlined, HeartOutlined } from "@ant-design/icons";
 import { ChevronDown } from "lucide-react";
 import type { MenuProps } from "antd";
 import { useAuth } from "../contexts/AuthContext.tsx";
@@ -47,6 +46,7 @@ const PublicProfileHeader: React.FC<{
   onFollow: () => void;
   followLoading: boolean;
   onOpenDM: () => void;
+  onOpenDonation: ()=> void;
   onOpenFollowers: () => void;
   onOpenFollowing: () => void;
 }> = ({
@@ -55,6 +55,7 @@ const PublicProfileHeader: React.FC<{
   onFollow,
   followLoading,
   onOpenDM,
+  onOpenDonation,
   onOpenFollowers,
   onOpenFollowing,
 }) => {
@@ -105,6 +106,9 @@ const PublicProfileHeader: React.FC<{
             </Button>
             <Button icon={<MailOutlined />} onClick={onOpenDM}>
               {t("profile.message")}
+            </Button>
+            <Button icon={<HeartOutlined />} onClick={onOpenDonation}>
+              {t("profile.donate")}
             </Button>
           </div>
         </div>
@@ -412,12 +416,15 @@ export default function PublicProfilePage() {
       setFollowLoading(false);
     }
   };
+  const handleDonation = () => {
+    navigate(`/donation/${userId}`);
+  };
 
   // --- Configuración del dropdown de portafolio ---
   const portfolioOptions = [
-    ...(visualItems.length > 0 ? [{ key: "images", label: t("Imágenes") }] : []),
-    ...(musicSongs.length > 0 || musicAlbums.length > 0 ? [{ key: "music", label: t("Música") }] : []),
-    ...(writerWorks.length > 0 ? [{ key: "literature", label: t("Literatura") }] : []),
+    ...(visualItems.length > 0 ? [{ key: "images", label: t("portfolio.images") }] : []),
+    ...(musicSongs.length > 0 || musicAlbums.length > 0 ? [{ key: "music", label: t("portfolio.music") }] : []),
+    ...(writerWorks.length > 0 ? [{ key: "literature", label: t("portfolio.literature") }] : []),
   ];
 
   const hasPortfolio = portfolioOptions.length > 0;
@@ -440,7 +447,7 @@ export default function PublicProfilePage() {
 
   const portfolioTabLabel = (
     <div className="flex items-center gap-1">
-      <span>{t("Portafolio")}</span>
+      <span>{t("profile.tabs.portfolio")}</span>
       {portfolioOptions.length > 1 && (
         <Dropdown
           menu={{ items: portfolioDropdownItems, onClick: handlePortfolioDropdownClick }}
@@ -483,7 +490,7 @@ export default function PublicProfilePage() {
     },
     {
       key: "publications",
-      label: t("Publicaciones"),
+      label: t("profile.tabs.publications"),
       children: (
         <div className="space-y-4">
           {postsLoading && <Spin />}
@@ -550,6 +557,7 @@ export default function PublicProfilePage() {
         onFollow={handleFollow}
         followLoading={followLoading}
         onOpenDM={() => setDmModalOpen(true)}
+        onOpenDonation={handleDonation}
         onOpenFollowers={() => setFollowersModalOpen(true)}
         onOpenFollowing={() => setFollowingModalOpen(true)}
       />

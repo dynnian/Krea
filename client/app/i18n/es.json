@@ -156,7 +156,9 @@
     "total": "Total",
     "items": "items",
     "submit": "Enviar",
-    "send": "Enviar"
+    "send": "Enviar",
+    "error": "Error"
+
   },
   "explore": {
     "tabs": {
@@ -176,14 +178,15 @@
       "song_artist": "Artista",
       "song_genres": "Jazz, Rock, etc...",
       "trending_genres": "Géneros en tendencia",
-      "trending_artists": "Artistas en tendencia"
+      "trending_artists": "Artistas en tendencia",
+      "no_audio": "Audio no disponible"
+
     },
     "literature": {
       "featured": "Destacado",
       "featured_title": "Título del libro",
       "featured_author": "Autor",
-      "synopsis": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis.",
-      "synopsis_label": "Sinopsis",
+      "synopsis": "Sinopsis",
       "read_now": "Leer ahora",
       "trending": "En tendencia",
       "book_title": "Título del libro",
@@ -191,11 +194,12 @@
       "recent": "Recientemente publicado",
       "recent_title": "Título de la obra",
       "recent_author": "Autor",
-      "recent_synopsis": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis.",
-      "chapters": "X Capítulos",
+      "chapters": "Capítulos",
       "read": "Leer",
+      "read_now": "Leer ahora",
       "trending_genres": "Géneros en tendencia",
-      "trending_authors": "Autores en tendencia"
+      "trending_authors": "Autores en tendencia",
+      "no_description": "Sin descripción"
     },
     "load_error": "Error al cargar el contenido de exploración"
   },
@@ -304,7 +308,13 @@
     "dm_empty": "Escribe un mensaje antes de enviar",
     "dm_sent": "Mensaje enviado",
     "dm_error": "Error al enviar el mensaje",
-    "dm_placeholder": "Escribe tu mensaje aquí..."
+    "dm_placeholder": "Escribe tu mensaje aquí...",
+    "donate": "donar"
+  },
+  "portfolio":{
+    "images": "Imágenes",
+    "music": "Música",
+    "literature": "Literatura"
   },
   "bookmarks": {
     "title": "Guardados",
