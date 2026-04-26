@@ -157,7 +157,8 @@
     "items": "items",
     "submit": "Submit",
     "send": "Send",
-    "error": "Error"
+    "error": "Error",
+    "logout": "Logout"
   },
   "explore": {
     "tabs": {
@@ -567,6 +568,91 @@
     "passwordsDoNotMatch": "Passwords do not match",
     "passwordChangeSuccess": "Password changed successfully",
     "passwordChangeError": "Failed to change password"
+  },
+  "settingsUser": {
+    "title": "Settings",
+    "load_error": "Failed to load settings",
+    "save_success": "Profile saved",
+    "save_error": "Failed to save profile",
+    "avatar_upload_success": "Profile picture uploaded",
+    "avatar_upload_error": "Failed to upload profile picture",
+    "preview_toggled": "Preview updated",
+    "commissions_toggled": "Commissions status updated",
+    "portfolio_toggled": "Portfolio updated",
+    "security_toggled": "Security updated",
+    "nav_label": "Settings sections",
+    "sections": {
+      "profile": "Profile",
+      "subscription": "Subscription",
+      "commissions": "Commissions",
+      "orders": "Orders",
+      "portfolio": "Portfolios",
+      "security": "Security",
+      "donations": "Donations"
+    },
+    "profile": {
+      "edit": "Edit profile",
+      "change_avatar": "Change avatar",
+      "username": "Username",
+      "email": "Email",
+      "displayName": "Display name",
+      "displayName_placeholder": "[ Display name ]",
+      "biography": "Biography (Optional)",
+      "language": "Language",
+      "timezone": "Time zone"
+    },
+    "subscription": {
+      "title": "Subscription",
+      "tiers": "Subscription tiers",
+      "create_tier": "Create new tier",
+      "new_tier": "New tier",
+      "tier_name": "Name",
+      "tier_name_placeholder": "Tier name",
+      "monthly_price": "Monthly price",
+      "tier_description": "Tier description (Optional)",
+      "cover_image": "Cover image (optional)"
+    },
+    "commissions": {
+      "title": "Commissions",
+      "enable": "Enable/Disable commissions",
+      "your_commissions": "Your commissions",
+      "create_commission": "Create new commission",
+      "new_commission": "New commission",
+      "commission_name": "Name",
+      "commission_name_placeholder": "Commission name",
+      "service_description": "Service description.",
+      "price": "Price",
+      "estimated_delivery": "Estimated delivery time.",
+      "delivery_placeholder": "Time",
+      "tags_optional": "Tags (Optional)",
+      "tags_placeholder": "Add tags",
+      "cover_image_optional": "Cover image (Optional)"
+    },
+    "orders": {
+      "title": "Orders",
+      "user": "User",
+      "domain": "Domain",
+      "date": "Order date"
+    },
+    "portfolio": {
+      "title": "Portfolios",
+      "images": "Images portfolio",
+      "music": "Music & albums portfolio",
+      "literature": "Literature portfolio"
+    },
+    "security": {
+      "title": "Security",
+      "change_password": "Change password",
+      "go_to_change": "Go to change password",
+      "two_factor": "Two-factor authentication",
+      "email_2fa": "Enable email verification",
+      "sms_2fa": "Enable SMS verification"
+    },
+    "donations": {
+      "title": "Donations",
+      "description": "If you like my work, consider making a donation to support the creation of more content.",
+      "note": "Thank you for your support ❤️"
+    }
   },
   
   "version": "Krea Platform v2.1.0"

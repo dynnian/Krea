@@ -14,7 +14,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useI18n } from "../contexts/I18nContext";
 import backgroundImage from "../../assets/landscape.jpg";
-import BrandLogo from "../components/BrandLogo";
+import {BrandLogo} from "../components/BrandLogo";
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
