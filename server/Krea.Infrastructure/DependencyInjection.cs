@@ -81,7 +81,6 @@ namespace Krea.Infrastructure {
 
             // Repositorios
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<IDonationRepository, DonationRepository>();
             services.AddScoped<IMembershipPlanRepository, MembershipPlanRepository>();
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();

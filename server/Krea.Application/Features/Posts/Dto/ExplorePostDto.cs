@@ -9,8 +9,7 @@ namespace Krea.Application.Features.Posts.Dto {
         public string AuthorUsername { get; init; } = string.Empty;
         
         public string Category { get; init; } = default!; // Music, Text, Image
-
-        public string Category { get; init; } = default!;
+        
 
         public IReadOnlyList<string> Genres { get; init; } = [];
         public IReadOnlyList<string> Tags { get; init; } = [];
