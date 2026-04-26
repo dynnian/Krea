@@ -1,4 +1,5 @@
 import { User, Link as LinkIcon } from "lucide-react";
+import type { PublicUserProfile } from "@/services/userService.ts";
 
 type DonationSummaryCardProps = {
   amount?: string;
@@ -6,34 +7,45 @@ type DonationSummaryCardProps = {
   onDescriptionChange: (value: string) => void;
   isProcessing?: boolean;
   onPay?: () => void;
+  recipient: PublicUserProfile;
 };
 
 export default function DonationSummaryCard({
   amount,
   description,
+  recipient,
   onDescriptionChange,
   isProcessing = false,
   onPay,
 }: DonationSummaryCardProps) {
+
   return (
     <div className="w-full max-w-[430px]">
       <h2 className="text-2xl lg:text-3xl font-bold mb-6">Donación a:</h2>
 
       <div className="flex items-center gap-4 mb-3">
-        <div className="w-16 h-16 rounded-full border-2 border-[#1F1F1F] flex items-center justify-center bg-[#F3F3F1]">
-          <User size={38} />
+        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#1F1F1F] bg-[#F3F3F1]">
+          {recipient.profilePictureUrl ? (
+            <img
+              src={recipient.profilePictureUrl}
+              alt={recipient.displayName}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <User size={38} />
+            </div>
+          )}
         </div>
 
         <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-2xl font-bold">Usuario</h3>
+          <h3 className="text-2xl font-bold">
+            {recipient.displayName}
+          </h3>
 
-            <span className="w-6 h-6 rounded-full bg-[#075C08] flex items-center justify-center">
-              <LinkIcon size={14} className="text-white" />
-            </span>
-          </div>
-
-          <p className="text-sm text-[#333]">@Dominio</p>
+          <p className="text-sm text-[#333]">
+            @{recipient.username}
+          </p>
         </div>
       </div>
 
@@ -72,7 +84,7 @@ export default function DonationSummaryCard({
         disabled={!amount || isProcessing}
         className="mt-8 w-full h-12 rounded-full bg-[#075C08] text-white font-medium hover:bg-[#064b07] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
       >
-        {isProcessing ? "Procesando..." : "Pagar"}
+        {isProcessing ? "Redirigiendo a Stripe..." : "Continuar al pago"}
       </button>
     </div>
   );

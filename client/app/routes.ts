@@ -68,6 +68,14 @@ export default [
             file: "routes/donation.tsx",
           },
           {
+            path: "/donations/success",
+            file: "routes/donation-success.tsx",
+          },
+          {
+            path: "/donations/cancel",
+            file: "routes/donation-cancel.tsx",
+          },
+          {
             path: "settings",
             file: "routes/settings.tsx",
           },
