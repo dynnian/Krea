@@ -1,5 +1,5 @@
 // components/Home/Home.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Grid, message, Spin } from "antd";
 import { useAuth } from "../../contexts/AuthContext";
@@ -9,7 +9,6 @@ import PostCard from "../Posts/PostCard";
 import TagsSidebar from "./TagsSidebar";
 import { feedApi } from "../../services/postsService";
 import { feedItemToPostDto } from "../../utils/postMappers";
-import { useInfiniteScroll } from "@/lib/hooks/useInfiniteScroll.ts";
 import type { PostDto } from "../../types/api";
 
 const { useBreakpoint } = Grid;
@@ -23,13 +22,18 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"forYou" | "following">("forYou");
   const [posts, setPosts] = useState<PostDto[]>([]);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [initialLoading, setInitialLoading] = useState(true);
+  
+  const pageRef = useRef(1);
+  const loadingRef = useRef(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // Cargar más elementos
-  const loadMore = async () => {
-    if (loading || !hasMore) return;
+  // Función para cargar una página
+  const loadPage = useCallback(async (page: number, isInitial: boolean) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     setLoading(true);
     try {
       let res;
@@ -40,52 +44,54 @@ export default function Home() {
           setActiveTab("forYou");
           return;
         }
-        res = await feedApi.getFollowing(user.id, page, 10);
+        res = await feedApi.getFollowing(page, 10);
       }
-      const newItems = res.data.map(feedItemToPostDto);
-      if (newItems.length === 0) {
+      const items = Array.isArray(res.data) ? res.data : [];
+      const newPosts = items.map(feedItemToPostDto);
+      if (newPosts.length === 0) {
         setHasMore(false);
       } else {
-        setPosts((prev) => [...prev, ...newItems]);
-        setPage((prev) => prev + 1);
-        if (newItems.length < 10) setHasMore(false);
+        if (isInitial) {
+          setPosts(newPosts);
+        } else {
+          setPosts(prev => [...prev, ...newPosts]);
+        }
+        pageRef.current = page + 1;
+        if (newPosts.length < 10) setHasMore(false);
       }
     } catch (err) {
-      console.error("Error loading feed:", err);
+      console.error(err);
       message.error(t("home.errorLoadingFeed"));
+      setHasMore(false);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
-    }
-  };
-
-  // Resetear al cambiar pestaña o usuario
-  const resetAndLoad = () => {
-    setPosts([]);
-    setPage(1);
-    setHasMore(true);
-    setInitialLoading(true);
-    setLoading(false);
-    loadMore().finally(() => setInitialLoading(false));
-  };
-
-  useEffect(() => {
-    resetAndLoad();
-  }, [activeTab, user]);
-
-  useEffect(() => {
-    if (activeTab === "following" && !user) {
-      setActiveTab("forYou");
-      message.info(t("home.loginToSeeFollowing"));
     }
   }, [activeTab, user, t]);
 
-  // Centinela para scroll infinito
-  const sentinelRef = useInfiniteScroll({
-    hasMore,
-    isLoading: loading,
-    onLoadMore: loadMore,
-    rootMargin: "0px 0px 200px 0px", // carga cuando el centinela está a 200px del viewport
-  });
+  // Observador de intersección para scroll infinito (persistente)
+  useEffect(() => {
+    if (observerRef.current) observerRef.current.disconnect();
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadingRef.current && hasMore && !initialLoading) {
+          loadPage(pageRef.current, false);
+        }
+      },
+      { rootMargin: "0px 0px 200px 0px", threshold: 0.1 }
+    );
+    if (sentinelRef.current) observerRef.current.observe(sentinelRef.current);
+    return () => observerRef.current?.disconnect();
+  }, [hasMore, initialLoading, loadPage]);
+
+  // Cargar primera página al cambiar pestaña o usuario
+  useEffect(() => {
+    setPosts([]);
+    setHasMore(true);
+    pageRef.current = 1;
+    setInitialLoading(true);
+    loadPage(1, true).finally(() => setInitialLoading(false));
+  }, [activeTab, user, loadPage]);
 
   const handleNewPost = (newPost: PostDto) => {
     setPosts([newPost, ...posts]);
@@ -109,15 +115,13 @@ export default function Home() {
             {posts.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
-            {/* Centinela: invisible, solo para activar la carga */}
-            {hasMore && (
-              <div ref={sentinelRef} className="h-10 w-full" />
-            )}
             {loading && (
               <div className="flex justify-center py-4">
                 <Spin />
               </div>
             )}
+            {/* Centinela siempre presente, pero invisible cuando no hay más */}
+            <div ref={sentinelRef} className="h-10 w-full" style={{ opacity: hasMore ? 1 : 0, pointerEvents: "none" }} />
             {!hasMore && posts.length > 0 && (
               <p className="text-center py-4 text-gray-500">{t("home.no_more_posts")}</p>
             )}

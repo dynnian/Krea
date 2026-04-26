@@ -135,9 +135,9 @@ export const feedApi = {
     axiosClient.get<FeedItem[]>("/feed/recent", {
       params: { currentUserId, page, pageSize },
     }),
-  getFollowing: (currentUserId: string, page = 1, pageSize = 20) =>
+  getFollowing: (page = 1, pageSize = 20) =>
     axiosClient.get<FeedItem[]>("/feed/following", {
-      params: { currentUserId, page, pageSize },
+      params: { page, pageSize },
     }),
   getTrending: async () => {
   try {
