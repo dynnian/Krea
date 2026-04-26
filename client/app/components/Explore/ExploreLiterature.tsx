@@ -1,275 +1,184 @@
-import React from "react";
-import { Heart, Bookmark, BookOpen } from "lucide-react";
-import {
-  featuredBookMock,
-  trendingBooksMock,
-  recentBooksMock,
-  trendingLiteratureGenresMock,
-  trendingAuthorsMock,
-} from "../../data/exploreLiteratureMock.ts";
+// app/components/Explore/ExploreLiterature.tsx
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Spin, message, Button } from "antd";
+import { Heart, Bookmark, UserPlus, UserCheck } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
+import { postsApi } from "../../services/postsService";
+import { userService } from "../../services/userService";
+import type { ExplorePostDto } from "../../types/api";
 
-interface ExploreLiteratureProps {
-  selectedTag?: string | null;
-  selectedArtist?: string | null;
-}
-
-export default function ExploreLiterature({
-  selectedTag,
-  selectedArtist,
-}: ExploreLiteratureProps) {
+const LiteratureFeaturedCard: React.FC<{ book: ExplorePostDto; onLike: (id: string) => void; onFavorite: (id: string) => void; onFollow: (userId: string) => void }> = ({ book, onLike, onFavorite, onFollow }) => {
+  const { t } = useTranslation();
   return (
-    <div className="w-full pt-0 pb-[20px]">
-      {/* Featured section */}
-      <section className="w-full h-[350px] bg-[#E8F1FC] border border-[#8F8E8A] px-[94px] pt-[18px] pb-[25px] flex flex-col">
-        <div className="shrink-0 pb-[5px]">
-          <h2>
-            <span className="text-[#1B1C1E] text-[36px] font-bold">
-              Destacado
-            </span>
-          </h2>
-        </div>
-
-        <div className="flex-1 min-h-0 flex flex-row gap-6 items-stretch">
-          <img
-            src={featuredBookMock.coverUrl}
-            alt={featuredBookMock.title}
-            className="h-full aspect-[2/3] object-cover shadow-[4px_4px_4px_rgba(0,0,0,0.15)]"
-          />
-
-          <div className="flex-1 min-w-0 h-full flex flex-col pt-[20px]">
-            <div>
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex flex-col gap-[3px]">
-                  <span className="text-[#1B1C1E] hover:underline cursor-pointer text-[24px] font-semibold leading-none mb-[8px]">
-                    {featuredBookMock.title}
-                  </span>
-                <div className="flex flex-row gap-[23px]">
-                  <span className="text-[#6B6B6B hover:underline cursor-pointer text-[18px] leading-none mb-[10px]">
-                    {featuredBookMock.author} ⋅ @{featuredBookMock.handle}
-                  </span>
-
-                    <button className="h-[24px] px-[22px] rounded-full border border-[#1B1C1E] bg-[#E8F1FC] hover:bg-[#BFD1EA] cursor-pointer">
-                      <span className="text-[#1B1C1E] text-[11px] font-medium leading-none">
-                        Seguir
-                      </span>
-                    </button>
-                </div> 
-                </div>
-
-                <div className="flex flex-row gap-2 self-start">
-                  {featuredBookMock.genres.map((genre) => (
-                    <span
-                      key={genre}
-                      className="inline-flex items-center justify-center h-[26px] px-4 rounded-full border border-[#464749] text-[#464749] text-[11px] font-medium bg-[#E8F1FC]"
-                    >
-                      {genre}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-[15px] flex flex-col">
-                <span className="text-[#1B1C1E] text-[16px] font-bold leading-none mb-[8px]">
-                  Sinopsis
-                </span>
-
-                <p className="text-[#1B1C1E]  text-[13px] leading-[20px] text-justify ">
-                  {featuredBookMock.synopsis}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 pt-[10px]">
-              <button className="h-[44px] px-[30px] cursor-pointer hover:bg-[#093B05] rounded-full bg-[#0B5107] border border-[#1B1C1E]">
-                <span className="text-[#E3E2DE] text-[14px] font-medium leading-none">
-                  Leer ahora
-                </span>
-              </button>
-
-              <button className="w-11 h-11 rounded-full border cursor-pointer border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center">
-                <Bookmark size={20} />
-              </button>
-
-              <button className="w-11 h-11 rounded-full border cursor-pointer border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center">
-                <Heart size={20} />
-              </button>
+    <div className="bg-[#E9F1FC] border border-[#95ACCC] rounded-[10px] p-6 flex gap-6">
+      <img src={book.coverUrl || book.previewUrl || "https://placehold.co/182x281"} alt={book.title} className="w-44 h-64 object-cover shadow-md" />
+      <div className="flex-1">
+        <div className="flex justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">{book.title}</h2>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-gray-600">@{book.authorUsername}</span>
+              <Button size="small" onClick={() => onFollow(book.userId)} icon={book.isFollowingAuthor ? <UserCheck size={14} /> : <UserPlus size={14} />}>
+                {book.isFollowingAuthor ? t("profile.unfollow") : t("profile.follow")}
+              </Button>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Main content container */}
-      <div className="mt-6 flex flex-col lg:flex-row gap-6">
-        {/* Left column */}
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-col gap-8">
-            {/* Trending books */}
-            <section>
-              <div className="pb-[10px]">
-                <h3>
-                  <span className="text-[#1B1C1E] text-[24px] font-bold">
-                    En tendencia
-                  </span>
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-x-4 gap-y-5">
-                {trendingBooksMock.map((book) => (
-                  <div key={book.id} className="min-w-0">
-                    <div className="aspect-[2/3] cursor-pointer overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)] mb-2">
-                      <img
-                        src={book.coverUrl}
-                        alt={book.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-
-                    <div className="flex flex-col">
-                      <span className="text-[#1B1C1E] mx-[4px] cursor-pointer hover:underline text-[18px] font-semibold leading-tight truncate">
-                        {book.title}
-                      </span>
-                      <span className="text-[#6B6B6B] mx-[4px] cursor-pointer hover:underline text-[14px] leading-tight truncate">
-                        {book.author}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Recent books */}
-            <section>
-              <div className="pb-[10px]">
-                <h3>
-                  <span className="text-[#1B1C1E] text-[24px] font-bold">
-                    Recientemente publicado
-                  </span>
-                </h3>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                {recentBooksMock.map((book) => (
-                  <div
-                    key={book.id}
-                    className="w-full h-[185px] bg-[#E8F1FC] border border-[#8F8E8A] p-[15px]"
-                  >
-                    <div className="flex h-full gap-[22px] items-center">
-                      <div className="h-full aspect-[2/3] shrink-0 overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
-                        <img
-                          src={book.coverUrl}
-                          alt={book.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-
-                      <div className="h-[full] flex flex-col min-w-0 flex-1 ">
-                        <div className="flex items-start justify-between gap-[0px]">
-                          <div className="min-w-0 flex flex-col gap-[0px]">
-                            <div className="h-full">
-                              <span className="text-[20px] cursor-pointer hover:underline leading-[20px] font-bold text-[#1B1C1E]">
-                                {book.title}
-                              </span>
-                            </div>
-
-                            <div className="mt-[2px]">
-                              <span className="text-[13px] cursor-pointer hover:underline leading-[13px] font-medium text-[#1B1C1E]">
-                                {book.author} ⋅ @{book.handle}
-                              </span>
-                            </div>
-                          </div>
-
-                          <span className="pt-[2px] text-[12px] font-medium text-[#1B1C1E] whitespace-nowrap">
-                            {book.genre}
-                          </span>
-                        </div>
-
-                        <div className="mt-[5px] h-auto min-w-0">
-                          <span className="text-[11px] text-justify font-medium text-[#1B1C1E] line-clamp-3 overflow-hidden">
-                            {book.description}
-                          </span>
-                        </div>
-
-                        <div className="mb-[6px] ml-[5px]">
-                          <span className="text-[11px] font-medium text-[#1B1C1E]">
-                            {book.chaptersCount} Capítulos
-                          </span>
-                        </div>
-
-                        <div className="mt-auto pt-[10px] flex items-center gap-3">
-                          <button
-                            type="button"
-                            className="px-[33px] py-[1px] rounded-full bg-[#0B5107] border border-[#1B1C1E]"
-                          >
-                            <span className="text-[11px] font-medium leading-5 text-[#E3E2DE]">
-                              Leer
-                            </span>
-                          </button>
-
-                          <button
-                            type="button"
-                            className="w-[24px] h-[24px] rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center"
-                          >
-                            <Bookmark size={14} />
-                          </button>
-
-                          <button
-                            type="button"
-                            className="w-[24px] h-[24px] rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center"
-                          >
-                            <Heart size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+          <div className="flex flex-wrap gap-2">
+            {book.genres.map(g => <span key={g} className="px-2 py-0.5 rounded-full border border-gray-500 text-xs bg-white">{g}</span>)}
           </div>
         </div>
+        <div className="mt-4">
+          <h4 className="font-semibold">{t("explore.literature.synopsis")}</h4>
+          <p className="text-sm text-justify">{book.content || t("explore.literature.no_description")}</p>
+        </div>
+        <div className="flex gap-4 mt-4">
+          <Button type="primary" className="bg-green-700">{t("explore.literature.read_now")}</Button>
+          <button onClick={() => onLike(book.id)} className="w-10 h-10 rounded-full border border-green-700 bg-green-50 flex items-center justify-center">
+            <Heart size={20} className={book.isLikedByCurrentUser ? "fill-green-700" : ""} />
+          </button>
+          <button onClick={() => onFavorite(book.id)} className="w-10 h-10 rounded-full border border-green-700 bg-green-50 flex items-center justify-center">
+            <Bookmark size={20} className={book.isFavorite ? "fill-green-700" : ""} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-        {/* Right sidebar */}
-        <aside className="w-full lg:w-[265px] shrink-0">
-          <div className="flex flex-col gap-6 pt-[46px]">
-            <section className="bg-[#E8F1FC] border border-[#8F8E8A] rounded-[10px] px-5 py-4">
-              <h4>
-                <span className="text-[#1B1C1E] text-[20px] font-bold leading-none mb-4">
-                  Generos en tendencia
-                </span>
-              </h4>
+const LiteratureTrendingBook: React.FC<{ book: ExplorePostDto }> = ({ book }) => (
+  <div className="w-36 shrink-0 cursor-pointer hover:opacity-80">
+    <img src={book.coverUrl || book.previewUrl || "https://placehold.co/123x190"} alt={book.title} className="w-full h-48 object-cover rounded shadow" />
+    <p className="font-medium text-sm truncate mt-1">{book.title}</p>
+    <p className="text-xs text-gray-500 truncate">@{book.authorUsername}</p>
+  </div>
+);
 
-              <div className="flex flex-wrap gap-2">
-                {trendingLiteratureGenresMock.map((genre) => (
-                  <span
-                    key={genre}
-                    className="inline-flex items-center justify-center h-[26px] px-4 rounded-full border border-[#464749] text-[#464749] text-[11px] font-medium bg-[#E8F1FC]"
-                  >
-                    {genre}
-                  </span>
-                ))}
-              </div>
-            </section>
-
-            <section className="bg-[#E8F1FC] border border-[#8F8E8A] rounded-[10px] px-5 py-4">
-              <h4>
-                <span className="text-[#1B1C1E] text-[20px] font-bold leading-none mb-4">
-                  Autores en tendencia
-                </span>
-              </h4>
-
-              <div className="flex flex-wrap gap-2">
-                {trendingAuthorsMock.map((author) => (
-                  <span
-                    key={author}
-                    className="inline-flex items-center justify-center h-[26px] px-4 rounded-full border border-[#464749] text-[#464749] text-[11px] font-medium bg-[#E8F1FC]"
-                  >
-                    {author}
-                  </span>
-                ))}
-              </div>
-            </section>
+const LiteratureRecentBook: React.FC<{ book: ExplorePostDto; onLike: (id: string) => void; onFavorite: (id: string) => void }> = ({ book, onLike, onFavorite }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="bg-[#E9F1FC] border border-[#95ACCC] rounded-[10px] p-4 flex gap-4">
+      <img src={book.coverUrl || book.previewUrl || "https://placehold.co/92x143"} alt={book.title} className="w-24 h-36 object-cover shadow" />
+      <div className="flex-1">
+        <div className="flex justify-between items-start flex-wrap">
+          <div>
+            <h3 className="text-lg font-bold">{book.title}</h3>
+            <p className="text-sm text-gray-600">@{book.authorUsername}</p>
           </div>
-        </aside>
+          <div className="text-xs text-gray-500">{book.genres.join(", ")}</div>
+        </div>
+        <p className="text-xs text-justify mt-2 line-clamp-3">{book.content}</p>
+        <div className="flex gap-2 mt-2">
+          <Button size="small" type="primary" className="bg-green-700 text-xs">{t("explore.literature.read")}</Button>
+          <button onClick={() => onLike(book.id)} className="w-7 h-7 rounded-full border border-green-700 bg-green-50 flex items-center justify-center">
+            <Heart size={14} className={book.isLikedByCurrentUser ? "fill-green-700" : ""} />
+          </button>
+          <button onClick={() => onFavorite(book.id)} className="w-7 h-7 rounded-full border border-green-700 bg-green-50 flex items-center justify-center">
+            <Bookmark size={14} className={book.isFavorite ? "fill-green-700" : ""} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default function ExploreLiterature({ selectedTag }: { selectedTag?: string | null }) {
+  const { t } = useTranslation();
+  const { user, isAuthenticated } = useAuth();
+  const [books, setBooks] = useState<ExplorePostDto[]>([]);
+  const [trending, setTrending] = useState<ExplorePostDto[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      setLoading(true);
+      try {
+        const tags = selectedTag ? [selectedTag] : undefined;
+        const res = await postsApi.explore({ category: "Text", tags, pageSize: 20 });
+        const all = res.data.items || [];
+        setBooks(all);
+        setTrending(all.slice(0, 5));
+      } catch (err) {
+        console.error(err);
+        message.error(t("common.error"));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBooks();
+  }, [selectedTag, t]);
+
+  const handleLike = async (postId: string) => {
+    if (!isAuthenticated) { message.warning(t("post.auth_required")); return; }
+    const book = books.find(b => b.id === postId);
+    if (!book) return;
+    const wasLiked = book.isLikedByCurrentUser;
+    setBooks(prev => prev.map(b => b.id === postId ? { ...b, isLikedByCurrentUser: !wasLiked, likesCount: b.likesCount + (wasLiked ? -1 : 1) } : b));
+    setTrending(prev => prev.map(b => b.id === postId ? { ...b, isLikedByCurrentUser: !wasLiked, likesCount: b.likesCount + (wasLiked ? -1 : 1) } : b));
+    try {
+      if (wasLiked) await postsApi.unlike(postId, { postId, userId: user!.id });
+      else await postsApi.like(postId, { postId, userId: user!.id });
+    } catch {
+      setBooks(prev => prev.map(b => b.id === postId ? { ...b, isLikedByCurrentUser: wasLiked, likesCount: b.likesCount + (wasLiked ? 1 : -1) } : b));
+      setTrending(prev => prev.map(b => b.id === postId ? { ...b, isLikedByCurrentUser: wasLiked, likesCount: b.likesCount + (wasLiked ? 1 : -1) } : b));
+      message.error(t("post.like_error"));
+    }
+  };
+
+  const handleFavorite = async (postId: string) => {
+    if (!isAuthenticated) { message.warning(t("post.auth_required")); return; }
+    const book = books.find(b => b.id === postId);
+    if (!book) return;
+    const wasFav = book.isFavorite;
+    setBooks(prev => prev.map(b => b.id === postId ? { ...b, isFavorite: !wasFav } : b));
+    setTrending(prev => prev.map(b => b.id === postId ? { ...b, isFavorite: !wasFav } : b));
+    try {
+      await postsApi.toggleFavorite(postId);
+    } catch {
+      setBooks(prev => prev.map(b => b.id === postId ? { ...b, isFavorite: wasFav } : b));
+      setTrending(prev => prev.map(b => b.id === postId ? { ...b, isFavorite: wasFav } : b));
+      message.error(t("post.bookmark_error"));
+    }
+  };
+
+  const handleFollow = async (userId: string) => {
+    if (!isAuthenticated) { message.warning(t("post.auth_required")); return; }
+    const book = books.find(b => b.userId === userId);
+    if (!book) return;
+    const wasFollowing = book.isFollowingAuthor;
+    setBooks(prev => prev.map(b => b.userId === userId ? { ...b, isFollowingAuthor: !wasFollowing } : b));
+    setTrending(prev => prev.map(b => b.userId === userId ? { ...b, isFollowingAuthor: !wasFollowing } : b));
+    try {
+      if (wasFollowing) await userService.unfollow(userId);
+      else await userService.follow(userId);
+    } catch {
+      setBooks(prev => prev.map(b => b.userId === userId ? { ...b, isFollowingAuthor: wasFollowing } : b));
+      setTrending(prev => prev.map(b => b.userId === userId ? { ...b, isFollowingAuthor: wasFollowing } : b));
+      message.error(t("profile.follow_error"));
+    }
+  };
+
+  if (loading) return <div className="flex justify-center p-20"><Spin size="large" /></div>;
+
+  const featured = books[0];
+  const recent = books.slice(1);
+
+  return (
+    <div className="max-w-[1129px] mx-auto px-4 pb-10">
+      {featured && <LiteratureFeaturedCard book={featured} onLike={handleLike} onFavorite={handleFavorite} onFollow={handleFollow} />}
+      {trending.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-2xl font-bold mb-4 text-[#1B1C1E]">{t("explore.literature.trending")}</h2>
+          <div className="flex gap-6 overflow-x-auto pb-4">
+            {trending.map(book => <LiteratureTrendingBook key={book.id} book={book} />)}
+          </div>
+        </div>
+      )}
+      <div className="mt-10">
+        <h2 className="text-2xl font-bold mb-4 text-[#1B1C1E]">{t("explore.literature.recent")}</h2>
+        <div className="space-y-4">
+          {recent.map(book => <LiteratureRecentBook key={book.id} book={book} onLike={handleLike} onFavorite={handleFavorite} />)}
+        </div>
       </div>
     </div>
   );

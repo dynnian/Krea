@@ -22,6 +22,7 @@ interface NotificationContextType {
 }
 
 const NotificationContext = createContext<NotificationContextType | null>(null);
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5101/api';
 
 export const NotificationProvider = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useAuth();
@@ -60,9 +61,9 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 
     // Configurar Server-Sent Events
     // Usamos userId como parámetro; el backend debería validar la autenticación
-    const es = new EventSource(
-      `http://127.0.0.1:5101/api/notifications/stream?userId=${user.id}`
-    );
+    const normalizedApiBaseUrl = apiBaseUrl.replace(/\/+$/, '');
+    const streamUrl = `${normalizedApiBaseUrl}/notifications/stream?userId=${encodeURIComponent(user.id)}`;
+    const es = new EventSource(streamUrl);
 
     es.onmessage = (event) => {
       try {

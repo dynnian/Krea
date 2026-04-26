@@ -55,20 +55,29 @@ namespace Krea.Domain.Entities {
             if (amount != Amount)
                 throw new ArgumentException("Payment amount must match the donation amount.");
 
-            if (_payments.Any())
+            if (_payments.Count != 0)
                 throw new InvalidOperationException("This donation already has a payment.");
 
             var payment = new Payment(payer, amount, externalRef, this);
             _payments.Add(payment);
             return payment;
         }
+        
+        public void ConfirmPayment(Guid paymentId)
+        {
+            Payment? payment = _payments.FirstOrDefault(p => p.Id == paymentId);
+            if (payment == null)
+                throw new InvalidOperationException("Payment not found in donation.");
+
+            payment.MarkCompleted();
+        }
 
         private static void Validate(User donor, User recipient, Money amount) {
-            if (donor is null) throw new ArgumentNullException(nameof(donor));
-            if (recipient is null) throw new ArgumentNullException(nameof(recipient));
+            ArgumentNullException.ThrowIfNull(donor);
+            ArgumentNullException.ThrowIfNull(recipient);
             if (ReferenceEquals(donor, recipient))
                 throw new ArgumentException("Cannot donate to yourself.");
-            if (amount <= 0)
+            if (amount <= Money.Zero(amount.Currency))
                 throw new ArgumentException("Amount must be greater than zero.");
         }
     }

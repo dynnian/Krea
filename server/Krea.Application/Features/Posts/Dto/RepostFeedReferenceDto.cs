@@ -1,6 +1,5 @@
 namespace Krea.Application.Features.Posts.Dto {
-    public sealed class RepostFeedReferenceDto
-    {
+    public sealed class RepostFeedReferenceDto {
         public Guid Id { get; set; }
         public Guid AuthorId { get; set; }
         public string AuthorUsername { get; set; } = string.Empty;

@@ -82,10 +82,10 @@ namespace Krea.API.Controllers {
         /// <returns>
         /// A paginated collection of posts authored by the specified user.
         /// </returns>
-        [HttpGet("user/{authorId:guid}")]
+        [HttpGet("user/{authorPostId:guid}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetByUser(
-            Guid authorId,
+            Guid authorPostId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
             CancellationToken ct = default)
@@ -98,7 +98,7 @@ namespace Krea.API.Controllers {
 
             var result = await _sender.Send(
                 new GetPostsByUserQuery(
-                    authorId,
+                    authorPostId,
                     page,
                     pageSize,
                     currentUserId),
@@ -355,8 +355,19 @@ namespace Krea.API.Controllers {
         [AllowAnonymous]
         public async Task<IActionResult> Explore(
             [FromQuery] ExploreQuery query,
-            CancellationToken cancellationToken) {
-            PagedResult<ExplorePostDto> result = await _sender.Send(query, cancellationToken);
+            CancellationToken cancellationToken)
+        {
+            Guid? currentUserId = TryGetCurrentUserId();
+
+            ExploreQuery queryWithUser = query with
+            {
+                CurrentUserId = currentUserId
+            };
+
+            PagedResult<ExplorePostDto> result = await _sender.Send(
+                queryWithUser,
+                cancellationToken);
+
             return Ok(result);
         }
         
@@ -523,6 +534,15 @@ namespace Krea.API.Controllers {
             }
 
             return userId;
+        }
+        
+        private Guid? TryGetCurrentUserId()
+        {
+            string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+            return Guid.TryParse(userIdClaim, out Guid userId)
+                ? userId
+                : null;
         }
     }
 }

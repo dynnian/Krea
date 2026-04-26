@@ -62,6 +62,7 @@ export default function UserNavbar() {
           <div className="flex items-center justify-between px-4 py-2">
             <Link to="/">
               <BrandLogoC ariaLabel="Logo" color="#F3F3F1" height={40} className="block" />
+
             </Link>
 
             <div className="flex items-center gap-4">

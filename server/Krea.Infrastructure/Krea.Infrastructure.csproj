@@ -18,12 +18,14 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Minio" Version="7.0.0"/>
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0"/>
-        <PackageReference Include="PdfPig" Version="0.1.14"/>
-        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12"/>
-        <PackageReference Include="TagLibSharp" Version="2.3.0"/>
-        <PackageReference Include="VersOne.Epub" Version="3.3.6"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+        <PackageReference Include="QuestPDF" Version="2026.2.4" />
+        <PackageReference Include="Stripe.net" Version="50.4.1" />
+        <PackageReference Include="Minio" Version="7.0.0" />
+        <PackageReference Include="PdfPig" Version="0.1.14" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+        <PackageReference Include="TagLibSharp" Version="2.3.0" />
+        <PackageReference Include="VersOne.Epub" Version="3.3.6" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="NLog" Version="6.1.0"/>

@@ -2,7 +2,8 @@
   "login": {
     "title": "Iniciar Sesión",
     "welcome": "¡Bienvenido de vuelta!",
-    "email_placeholder": "Entra tu Correo o Dominio",
+    "email_placeholder": "Ingresa tu correo",
+    "username_or_email_placeholder": "Usuario o correo",
     "password_placeholder": "Contraseña",
     "remember_me": "Recuérdame",
     "sign_in_button": "Iniciar Sesión",
@@ -15,6 +16,11 @@
     "welcome": "¡Regístrate!",
     "username": "Nombre de usuario",
     "display_name": "Nombre de cuenta",
+    "biography": "Biografía (opcional)",
+    "profile_picture": "Foto de perfil (opcional)",
+    "profile_picture_preview": "Vista previa de foto de perfil",
+    "banner_picture": "Foto de banner (opcional)",
+    "picture_upload_warning": "Tu cuenta se creó, pero no pudimos guardar una o más imágenes. Puedes subirlas luego desde configuración.",
     "phone": "Número de teléfono",
     "email": "Correo",
     "password": "Contraseña",
@@ -26,6 +32,7 @@
   },
   "errors": {
     "email_required": "El email es requerido",
+    "username_or_email_required": "El usuario o correo es requerido",
     "email_invalid": "Por favor ingresa un email válido",
     "password_required": "La contraseña es requerida",
     "password_min_length": "La contraseña debe tener al menos 6 caracteres",
@@ -43,11 +50,16 @@
     "field_required": "Este campo es requerido",
     "registration_failed": "Error al registrarse. Por favor, inténtalo de nuevo.",
     "username_required": "El nombre de usuario es requerido",
+    "username_empty": "El nombre de usuario no puede estar vacío",
     "phone_required": "El número de teléfono es requerido",
     "invalid_email": "Por favor, ingrese una dirección de email válida",
     "confirm_password_required": "Por favor, confirme su contraseña",
     "display_name_required": "El nombre de cuenta es requerido",
     "display_name_empty": "El nombre de cuenta no puede estar vacío",
+    "display_name_max_length": "El nombre de cuenta no puede superar los 32 caracteres",
+    "biography_max_length": "La biografía no puede superar los 256 caracteres",
+    "image_invalid_type": "Solo se permiten imágenes PNG, JPG, GIF y WebP",
+    "image_too_large": "La imagen debe pesar 5 MB o menos",
     "phone_invalid": "El número de teléfono solo puede contener dígitos, espacios, guiones y el signo más"
   },
   "confirm": {
@@ -143,7 +155,10 @@
     "loading": "Cargando...",
     "total": "Total",
     "items": "items",
-    "submit": "Enviar"
+    "submit": "Enviar",
+    "send": "Enviar",
+    "error": "Error"
+
   },
   "explore": {
     "tabs": {
@@ -163,14 +178,15 @@
       "song_artist": "Artista",
       "song_genres": "Jazz, Rock, etc...",
       "trending_genres": "Géneros en tendencia",
-      "trending_artists": "Artistas en tendencia"
+      "trending_artists": "Artistas en tendencia",
+      "no_audio": "Audio no disponible"
+
     },
     "literature": {
       "featured": "Destacado",
       "featured_title": "Título del libro",
       "featured_author": "Autor",
-      "synopsis": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis.",
-      "synopsis_label": "Sinopsis",
+      "synopsis": "Sinopsis",
       "read_now": "Leer ahora",
       "trending": "En tendencia",
       "book_title": "Título del libro",
@@ -178,11 +194,12 @@
       "recent": "Recientemente publicado",
       "recent_title": "Título de la obra",
       "recent_author": "Autor",
-      "recent_synopsis": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis.",
-      "chapters": "X Capítulos",
+      "chapters": "Capítulos",
       "read": "Leer",
+      "read_now": "Leer ahora",
       "trending_genres": "Géneros en tendencia",
-      "trending_authors": "Autores en tendencia"
+      "trending_authors": "Autores en tendencia",
+      "no_description": "Sin descripción"
     },
     "load_error": "Error al cargar el contenido de exploración"
   },
@@ -274,7 +291,30 @@
       "saving": "Guardando..."
     },
     "commission_button": "Comisión",
-    "edit_profile_button": "Editar perfil"
+    "edit_profile_button": "Editar perfil",
+     "load_error": "Error al cargar el perfil",
+    "login_to_follow": "Inicia sesión para seguir a este usuario",
+    "followed": "Ahora sigues a este usuario",
+    "unfollowed": "Has dejado de seguir a este usuario",
+    "follow_error": "Error al actualizar el seguimiento",
+    "follow": "Seguir",
+    "unfollow": "Dejar de seguir",
+    "edit_profile": "Editar perfil",
+    "no_portfolio": "Este usuario aún no tiene obras en su portafolio.",
+    "posts_error": "Error al cargar las publicaciones",
+    "follow_list_error": "Error al cargar la lista",
+    "message": "Mensaje",
+    "send_message_to": "Enviar mensaje a",
+    "dm_empty": "Escribe un mensaje antes de enviar",
+    "dm_sent": "Mensaje enviado",
+    "dm_error": "Error al enviar el mensaje",
+    "dm_placeholder": "Escribe tu mensaje aquí...",
+    "donate": "donar"
+  },
+  "portfolio":{
+    "images": "Imágenes",
+    "music": "Música",
+    "literature": "Literatura"
   },
   "bookmarks": {
     "title": "Guardados",

@@ -5,15 +5,11 @@ namespace Krea.Infrastructure.Services {
     using Domain.Entities;
     using Microsoft.EntityFrameworkCore;
 
-    public sealed class FeedQueryService : IFeedQueryService
-    {
+    public sealed class FeedQueryService : IFeedQueryService {
         private readonly AppDbContext _context;
 
-        public FeedQueryService(AppDbContext context)
-        {
-            _context = context;
-        }
-        
+        public FeedQueryService(AppDbContext context) => _context = context;
+
         public async Task<IReadOnlyList<PostFeedResponse>> GetRecentAsync(
             Guid? currentUserId,
             int page,
@@ -107,12 +103,11 @@ namespace Krea.Infrastructure.Services {
             Guid currentUserId,
             int page,
             int pageSize,
-            CancellationToken ct)
-        {
-            var followingIds = _context.Set<Follow>()
-                .Where(f => f.SourceId == currentUserId)
-                .Select(f => f.TargetId);
-            
+            CancellationToken ct) {
+            IQueryable<Guid> followingIds = _context.Set<Follow>()
+                                                    .Where(f => f.SourceId == currentUserId)
+                                                    .Select(f => f.TargetId);
+
             return await _context.Posts
                 .AsNoTracking() 
                 .Where(p => !p.IsDeleted &&
@@ -189,85 +184,84 @@ namespace Krea.Infrastructure.Services {
                 }) 
                 .ToListAsync(ct); 
         }
-        
+
         public async Task<IReadOnlyList<PostFeedResponse>> GetTrendingAsync(
-            Guid currentUserId,
+            Guid? currentUserId,
             int page,
             int pageSize,
-            CancellationToken ct)
-        {
-            var now = DateTime.UtcNow;
-            
+            CancellationToken ct) {
+            DateTime now = DateTime.UtcNow;
+
             int diff = (7 + (now.DayOfWeek - DayOfWeek.Monday)) % 7;
-            var startOfWeek = now.Date.AddDays(-diff);
-            
+            DateTime startOfWeek = now.Date.AddDays(-diff);
+
             return await _context.Posts
-                .AsNoTracking()
-                .Where(p => !p.IsDeleted)
-                .Select(p => new {
-                    Post = p,
-                    WeeklyLikes = p.Likes.Count(l => l.CreatedAt >= startOfWeek)
-                })
-                .OrderByDescending(x => x.WeeklyLikes)
-                .ThenByDescending(x => x.Post.UploadedAt)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(x => new PostFeedResponse
-                {
-                    Id = x.Post.Id,
-                    Title = x.Post.Title,
-                    Content = x.Post.Content!,
-                    AuthorId = x.Post.AuthorPostId,
-                    AuthorUsername = x.Post.AuthorPost.DisplayName,
-                    UploadedAt = x.Post.UploadedAt,
-                    
-                    MediaPreviewUrl = x.Post.RepostOfId == null 
-                        ? x.Post.Uploads.Select(u => u.Media.Path).FirstOrDefault() 
-                        : x.Post.RepostOf!.Uploads.Select(u => u.Media.Path).FirstOrDefault(),
-                    
-                    MediaMimeType = x.Post.RepostOfId == null 
-                        ? x.Post.Uploads.Select(u => u.Media.MimeType).FirstOrDefault() 
-                        : x.Post.RepostOf!.Uploads.Select(u => u.Media.MimeType).FirstOrDefault(),
-                    
-                    LikeCount = x.Post.Likes.Count(),
-                    
-                    IsLikedByCurrentUser = 
-                        x.Post.Likes.Any(l => l.UserId == currentUserId),
-                    
-                    IsRetweetedByCurrentUser = _context.Posts.Any(r => 
-                        !r.IsDeleted && 
-                        r.AuthorPostId == currentUserId && 
-                        r.RepostOfId == (x.Post.RepostOfId ?? x.Post.Id)),
-                    
-                    IsFavorite = x.Post.Favorites.Any(f => f.UserId == currentUserId),
-                    
-                    ReplyCount = _context.Posts.Count(r => r.RepliedToId == x.Post.Id),
-                    
-                    RepostCount = _context.Posts.Count(r => r.RepostOfId == (x.Post.RepostOfId ?? x.Post.Id)),
-                    
-                    RepostOfId = x.Post.RepostOfId,
-                    
-                    RepostOf = x.Post.RepostOf == null 
-                        ? null 
-                        : new RepostFeedReferenceDto { 
-                            Id = x.Post.RepostOf.Id, 
-                            Title = x.Post.RepostOf.Title, 
-                            Content = x.Post.RepostOf.Content!, 
-                            AuthorId = x.Post.RepostOf.AuthorPostId, 
-                            AuthorUsername = x.Post.RepostOf.AuthorPost.DisplayName, 
-                            UploadedAt = x.Post.RepostOf.UploadedAt, 
-                            MediaPreviewUrl = x.Post.RepostOf.Uploads 
-                                .Select(u => u.Media.Path) 
-                                .FirstOrDefault(), 
-                            MediaMimeType = x.Post.RepostOf.Uploads 
-                                .Select(u => u.Media.MimeType) 
-                                .FirstOrDefault(), 
-                            LikeCount = x.Post.RepostOf.Likes.Count(), 
-                            ReplyCount = _context.Posts.Count(r => r.RepliedToId == x.Post.RepostOf.Id), 
-                            RepostCount = _context.Posts.Count(r => r.RepostOfId == x.Post.RepostOf.Id) 
-                        } 
-                }) 
-                .ToListAsync(ct);
+                                 .AsNoTracking()
+                                 .Where(p => !p.IsDeleted)
+                                 .Select(p => new {
+                                     Post = p, WeeklyLikes = p.Likes.Count(l => l.CreatedAt >= startOfWeek)
+                                 })
+                                 .OrderByDescending(x => x.WeeklyLikes)
+                                 .ThenByDescending(x => x.Post.UploadedAt)
+                                 .Skip((page - 1) * pageSize)
+                                 .Take(pageSize)
+                                 .Select(x => new PostFeedResponse {
+                                     Id = x.Post.Id,
+                                     Title = x.Post.Title,
+                                     Content = x.Post.Content!,
+                                     AuthorId = x.Post.AuthorPostId,
+                                     AuthorUsername = x.Post.AuthorPost.DisplayName,
+                                     AuthorProfilePictureUrl = _context.Media
+                                         .Where(m => m.Id == x.Post.AuthorPost.ProfilePictureId)
+                                         .Select(m => m.Path)
+                                         .FirstOrDefault(),
+                                     UploadedAt = x.Post.UploadedAt,
+                                     MediaPreviewUrl = x.Post.RepostOfId == null
+                                         ? x.Post.Uploads.Select(u => u.Media.Path).FirstOrDefault()
+                                         : x.Post.RepostOf!.Uploads.Select(u => u.Media.Path).FirstOrDefault(),
+                                     MediaMimeType = x.Post.RepostOfId == null
+                                         ? x.Post.Uploads.Select(u => u.Media.MimeType).FirstOrDefault()
+                                         : x.Post.RepostOf!.Uploads.Select(u => u.Media.MimeType).FirstOrDefault(),
+                                     LikeCount = x.Post.Likes.Count(),
+                                     IsLikedByCurrentUser = currentUserId.HasValue &&
+                                                            x.Post.Likes.Any(l => l.UserId == currentUserId.Value),
+                                     IsRetweetedByCurrentUser = currentUserId.HasValue &&
+                                                                _context.Posts.Any(r =>
+                                                                    !r.IsDeleted &&
+                                                                    r.AuthorPostId == currentUserId.Value &&
+                                                                    r.RepostOfId == (x.Post.RepostOfId ?? x.Post.Id)),
+                                     IsFavorite = currentUserId.HasValue &&
+                                                  x.Post.Favorites.Any(f => f.UserId == currentUserId.Value),
+                                     ReplyCount = _context.Posts.Count(r => r.RepliedToId == x.Post.Id),
+                                     RepostCount =
+                                         _context.Posts.Count(r => r.RepostOfId == (x.Post.RepostOfId ?? x.Post.Id)),
+                                     RepostOfId = x.Post.RepostOfId,
+                                     RepostOf = x.Post.RepostOf == null
+                                         ? null
+                                         : new RepostFeedReferenceDto {
+                                             Id = x.Post.RepostOf.Id,
+                                             Title = x.Post.RepostOf.Title,
+                                             Content = x.Post.RepostOf.Content!,
+                                             AuthorId = x.Post.RepostOf.AuthorPostId,
+                                             AuthorUsername = x.Post.RepostOf.AuthorPost.DisplayName,
+                                             AuthorProfilePictureUrl = _context.Media
+                                                 .Where(m => m.Id == x.Post.RepostOf.AuthorPost.ProfilePictureId)
+                                                 .Select(m => m.Path)
+                                                 .FirstOrDefault(),
+                                             UploadedAt = x.Post.RepostOf.UploadedAt,
+                                             MediaPreviewUrl = x.Post.RepostOf.Uploads
+                                                                .Select(u => u.Media.Path)
+                                                                .FirstOrDefault(),
+                                             MediaMimeType = x.Post.RepostOf.Uploads
+                                                              .Select(u => u.Media.MimeType)
+                                                              .FirstOrDefault(),
+                                             LikeCount = x.Post.RepostOf.Likes.Count(),
+                                             ReplyCount =
+                                                 _context.Posts.Count(r => r.RepliedToId == x.Post.RepostOf.Id),
+                                             RepostCount = _context.Posts.Count(r => r.RepostOfId == x.Post.RepostOf.Id)
+                                         }
+                                 })
+                                 .ToListAsync(ct);
         }
     }
 }

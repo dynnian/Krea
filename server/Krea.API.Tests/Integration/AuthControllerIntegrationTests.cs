@@ -13,9 +13,10 @@ namespace Krea.API.Tests.Integration {
     public sealed class AuthControllerIntegrationTests {
         private readonly PostgresContainerFixture _postgres;
 
-        public AuthControllerIntegrationTests(PostgresContainerFixture postgres) {
-            _postgres = postgres;
-        }
+public sealed class AuthControllerIntegrationTests {
+    [Fact]
+    public async Task Register_PersistsIdentityAndDomainUser() {
+        await using var host = await IntegrationTestHost.CreateAsync(seed: TestDataSeeder.SeedRolesOnlyAsync);
 
         [Fact]
         public async Task Register_PersistsIdentityAndDomainUser() {

@@ -11,10 +11,9 @@ import { type AuthUser } from "../contexts/AuthContext.tsx";
 import { PostType } from "../types/common.ts";
 import type { FeedItem } from "../types/feed.ts";
 const API_BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:5101/api").replace(
-    /\/api\/?$/,
-    ""
-  );
+  (import.meta.env.VITE_API_BASE_URL ||
+    import.meta.env.VITE_API_URL ||
+    "http://127.0.0.1:5101/api").replace(/\/api\/?$/, "");
 
 const normalizeAssetUrl = (url?: string | null) => {
   if (!url) return undefined;
@@ -153,10 +152,17 @@ export function feedPostToPost(feedPost: FeedPost): Post {
       id: feedPost.authorId,
       name: feedPost.authorUsername,
       handle: feedPost.authorUsername,
-      avatar: undefined,
+      avatar: normalizeAssetUrl(
+        (feedPost as any).authorProfilePictureUrl ??
+          (feedPost as any).AuthorProfilePictureUrl ??
+          (feedPost as any).profilePictureUrl ??
+          (feedPost as any).ProfilePictureUrl ??
+          (feedPost as any).avatarUrl ??
+          (feedPost as any).AvatarUrl
+      ),
       sub: feedPost.authorId,
       email: "",
-    },
+    } as any,
     media: media,
     likesCount: feedPost.likeCount,
     favoritesCount: feedPost.repostCount,

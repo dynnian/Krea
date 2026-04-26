@@ -8,8 +8,15 @@ import { Heart, MessageCircle, Repeat2, Share2, MoreHorizontal, User } from 'luc
 import { postsApi } from '../../services/postsService.ts';
 import axiosClient from '../../lib/axios.ts';
 import type { ReplyDto } from '../../services/comments.ts';
+import type { UserProfileResponse } from '../../types/api';
 
 const { TextArea } = Input;
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5101';
+
+const toAbsoluteUrl = (url?: string | null): string | undefined => {
+  if (!url) return undefined;
+  return url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+};
 
 interface CommentSectionProps {
   postId: string;
@@ -41,34 +48,45 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
+const [composerDisplayName, setComposerDisplayName] = useState('');
+const [composerHandle, setComposerHandle] = useState('');
+const [composerAvatarUrl, setComposerAvatarUrl] = useState<string | undefined>(undefined);
 
-  useEffect(() => {
-    if (!user) {
-      setProfileAvatar(null);
-      return;
+useEffect(() => {
+  if (!user) {
+    setComposerDisplayName('');
+    setComposerHandle('');
+    setComposerAvatarUrl(undefined);
+    return;
+  }
+
+  const fallbackName = user.name || user.handle || user.email.split('@')[0];
+  const fallbackHandle = user.handle || user.email.split('@')[0];
+
+  setComposerDisplayName(fallbackName);
+  setComposerHandle(fallbackHandle);
+  setComposerAvatarUrl(toAbsoluteUrl(getCurrentUserAvatar(user)));
+
+  const fetchComposerProfile = async () => {
+    try {
+      const { data } = await axiosClient.get<UserProfileResponse>('/users/me/profile');
+
+      setComposerDisplayName(data.displayName || fallbackName);
+      setComposerHandle(data.username || fallbackHandle);
+      setComposerAvatarUrl(
+        toAbsoluteUrl(
+          data.profilePictureUrl ??
+            (data as any).ProfilePictureUrl ??
+            getCurrentUserAvatar(user)
+        )
+      );
+    } catch (error) {
+      console.error("Error loading current user profile for comments:", error);
     }
+  };
 
-    const loadCurrentUserProfile = async () => {
-      try {
-        const res = await axiosClient.get("/users/me/profile");
-        const apiProfile = res.data;
-
-        setProfileAvatar(
-          apiProfile.profilePictureUrl ??
-            apiProfile.ProfilePictureUrl ??
-            null
-        );
-      } catch (error) {
-        console.error("Error loading current user avatar for comments:", error);
-        setProfileAvatar(null);
-      }
-    };
-
-    void loadCurrentUserProfile();
-  }, [user]);
-
-  const currentUserAvatar = getCurrentUserAvatar(user) ?? profileAvatar;
+  void fetchComposerProfile();
+}, [user]);
 
   useEffect(() => {
     const fetchReplies = async () => {
@@ -99,10 +117,10 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
     const optimisticComment: ReplyDto = {
       id: `temp-${Date.now()}`,
       authorId: user.id,
-      authorName: user.name || user.handle || user.email.split('@')[0],
+      authorName: composerDisplayName || user.name || user.handle || user.email.split('@')[0],
       content: newComment,
       createdAt: new Date().toISOString(),
-      authorAvatar: currentUserAvatar,
+      authorAvatar: composerAvatarUrl,
     } as ReplyDto;
     setComments(prev => [optimisticComment, ...prev]);
     const originalContent = newComment;
@@ -132,12 +150,22 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
     <div>
       <div className="flex gap-3 mb-6 bg-[#E8F1FC] px-[22px] py-[15px] border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
         <Avatar
-          src={currentUserAvatar ?? undefined}
-          icon={!currentUserAvatar && <User />}
+          src={composerAvatarUrl}
+          icon={!composerAvatarUrl && <User />}
           size={40}
           className="bg-white border border-gray-800"
         />
         <div className="flex-1">
+          {user && (
+            <div className="mb-2">
+              <div className="font-medium text-[#1B1C1E] leading-tight">
+                {composerDisplayName || user.name || user.handle || user.email.split('@')[0]}
+              </div>
+              <div className="text-gray-500 text-sm leading-tight">
+                @{composerHandle || user.handle || user.email.split('@')[0]}
+              </div>
+            </div>
+          )}
           <TextArea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}

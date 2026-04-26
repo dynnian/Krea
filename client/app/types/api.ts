@@ -140,6 +140,7 @@ export interface FeedPost {
   content: string;
   authorId: string;
   authorUsername: string;
+  authorProfilePictureUrl?: string | null;
   uploadedAt: string; // fecha ISO
   mediaPreviewUrl: string | null;
   mediaMimeType: string | null;
@@ -164,6 +165,7 @@ export interface PostDto {
   id: string;
   authorPostId: string;
   authorName?: string;
+  authorProfilePictureUrl?: string | null;
   author?: {
     id: string;
     username: string;
@@ -204,4 +206,39 @@ export interface PublicUserProfile {
   biography: string | null;
   languageCode: string;
   timeZoneId: string;
+}
+
+export interface ExplorePostDto {
+  id: string;
+  title: string;
+  content?: string; // para textos literarios o descripción
+  uploadedAt: string;
+  userId: string;
+  authorUsername: string;
+  category: "Image" | "Music" | "Text" | "Plain";
+  genres: string[];
+  tags: string[];
+  previewUrl: string | null;   // miniatura (imagen) o URL del audio
+  coverUrl: string | null;     // portada para libros/álbumes
+  likesCount: number;
+  isLikedByCurrentUser: boolean;
+  isFavorite: boolean;
+  isFollowingAuthor: boolean;
+  replyCount?: number;
+}
+export interface PublicCollectionDto {
+  id: string;
+  title: string;
+  description: string | null;
+  itemCount: number;
+  type: 0 | 1 | 2; // 0=images, 1=music, 2=literature
+  ownerId: string;
+  ownerName: string;
+  coverUrl: string | null;
+  createdAt: string;
+}
+
+export interface TrendingResponse {
+  genres: string[];
+  tags: string[];
 }

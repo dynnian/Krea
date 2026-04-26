@@ -2,7 +2,8 @@
   "login": {
     "title": "Sign In",
     "welcome": "Welcome back!",
-    "email_placeholder": "Enter your Email or Domain",
+    "email_placeholder": "Enter your email",
+    "username_or_email_placeholder": "Username or email",
     "password_placeholder": "Password",
     "remember_me": "Remember me",
     "sign_in_button": "Sign In",
@@ -15,6 +16,11 @@
     "welcome": "Register!",
     "username": "Username",
     "display_name": "Account name",
+    "biography": "Biography (optional)",
+    "profile_picture": "Profile picture (optional)",
+    "profile_picture_preview": "Profile picture preview",
+    "banner_picture": "Banner picture (optional)",
+    "picture_upload_warning": "Your account was created, but we could not save one or more images. You can upload them later from settings.",
     "phone": "Phone number",
     "email": "Email",
     "password": "Password",
@@ -26,6 +32,7 @@
   },
   "errors": {
     "email_required": "Email is required",
+    "username_or_email_required": "Username or email is required",
     "email_invalid": "Please enter a valid email",
     "password_required": "Password is required",
     "password_min_length": "Password must be at least 6 characters",
@@ -43,11 +50,16 @@
     "field_required": "This field is required",
     "registration_failed": "Registration failed. Please try again.",
     "username_required": "Username is required",
+    "username_empty": "Username cannot be empty",
     "phone_required": "Phone number is required",
     "invalid_email": "Please enter a valid email address",
     "confirm_password_required": "Please confirm your password",
     "display_name_required": "Account name is required",
     "display_name_empty": "Account name cannot be empty",
+    "display_name_max_length": "Account name cannot exceed 32 characters",
+    "biography_max_length": "Biography cannot exceed 256 characters",
+    "image_invalid_type": "Only PNG, JPG, GIF, and WebP images are allowed",
+    "image_too_large": "Image size must be 5 MB or less",
     "phone_invalid": "Phone number can only contain digits, spaces, dashes, and the plus sign"
   },
   "confirm": {
@@ -143,7 +155,9 @@
     "loading": "Loading...",
     "total": "Total",
     "items": "items",
-    "submit": "Submit"
+    "submit": "Submit",
+    "send": "Send",
+    "error": "Error"
   },
   "explore": {
     "tabs": {
@@ -163,14 +177,14 @@
       "song_artist": "Artist",
       "song_genres": "Jazz, Rock, etc...",
       "trending_genres": "Trending genres",
-      "trending_artists": "Trending artists"
+      "trending_artists": "Trending artists",
+      "no_audio": "Audio Unavailable"
     },
     "literature": {
       "featured": "Featured",
       "featured_title": "Book title",
       "featured_author": "Author",
-      "synopsis": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis.",
-      "synopsis_label": "Synopsis",
+      "synopsis": "Synopsis",
       "read_now": "Read now",
       "trending": "Trending",
       "book_title": "Book title",
@@ -178,9 +192,9 @@
       "recent": "Recently published",
       "recent_title": "Work title",
       "recent_author": "Author",
-      "recent_synopsis": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis.",
-      "chapters": "X Chapters",
+      "chapters": "Chapters",
       "read": "Read",
+      "read_now": "Read Now",
       "trending_genres": "Trending genres",
       "trending_authors": "Trending authors"
     },
@@ -274,7 +288,30 @@
       "saving": "Saving..."
     },
     "commission_button": "Commission",
-    "edit_profile_button": "Edit profile"
+    "edit_profile_button": "Edit profile",
+    "load_error": "Error loading  posts",
+    "login_to_follow": "Please log in to follow this user",
+    "followed": "You are now following this user",
+    "unfollowed": "You have unfollowed this user",
+    "follow_error": "Error updating follow status",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "edit_profile": "Edit profile",
+    "no_portfolio": "This user has no works in their portfolio yet.",
+    "posts_error": "Error loading posts",
+    "follow_list_error": "Error loading list",
+    "message": "Message",
+    "send_message_to": "Send message to",
+    "dm_empty": "Please write a message before sending",
+    "dm_sent": "Message sent",
+    "dm_error": "Error sending message",
+    "dm_placeholder": "Write your message here...",
+    "donate": "donate"
+  },
+  "portfolio":{
+    "images": "Images",
+    "music": "Music",
+    "literature": "Literature"
   },
   "bookmarks": {
     "title": "Saved",

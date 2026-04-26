@@ -16,6 +16,7 @@ namespace Krea.Infrastructure {
     using Application.Abstractions.FileStorage;
     using Application.Abstractions.Filter;
     using Application.Abstractions.Identity;
+    using Application.Abstractions.Payments;
     using Configuration;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
@@ -73,6 +74,10 @@ namespace Krea.Infrastructure {
                     .AddRoles<IdentityRole<Guid>>()
                     .AddEntityFrameworkStores<AppDbContext>()
                     .AddDefaultTokenProviders();
+
+            // Pagos
+            services.AddScoped<IPaymentQueryService, PaymentQueryService>();
+            services.AddScoped<IPaymentReadService, PaymentReadService>();
 
             // Repositorios
             services.AddScoped<IUserRepository, UserRepository>();
