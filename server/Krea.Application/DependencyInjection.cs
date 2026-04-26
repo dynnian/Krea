@@ -86,6 +86,7 @@ namespace Krea.Application {
     using Features.Posts.ReplyPost;
     using Features.Posts.ReplyPost.GetReplies;
     using Features.Posts.Repost;
+    using Features.Posts.SearchPosts;
     using Features.Posts.UserReports;
     using PostsPagedResult = Features.Posts.Explore.PagedResult<Features.Posts.Dto.ExplorePostDto>;
     using Features.User.GetReportsByUser;
@@ -200,6 +201,7 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<RemovePostFromFavoritesCommand, bool>, RemovePostFromFavoritesHandler>();
             services .AddScoped<IRequestHandler<GetUserFavoritesQuery, FavoritePostsResponse>, GetUserFavoritesHandler>();
             services.AddScoped<IRequestHandler<TogglePostFavoriteCommand, bool>, TogglePostFavoriteHandler>();
+            services.AddScoped<IRequestHandler<SearchPostsQuery, PaginatedList<PostSearchItemDto>>, SearchPostsHandler>();
 
             // Reports
             services

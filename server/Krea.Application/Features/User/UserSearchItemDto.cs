@@ -4,5 +4,6 @@ namespace Krea.Application.Features.User {
         string Username,
         string DisplayName,
         string? Biography,
-        string? ProfilePictureUrl);
+        string? ProfilePictureUrl,
+        bool IsFollowing);
 }

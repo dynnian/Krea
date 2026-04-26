@@ -8,12 +8,15 @@ namespace Krea.Application.Features.User.SearchUser {
         : IRequestHandler<SearchUsersQuery, PaginatedList<UserSearchItemDto>> {
         private readonly IUserRepository _userRepository;
         private readonly IIdentityService _identityService;
+        private readonly IFollowRepository _followRepository;
 
         public SearchUsersHandler(
             IUserRepository userRepository,
-            IIdentityService identityService) {
+            IIdentityService identityService,
+            IFollowRepository followRepository) {
             _userRepository = userRepository;
             _identityService = identityService;
+            _followRepository = followRepository;
         }
 
         public async Task<PaginatedList<UserSearchItemDto>> Handle(
@@ -39,9 +42,9 @@ namespace Krea.Application.Features.User.SearchUser {
                 await _userRepository.SearchByDisplayNameAsync(query, cancellationToken);
 
             HashSet<Guid> allIds = identityMatches
-                                   .Select(x => x.Id)
-                                   .Concat(displayNameMatches.Select(x => x.Id))
-                                   .ToHashSet();
+                .Select(x => x.Id)
+                .Concat(displayNameMatches.Select(x => x.Id))
+                .ToHashSet();
 
             if (request.CurrentUserId.HasValue)
                 allIds.Remove(request.CurrentUserId.Value);
@@ -61,61 +64,70 @@ namespace Krea.Application.Features.User.SearchUser {
             IReadOnlyDictionary<Guid, UserIdentity> identities =
                 await _identityService.GetByIdsAsync(allIds.ToArray());
 
-            IReadOnlyList<UserSearchItemDto> orderedResults = users
-                                                              .Where(u => !u.IsBanned && !u.IsDisabled)
-                                                              .Where(u => identities.ContainsKey(u.Id))
-                                                              .Select(u => {
-                                                                  UserIdentity identity = identities[u.Id];
+            var orderedUsers = users
+                .Where(u => !u.IsBanned && !u.IsDisabled)
+                .Where(u => identities.ContainsKey(u.Id))
+                .Select(u => {
+                    UserIdentity identity = identities[u.Id];
 
-                                                                  return new {
-                                                                      User = u,
-                                                                      Identity = identity,
-                                                                      Dto = new UserSearchItemDto(
-                                                                          u.Id,
-                                                                          identity.UserName,
-                                                                          u.DisplayName,
-                                                                          u.Biography,
-                                                                          u.ProfilePicture?.Path)
-                                                                  };
-                                                              })
-                                                              .OrderBy(x => string.Equals(
-                                                                  x.Identity.UserName,
-                                                                  query,
-                                                                  StringComparison.OrdinalIgnoreCase)
-                                                                  ? 0
-                                                                  : 1)
-                                                              .ThenBy(x => x.Identity.UserName.StartsWith(
-                                                                  query,
-                                                                  StringComparison.OrdinalIgnoreCase)
-                                                                  ? 0
-                                                                  : 1)
-                                                              .ThenBy(x => string.Equals(
-                                                                  x.User.DisplayName,
-                                                                  query,
-                                                                  StringComparison.OrdinalIgnoreCase)
-                                                                  ? 0
-                                                                  : 1)
-                                                              .ThenBy(x => x.User.DisplayName.StartsWith(
-                                                                  query,
-                                                                  StringComparison.OrdinalIgnoreCase)
-                                                                  ? 0
-                                                                  : 1)
-                                                              .ThenBy(x => x.User.DisplayName.Contains(
-                                                                  query,
-                                                                  StringComparison.OrdinalIgnoreCase)
-                                                                  ? 0
-                                                                  : 1)
-                                                              .ThenBy(x => x.User.DisplayName)
-                                                              .ThenBy(x => x.Identity.UserName)
-                                                              .Select(x => x.Dto)
-                                                              .ToList();
+                    return new { User = u, Identity = identity };
+                })
+                .OrderBy(x => string.Equals(
+                    x.Identity.UserName,
+                    query,
+                    StringComparison.OrdinalIgnoreCase)
+                    ? 0
+                    : 1)
+                .ThenBy(x => x.Identity.UserName.StartsWith(
+                    query,
+                    StringComparison.OrdinalIgnoreCase)
+                    ? 0
+                    : 1)
+                .ThenBy(x => string.Equals(
+                    x.User.DisplayName,
+                    query,
+                    StringComparison.OrdinalIgnoreCase)
+                    ? 0
+                    : 1)
+                .ThenBy(x => x.User.DisplayName.StartsWith(
+                    query,
+                    StringComparison.OrdinalIgnoreCase)
+                    ? 0
+                    : 1)
+                .ThenBy(x => x.User.DisplayName.Contains(
+                    query,
+                    StringComparison.OrdinalIgnoreCase)
+                    ? 0
+                    : 1)
+                .ThenBy(x => x.User.DisplayName)
+                .ThenBy(x => x.Identity.UserName)
+                .ToList();
 
-            int totalCount = orderedResults.Count;
+            int totalCount = orderedUsers.Count;
 
-            IReadOnlyList<UserSearchItemDto> pagedItems = orderedResults
-                                                          .Skip((page - 1) * pageSize)
-                                                          .Take(pageSize)
-                                                          .ToList();
+            var pagedUsers = orderedUsers
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            HashSet<Guid> followedIds = new();
+
+            if (request.CurrentUserId.HasValue && pagedUsers.Count > 0) {
+                followedIds = await _followRepository.GetFollowedTargetIdsAsync(
+                    request.CurrentUserId.Value,
+                    pagedUsers.Select(x => x.User.Id).ToArray(),
+                    cancellationToken);
+            }
+
+            IReadOnlyList<UserSearchItemDto> pagedItems = pagedUsers
+                .Select(x => new UserSearchItemDto(
+                    x.User.Id,
+                    x.Identity.UserName,
+                    x.User.DisplayName,
+                    x.User.Biography,
+                    x.User.ProfilePicture?.Path,
+                    followedIds.Contains(x.User.Id)))
+                .ToList();
 
             return PaginatedList<UserSearchItemDto>.FromItems(
                 pagedItems,

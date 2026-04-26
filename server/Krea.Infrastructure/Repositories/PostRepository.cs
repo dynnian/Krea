@@ -4,6 +4,8 @@ using Krea.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Krea.Infrastructure.Repositories {
+    using Domain.Abstractions;
+
     public class PostRepository : IPostRepository {
         private readonly AppDbContext _context;
 
@@ -167,6 +169,58 @@ namespace Krea.Infrastructure.Repositories {
                     repostTargetIds.Contains(p.RepostOfId.Value))
                 .Select(p => p.RepostOfId!.Value)
                 .ToHashSetAsync(ct);
+        }
+        
+        public async Task<PaginatedList<Post>> SearchAsync(
+            string query,
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return PaginatedList<Post>.FromItems(
+                    Array.Empty<Post>(),
+                    0,
+                    page <= 0 ? 1 : page,
+                    pageSize <= 0 ? 20 : pageSize);
+            }
+
+            query = query.Trim();
+            page = page <= 0 ? 1 : page;
+            pageSize = pageSize <= 0 ? 20 : pageSize;
+
+            string exactPattern = query;
+            string startsWithPattern = $"{query}%";
+            string containsPattern = $"%{query}%";
+
+            IQueryable<Post> postsQuery = _context.Posts
+                .AsNoTracking()
+                .Include(p => p.AuthorPost)
+                .ThenInclude(u => u.ProfilePicture)
+                .Include(p => p.Likes)
+                .Include(p => p.Uploads)
+                .ThenInclude(u => u.Media)
+                .Include(p => p.Uploads)
+                .ThenInclude(u => u.CoverMedia)
+                .Where(p => !p.IsDeleted)
+                .Where(p => p.RepliedToId == null)
+                .Where(p => p.RepostOfId == null)
+                .Where(p =>
+                    (p.Title != null && EF.Functions.ILike(p.Title, containsPattern)) ||
+                    (p.Content != null && EF.Functions.ILike(p.Content, containsPattern)));
+
+            postsQuery = postsQuery
+                .OrderBy(p => p.Title != null && EF.Functions.ILike(p.Title, exactPattern) ? 0 : 1)
+                .ThenBy(p => p.Title != null && EF.Functions.ILike(p.Title, startsWithPattern) ? 0 : 1)
+                .ThenBy(p => p.Content != null && EF.Functions.ILike(p.Content, startsWithPattern) ? 0 : 1)
+                .ThenByDescending(p => p.UploadedAt);
+
+            return await PaginatedList<Post>.CreateAsync(
+                postsQuery,
+                page,
+                pageSize,
+                cancellationToken);
         }
     }
 }
