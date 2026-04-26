@@ -155,8 +155,10 @@ export interface MediaDto {
   fileName: string;
   mimeType: string;
   url: string;
-  isWorkMedia: boolean;
-  // otros campos opcionales si los hubiera
+  isWorkMedia?: boolean;
+  coverMediaId?: string | null;
+  coverUrl?: string | null;
+  coverMimeType?: string | null;
 }
 
 export interface PostDto {

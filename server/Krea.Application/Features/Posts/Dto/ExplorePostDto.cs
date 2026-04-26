@@ -7,6 +7,8 @@ namespace Krea.Application.Features.Posts.Dto {
 
         public Guid UserId { get; init; }
         public string AuthorUsername { get; init; } = string.Empty;
+        
+        public string Category { get; init; } = default!; // Music, Text, Image
 
         public string Category { get; init; } = default!;
 

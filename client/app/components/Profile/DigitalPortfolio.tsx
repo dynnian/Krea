@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Dropdown, Modal, message } from "antd";
 import type { MenuProps } from "antd";
+import { useNavigate, useLocation } from "react-router";
 import { ChevronLeft, MoreHorizontal } from "lucide-react";
 import type { MockImageCollection } from "../../data/mockImageCollections.ts";
 import {
@@ -71,7 +72,6 @@ function PortfolioGeneralCard({ items, onOpen,}: {
   const mainImage = previewImages[0];
   const rightTopImage = previewImages[1];
   const rightBottomImage = previewImages[2];
-  
 return (
   <div className="w-[320px] text-left bg-transparent">
       <div className="w-full">
@@ -284,7 +284,13 @@ function PortfolioViewHeader({
   );
 }
 
-function DigitalPortfolioGrid({ items }: { items: DigitalArtwork[] }) {
+function DigitalPortfolioGrid({
+  items,
+  onOpenImage,
+}: {
+  items: DigitalArtwork[];
+  onOpenImage: (postId: string) => void;
+}) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-[1px] px-0 pb-[1px]">
       {items.map((item) => (
@@ -296,6 +302,9 @@ function DigitalPortfolioGrid({ items }: { items: DigitalArtwork[] }) {
             src={item.imageUrl}
             alt={item.title}
             className="w-full h-full object-cover cursor-pointer hover:scale-105 transition"
+           onClick={() => {
+            onOpenImage(item.id);
+          }}
           />
         </div>
       ))}
@@ -356,6 +365,8 @@ const [collections, setCollections] = useState<ImageCollectionCardData[]>([]);
 const [collectionsLoading, setCollectionsLoading] = useState(false);
 const [collectionDetailLoading, setCollectionDetailLoading] = useState(false);
 
+const navigate = useNavigate();
+const location = useLocation();
 
 useEffect(() => {
   const loadCollections = async () => {
@@ -371,11 +382,11 @@ useEffect(() => {
 
       const baseCollections = imageCollectionSummaries.map(mapUserCollectionToCardData);
 
+
       const collectionsWithPreview = await Promise.all(
         baseCollections.map(async (col) => {
           try {
             const detail = await collectionsApi.getCollectionById(col.id);
-
             const previewPosts = detail.posts
               .map((post) => {
                 const matchingItem = items.find((item) => item.id === post.id);
@@ -433,7 +444,6 @@ if (collectionDetailLoading) {
 }
 
   const handleEditCollection = (collection: MockImageCollection) => {
-    console.log("DigitalPortfolio handleEditCollection", collection);
 
     const moveTargets = collections
       .filter((target) => target.id !== collection.id)
@@ -475,38 +485,59 @@ if (collectionDetailLoading) {
     }
   };
     
-
- if (showGeneralPortfolio) {
+if (showGeneralPortfolio) {
   return (
-    <div className="w-full -mt-[60px]">
-      <PortfolioViewHeader
-        title="Portafolio General"
-        onBack={() => setShowGeneralPortfolio(false)}
-      />
-      <DigitalPortfolioGrid items={items} />
-    </div>
+    <>
+      <div className="w-full md:-mt-[60px]">
+        <PortfolioViewHeader
+          title="Portafolio General"
+          onBack={() => setShowGeneralPortfolio(false)}
+        />
+        <DigitalPortfolioGrid
+          items={items}
+          onOpenImage={(postId) => {
+            navigate(`?image=${postId}`);
+          }}
+        />
+      </div>
+
+    </>
   );
 }
 
 if (activeCollection) {
   return (
-    <div className="w-full -mt-[60px]">
-      <PortfolioViewHeader
-        title={activeCollection.title}
-        onBack={() => setActiveCollection(null)}
-      />
-      <DigitalPortfolioGrid
-        items={mapCollectionPostsToDigitalArtwork(activeCollection)}
-      />
-    </div>
+    <>
+      <div className="w-full md:-mt-[60px]">
+        <PortfolioViewHeader
+          title={activeCollection.title}
+          onBack={() => setActiveCollection(null)}
+        />
+        <DigitalPortfolioGrid
+          items={mapCollectionPostsToDigitalArtwork(activeCollection)}
+          onOpenImage={(postId) => {
+            navigate(`?image=${postId}`);
+          }}
+        />
+      </div>
+
+    </>
   );
 }
 
   if (collections.length === 0) {
-    return <DigitalPortfolioGrid items={items} />;
+  return <>
+    <DigitalPortfolioGrid
+      items={items}
+      onOpenImage={(postId) => {
+        navigate(`?image=${postId}`);
+      }}
+    />
+</>
   }
 
-  return (
+return (
+  <>
     <div className="w-full px-[20px] md:px-[241px] pb-[30px]">
       <div className="grid justify-center gap-x-[35px] gap-y-[20px] [grid-template-columns:repeat(auto-fit,320px)]">
         <PortfolioGeneralCard
@@ -526,5 +557,7 @@ if (activeCollection) {
         ))}
       </div>
     </div>
-  );
+
+  </>
+);
 }

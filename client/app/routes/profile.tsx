@@ -49,10 +49,28 @@ async function fetchMyProfileFromApi() {
   return res.data;
 }
 
+type UserPostsResponse =
+  | any[]
+  | { items?: any[]; posts?: any[] };
+
 async function fetchPostsByAuthorFromApi(authorId: string) {
   const res = await postsApi.getUserPosts(authorId, 1, 100);
-  return res.data;
+  const data: any = res.data;
+
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.items)) return data.items;
+  if (Array.isArray(data?.posts)) return data.posts;
+
+  return [];
 }
+
+type EditableCollectionItem = {
+  id: string;
+  title: string;
+  imageUrl?: string | null;
+  documentUrl?: string | null;
+  mimeType?: string | null;
+};
 
 // ---------- Componente principal Profile ----------
 const Profile: React.FC = () => {
@@ -91,7 +109,7 @@ const [portfolioModalType, setPortfolioModalType] = useState<UploadMediaType>(Po
 const [isCreateCollectionModalOpen, setIsCreateCollectionModalOpen] = useState(false);
 const [editingImageCollection, setEditingImageCollection] = useState<MockImageCollection | null>(null);
 const [editingImageMoveTargets, setEditingImageMoveTargets] = useState<
-  { id: string; title: string; coverUrl?: string }[]
+  { id: string; title: string; coverUrl?: string | null }[]
 >([]);
 const [editingMusicCollection, setEditingMusicCollection] = useState<MockImageCollection | null>(null);
 
@@ -227,7 +245,7 @@ const handleGoToSaved = () => {
           setWriterCollections([]);
         }
 
-        //  Construir profileData SIN MOCK
+
         const profileData: ProfileData = {
           user: {
             id: apiProfile.id,
@@ -433,6 +451,8 @@ const collectionModalItemsByType = {
 };
 
 
+
+
 const getEditingCollectionConfig = () => {
   if (editingImageCollection) {
     return {
@@ -450,14 +470,14 @@ const getEditingCollectionConfig = () => {
         coverFile,
       }: {
         updatedCollection: MockImageCollection;
-        stagedMoves: Record<string, { id: string; title: string; imageUrl: string }[]>;
+        stagedMoves: Record<string, EditableCollectionItem[]>;
         coverFile?: File | null;
       }) => {
         try {
           await saveEditedCollectionChanges({
             originalCollection: editingImageCollection,
             updatedCollection,
-            stagedMoves,
+            stagedMoves: stagedMoves as any,
             entityLabel: "la colección",
           });
 
@@ -485,31 +505,33 @@ const getEditingCollectionConfig = () => {
       allItems: writerWorks.map((work) => ({
         id: work.postId,
         title: work.title,
-        imageUrl: work.coverUrl,
+        imageUrl: work.coverUrl ?? undefined,
+        documentUrl: work.documentUrl ?? undefined,
+        mimeType: work.mimeType ?? undefined,
       })),
       moveTargets: writerCollections
         .filter((collection) => collection.id !== editingWriterCollection.id)
         .map((collection) => ({
           id: collection.id,
           title: collection.title,
-          coverUrl: collection.coverUrl,
+          coverUrl: collection.coverUrl ?? undefined,
         })),
       collectionType: "literature" as const,
       onCancel: () => setEditingWriterCollection(null),
-      onSave: async ({
-        updatedCollection,
-        stagedMoves,
-        coverFile,
-      }: {
-        updatedCollection: MockImageCollection;
-        stagedMoves: Record<string, { id: string; title: string; imageUrl: string }[]>;
-        coverFile?: File | null;
-      }) => {
+        onSave: async ({
+          updatedCollection,
+          stagedMoves,
+          coverFile,
+        }: {
+          updatedCollection: MockImageCollection;
+          stagedMoves: Record<string, EditableCollectionItem[]>;
+          coverFile?: File | null;
+        }) => {
         try {
           await saveEditedCollectionChanges({
             originalCollection: editingWriterCollection,
             updatedCollection,
-            stagedMoves,
+            stagedMoves: stagedMoves as any,
             entityLabel: "la colección",
           });
 
@@ -543,7 +565,7 @@ const getEditingCollectionConfig = () => {
         .map((album) => ({
           id: album.id,
           title: album.title,
-          coverUrl: album.coverUrl,
+          coverUrl: album.coverUrl ?? undefined,
         })),
       collectionType: "music" as const,
       onCancel: () => setEditingMusicCollection(null),
@@ -553,14 +575,14 @@ const getEditingCollectionConfig = () => {
         coverFile,
       }: {
         updatedCollection: MockImageCollection;
-        stagedMoves: Record<string, { id: string; title: string; imageUrl: string }[]>;
+        stagedMoves: Record<string, EditableCollectionItem[]>;
         coverFile?: File | null;
-      }) => {
+        }) => {
         try {
           await saveEditedCollectionChanges({
             originalCollection: editingMusicCollection,
             updatedCollection,
-            stagedMoves,
+            stagedMoves: stagedMoves as any,
             entityLabel: "el album",
           });
 
@@ -592,7 +614,11 @@ const editingCollectionConfig = getEditingCollectionConfig();
         <EditCollectionView
           collection={editingCollectionConfig.collection}
           allItems={editingCollectionConfig.allItems}
-          moveTargets={editingCollectionConfig.moveTargets}
+          moveTargets={editingCollectionConfig.moveTargets?.map((target) => ({
+            id: target.id,
+            title: target.title,
+            coverUrl: target.coverUrl ?? undefined,
+          }))}
           collectionType={editingCollectionConfig.collectionType}
           onCancel={editingCollectionConfig.onCancel}
           onSave={editingCollectionConfig.onSave}
@@ -617,7 +643,7 @@ const editingCollectionConfig = getEditingCollectionConfig();
         onGoToSettings={handleGoToSettings}
         onGoToSaved={handleGoToSaved}
       />
-
+      <div className="w-full flex justify-center">
         <div className=" krea-tabs">
           <Tabs
             activeKey={activeMainTab}
@@ -635,14 +661,16 @@ const editingCollectionConfig = getEditingCollectionConfig();
             tabBarGutter={46}
           />
         </div>
+      </div>
 
 {activeMainTab === "portfolio" && (
   <>
 
     {activeMainTab === "portfolio" && (
       
-      <div className="px-[70px] mt-[-10px] mb-[10px] flex justify-end pr-[0px]">
-        <div className="flex items-center gap-[10px] -mt-[30px] relative z-20 translate-x-[55px]">
+      <div className="lg:pl-[70px]  md:mt-[-10px] mb-[10px] flex justify-end pr-[0px]">
+        <div className="w-full flex justify-center mt-[32px] md:mt-0 md:pl-[520px]">
+        <div className="flex items-center gap-[10px] md:-mt-[30px] relative z-20 md:translate-x-[55px]">
         <button
           type="button"
           onClick={() => {
@@ -664,6 +692,7 @@ const editingCollectionConfig = getEditingCollectionConfig();
               Actualizar Portafolio
             </span>
           </button>
+        </div>
         </div>
       </div>
     )}
@@ -762,11 +791,14 @@ onEditAlbum={async (album) => {
                         title: post.title,
                         imageUrl:
                           post.mediaPreviewUrl ??
-                          matchingWork.coverUrl,
+                          matchingWork.coverUrl ??
+                          undefined,
+                        documentUrl: matchingWork.documentUrl ?? undefined,
+                        mimeType: matchingWork.mimeType ?? undefined,
                         createdAt: post.uploadedAt,
                       };
                     })
-                    .filter((post): post is NonNullable<typeof post> => post !== null),
+                    .filter((post): post is NonNullable<typeof post> => post !== null) as any,
                 });
               } catch (error) {
                 console.error("Error loading literature collection for edit:", error);
@@ -804,6 +836,12 @@ onEditAlbum={async (album) => {
                     id: post.backendId ?? String(post.id),
                     authorPostId: post.author.id ?? String(post.id),
                     authorName: post.author.name,
+                    author: {
+                      id: post.author.id ? String(post.author.id) : String(profile.user.id),
+                      username: post.author.handle ?? profile.user.handle ?? "",
+                      displayName: post.author.name ?? profile.user.name ?? "",
+                      avatar: post.author.avatar ?? profile.user.avatar ?? "",
+                    },
                     uploadedAt: post.createdAt,
                     uploadCount: post.userPostId,
                     title: post.title,
@@ -821,7 +859,10 @@ onEditAlbum={async (album) => {
                     })),
                     likesCount: post.likesCount,
                     isLikedByCurrentUser: post.isLikedByCurrentUser ?? false,
-                    isFavoritedByCurrentUser: false,
+                    isFavoritedByCurrentUser:
+                      post.isFavoritedByCurrentUser ??
+                      post.isFavorite ??
+                      false,
                     isRetweetedByCurrentUser: false,
                     replies: post.replies ?? [],
                   }}

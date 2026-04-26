@@ -5,7 +5,8 @@ export interface FeedItem {
   content: string | null;
   authorId: string;
   authorUsername: string;
-  authorProfilePictureUrl: string | null;
+  authorProfilePictureUrl?: string | null;
+  profilePictureUrl?: string | null;
   uploadedAt: string;
   mediaPreviewUrl: string | null;
   mediaMimeType: string | null;
@@ -14,4 +15,7 @@ export interface FeedItem {
   replyCount: number;
   repostCount: number;
   isFavorite: boolean;
+  coverMediaId?: string | null;
+  coverUrl?: string | null;
+  coverMimeType?: string | null;
 }

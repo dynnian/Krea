@@ -29,10 +29,20 @@ export default [
         path: "post/:id",
         file: "routes/post.tsx",
       },
+      // Vista de imagen individual (modal)
+      {
+        path: "image-view",
+        file: "routes/image-view.tsx",
+      },
       // Vista de Album.
       {
         path: "album/:id",
         file: "routes/album.tsx",
+      },
+      // Reader de literatura PDF/EPUB
+      {
+        path: "read/:postId",
+        file: "routes/read.tsx",
       },
       // Exploración (búsqueda por tags/categorías)
       {

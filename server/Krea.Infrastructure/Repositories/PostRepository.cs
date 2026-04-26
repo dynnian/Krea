@@ -75,22 +75,23 @@ namespace Krea.Infrastructure.Repositories {
             int pageSize,
             CancellationToken cancellationToken = default) =>
             await _context.Posts
-                .AsNoTracking()
-                .Where(p => p.AuthorPostId == authorPostId && !p.IsDeleted)
-                .OrderByDescending(p => p.UploadedAt)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Include(p => p.AuthorPost)
-                .Include(p => p.Likes)
-                .Include(p => p.Uploads)
-                .ThenInclude(u => u.Media)
-                .Include(p => p.Uploads)
-                .ThenInclude(u => u.CoverMedia)
-                .Include(p => p.Uploads)
-                .ThenInclude(u => u.Metadata)
-                .ThenInclude(m => m!.Genres)
-                .Include(p => p.Hashtags)
-                .ToListAsync(cancellationToken);
+                        .AsNoTracking()
+                        .Where(p => p.AuthorPostId == authorPostId && !p.IsDeleted)
+                        .OrderByDescending(p => p.UploadedAt)
+                        .Skip((page - 1) * pageSize)
+                        .Take(pageSize)
+                        .Include(p => p.AuthorPost)
+                            .ThenInclude(u => u.ProfilePicture)
+                        .Include(p => p.Likes)
+                        .Include(p => p.Uploads)
+                        .ThenInclude(u => u.Media)
+                        .Include(p => p.Uploads)
+                        .ThenInclude(u => u.CoverMedia)
+                        .Include(p => p.Uploads)
+                        .ThenInclude(u => u.Metadata)
+                        .ThenInclude(m => m!.Genres)
+                        .Include(p => p.Hashtags)
+                        .ToListAsync(cancellationToken);
 
         public Task<int> CountAsync(CancellationToken cancellationToken = default) =>
             _context.Posts.CountAsync(p => !p.IsDeleted, cancellationToken);
@@ -114,6 +115,7 @@ namespace Krea.Infrastructure.Repositories {
             CancellationToken cancellationToken = default) {
             IOrderedQueryable<Post> query = _context.Posts
                                                     .Include(p => p.AuthorPost)
+                                                        .ThenInclude(u => u.ProfilePicture)
                                                     .Where(p => p.RepliedToId == postId && !p.IsDeleted)
                                                     .OrderByDescending(p => p.UploadedAt);
 
@@ -135,6 +137,7 @@ namespace Krea.Infrastructure.Repositories {
                           .AsNoTracking()
                           .Where(p => !p.IsDeleted && p.RepliedToId != null)
                           .Include(p => p.AuthorPost)
+                              .ThenInclude(u => u.ProfilePicture)
                           .OrderBy(p => p.UploadedAt)
                           .ToListAsync(cancellationToken);
 

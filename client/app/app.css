@@ -120,5 +120,114 @@ html, body, #root {
   transition: background 0.1s ease;
 }
 
+/* scrollbar overlay reusable */
+.scroll-overlay {
+  overflow-y: auto;
+  padding-right: 10px;
+  margin-right: -10px;
+}
 
-/* 3. NO modifiques clases de Ant Design aquí */
+/* opcional: estilo scrollbar */
+.scroll-overlay::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-overlay::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-overlay::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.4);
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  position: absolute;
+
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.35);
+
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.pdf-view-mode-segmented.ant-segmented {
+  height: 35px !important;
+  padding: 0 !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.pdf-view-mode-segmented .ant-segmented-group {
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.pdf-view-mode-segmented .ant-segmented-item {
+  height: 33px !important;
+  min-height: 33px !important;
+  border-radius: 7px !important;
+  color: #1b1c1e !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.pdf-view-mode-segmented .ant-segmented-item-label {
+  height: 30px !important;
+  line-height: 38px !important;
+  padding: 0 14px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+.pdf-view-mode-segmented .ant-segmented-thumb {
+  background: #1351AA !important;
+  border-radius: 7px !important;
+}
+
+.pdf-view-mode-segmented .ant-segmented-item-selected {
+  color: #ffffff !important;
+}
+
+.pdf-view-mode-segmented .ant-segmented-item-selected .ant-segmented-item-label {
+  color: #ffffff !important;
+}
+
+.pdf-view-mode-segmented .ant-segmented-item-disabled {
+  opacity: 0.45 !important;
+}
+
+.pdf-view-mode-segmented .ant-segmented-item-selected {
+  background: #1351AA !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(19, 81, 170, 0.35) !important;
+}
+
+.pdf-view-mode-segmented .ant-segmented-item-selected:hover {
+  background: #1351AA !important;
+  color: #ffffff !important;
+}
+
+.pdf-view-mode-segmented .ant-segmented-item-selected .ant-segmented-item-label {
+  color: #ffffff !important;
+}
+
+.pdf-view-mode-segmented .ant-segmented-thumb {
+  background: #1351AA !important;
+  border-radius: 7px !important;
+  box-shadow: 0 2px 6px rgba(19, 81, 170, 0.35) !important;
+}

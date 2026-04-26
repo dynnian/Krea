@@ -1,11 +1,14 @@
 // deno-lint-ignore-file
 import React from "react";
 import { Input, Modal, ConfigProvider } from "antd";
+import LiteratureCover from "../../LiteratureCover.tsx";
 
 export type AddElementItem = {
   id: string;
   title: string;
-  imageUrl?: string;
+  imageUrl?: string | null;
+  documentUrl?: string | null;
+  mimeType?: string | null;
 };
 
 type AddElementsModalProps = {
@@ -103,13 +106,21 @@ export default function AddElementsModal({
                           isLiterature ? "w-[50px] h-[75px]" : "w-[66px] h-[66px]"
                         }`}
                       >
-                        {item.imageUrl ? (
-                          <img
-                            src={item.imageUrl}
-                            alt={item.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : null}
+                      {isLiterature ? (
+                        <LiteratureCover
+                          title={item.title}
+                          coverUrl={item.imageUrl}
+                          documentUrl={item.documentUrl}
+                          mimeType={item.mimeType}
+                          width={56}
+                        />
+                      ) : item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : null}
                       </div>
 
                       <span className="text-[18px] font-medium text-[#1B1C1E]">

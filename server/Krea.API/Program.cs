@@ -36,6 +36,9 @@ namespace Krea.API {
 
             ConfigureCors(builder.Services, builder.Configuration, builder.Environment.IsDevelopment());
             ConfigureAuthentication(builder.Services, builder.Configuration, builder.Environment.IsDevelopment());
+
+            ConfigureCors(builder.Services, builder.Configuration, builder.Environment.IsDevelopment());
+            ConfigureAuthentication(builder.Services, builder.Configuration, builder.Environment.IsDevelopment());
             builder.Services.AddAuthorization();
             
             // Stripe

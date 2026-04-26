@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import logoSvg from "../../assets/logo.svg";
+import logopSvg from "../../assets/logopb.svg";
 
 type BrandLogoProps = {
   ariaLabel?: string;
@@ -9,7 +10,30 @@ type BrandLogoProps = {
   className?: string;
 };
 
-export default function BrandLogo({
+export function BrandLogoC({
+  ariaLabel = "Krea logo",
+  width,
+  height,
+  className,
+}: BrandLogoProps) {
+  const style: CSSProperties = {
+    display: "inline-block",
+    ...(width !== undefined ? { width } : {}),
+    ...(height !== undefined ? { height } : {}),
+    ...(width === undefined && height === undefined ? { width: 160 } : {}),
+  };
+
+  return (
+    <img
+      src={logopSvg}
+      alt={ariaLabel}
+      className={className}
+      style={style}
+    />
+  );
+}
+
+export function BrandLogo({
   ariaLabel = "Krea logo",
   color = "currentColor",
   width,

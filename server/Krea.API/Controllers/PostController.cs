@@ -403,7 +403,7 @@ namespace Krea.API.Controllers {
         ///     ]
         /// </remarks>
         /// <response code="200">Genres retrieved successfully.</response>
-        [HttpGet]
+        [HttpGet("genres")]
         [ProducesResponseType(typeof(IReadOnlyList<GenreDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll(CancellationToken ct)
         {

@@ -9,6 +9,9 @@ namespace Krea.Application.Features.Favorites.Dto {
 
         [JsonPropertyName("authorName")] public string AuthorName { get; init; } = string.Empty;
 
+        [JsonPropertyName("authorProfilePictureUrl")]
+        public string? AuthorProfilePictureUrl { get; init; }
+
         [JsonPropertyName("title")] public string Title { get; init; } = string.Empty;
 
         [JsonPropertyName("content")] public string? Content { get; init; }
@@ -33,6 +36,7 @@ namespace Krea.Application.Features.Favorites.Dto {
                 Id = post.Id,
                 AuthorPostId = post.AuthorPostId,
                 AuthorName = post.AuthorPost?.DisplayName ?? "Unknown",
+                AuthorProfilePictureUrl = post.AuthorPost?.ProfilePicture?.Path,
                 Title = post.Title,
                 Content = post.Content,
                 UploadedAt = post.UploadedAt,
@@ -47,7 +51,10 @@ namespace Krea.Application.Features.Favorites.Dto {
                                 FileName = u.Media.FileName,
                                 MimeType = u.Media.MimeType,
                                 Url = u.Media.Path,
-                                IsWorkMedia = u.IsWorkMedia
+                                IsWorkMedia = u.IsWorkMedia,
+                                CoverMediaId = u.CoverMediaId,
+                                CoverUrl = u.CoverMedia?.Path,
+                                CoverMimeType = u.CoverMedia?.MimeType
                             })
                             .ToList()
             };
@@ -63,5 +70,11 @@ namespace Krea.Application.Features.Favorites.Dto {
         [JsonPropertyName("url")] public string Url { get; init; } = string.Empty;
 
         [JsonPropertyName("isWorkMedia")] public bool IsWorkMedia { get; init; }
+
+        [JsonPropertyName("coverMediaId")] public Guid? CoverMediaId { get; init; }
+
+        [JsonPropertyName("coverUrl")] public string? CoverUrl { get; init; }
+
+        [JsonPropertyName("coverMimeType")] public string? CoverMimeType { get; init; }
     }
 }
