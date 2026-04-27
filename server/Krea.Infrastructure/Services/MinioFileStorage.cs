@@ -1,20 +1,24 @@
 namespace Krea.Infrastructure.Services {
     using Application.Abstractions.FileStorage;
+    using Microsoft.Extensions.Logging;
     using Minio;
     using Minio.DataModel.Args;
-    using NLog;
 
     public sealed class MinioFileStorage : IFileStorage {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
+        private readonly ILogger<MinioFileStorage> _logger;
         private readonly IMinioClient _minioClient;
         private readonly string _baseUrl;
         private readonly string _bucketName;
 
-        public MinioFileStorage(IMinioClient minioClient, string baseUrl, string bucketName) {
+        public MinioFileStorage(
+            IMinioClient minioClient,
+            string baseUrl,
+            string bucketName,
+            ILogger<MinioFileStorage> logger) {
             _minioClient = minioClient;
             _baseUrl = baseUrl;
             _bucketName = string.IsNullOrWhiteSpace(bucketName) ? "uploads" : bucketName;
+            _logger = logger;
         }
 
         public async Task<FileStorageResult> SaveAsync(
@@ -50,14 +54,14 @@ namespace Krea.Infrastructure.Services {
 
                 string url = BuildUrl(objectName);
 
-                Logger.Info("File uploaded: {ObjectName} -> {Url}", objectName, url);
+                _logger.LogInformation("File uploaded: {ObjectName} -> {Url}", objectName, url);
 
                 return new FileStorageResult {
                     Url = url, FileName = objectName, ContentType = contentType, Size = size
                 };
             }
             catch (Exception ex) {
-                Logger.Error(ex, "Error uploading file: {FileName}", fileName);
+                _logger.LogError(ex, "Error uploading file: {FileName}", fileName);
                 throw;
             }
         }
@@ -96,8 +100,8 @@ namespace Krea.Infrastructure.Services {
                         .WithObject(fileName),
                     cancellationToken);
             }
-            catch (Exception) {
-                // No se lanza error
+            catch (Exception ex) {
+                _logger.LogWarning(ex, "Error deleting file: {FileName}", fileName);
             }
         }
 
@@ -107,7 +111,7 @@ namespace Krea.Infrastructure.Services {
                 cancellationToken);
 
             if (!found) {
-                Logger.Warn("Bucket '{BucketName}' not found. Creating...", _bucketName);
+                _logger.LogWarning("Bucket '{BucketName}' not found. Creating...", _bucketName);
 
                 await _minioClient.MakeBucketAsync(
                     new MakeBucketArgs().WithBucket(_bucketName),

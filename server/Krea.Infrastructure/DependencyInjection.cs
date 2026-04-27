@@ -25,6 +25,7 @@ namespace Krea.Infrastructure {
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
+    using Microsoft.Extensions.Logging;
     using Minio;
 
     public static class DependencyInjection {
@@ -46,7 +47,6 @@ namespace Krea.Infrastructure {
 
                 if (isDevelopment) {
                     options.EnableDetailedErrors();
-                    options.EnableSensitiveDataLogging();
                 }
             });
 
@@ -173,7 +173,8 @@ namespace Krea.Infrastructure {
 
             services.AddScoped<IFileStorage>(sp => {
                 var minioClient = sp.GetRequiredService<IMinioClient>();
-                return new MinioFileStorage(minioClient, minioBaseUrl, minioBucket);
+                var logger = sp.GetRequiredService<ILogger<MinioFileStorage>>();
+                return new MinioFileStorage(minioClient, minioBaseUrl, minioBucket, logger);
             });
 
             services.AddScoped<IFeedQueryService, FeedQueryService>();
@@ -224,7 +225,8 @@ namespace Krea.Infrastructure {
                     configuration["Jwt:Audience"]
                     ?? "KreaClient",
                 ["Jwt:Key"] =
-                    configuration["Jwt:Key"]
+                    ReadFirstNonEmptyEnvironmentVariable("JWT_KEY")
+                    ?? configuration["Jwt:Key"]
                     ?? Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(64)),
                 ["Seeding:Enabled"] = ResolveBooleanConfiguration(
                     ReadFirstNonEmptyEnvironmentVariable("SEEDING_ENABLED"),
@@ -258,6 +260,10 @@ namespace Krea.Infrastructure {
                     ReadFirstNonEmptyEnvironmentVariable("INSTANCE_ADMIN_EMAIL")
                     ?? configuration["InstanceSettings:AdministratorEmail"]
                     ?? "admin@krea.local",
+                ["Logging:LogLevel:Default"] =
+                    ReadFirstNonEmptyEnvironmentVariable("LOG_LEVEL")
+                    ?? configuration["Logging:LogLevel:Default"]
+                    ?? "Information",
                 ["Email:SmtpHost"] =
                     ReadFirstNonEmptyEnvironmentVariable("EMAIL_SMTP_HOST")
                     ?? configuration["Email:SmtpHost"],

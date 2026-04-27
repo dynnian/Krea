@@ -90,16 +90,21 @@ services:
       INSTANCE_PLATFORM_NAME: ${INSTANCE_PLATFORM_NAME:-Krea}
       INSTANCE_DESCRIPTION: ${INSTANCE_DESCRIPTION:-A federated platform for artists and creators}
       INSTANCE_ADMIN_EMAIL: ${INSTANCE_ADMIN_EMAIL:-admin@krea.local}
+      LOG_LEVEL: ${LOG_LEVEL:-Information}
+      JWT_KEY: ${JWT_KEY:-}
       STRIPE_API_KEY: ${STRIPE_API_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
     ports:
       - "${WEB_PORT:-3000}:8080"
+    volumes:
+      - krea_app_data:/data
     networks:
       - internal
 
 volumes:
   krea_pgdata:
   krea_minio_data:
+  krea_app_data:
 
 networks:
   internal:

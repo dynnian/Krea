@@ -3,6 +3,7 @@ using Krea.Infrastructure.Data;
 using Krea.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Krea.Infrastructure.Services {
     public class IdentityService : IIdentityService {
@@ -10,16 +11,19 @@ namespace Krea.Infrastructure.Services {
         private readonly SignInManager<AppUser> _signInManager;
         private readonly RoleManager<IdentityRole<Guid>> _roleManager;
         private readonly AppDbContext _context;
+        private readonly ILogger<IdentityService> _logger;
 
         public IdentityService(
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
             RoleManager<IdentityRole<Guid>> roleManager,
-            AppDbContext context) {
+            AppDbContext context,
+            ILogger<IdentityService> logger) {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
             _context = context;
+            _logger = logger;
         }
 
         public async Task<UserIdentity?> FindByIdAsync(Guid userId) {
@@ -113,6 +117,8 @@ namespace Krea.Infrastructure.Services {
             if (!addResult.Succeeded)
                 return (false, addResult.Errors.Select(e => e.Description).ToArray());
 
+            _logger.LogInformation("User {UserId} roles updated. New roles: {Roles}", userId, string.Join(", ", resolvedRoles));
+
             return (true, Array.Empty<string>());
         }
 
@@ -157,6 +163,11 @@ namespace Krea.Infrastructure.Services {
             AppUser? appUser = await _userManager.FindByIdAsync(user.Id.ToString());
             if (appUser == null) return false;
             SignInResult result = await _signInManager.CheckPasswordSignInAsync(appUser, password, false);
+            
+            if (!result.Succeeded) {
+                _logger.LogWarning("Failed login attempt for user {UserId}. Reason: {Reason}", user.Id, result.ToString());
+            }
+
             return result.Succeeded;
         }
 
@@ -164,14 +175,25 @@ namespace Krea.Infrastructure.Services {
             AppUser? appUser = await _userManager.FindByIdAsync(user.Id.ToString());
             if (appUser == null) return false;
             IdentityResult result = await _userManager.ChangePasswordAsync(appUser, currentPassword, newPassword);
+            
+            if (result.Succeeded) {
+                _logger.LogInformation("User {UserId} changed their password.", user.Id);
+            } else {
+                _logger.LogWarning("Failed password change for user {UserId}. Errors: {Errors}", user.Id, string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+
             return result.Succeeded;
         }
 
         public async Task<(bool Succeeded, string[] Errors)> CreateUserAsync(UserIdentity user, string password) {
             var appUser = new AppUser { Id = user.Id, UserName = user.UserName, Email = user.Email };
             IdentityResult result = await _userManager.CreateAsync(appUser, password);
-            if (!result.Succeeded)
+            if (!result.Succeeded) {
+                _logger.LogWarning("Failed to create user {UserName}. Errors: {Errors}", user.UserName, string.Join(", ", result.Errors.Select(e => e.Description)));
                 return (false, result.Errors.Select(e => e.Description).ToArray());
+            }
+
+            _logger.LogInformation("User {UserId} ({UserName}) created successfully.", appUser.Id, user.UserName);
 
             // Optionally assign roles if provided
             foreach (string role in user.Roles) {
@@ -195,6 +217,8 @@ namespace Krea.Infrastructure.Services {
             IdentityResult result = await _userManager.DeleteAsync(appUser);
             if (!result.Succeeded)
                 return (false, result.Errors.Select(e => e.Description).ToArray());
+
+            _logger.LogInformation("User {UserId} deleted successfully.", userId);
 
             return (true, Array.Empty<string>());
         }
@@ -226,6 +250,13 @@ namespace Krea.Infrastructure.Services {
             AppUser? appUser = await _userManager.FindByIdAsync(user.Id.ToString());
             if (appUser == null) return false;
             IdentityResult result = await _userManager.ConfirmEmailAsync(appUser, token);
+            
+            if (result.Succeeded) {
+                _logger.LogInformation("User {UserId} email confirmed.", user.Id);
+            } else {
+                _logger.LogWarning("Failed email confirmation for user {UserId}.", user.Id);
+            }
+
             return result.Succeeded;
         }
 

@@ -1,6 +1,7 @@
 namespace Krea.API {
     using System.Security.Cryptography;
     using Microsoft.AspNetCore.Authentication.JwtBearer;
+    using Microsoft.AspNetCore.DataProtection;
     using Microsoft.AspNetCore.HttpOverrides;
     using Microsoft.IdentityModel.Tokens;
     using Scalar.AspNetCore;
@@ -30,6 +31,9 @@ namespace Krea.API {
         public static async Task Main(string[] args) {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+            // Add external configuration file support
+            builder.Configuration.AddJsonFile("/data/appsettings.json", optional: true, reloadOnChange: true);
+
             ApplyApiConfigurationOverrides(builder.Configuration, builder.Environment.IsDevelopment());
             builder.AddInfrastructure();
 
@@ -38,6 +42,12 @@ namespace Krea.API {
             builder.Services.AddSignalR();
             if (builder.Environment.IsDevelopment()) {
                 builder.Services.AddOpenApi();
+            }
+
+            // Persist Data Protection keys to the external volume
+            if (!builder.Environment.IsDevelopment()) {
+                builder.Services.AddDataProtection()
+                    .PersistKeysToFileSystem(new DirectoryInfo("/data/keys"));
             }
 
             ConfigureCors(builder.Services, builder.Configuration, builder.Environment.IsDevelopment());
@@ -283,231 +293,4 @@ namespace Krea.API {
                     HttpCompletionOption.ResponseHeadersRead,
                     context.RequestAborted);
 
-                context.Response.StatusCode = (int)upstreamResponse.StatusCode;
-                CopyProxyResponseHeaders(upstreamResponse, context.Response);
-
-                if (HttpMethods.IsHead(context.Request.Method)) {
-                    return;
-                }
-
-                await using Stream upstreamStream =
-                    await upstreamResponse.Content.ReadAsStreamAsync(context.RequestAborted);
-                await upstreamStream.CopyToAsync(context.Response.Body, context.RequestAborted);
-            });
-
-        private static void CopyProxyRequestHeaders(HttpRequest source, HttpRequestMessage target) {
-            foreach ((string key, StringValues value) in source.Headers) {
-                if (string.Equals(key, "Host", StringComparison.OrdinalIgnoreCase)) {
-                    continue;
-                }
-
-                if (!target.Headers.TryAddWithoutValidation(key, value.ToArray())) {
-                    target.Content ??= new ByteArrayContent([]);
-                    target.Content.Headers.TryAddWithoutValidation(key, value.ToArray());
-                }
-            }
-        }
-
-        private static void CopyProxyResponseHeaders(HttpResponseMessage source, HttpResponse target) {
-            foreach ((string key, IEnumerable<string> value) in source.Headers) {
-                if (ShouldSkipProxyResponseHeader(key)) {
-                    continue;
-                }
-
-                target.Headers[key] = new StringValues(value.ToArray());
-            }
-
-            foreach ((string key, IEnumerable<string> value) in source.Content.Headers) {
-                if (ShouldSkipProxyResponseHeader(key)) {
-                    continue;
-                }
-
-                target.Headers[key] = new StringValues(value.ToArray());
-            }
-
-            target.Headers.Remove("transfer-encoding");
-        }
-
-        private static bool ShouldSkipProxyResponseHeader(string headerName) =>
-            string.Equals(headerName, "Connection", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(headerName, "Keep-Alive", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(headerName, "Proxy-Authenticate", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(headerName, "Proxy-Authorization", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(headerName, "TE", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(headerName, "Trailer", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(headerName, "Transfer-Encoding", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(headerName, "Upgrade", StringComparison.OrdinalIgnoreCase);
-
-        private static void ConfigureCors(
-            IServiceCollection services,
-            IConfiguration configuration,
-            bool isDevelopment) {
-            string[] allowedOrigins = ResolveAllowedOrigins(configuration, isDevelopment);
-
-            services.AddCors(options => {
-                options.AddPolicy(CorsPolicyName, policy => {
-                    if (allowedOrigins.Length == 0) {
-                        policy.SetIsOriginAllowed(_ => false)
-                              .AllowAnyMethod()
-                              .AllowAnyHeader();
-                        return;
-                    }
-
-                    policy.WithOrigins(allowedOrigins)
-                          .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .AllowCredentials();
-                });
-            });
-        }
-
-        private static string[] ResolveAllowedOrigins(IConfiguration configuration, bool isDevelopment) {
-            string? publicUrl = configuration["PublicUrl"];
-            List<string> configuredOrigins = new();
-
-            if (!string.IsNullOrWhiteSpace(publicUrl)) {
-                // If the user forgot the protocol, try to be helpful
-                if (!publicUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-                    !publicUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) {
-                    if (Uri.TryCreate($"https://{publicUrl}", UriKind.Absolute, out Uri? httpsUri)) {
-                        configuredOrigins.Add(httpsUri.GetLeftPart(UriPartial.Authority));
-                        configuredOrigins.Add($"http://{httpsUri.Authority}");
-                    }
-                    else if (Uri.TryCreate($"http://{publicUrl}", UriKind.Absolute, out Uri? httpUri)) {
-                        configuredOrigins.Add(httpUri.GetLeftPart(UriPartial.Authority));
-                        configuredOrigins.Add($"https://{httpUri.Authority}");
-                    }
-                }
-                else if (Uri.TryCreate(publicUrl, UriKind.Absolute, out Uri? uri)) {
-                    configuredOrigins.Add(uri.GetLeftPart(UriPartial.Authority));
-
-                    if (uri.Scheme == Uri.UriSchemeHttps) {
-                        configuredOrigins.Add($"http://{uri.Authority}");
-                    }
-                    else if (uri.Scheme == Uri.UriSchemeHttp) {
-                        configuredOrigins.Add($"https://{uri.Authority}");
-                    }
-                }
-            }
-
-            if (configuredOrigins.Count > 0) {
-                return configuredOrigins.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-            }
-
-            return isDevelopment ? DevelopmentCorsOrigins : Array.Empty<string>();
-        }
-
-        private static void ConfigureAuthentication(
-            IServiceCollection services,
-            IConfiguration configuration,
-            bool isDevelopment) {
-            string issuer = GetRequiredConfiguration(configuration, "Jwt:Issuer");
-            string audience = GetRequiredConfiguration(configuration, "Jwt:Audience");
-            string signingKey = GetRequiredConfiguration(configuration, "Jwt:Key");
-
-            if (signingKey.Length < 32) {
-                throw new InvalidOperationException("Jwt:Key must be at least 32 characters.");
-            }
-
-            if (!isDevelopment && signingKey.Equals(InsecureDevelopmentJwtKey, StringComparison.Ordinal)) {
-                throw new InvalidOperationException(
-                    "A secure Jwt:Key must be configured for non-development environments.");
-            }
-
-            services.AddAuthentication(options => {
-                        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                    })
-                    .AddJwtBearer(options => {
-                        options.RequireHttpsMetadata = !isDevelopment;
-                        options.TokenValidationParameters = new TokenValidationParameters {
-                            ValidateIssuer = true,
-                            ValidateAudience = true,
-                            ValidateLifetime = true,
-                            ValidateIssuerSigningKey = true,
-                            ValidIssuer = issuer,
-                            ValidAudience = audience,
-                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey))
-                        };
-
-                        // Accept token in query string for SignalR hub connections.
-                        options.Events = new JwtBearerEvents {
-                            OnMessageReceived = context => {
-                                StringValues accessToken = context.Request.Query["access_token"];
-                                PathString path = context.HttpContext.Request.Path;
-
-                                if (!string.IsNullOrEmpty(accessToken) &&
-                                    (
-                                        path.StartsWithSegments("/hubs") ||
-                                        path.StartsWithSegments("/api/notifications/stream")
-                                    )) {
-                                    context.Token = accessToken;
-                                }
-
-                                return Task.CompletedTask;
-                            }
-                        };
-                    });
-        }
-
-        private static string GetRequiredConfiguration(IConfiguration configuration, string key) {
-            string? value = configuration[key];
-            if (string.IsNullOrWhiteSpace(value)) {
-                throw new InvalidOperationException($"Missing required configuration value: {key}");
-            }
-
-            return value;
-        }
-
-        private static string? ReadFirstNonEmptyEnvironmentVariable(params string[] variableNames) {
-            foreach (string variableName in variableNames) {
-                string? value = Environment.GetEnvironmentVariable(variableName);
-                if (!string.IsNullOrWhiteSpace(value)) {
-                    return value;
-                }
-            }
-
-            return null;
-        }
-
-        private static string ResolveBooleanConfiguration(string? rawValue, bool fallback) {
-            if (string.IsNullOrWhiteSpace(rawValue)) {
-                return fallback ? "true" : "false";
-            }
-
-            if (rawValue == "1") {
-                return "true";
-            }
-
-            if (rawValue == "0") {
-                return "false";
-            }
-
-            return bool.TryParse(rawValue, out bool parsed)
-                ? parsed ? "true" : "false"
-                : fallback
-                    ? "true"
-                    : "false";
-        }
-
-        private static string NormalizeMinioEndpoint(string endpoint) {
-            if (string.IsNullOrWhiteSpace(endpoint)) {
-                return endpoint;
-            }
-
-            string candidate = endpoint.Trim();
-            if (!candidate.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-                !candidate.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) {
-                return candidate.TrimEnd('/');
-            }
-
-            if (!Uri.TryCreate(candidate, UriKind.Absolute, out Uri? uri)) {
-                return candidate.TrimEnd('/');
-            }
-
-            return uri.IsDefaultPort ? uri.Host : $"{uri.Host}:{uri.Port}";
-        }
-
-        private static string GenerateJwtSigningKey() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-    }
-}
+                context.Response.StatusCode = (int)upstreamResponse.StatusCode; CopyProxyResponseHeaders(upstreamResponse, context.Response); if (HttpMethods.IsHead(context.Request.Method)) { return; } await using Stream upstreamStream = await upstreamResponse.Content.ReadAsStreamAsync(context.RequestAborted); await upstreamStream.CopyToAsync(context.Response.Body, context.RequestAborted); }); private static void CopyProxyRequestHeaders(HttpRequest source, HttpRequestMessage target) { foreach ((string key, StringValues value) in source.Headers) { if (string.Equals(key, "Host", StringComparison.OrdinalIgnoreCase)) { continue; } if (!target.Headers.TryAddWithoutValidation(key, value.ToArray())) { target.Content ??= new ByteArrayContent([]); target.Content.Headers.TryAddWithoutValidation(key, value.ToArray()); } } } private static void CopyProxyResponseHeaders(HttpResponseMessage source, HttpResponse target) { foreach ((string key, IEnumerable<string> value) in source.Headers) { if (ShouldSkipProxyResponseHeader(key)) { continue; } target.Headers[key] = new StringValues(value.ToArray()); } foreach ((string key, IEnumerable<string> value) in source.Content.Headers) { if (ShouldSkipProxyResponseHeader(key)) { continue; } target.Headers[key] = new StringValues(value.ToArray()); } target.Headers.Remove("transfer-encoding"); } private static bool ShouldSkipProxyResponseHeader(string headerName) => string.Equals(headerName, "Connection", StringComparison.OrdinalIgnoreCase) || string.Equals(headerName, "Keep-Alive", StringComparison.OrdinalIgnoreCase) || string.Equals(headerName, "Proxy-Authenticate", StringComparison.OrdinalIgnoreCase) || string.Equals(headerName, "Proxy-Authorization", StringComparison.OrdinalIgnoreCase) || string.Equals(headerName, "TE", StringComparison.OrdinalIgnoreCase) || string.Equals(headerName, "Trailer", StringComparison.OrdinalIgnoreCase) || string.Equals(headerName, "Transfer-Encoding", StringComparison.OrdinalIgnoreCase) || string.Equals(headerName, "Upgrade", StringComparison.OrdinalIgnoreCase); private static void ConfigureCors( IServiceCollection services, IConfiguration configuration, bool isDevelopment) { string[] allowedOrigins = ResolveAllowedOrigins(configuration, isDevelopment); services.AddCors(options => { options.AddPolicy(CorsPolicyName, policy => { if (allowedOrigins.Length == 0) { policy.SetIsOriginAllowed(_ => false) .AllowAnyMethod() .AllowAnyHeader(); return; } policy.WithOrigins(allowedOrigins) .AllowAnyMethod() .AllowAnyHeader() .AllowCredentials(); }); }); } private static string[] ResolveAllowedOrigins(IConfiguration configuration, bool isDevelopment) { string? publicUrl = configuration["PublicUrl"]; List<string> configuredOrigins = new(); if (!string.IsNullOrWhiteSpace(publicUrl)) { if (!publicUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !publicUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) { if (Uri.TryCreate($"https://{publicUrl}", UriKind.Absolute, out Uri? httpsUri)) { configuredOrigins.Add(httpsUri.GetLeftPart(UriPartial.Authority)); configuredOrigins.Add($"http://{httpsUri.Authority}"); } else if (Uri.TryCreate($"http://{publicUrl}", UriKind.Absolute, out Uri? httpUri)) { configuredOrigins.Add(httpUri.GetLeftPart(UriPartial.Authority)); configuredOrigins.Add($"https://{httpUri.Authority}"); } } else if (Uri.TryCreate(publicUrl, UriKind.Absolute, out Uri? uri)) { configuredOrigins.Add(uri.GetLeftPart(UriPartial.Authority)); if (uri.Scheme == Uri.UriSchemeHttps) { configuredOrigins.Add($"http://{uri.Authority}"); } else if (uri.Scheme == Uri.UriSchemeHttp) { configuredOrigins.Add($"https://{uri.Authority}"); } } } if (configuredOrigins.Count > 0) { return configuredOrigins.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(); } return isDevelopment ? DevelopmentCorsOrigins : Array.Empty<string>(); } private static void ConfigureAuthentication( IServiceCollection services, IConfiguration configuration, bool isDevelopment) { string issuer = GetRequiredConfiguration(configuration, "Jwt:Issuer"); string audience = GetRequiredConfiguration(configuration, "Jwt:Audience"); string signingKey = GetRequiredConfiguration(configuration, "Jwt:Key"); if (signingKey.Length < 32) { throw new InvalidOperationException("Jwt:Key must be at least 32 characters."); } if (!isDevelopment && signingKey.Equals(InsecureDevelopmentJwtKey, StringComparison.Ordinal)) { throw new InvalidOperationException( "A secure Jwt:Key must be configured for non-development environments."); } services.AddAuthentication(options => { options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme; options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme; }) .AddJwtBearer(options => { options.RequireHttpsMetadata = !isDevelopment; options.TokenValidationParameters = new TokenValidationParameters { ValidateIssuer = true, ValidateAudience = true, ValidateLifetime = true, ValidateIssuerSigningKey = true, ValidIssuer = issuer, ValidAudience = audience, IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey)) }; options.Events = new JwtBearerEvents { OnMessageReceived = context => { StringValues accessToken = context.Request.Query["access_token"]; PathString path = context.HttpContext.Request.Path; if (!string.IsNullOrEmpty(accessToken) && ( path.StartsWithSegments("/hubs") || path.StartsWithSegments("/api/notifications/stream") )) { context.Token = accessToken; } return Task.CompletedTask; } }; }); } private static string GetRequiredConfiguration(IConfiguration configuration, string key) { string? value = configuration[key]; if (string.IsNullOrWhiteSpace(value)) { throw new InvalidOperationException($"Missing required configuration value: {key}"); } return value; } private static string? ReadFirstNonEmptyEnvironmentVariable(params string[] variableNames) { foreach (string variableName in variableNames) { string? value = Environment.GetEnvironmentVariable(variableName); if (!string.IsNullOrWhiteSpace(value)) { return value; } } return null; } private static string ResolveBooleanConfiguration(string? rawValue, bool fallback) { if (string.IsNullOrWhiteSpace(rawValue)) { return fallback ? "true" : "false"; } if (rawValue == "1") { return "true"; } if (rawValue == "0") { return "false"; } return bool.TryParse(rawValue, out bool parsed) ? parsed ? "true" : "false" : fallback ? "true" : "false"; } private static string NormalizeMinioEndpoint(string endpoint) { if (string.IsNullOrWhiteSpace(endpoint)) { return endpoint; } string candidate = endpoint.Trim(); if (!candidate.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !candidate.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) { return candidate.TrimEnd('/'); } if (!Uri.TryCreate(candidate, UriKind.Absolute, out Uri? uri)) { return candidate.TrimEnd('/'); } return uri.IsDefaultPort ? uri.Host : $"{uri.Host}:{uri.Port}"; } private static string GenerateJwtSigningKey() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)); } }
