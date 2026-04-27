@@ -1,21 +1,14 @@
 // app/components/Explore/ExploreLiterature.tsx
 // deno-lint-ignore-file
 import React, { useEffect, useState } from "react";
-import { Empty, Spin, message } from "antd";
-import { Bookmark, Heart } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { Spin, message, Button } from "antd";
+import { Empty, Spin, message, Button } from "antd";
 import { Heart, Bookmark, UserPlus, UserCheck } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../contexts/AuthContext";
 import { postsApi } from "../../services/postsService";
 import { userService } from "../../services/userService";
 import type { ExplorePostDto } from "../../types/api";
 import { useNavigate } from "react-router";
-
-import { useAuth } from "../../contexts/AuthContext.tsx";
-import { postsApi } from "../../services/postsService.ts";
-import { userService } from "../../services/userService.ts";
-import type { ExplorePostDto } from "../../types/api.ts";
 import LiteratureCover from "../LiteratureCover.tsx";
 
 interface ExploreLiteratureProps {
