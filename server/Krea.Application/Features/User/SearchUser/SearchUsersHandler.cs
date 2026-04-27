@@ -67,6 +67,7 @@ namespace Krea.Application.Features.User.SearchUser {
             var orderedUsers = users
                                .Where(u => !u.IsBanned && !u.IsDisabled)
                                .Where(u => identities.ContainsKey(u.Id))
+                               .Where(u => !IsAdmin(identities[u.Id]))
                                .Select(u => {
                                    UserIdentity identity = identities[u.Id];
 
@@ -135,5 +136,10 @@ namespace Krea.Application.Features.User.SearchUser {
                 page,
                 pageSize);
         }
+
+        private static bool IsAdmin(UserIdentity identity) =>
+            identity.Roles.Any(role =>
+                string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(role, "Administrator", StringComparison.OrdinalIgnoreCase));
     }
 }
