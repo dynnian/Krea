@@ -1,4 +1,5 @@
 // components/Composer.tsx
+// deno-lint-ignore-file
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext.tsx";
@@ -65,9 +66,12 @@ export default function Composer({ onPost }: ComposerProps) {
 
   const currentUserAvatar = getCurrentUserAvatar(user) ?? profileAvatar;
 
-  const { control, handleSubmit, reset } = useForm<ComposerForm>({
+  const { control, handleSubmit, reset, watch } = useForm<ComposerForm>({
     defaultValues: { content: "" },
   });
+
+  const composerContent = watch("content");
+  const isPostButtonDisabled = submitting || !composerContent?.trim();
 
   const onSubmit = async (data: ComposerForm) => {
     if (!user) {
@@ -177,14 +181,19 @@ export default function Composer({ onPost }: ComposerProps) {
                   <FileText size={20} className="text-[#1B1C1E]" />
                 </button>
               </div>
-              <Button
-                type="primary"
-                onClick={handleSubmit(onSubmit)}
-                loading={submitting}
-                className="bg-[#0B5107] hover:bg-green-700 border border-black rounded-[55px] px-6 py-2 text-white"
-              >
-                {t("home.post_button")}
-              </Button>
+                <Button
+                  type="primary"
+                  onClick={handleSubmit(onSubmit)}
+                  loading={submitting}
+                  disabled={isPostButtonDisabled}
+                  className={`border border-black rounded-[55px] px-6 py-2 text-white transition ${
+                    isPostButtonDisabled
+                      ? "!bg-[#8F8E8A] !border-[#8F8E8A] !text-[#E3E2DE] !cursor-not-allowed hover:!bg-[#8F8E8A]"
+                      : "bg-[#0B5107] hover:bg-green-700 border border-black rounded-[55px] px-6 py-2 text-white"
+                  }`}
+                >
+                  {t("home.post_button")}
+                </Button>
             </div>
           </div>
         </div>
