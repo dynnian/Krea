@@ -89,8 +89,8 @@ export default function UserNavbar() {
   }
 
   return ( 
-    <nav className="bg-[#1351AA] flex flex-row items-center border-b-2 border-[#8F8E8A] sticky top-0 z-[1000] w-full ">
-      <div className="w-screen mr-40 w-full">
+    <nav className="bg-[#1351AA] flex flex-row items-center border-b-2 border-[#8F8E8A] sticky top-0 z-[1000] w-full">
+      <div className="w-full">
         {isMobile ? (
           /* MOBILE LAYOUT */
           <div className="flex items-center justify-between px-4 py-2">
@@ -253,7 +253,7 @@ export default function UserNavbar() {
             ) : (
               <Link
                 to="/login"
-                className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="bg-[#8FB78E] text-[#1351AA] px-5 py-2 rounded-lg hover:bg-[#a5c9a4] transition-colors font-bold"
               >
                 {t("login.sign_in_button")}
               </Link>
@@ -315,13 +315,15 @@ export default function UserNavbar() {
               </button>
             </>
           ) : (
-            <Link
-              to="/login"
-              className="flex items-center gap-4 px-6 py-4 text-lg text-[#F3F3F1]"
-              onClick={() => setDrawerOpen(false)}
-            >
-              <User size={20} /> {t("login.sign_in_button")}
-            </Link>
+            <div className="px-6 py-4">
+              <Link
+                to="/login"
+                className="flex items-center justify-center gap-2 w-full bg-[#8FB78E] text-[#1351AA] py-3 rounded-xl font-bold text-lg"
+                onClick={() => setDrawerOpen(false)}
+              >
+                <User size={20} /> {t("login.sign_in_button")}
+              </Link>
+            </div>
           )}
         </div>
       </Drawer>
