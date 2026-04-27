@@ -14,7 +14,7 @@ namespace Krea.Application.Common {
                 new[] { ".mp3", ".wav" }
             ),
             ["text"] = new Rule(
-                20 * 1024 * 1024,
+                40 * 1024 * 1024,
                 new[] { "application/pdf", "text/plain", "application/epub+zip" },
                 new[] { ".pdf", ".txt", ".epub" }
             )

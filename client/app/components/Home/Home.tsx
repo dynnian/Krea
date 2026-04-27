@@ -2,14 +2,15 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Grid, message, Spin } from "antd";
-import { useAuth } from "../../contexts/AuthContext";
-import Composer from "../Composer";
-import FeedTabs from "../FeedTabs";
-import PostCard from "../Posts/PostCard";
-import TagsSidebar from "./TagsSidebar";
-import { feedApi } from "../../services/postsService";
-import { feedItemToPostDto } from "../../utils/postMappers";
-import type { PostDto } from "../../types/api";
+import { useAuth } from "../../contexts/AuthContext.tsx";
+import Composer from "../Composer.tsx";
+import FeedTabs from "../FeedTabs.tsx";
+import PostCard from "../Posts/PostCard.tsx";
+import TagsSidebar from "./TagsSidebar.tsx";
+import { feedApi } from "../../services/postsService.ts";
+import { feedItemToPostDto } from "../../utils/postMappers.ts";
+import { useInfiniteScroll } from "@/lib/hooks/useInfiniteScroll.ts";
+import type { PostDto } from "../../types/api.ts";
 
 const { useBreakpoint } = Grid;
 
@@ -33,10 +34,13 @@ export default function Home() {
   // Función para cargar una página
   const loadPage = useCallback(async (page: number, isInitial: boolean) => {
     if (loadingRef.current) return;
+
     loadingRef.current = true;
     setLoading(true);
+
     try {
       let res;
+
       if (activeTab === "forYou") {
         res = await feedApi.getRecent(user?.id, page, 10);
       } else {
@@ -44,28 +48,35 @@ export default function Home() {
           setActiveTab("forYou");
           return;
         }
-        res = await feedApi.getFollowing(page, 10);
+
+        res = await feedApi.getFollowing(user.id, page, 10);
       }
+
       const items = Array.isArray(res.data) ? res.data : [];
       const newPosts = items.map(feedItemToPostDto);
-      if (newPosts.length === 0) {
-        setHasMore(false);
+
+      if (isInitial) {
+        setPosts(newPosts);
       } else {
-        if (isInitial) {
-          setPosts(newPosts);
-        } else {
-          setPosts(prev => [...prev, ...newPosts]);
-        }
-        pageRef.current = page + 1;
-        if (newPosts.length < 10) setHasMore(false);
+        setPosts((prev) => [...prev, ...newPosts]);
       }
+
+      pageRef.current = page + 1;
+      setHasMore(newPosts.length === 10);
     } catch (err) {
-      console.error(err);
+      console.error("Error loading feed:", err);
       message.error(t("home.errorLoadingFeed"));
       setHasMore(false);
     } finally {
       loadingRef.current = false;
       setLoading(false);
+    }
+  }, [activeTab, user?.id, t]);
+
+  useEffect(() => {
+    if (activeTab === "following" && !user) {
+      setActiveTab("forYou");
+      message.info(t("home.loginToSeeFollowing"));
     }
   }, [activeTab, user, t]);
 
