@@ -313,7 +313,7 @@ function PortfolioViewHeader({
       <button
         type="button"
         onClick={onBack}
-        className="flex items-center justify-center w-[32px] h-[32px] hover:bg-gray-200 rounded-full transition cursor-pointer"
+        className="pointer-events-auto flex items-center justify-center w-[32px] h-[32px] hover:bg-gray-200 rounded-full transition cursor-pointer"
       >
         <ChevronLeft size={20} />
       </button>
@@ -615,7 +615,7 @@ export default function WriterPortfolio({
 
   if (showGeneralPortfolio) {
     return (
-      <div className="w-full md:-mt-[60px]">
+      <div className="w-full md:-mt-[60px] pointer-events-none">
         <div className="max-w-[1388px] mx-auto">
           <PortfolioViewHeader
             title="Portafolio General"
@@ -630,7 +630,7 @@ export default function WriterPortfolio({
 
   if (activeCollection) {
     return (
-      <div className="w-full md:-mt-[60px]">
+      <div className="w-full md:-mt-[60px] pointer-events-none">
         <div className="max-w-[1388px] mx-auto">
           <PortfolioViewHeader
             title={activeCollection.title}

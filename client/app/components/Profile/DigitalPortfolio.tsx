@@ -272,7 +272,7 @@ function PortfolioViewHeader({
       <div className="flex items-center gap-[10px] px-[24px] md:px-[34px] pb-[18px]">
         <button
           onClick={onBack}
-          className="flex items-center justify-center w-[32px] h-[32px] hover:bg-gray-200 rounded-full transition cursor-pointer"
+          className="pointer-events-auto flex items-center justify-center w-[32px] h-[32px] hover:bg-gray-200 rounded-full transition cursor-pointer"
         >
           <ChevronLeft size={24} className="text-gray-800" />
         </button>
@@ -488,7 +488,7 @@ if (collectionDetailLoading) {
 if (showGeneralPortfolio) {
   return (
     <>
-      <div className="w-full md:-mt-[60px]">
+      <div className="w-full md:-mt-[60px] pointer-events-none">
         <PortfolioViewHeader
           title="Portafolio General"
           onBack={() => setShowGeneralPortfolio(false)}
@@ -508,7 +508,7 @@ if (showGeneralPortfolio) {
 if (activeCollection) {
   return (
     <>
-      <div className="w-full md:-mt-[60px]">
+      <div className="w-full md:-mt-[60px] pointer-events-none">
         <PortfolioViewHeader
           title={activeCollection.title}
           onBack={() => setActiveCollection(null)}

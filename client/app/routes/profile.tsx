@@ -643,8 +643,8 @@ const editingCollectionConfig = getEditingCollectionConfig();
         onGoToSettings={handleGoToSettings}
         onGoToSaved={handleGoToSaved}
       />
-      <div className="w-full flex justify-center">
-        <div className=" krea-tabs">
+      <div className="w-full flex justify-center relative z-[100] pointer-events-auto">
+        <div className="krea-tabs relative z-[100] pointer-events-auto">
           <Tabs
             activeKey={activeMainTab}
             onChange={(key) => {
@@ -700,7 +700,8 @@ const editingCollectionConfig = getEditingCollectionConfig();
     )}
   </div> 
 
-  <div className={` ${
+  <div
+    className={`relative z-0 ${
       isPortfolioView
         ? "pt-[20px]"
         : ""
@@ -708,20 +709,20 @@ const editingCollectionConfig = getEditingCollectionConfig();
   >
 
     {activeMainTab === "portfolio" && effectivePortfolioTab === "images" && (
-     <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-    <DigitalPortfolio
-      userId={profile.user.id ?? ""}
-      items={visualPortfolioItems}
-      onEditCollection={(collection, moveTargets) => {
-        setEditingImageCollection(collection);
-        setEditingImageMoveTargets(moveTargets);
-      }}
-    />
-     </div>
+      <div className="w-screen relative z-0 left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+        <DigitalPortfolio
+          userId={profile.user.id ?? ""}
+          items={visualPortfolioItems}
+          onEditCollection={(collection, moveTargets) => {
+            setEditingImageCollection(collection);
+            setEditingImageMoveTargets(moveTargets);
+          }}
+        />
+      </div>
     )}
 
     {activeMainTab === "portfolio" && effectivePortfolioTab === "music" && (
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
+      <div className="w-screen relative z-0 left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
        <MusicPortfolio
         songs={musicSongs}
         albums={musicAlbums}
