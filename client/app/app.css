@@ -231,3 +231,243 @@ html, body, #root {
   border-radius: 7px !important;
   box-shadow: 0 2px 6px rgba(19, 81, 170, 0.35) !important;
 }
+
+.notifications-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.notifications-trigger {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: transparent;
+  color: #f3f3f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.notifications-trigger span:first-child {
+  font-size: 20px;
+}
+
+.notifications-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #1351aa;
+}
+
+.notifications-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: min(380px, calc(100vw - 24px));
+  max-height: 520px;
+  overflow: hidden;
+  background: #e8f1fc;
+  border: 1.5px solid #95accc;
+  border-radius: 14px;
+  box-shadow: 4px 4px 13px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+}
+
+.notifications-panel-header {
+  padding: 18px 20px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1.5px solid #95accc;
+  background: #e8f1fc;
+}
+
+.notifications-panel-header h3 {
+  margin: 0;
+  color: #1b1c1e;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.notifications-panel-header small {
+  display: block;
+  margin-top: 4px;
+  color: #5f6f86;
+  font-size: 12px;
+}
+
+.notifications-panel-header button {
+  border: 1.5px solid #95accc;
+  border-radius: 10px;
+  background: #1351aa;
+  color: #ffffff;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.notifications-panel-header button:hover:not(:disabled) {
+  background: #0f4188;
+}
+
+.notifications-panel-header button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.notifications-panel-body {
+  max-height: 420px;
+  overflow-y: auto;
+  background: #e8f1fc;
+}
+
+.notification-item {
+  padding: 16px 20px;
+  border-bottom: 1.5px solid #95accc;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item.unread {
+  background: #dcecff;
+}
+
+.notification-item.read {
+  background: #e8f1fc;
+  opacity: 0.82;
+}
+
+.notification-item-content p {
+  margin: 0;
+  color: #1b1c1e;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.notification-item-content small {
+  display: block;
+  margin-top: 8px;
+  color: #5f6f86;
+  font-size: 12px;
+}
+
+.notification-item-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.notification-item-actions button {
+  border: 1.5px solid #95accc;
+  border-radius: 9px;
+  background: #f3f7fc;
+  color: #1b1c1e;
+  padding: 7px 11px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.notification-item-actions button:hover {
+  background: #1351aa;
+  color: #ffffff;
+}
+
+.notifications-empty {
+  padding: 28px 20px;
+  text-align: center;
+  color: #5f6f86;
+  font-size: 14px;
+}
+
+.notifications-panel button.krea-save-button,
+.notifications-panel button.krea-cancel-button,
+.notifications-panel button.krea-white-button {
+  min-height: 34px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.12s ease;
+}
+
+.notifications-panel button.krea-save-button {
+  border-color: #1b1c1e;
+  background: #0b5107;
+  color: #f3f3f1;
+  cursor: pointer;
+}
+
+.notifications-panel button.krea-save-button:hover {
+  background: #144384;
+  border-color: #144384;
+}
+
+.notifications-panel button.krea-cancel-button {
+  border-color: #e19494;
+  color: #7e2929;
+  background: #f3f3f1;
+  cursor: pointer;
+}
+
+.notifications-panel button.krea-cancel-button:hover {
+  background: #861010;
+  border-color: #861010;
+}
+
+.notifications-panel button.krea-white-button {
+  border-color: #1B1C1E;
+  color: #1B1C1E;
+  background: #f3f3f1;
+  cursor: pointer;
+}
+
+.notifications-panel button.krea-white-button:hover {
+  background: #ffffff;
+  border-color: #1351aa;
+  color: #1351aa;
+}
+
+.notifications-panel button.krea-save-button:active,
+.notifications-panel button.krea-cancel-button:active,
+.notifications-panel button.krea-white-button:active {
+  transform: scale(0.97);
+}
+
+.notifications-panel button.krea-save-button:disabled,
+.notifications-panel button.krea-cancel-button:disabled,
+.notifications-panel button.krea-white-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
