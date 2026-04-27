@@ -12,6 +12,7 @@ namespace Krea.Application.Features.Posts.Dto {
         public Guid? CoverMediaId { get; set; }
         public string? CoverUrl { get; set; }
         public string? CoverMimeType { get; set; }
+        public IReadOnlyList<string> Genres { get; init; } = [];
         public int LikeCount { get; set; }
         public int ReplyCount { get; set; }
         public int RepostCount { get; set; }
