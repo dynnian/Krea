@@ -16,6 +16,7 @@ import {
 import { useAuth } from "../contexts/AuthContext.tsx";
 import NotificationCenter from "./NotificationCenter.tsx";
 import { useNotifications } from "../contexts/NotificationContext.tsx";
+import SearchModal from "./SearchModal.tsx";
 import { BrandLogoC }  from "./BrandLogo.tsx";
 
 const { useBreakpoint } = Grid;
@@ -32,6 +33,7 @@ export default function UserNavbar() {
   // Mobile specific state
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -97,6 +99,7 @@ export default function UserNavbar() {
                   placeholder={t("navbar.search_placeholder")}
                   className="w-full h-10 bg-[#F3F3F1] border-2 border-[#8F8E8A] rounded-lg px-4"
                   prefix={<Search size={18} className="text-gray-400" />}
+                  onFocus={() => setIsSearchModalOpen(true)}
                   allowClear
                   autoFocus
                 />
@@ -141,6 +144,7 @@ export default function UserNavbar() {
                 placeholder={t("navbar.search_placeholder")}
                 className="h-10 bg-[#F3F3F1] border-2 border-[#8F8E8A] rounded-lg px-4"
                 prefix={<Search size={18} className="text-gray-400" />}
+                onFocus={() => setIsSearchModalOpen(true)}
                 allowClear
               />
             </div>
@@ -207,6 +211,7 @@ export default function UserNavbar() {
           </div>
         )}
       </div>
+      <SearchModal isOpen={isSearchModalOpen} onClose={() => setIsSearchModalOpen(false)} />
 
       {/* MOBILE DRAWER */}
       <Drawer

@@ -67,7 +67,9 @@ namespace Krea.Application.Features.User.SearchUser {
             var orderedUsers = users
                 .Where(u => !u.IsBanned && !u.IsDisabled)
                 .Where(u => identities.ContainsKey(u.Id))
-                .Select(u => {
+                .Where(u => !IsAdmin(identities[u.Id]))
+                .Select(u =>
+                {
                     UserIdentity identity = identities[u.Id];
 
                     return new { User = u, Identity = identity };
@@ -75,30 +77,20 @@ namespace Krea.Application.Features.User.SearchUser {
                 .OrderBy(x => string.Equals(
                     x.Identity.UserName,
                     query,
-                    StringComparison.OrdinalIgnoreCase)
-                    ? 0
-                    : 1)
+                    StringComparison.OrdinalIgnoreCase) ? 0 : 1)
                 .ThenBy(x => x.Identity.UserName.StartsWith(
                     query,
-                    StringComparison.OrdinalIgnoreCase)
-                    ? 0
-                    : 1)
+                    StringComparison.OrdinalIgnoreCase) ? 0 : 1)
                 .ThenBy(x => string.Equals(
                     x.User.DisplayName,
                     query,
-                    StringComparison.OrdinalIgnoreCase)
-                    ? 0
-                    : 1)
+                    StringComparison.OrdinalIgnoreCase) ? 0 : 1)
                 .ThenBy(x => x.User.DisplayName.StartsWith(
                     query,
-                    StringComparison.OrdinalIgnoreCase)
-                    ? 0
-                    : 1)
+                    StringComparison.OrdinalIgnoreCase) ? 0 : 1)
                 .ThenBy(x => x.User.DisplayName.Contains(
                     query,
-                    StringComparison.OrdinalIgnoreCase)
-                    ? 0
-                    : 1)
+                    StringComparison.OrdinalIgnoreCase) ? 0 : 1)
                 .ThenBy(x => x.User.DisplayName)
                 .ThenBy(x => x.Identity.UserName)
                 .ToList();
@@ -134,6 +126,13 @@ namespace Krea.Application.Features.User.SearchUser {
                 totalCount,
                 page,
                 pageSize);
+        }
+        
+        private static bool IsAdmin(UserIdentity identity)
+        {
+            return identity.Roles.Any(role =>
+                string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(role, "Administrator", StringComparison.OrdinalIgnoreCase));
         }
     }
 }
