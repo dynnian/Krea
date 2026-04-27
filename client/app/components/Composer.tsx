@@ -8,7 +8,7 @@ import { User, Image, Music, FileText } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { postsApi } from "../services/postsService.ts";
 import axiosClient from "../lib/axios.ts";
-import type { PostDto } from "../types/api.ts";
+import type { PostDto, UploadMediaType } from "../types/api.ts";
 import CreatePortfolioPostModal from "@/components/Posts/CreatePortfolioPostModal.tsx"; 
 import { PostType } from "../types/common.ts";
 
@@ -36,6 +36,7 @@ export default function Composer({ onPost }: ComposerProps) {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedPostType, setSelectedPostType] = useState<UploadMediaType>(PostType.IMAGE);
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
 
   useEffect(() => {
@@ -125,6 +126,11 @@ export default function Composer({ onPost }: ComposerProps) {
     }
   };
 
+  const openModalWithType = (type: UploadMediaType) => {
+    setSelectedPostType(type);
+    setModalVisible(true);
+  };
+
   if (!user) return null;
 
   return (
@@ -154,7 +160,7 @@ export default function Composer({ onPost }: ComposerProps) {
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setModalVisible(true)}
+                  onClick={() => openModalWithType(PostType.IMAGE)}
                   className="p-2 hover:bg-[#E3E2DE] rounded-full transition cursor-pointer"
                   title={t("createPost.image")}
                 >
@@ -162,7 +168,7 @@ export default function Composer({ onPost }: ComposerProps) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setModalVisible(true)}
+                  onClick={() => openModalWithType(PostType.MUSIC)}
                   className="p-2 hover:bg-[#E3E2DE] rounded-full transition cursor-pointer"
                   title={t("createPost.music")}
                 >
@@ -170,7 +176,7 @@ export default function Composer({ onPost }: ComposerProps) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setModalVisible(true)}
+                  onClick={() => openModalWithType(PostType.TEXT)}
                   className="p-2 hover:bg-[#E3E2DE] rounded-full transition cursor-pointer"
                   title={t("createPost.literature")}
                 >
@@ -192,6 +198,7 @@ export default function Composer({ onPost }: ComposerProps) {
 
       <CreatePortfolioPostModal
         visible={modalVisible}
+        initialPostType={selectedPostType}
         onClose={() => setModalVisible(false)}
         onSuccess={() => {
           setModalVisible(false);
