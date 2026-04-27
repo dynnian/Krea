@@ -549,7 +549,10 @@ const getAudioDurationFromWaveSurfer = async (audioUrl: string) => {
                   <p className="text-[18px] lg:text-[24px] leading-[1.2] text-[#6A6A6A]">
                     <button
                       type="button"
-                      onClick={() => navigate(`/profile/${effectiveOwnerHandle}`)}
+                      onClick={() => {
+                        if (!albumHeaderData?.ownerId) return;
+                        navigate(`/user/${albumHeaderData.ownerId}`);
+                      }}
                       className="cursor-pointer hover:underline"
                     >
                       {effectiveOwnerName}
@@ -557,7 +560,10 @@ const getAudioDurationFromWaveSurfer = async (audioUrl: string) => {
                     {" · "}
                     <button
                       type="button"
-                      onClick={() => navigate(`/profile/${effectiveOwnerHandle}`)}
+                      onClick={() => {
+                        if (!albumHeaderData?.ownerId) return;
+                        navigate(`/user/${albumHeaderData.ownerId}`);
+                      }}
                       className="cursor-pointer hover:underline"
                     >
                       @{effectiveOwnerHandle}
