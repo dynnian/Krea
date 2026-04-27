@@ -642,7 +642,7 @@ const handleSave = () => {
 
   return (
     <div className="w-full relative z-0">
-      <div className="relative z-0 pointer-events-none">
+      <div className="relative z-0">
         <EditCollectionHeader
           onBack={handleCancel}
           title={config.pageTitle}
