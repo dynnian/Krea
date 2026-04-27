@@ -49,7 +49,7 @@ export default function Home() {
           return;
         }
 
-        res = await feedApi.getFollowing(user.id, page, 10);
+        res = await feedApi.getFollowing( page, 10);
       }
 
       const items = Array.isArray(res.data) ? res.data : [];
