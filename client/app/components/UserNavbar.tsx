@@ -12,6 +12,8 @@ import {
   Bell,
   X,
   LogOut,
+  ChevronDown,
+  Settings,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext.tsx";
 import NotificationCenter from "./NotificationCenter.tsx";
@@ -46,12 +48,41 @@ export default function UserNavbar() {
   const isExploreActive = location.pathname === "/explore";
   const isProfileActive = location.pathname.startsWith("/profile") || location.pathname.startsWith("/user");
   const isMessagesActive = location.pathname.startsWith("/messages");
+  const isSettingsActive = location.pathname === "/settings";
 
   const handleLogout = async () => {
     await logout();
     setDrawerOpen(false);
     navigate("/");
   };
+
+  const profileMenu = (
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden min-w-[200px] shadow-lg">
+      <div className="py-1">
+        <Link
+          to="/profile"
+          className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors border-b border-gray-100"
+        >
+          <User size={18} className="text-gray-400" />
+          <span className="font-medium">{t("navbar.profile")}</span>
+        </Link>
+        <Link
+          to="/settings"
+          className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors border-b border-gray-100"
+        >
+          <Settings size={18} className="text-gray-400" />
+          <span className="font-medium">{t("profile.configuration_button")}</span>
+        </Link>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-4 py-3 w-full text-left cursor-pointer border-0 transition-colors bg-transparent !text-red-600 hover:bg-red-500 hover:!text-white"
+        >
+          <LogOut size={18} />
+          <span className="font-medium">{t("navbar.logout")}</span>
+        </button>
+      </div>
+    </div>
+  );
 
   if (!isMounted) {
     return <div className="h-16 bg-[#1351AA] w-full" />;
@@ -190,15 +221,34 @@ export default function UserNavbar() {
 
                 </Popover>
 
-                <Link to="/profile" className="group flex flex-col items-center">
-                  <div className="flex items-center gap-1">
-                    <span className={`text-lg font-medium transition-colors ${isProfileActive ? "text-[#8FB78E]" : "text-[#E3E2DE] group-hover:text-white"}`}>
-                      {t("navbar.profile")}
-                    </span>
-                    <User size={20} className={isProfileActive ? "text-[#8FB78E]" : "text-[#E3E2DE] group-hover:text-white"} />
-                  </div>
-                  {isProfileActive && <div className="w-full h-0.5 bg-[#8FB78E] mt-1" />}
-                </Link>
+                <Popover
+                  content={profileMenu}
+                  trigger="click"
+                  placement="bottomRight"
+                  arrow={false}
+                  overlayInnerStyle={{
+                    padding: 0,
+                    background: "transparent",
+                    boxShadow: "none",
+                  }}
+                  align={{
+                    offset: [0, 10],
+                  }}
+                >
+                  <button className="flex items-center gap-3 group cursor-pointer bg-transparent border-0 p-1">
+                    <Avatar
+                      src={user?.profilePictureUrl || undefined}
+                      icon={!user?.profilePictureUrl && <User size={20} />}
+                      className="border-2 border-[#8F8E8A] group-hover:border-white transition-colors bg-[#0E3D82]"
+                    />
+                    <div className="hidden lg:flex flex-col items-start max-w-[150px]">
+                      <span className={`font-medium text-sm transition-colors truncate w-full text-left ${isProfileActive ? "text-[#8FB78E]" : "text-[#E3E2DE] group-hover:text-white"}`}>
+                        {user?.name}
+                      </span>
+                    </div>
+                    <ChevronDown size={16} className="text-[#E3E2DE] group-hover:text-white transition-colors" />
+                  </button>
+                </Popover>
               </div>
             ) : (
               <Link
@@ -249,6 +299,13 @@ export default function UserNavbar() {
                 onClick={() => setDrawerOpen(false)}
               >
                 <User size={20} /> {t("navbar.profile")}
+              </Link>
+              <Link
+                to="/settings"
+                className={`flex items-center gap-4 px-6 py-4 text-lg border-b border-[#95ACCC] ${isSettingsActive ? "bg-blue-800 !text-[#8FB78E]" : "!text-[#F3F3F1]"}`}
+                onClick={() => setDrawerOpen(false)}
+              >
+                <Settings size={20} /> {t("profile.configuration_button")}
               </Link>
               <button
                 className="flex items-center gap-4 px-6 py-4 text-lg text-red-300 w-full text-left"

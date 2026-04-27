@@ -129,7 +129,7 @@ export default function Composer({ onPost }: ComposerProps) {
 
   return (
     <>
-      <div className="bg-[#E8F1FC] rounded-[15px] outline outline-[1.5px] outline-[#95ACCC] p-[22px] shadow-md mb-6 min-h-[140px]">
+      <div className="bg-[#E8F1FC] rounded-[15px] ring-[1.5px] ring-[#95ACCC] focus-within:ring-[2px] focus-within:ring-[#1351AA] focus-within:shadow-[0_4px_15px_rgba(19,81,170,0.15)] transition-all duration-300 ease-in-out p-[22px] shadow-md mb-6 min-h-[140px]">
         <div className="flex items-start gap-6">
           <Avatar
             src={currentUserAvatar ?? undefined}

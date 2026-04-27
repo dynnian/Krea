@@ -23,6 +23,7 @@ interface UserResponse {
   languageCode: string;
   timeZoneId: string;
   roleId: number;
+  profilePictureUrl?: string | null;
 }
 
 interface LoginResponse {
@@ -71,6 +72,14 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/api\/?$/, "");
+
+const normalizeUrl = (url?: string | null) => {
+  if (!url) return null;
+  if (url.startsWith("http") || url.startsWith("blob:") || url.startsWith("data:")) return url;
+  return `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | undefined>();
   const [loading, setLoading] = useState(true);
@@ -89,6 +98,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           storage.clearAll();
           setUser(undefined);
         } else {
+          // Normalizar el avatar del usuario guardado por si acaso
+          if (storedUser.profilePictureUrl) {
+            storedUser.profilePictureUrl = normalizeUrl(storedUser.profilePictureUrl);
+          }
           setUser(storedUser);
         }
       } catch {
@@ -137,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: userData.email,
         name: userData.displayName,
         handle: userData.username,
-        profilePictureUrl: null,
+        profilePictureUrl: normalizeUrl(userData.profilePictureUrl || (userData as any).ProfilePictureUrl),
         biography: userData.biography,
         languageCode: userData.languageCode,
         timeZoneId: userData.timeZoneId,
@@ -212,6 +225,12 @@ const register = async (data: RegisterDTO, rememberMe = false) => {
       }
 
       const nextUser = { ...current, ...updates };
+      
+      // Asegurar que si viene una nueva URL de imagen, esté normalizada
+      if (updates.profilePictureUrl !== undefined) {
+        nextUser.profilePictureUrl = normalizeUrl(updates.profilePictureUrl);
+      }
+
       const rememberMe = storage.getRememberMe?.() ?? false;
       storage.setUser(nextUser, rememberMe);
       return nextUser;

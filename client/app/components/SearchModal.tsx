@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { Search, X, UserPlus, UserCheck, Clock, Heart, Image, FileText, Video } from "lucide-react";
 import { Avatar, Spin, message } from "antd";

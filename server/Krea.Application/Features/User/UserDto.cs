@@ -7,5 +7,6 @@ namespace Krea.Application.Features.User {
         string? Biography,
         string LanguageCode,
         string TimeZoneId,
-        int RoleId);
+        int RoleId,
+        string? ProfilePictureUrl = null);
 }

@@ -59,7 +59,8 @@ namespace Krea.Application.Features.Auth.Login {
                 domainUser.Biography,
                 domainUser.LanguageCode,
                 domainUser.TimeZoneId,
-                GetRoleInt(identity.Roles)
+                GetRoleInt(identity.Roles),
+                domainUser.ProfilePicture?.Path
             );
     }
 }

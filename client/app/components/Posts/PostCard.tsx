@@ -232,7 +232,7 @@ const bookCoverUrl =
   };
 
   return (
-    <article className="w-full min-w-0 bg-[#E8F1FC] rounded-[15px] outline outline-[1.5px] outline-[#95ACCC] p-[22px] shadow-[4px_4px_12.6px_rgba(0,0,0,0.25)]">
+    <article className="w-full min-w-0 bg-[#E8F1FC] hover:bg-[#DFEAF8] rounded-[15px] ring-[1.5px] ring-[#95ACCC] hover:ring-[2px] hover:ring-[#1351AA] hover:-translate-y-[1px] hover:shadow-[4px_6px_15px_rgba(19,81,170,0.2)] transition-all duration-300 ease-in-out p-[22px] shadow-[4px_4px_12.6px_rgba(0,0,0,0.25)]">
       {isRepost && (
         <div className="text-xs text-gray-500 mb-2 ml-[60px]">
           {t('post.reposted_by')} {repostAuthorName}

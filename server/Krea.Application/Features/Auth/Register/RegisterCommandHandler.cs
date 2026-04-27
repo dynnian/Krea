@@ -91,7 +91,8 @@ namespace Krea.Application.Features.Auth.Register {
                 domainUser.Biography,
                 domainUser.LanguageCode,
                 domainUser.TimeZoneId,
-                GetRoleInt(identity.Roles)
+                GetRoleInt(identity.Roles),
+                domainUser.ProfilePicture?.Path
             );
     }
 }
