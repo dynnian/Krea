@@ -669,7 +669,7 @@ const editingCollectionConfig = getEditingCollectionConfig();
     {activeMainTab === "portfolio" && (
       
       <div className="lg:pl-[70px]  md:mt-[-10px] mb-[10px] flex justify-end pr-[0px]">
-        <div className="w-full flex justify-center mt-[32px] md:mt-0 md:pl-[520px]">
+        <div className="z-[200] w-full flex justify-center mt-[32px] md:mt-0 md:pl-[520px]">
         <div className="flex items-center gap-[10px] md:-mt-[30px] relative z-20 md:translate-x-[55px]">
         <button
           type="button"
@@ -911,6 +911,7 @@ onEditAlbum={async (album) => {
     open={isCreateCollectionModalOpen}
     onClose={() => setIsCreateCollectionModalOpen(false)}
     ownerId={profile.user.id ?? ""}
+    initialPortfolioType={effectivePortfolioTab as "images" | "music" | "literature"}
     availableItemsByType={collectionModalItemsByType}
     onSuccess={() => {
       setIsCreateCollectionModalOpen(false);
