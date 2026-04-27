@@ -141,7 +141,7 @@ function LiteratureFeaturedCard({
   const isFavorite = getFavoriteState(book);
 
   return (
-    <section className="w-full h-[350px] bg-[#E8F1FC] border border-[#8F8E8A] px-[94px] pt-[18px] pb-[25px] flex flex-col">
+    <section className="w-full bg-[#E8F1FC] border border-[#8F8E8A] px-4 sm:px-8 md:px-[94px] pt-[18px] pb-[25px] flex flex-col md:h-[350px]">
       <div className="shrink-0 pb-[5px]">
         <h2 className="m-0">
           <span className="text-[#1B1C1E] text-[36px] font-bold">
@@ -150,11 +150,11 @@ function LiteratureFeaturedCard({
         </h2>
       </div>
 
-      <div className="flex-1 min-h-0 flex flex-row gap-6 items-stretch">
+      <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-5 md:gap-6 items-center md:items-stretch">
         <button
           type="button"
           onClick={() => navigate(`/post/${book.id}`)}
-          className="h-full aspect-[2/3] shrink-0 overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)] bg-[#D9D9D9] border-0 p-0 cursor-pointer"
+          className="w-[170px] h-[255px] md:h-full md:w-auto md:aspect-[2/3] shrink-0 overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)] bg-[#D9D9D9] border-0 p-0 cursor-pointer"
         >
           <LiteratureCover
             title={book.title}
@@ -167,9 +167,9 @@ function LiteratureFeaturedCard({
           />
         </button>
 
-        <div className="flex-1 min-w-0 h-full flex flex-col pt-[20px]">
+        <div className="w-full md:flex-1 min-w-0 md:h-full flex flex-col pt-0 md:pt-[20px]">
           <div>
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-3 md:gap-4">
               <div className="min-w-0 flex-1 flex flex-col gap-[3px]">
                 <button
                   type="button"

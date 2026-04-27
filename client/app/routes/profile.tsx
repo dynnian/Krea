@@ -404,7 +404,6 @@ const mainTabItems = [
     ),
   },
     { key: "publications", label: t("Publicaciones") },
-    { key: "members", label: t("Miembros") },
   ];
 
 const getFilteredPosts = () => {

@@ -20,10 +20,11 @@ export type DigitalArtwork = {
 type DigitalPortfolioProps = {
   userId: string;
   items: DigitalArtwork[];
-  onEditCollection: (
+  onEditCollection?: (
     collection: MockImageCollection,
     moveTargets: { id: string; title: string; coverUrl?: string }[]
   ) => void;
+  readOnly?: boolean;
 };
 
 type PreviewImage = {
@@ -131,12 +132,13 @@ return (
   );
 }
 
-function ImageCollectionCard({ collection, items, onOpen, onEdit, onDelete, }: {
+function ImageCollectionCard({ collection, items, onOpen, onEdit, onDelete, readOnly = false, }: {
   collection: ImageCollectionCardData;
   items: DigitalArtwork[];
   onOpen: (collectionId: string) => void;
   onEdit: (collection: MockImageCollection) => void;
   onDelete: (collectionId: string) => void;
+  readOnly?: boolean;
 }) {
   const rightTop = collection.previewPosts?.[0];
   const rightBottom = collection.previewPosts?.[1];
@@ -240,21 +242,23 @@ return (
             </h3>
           </div>
 
-          <Dropdown
-            menu={{ items: collectionMenuItems, onClick: handleCollectionMenuClick }}
-            trigger={["click"]}
-            placement="bottomRight"
-          >
-            <button
-              type="button"
-              className="h-[20px] w-[20px] flex items-center justify-center rounded-full cursor-pointer"
-              onClick={(event) => {
-                event.stopPropagation();
-              }}
+          {!readOnly && (
+            <Dropdown
+              menu={{ items: collectionMenuItems, onClick: handleCollectionMenuClick }}
+              trigger={["click"]}
+              placement="bottomRight"
             >
-              <MoreHorizontal size={16} className="text-[#1B1C1E]" />
-            </button>
-          </Dropdown>
+              <button
+                type="button"
+                className="h-[20px] w-[20px] flex items-center justify-center rounded-full cursor-pointer"
+                onClick={(event) => {
+                  event.stopPropagation();
+                }}
+              >
+                <MoreHorizontal size={16} className="text-[#1B1C1E]" />
+              </button>
+            </Dropdown>
+          )}
         </div>
       </div>
     </div>
@@ -358,6 +362,7 @@ export default function DigitalPortfolio({
   userId,
   items,
   onEditCollection,
+  readOnly = false,
 }: DigitalPortfolioProps) {
 const [showGeneralPortfolio, setShowGeneralPortfolio] = useState(false);
 const [activeCollection, setActiveCollection] = useState<MockImageCollection | null>(null);
@@ -453,7 +458,9 @@ if (collectionDetailLoading) {
         coverUrl: target.coverUrl ?? undefined,
       }));
 
-    onEditCollection(collection, moveTargets);
+      if (!onEditCollection) return;
+
+      onEditCollection(collection, moveTargets);
   };
   
   const handleDeleteCollection = async (collectionId: string) => {
@@ -553,6 +560,7 @@ return (
             onOpen={handleOpenCollection}
             onEdit={handleEditCollection}
             onDelete={handleDeleteCollection}
+            readOnly={readOnly}
           />
         ))}
       </div>

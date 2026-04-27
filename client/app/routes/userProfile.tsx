@@ -294,10 +294,15 @@ export default function PublicProfilePage() {
         const postsRes = await postsApi.getUserPosts(userId, 1, 100);
         const rawPosts = Array.isArray(postsRes.data) ? postsRes.data : [];
         const normalized = normalizeApiPosts(rawPosts, profile?.displayName || "");
+
+        const resolvedVisualItems = mapPostsToVisualPortfolioItems(normalized);
+        const resolvedMusicSongs = mapPostsToMusicSongs(normalized);
+        const resolvedWriterWorks = mapPostsToWriterWorks(normalized);
+
         setPosts(normalized);
-        setVisualItems(mapPostsToVisualPortfolioItems(normalized));
-        setMusicSongs(mapPostsToMusicSongs(normalized));
-        setWriterWorks(mapPostsToWriterWorks(normalized));
+        setVisualItems(resolvedVisualItems);
+        setMusicSongs(resolvedMusicSongs);
+        setWriterWorks(resolvedWriterWorks);
 
         const collections = await collectionsApi.getUserCollections(userId);
 
@@ -548,7 +553,7 @@ return (
           hasPortfolio &&
           activePortfolioSubTab === "images" && (
             <div className="w-screen relative z-0 left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-              <DigitalPortfolio userId={userId ?? ""} items={visualItems} />
+              <DigitalPortfolio userId={userId ?? ""} items={visualItems} readOnly />
             </div>
           )}
 
@@ -560,6 +565,7 @@ return (
                 songs={musicSongs}
                 albums={musicAlbums}
                 error={postsError}
+                readOnly
               />
             </div>
           )}
@@ -572,6 +578,7 @@ return (
                 works={writerWorks}
                 collections={writerCollections}
                 error={postsError}
+                readOnly
               />
             </div>
           )}
