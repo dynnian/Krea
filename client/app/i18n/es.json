@@ -597,7 +597,8 @@
       "orders": "Pedidos",
       "portfolio": "Portafolios",
       "security": "Seguridad",
-      "donations": "Donaciones"
+      "donations": "Donaciones",
+      "reports": "Reportes"
     },
     "profile": {
       "edit": "Editar perfil",
@@ -661,6 +662,16 @@
       "title": "Donaciones",
       "description": "Si te gusta mi trabajo, considera hacer una donación para apoyar la creación de más contenido.",
       "note": "Gracias por tu apoyo ❤️"
+    },
+    "reports": {
+      "title": "Mis reportes",
+      "empty": "No has realizado ningún reporte aún.",
+      "load_error": "Error al cargar los reportes",
+      "pending": "Pendiente",
+      "resolved": "Resuelto",
+      "details": "Detalles",
+      "resolved_action": "Acción tomada",
+      "moderator_note": "Nota del moderador"
     }
   },
   "version": "Krea Platform v2.1.0"

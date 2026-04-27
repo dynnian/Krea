@@ -8,4 +8,6 @@ export interface ReportPostData {
 export const reportsApi = {
   reportPost: (postId: string, data: ReportPostData) =>
     axiosClient.post(`/posts/${postId}/reports`, data),
+  getMyReports: (page: number, pageSize: number) =>
+    axiosClient.get("/reports/me", { params: { page, pageSize } }),
 };

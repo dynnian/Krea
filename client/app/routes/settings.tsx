@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { Avatar, Button, Input, Select, Switch, Tabs, Grid, message } from "antd";
+import { Avatar, Button, Input, Select, Switch, Tabs, Grid, message, Spin, Tag, Table } from "antd";
 import { ImagePlus, User, LogOut, Heart } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { settingsRepository } from "../services/settingsRepository.ts";
@@ -12,6 +12,7 @@ import "./settings.css";
 import { useAuth } from "../contexts/AuthContext.tsx";
 import { useNavigate } from "react-router";
 import i18n from "../i18n";
+import { reportsApi } from "../services/reportsService.ts";
 
 const { useBreakpoint } = Grid;
 
@@ -33,6 +34,7 @@ const settingsSections: { key: SettingsSectionKey; label: string }[] = [
   { key: "portfolio", label: "Portafolios" },
   { key: "security", label: "Seguridad" },
   { key: "donations", label: "Donaciones" },
+  { key: "reports", label: "Reportes" },   
 ];
 
 const emptyProfileDraft: ProfileSettings = {
@@ -75,6 +77,10 @@ export default function SettingsRoute() {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [reports, setReports] = useState<any[]>([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsPage, setReportsPage] = useState(1);
+  const [reportsHasMore, setReportsHasMore] = useState(true);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -101,6 +107,12 @@ export default function SettingsRoute() {
     };
     void loadSettings();
   }, [t]);
+  useEffect(() => {
+    if (activeSection === "reports") {
+      setReportsPage(1);
+      loadReports(1);
+    }
+  }, [activeSection]);
 
   const handleInputChange =
     (field: keyof ProfileSettings) =>
@@ -195,6 +207,21 @@ export default function SettingsRoute() {
     setSettingsState((prev) => (prev ? { ...prev, security: nextSecurity } : prev));
     await settingsRepository.saveSecurity(nextSecurity);
     message.success(t("settingsUser.security_toggled"));
+  };
+
+  const loadReports = async (page: number) => {
+    if (reportsLoading) return;
+    setReportsLoading(true);
+    try {
+      const res = await reportsApi.getMyReports(page, 10);
+      const items = res.data.items || [];
+      setReports(prev => (page === 1 ? items : [...prev, ...items]));
+      setReportsHasMore(items.length === 10);
+    } catch {
+      message.error(t("settingsUser.reports.load_error"));
+    } finally {
+      setReportsLoading(false);
+    }
   };
 
   if (!settingsState) {
@@ -397,6 +424,74 @@ export default function SettingsRoute() {
       </div>
     </>
   );
+  // Columnas de la tabla (con traducciones)
+const reportColumns = [
+  { title: t("settingsUser.reports.columns.reportId"), dataIndex: "reportId", key: "reportId", ellipsis: true },
+  { title: t("settingsUser.reports.columns.postId"), dataIndex: "postId", key: "postId", ellipsis: true },
+  { title: t("settingsUser.reports.columns.reason"), dataIndex: "reason", key: "reason" },
+  { title: t("settingsUser.reports.columns.details"), dataIndex: "details", key: "details", ellipsis: true },
+  {
+    title: t("settingsUser.reports.columns.status"),
+    dataIndex: "status",
+    key: "status",
+    render: (status: number) => (
+      <Tag color={status === 1 ? "gold" : "green"}>
+        {status === 1 ? t("settingsUser.reports.pending") : t("settingsUser.reports.resolved")}
+      </Tag>
+    ),
+  },
+  { title: t("settingsUser.reports.columns.resolvedAction"), dataIndex: "resolvedAction", key: "resolvedAction", render: (v: any) => v || "—" },
+  { title: t("settingsUser.reports.columns.moderatorNote"), dataIndex: "moderatorNote", key: "moderatorNote", render: (v: any) => v || "—" },
+  { title: t("settingsUser.reports.columns.createdAt"), dataIndex: "createdAt", key: "createdAt", render: (d: string) => new Date(d).toLocaleString() },
+  { title: t("settingsUser.reports.columns.updatedAt"), dataIndex: "updatedAt", key: "updatedAt", render: (d: string) => new Date(d).toLocaleString() },
+];
+
+  const renderReportsSection = () => (
+    <>
+      <div className="settings-section-header-row">
+        <h2 className="settings-section-title">{t("settingsUser.reports.title")}</h2>
+      </div>
+      <div className="reports-list">
+        {reports.length === 0 && !reportsLoading && (
+          <p className="settings-empty">{t("settingsUser.reports.empty")}</p>
+        )}
+        {reports.map((report) => (
+          <div key={report.reportId} className="report-card settings-toggle-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px', padding: '12px 0', borderBottom: '1px solid #e8e8e8' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+              <strong>{report.reason}</strong>
+              <span className={`report-status-${report.status === 1 ? 'pending' : 'resolved'}`}>
+                {report.status === 1 ? t("settingsUser.reports.pending") : t("settingsUser.reports.resolved")}
+              </span>
+            </div>
+            {report.details && (
+              <div className="report-details" style={{ fontSize: '13px', color: '#555' }}>
+                <strong>{t("settingsUser.reports.details")}:</strong> {report.details}
+              </div>
+            )}
+            {report.resolvedAction && (
+              <div style={{ fontSize: '13px' }}>
+                <strong>{t("settingsUser.reports.resolved_action")}:</strong> {report.resolvedAction}
+              </div>
+            )}
+            {report.moderatorNote && (
+              <div style={{ fontSize: '13px' }}>
+                <strong>{t("settingsUser.reports.moderator_note")}:</strong> {report.moderatorNote}
+              </div>
+            )}
+            <div style={{ fontSize: '12px', color: '#999' }}>
+              {new Date(report.createdAt).toLocaleString()}
+            </div>
+          </div>
+        ))}
+        {reportsLoading && <div className="text-center py-2"><Spin /></div>}
+        {reportsHasMore && !reportsLoading && (
+          <Button type="link" onClick={() => { setReportsPage(p => p + 1); loadReports(reportsPage + 1); }}>
+            {t("common.load_more")}
+          </Button>
+        )}
+      </div>
+    </>
+  );
 
   const renderActiveContent = () => {
     switch (activeSection) {
@@ -404,6 +499,7 @@ export default function SettingsRoute() {
       case "portfolio": return renderPortfolioSection();
       case "security": return renderSecuritySection();
       case "donations": return renderDonationsSection();
+      case "reports": return renderReportsSection();
       default: return renderProfileSection();
     }
   };
@@ -413,6 +509,7 @@ export default function SettingsRoute() {
     { key: "portfolio", label: t("settingsUser.sections.portfolio"), children: renderPortfolioSection() },
     { key: "security", label: t("settingsUser.sections.security"), children: renderSecuritySection() },
     { key: "donations", label: t("settingsUser.sections.donations"), children: renderDonationsSection() },
+    { key: "reports", label: t("settingsUser.sections.reports"), children: renderReportsSection() }
   ];
 
   return (

@@ -588,7 +588,8 @@
       "orders": "Orders",
       "portfolio": "Portfolios",
       "security": "Security",
-      "donations": "Donations"
+      "donations": "Donations",
+      "reports": "Reports"
     },
     "profile": {
       "edit": "Edit profile",
@@ -652,6 +653,16 @@
       "title": "Donations",
       "description": "If you like my work, consider making a donation to support the creation of more content.",
       "note": "Thank you for your support ❤️"
+    },
+    "reports": {
+      "title": "My reports",
+      "empty": "You haven't reported anything yet.",
+      "load_error": "Failed to load reports",
+      "pending": "Pending",
+      "resolved": "Resolved",
+      "details": "Details",
+      "resolved_action": "Resolved Action",
+      "moderator_note": "Moderator Note"
     }
   },
   

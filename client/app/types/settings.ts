@@ -1,4 +1,4 @@
-export type SettingsSectionKey = "profile" | "donations" | "portfolio" | "security";
+export type SettingsSectionKey = "profile" | "security"  | "donations" | "portfolio" | "reports";
 
 export type SettingsSection = {
   key: SettingsSectionKey;
