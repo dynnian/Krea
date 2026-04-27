@@ -7,6 +7,7 @@ namespace Krea.Application.Features.Posts.Dto {
         public string AuthorUsername { get; set; } = string.Empty;
         public string? AuthorProfilePictureUrl { get; set; }
         public DateTime UploadedAt { get; set; }
+        public IReadOnlyList<string> Genres { get; init; } = [];
 
         public string? MediaPreviewUrl { get; set; }
         public string? MediaMimeType { get; set; }

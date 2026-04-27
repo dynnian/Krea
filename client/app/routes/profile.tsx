@@ -847,7 +847,12 @@ onEditAlbum={async (album) => {
                     uploadCount: post.userPostId,
                     title: post.title,
                     content: post.content,
+                    genres:
+                      (post as any).genres ??
+                      (post as any).Genres ??
+                      [],
                     isWork: post.isWork,
+                    
                     isLocal: post.isLocal,
                     media: post.media.map((m) => ({
                       id: m.media.id,
