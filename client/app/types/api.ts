@@ -179,11 +179,13 @@ export interface PostDto {
   isLocal: boolean;
   uploadCount: number;
   likesCount: number;
+  repostCount?: number;
   uploadedAt: string;
   media: MediaDto[];
   isLikedByCurrentUser: boolean;
   isRetweetedByCurrentUser: boolean;
   isFavoritedByCurrentUser?: boolean;
+  repliedToId?: string | null;
   replies?: PostDto[];
   repostOfId?: string;         // ID del post original si es repost
   repostOf?: PostDto;          // Post original (solo si es repost)

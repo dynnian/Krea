@@ -52,7 +52,7 @@ export default function ImageView() {
         setLiked(postData.isLikedByCurrentUser ?? false);
         setLikesCount(postData.likesCount ?? 0);
         setReposted(postData.isRetweetedByCurrentUser ?? false);
-        setRepostsCount(postData.isRetweetedByCurrentUser ? 1 : 0);
+        setRepostsCount(postData.repostCount ?? (postData.isRetweetedByCurrentUser ? 1 : 0));
         setCommentsCount(postData.replies?.length ?? 0);
         setIsBookmarked((postData as any).isFavoritedByCurrentUser ?? (postData as any).isFavorite ?? false);
       } catch (error) {
@@ -106,6 +106,7 @@ export default function ImageView() {
     setRepostsCount((prev) => (wasReposted ? prev - 1 : prev + 1));
     try {
       await postsApi.repost(originalPost.id, { authorId: user!.id, originalPostId: originalPost.id });
+      message.success(t(wasReposted ? "post.repost_removed" : "post.reposted"));
     } catch {
       setReposted(wasReposted);
       setRepostsCount((prev) => (wasReposted ? prev + 1 : prev - 1));

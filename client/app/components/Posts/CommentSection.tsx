@@ -1,5 +1,5 @@
 // deno-lint-ignore-file
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext.tsx';
 import { useNavigate } from 'react-router';
@@ -21,6 +21,7 @@ const toAbsoluteUrl = (url?: string | null): string | undefined => {
 interface CommentSectionProps {
   postId: string;
   onCommentPosted?: () => void;
+  focusedCommentId?: string;
 }
 
 const getCurrentUserAvatar = (user: any) =>
@@ -39,7 +40,7 @@ const getCommentAvatar = (comment: any) =>
   comment.author?.profilePictureUrl ??
   null;
 
-export default function CommentSection({ postId, onCommentPosted }: CommentSectionProps) {
+export default function CommentSection({ postId, onCommentPosted, focusedCommentId }: CommentSectionProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -48,6 +49,8 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [highlightedCommentId, setHighlightedCommentId] = useState<string | null>(null);
+  const focusedCommentRef = useRef<HTMLDivElement | null>(null);
 const [composerDisplayName, setComposerDisplayName] = useState('');
 const [composerHandle, setComposerHandle] = useState('');
 const [composerAvatarUrl, setComposerAvatarUrl] = useState<string | undefined>(undefined);
@@ -103,6 +106,24 @@ useEffect(() => {
     };
     fetchReplies();
   }, [postId, t]);
+
+  useEffect(() => {
+    if (!focusedCommentId || comments.length === 0) return;
+
+    const exists = comments.some((comment) => comment.id === focusedCommentId);
+    if (!exists) return;
+
+    setHighlightedCommentId(focusedCommentId);
+    focusedCommentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    const timeout = setTimeout(() => {
+      setHighlightedCommentId((current) =>
+        current === focusedCommentId ? null : current
+      );
+    }, 3000);
+
+    return () => clearTimeout(timeout);
+  }, [focusedCommentId, comments]);
 
   const handleSubmit = async () => {
     if (!user) {
@@ -186,7 +207,15 @@ useEffect(() => {
           const commentAvatar = getCommentAvatar(comment);
 
           return (
-            <div key={comment.id} className="flex gap-3 bg-[#E8F1FC] p-[22px] border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
+            <div
+              key={comment.id}
+              ref={comment.id === focusedCommentId ? focusedCommentRef : null}
+              className={`flex gap-3 bg-[#E8F1FC] p-[22px] border-[1.5px] rounded-[10px] shadow-[4px_4px_13px_rgba(0,0,0,0.25)] transition-all duration-300 ${
+                highlightedCommentId === comment.id
+                  ? 'border-[#1351AA] ring-2 ring-[#1351AA]/30'
+                  : 'border-[#95ACCC]'
+              }`}
+            >
               <Avatar
                 src={commentAvatar ?? undefined}
                 icon={!commentAvatar && <User />}

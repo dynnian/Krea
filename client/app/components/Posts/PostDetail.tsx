@@ -1,6 +1,6 @@
 // deno-lint-ignore-file
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Spin, message, Alert, Avatar, Dropdown } from 'antd';
 import { ArrowLeft, Heart, MessageCircle, Repeat2, User, MoreHorizontal, Bookmark, Flag } from 'lucide-react';
@@ -52,6 +52,7 @@ export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
 
   const [post, setPost] = useState<PostDto | null>(null);
@@ -77,7 +78,7 @@ export default function PostDetail() {
         setLiked(postData.isLikedByCurrentUser);
         setLikesCount(postData.likesCount);
         setReposted(postData.isRetweetedByCurrentUser);
-        setRepostsCount(postData.isRetweetedByCurrentUser ? 1 : 0);
+        setRepostsCount(postData.repostCount ?? (postData.isRetweetedByCurrentUser ? 1 : 0));
         setCommentsCount(postData.replies?.length ?? 0);
         setIsBookmarked((postData as any).isFavoritedByCurrentUser ?? false);
       } catch (err) {
@@ -134,7 +135,7 @@ const isOwnPost = !!originalPost && user?.id === originalPost.authorPostId;
     setRepostsCount(prev => (wasReposted ? prev - 1 : prev + 1));
     try {
       await postsApi.repost(originalPost.id, { authorId: user!.id, originalPostId: originalPost.id });
-      message.success(t('post.reposted'));
+      message.success(t(wasReposted ? 'post.repost_removed' : 'post.reposted'));
     } catch {
       setReposted(wasReposted);
       setRepostsCount(prev => (wasReposted ? prev + 1 : prev - 1));
@@ -216,6 +217,7 @@ const isOwnPost = !!originalPost && user?.id === originalPost.authorPostId;
   const authorName = originalPost.authorName || `Usuario ${originalPost.authorPostId.slice(0, 8)}`;
   const authorHandle = originalPost.authorName ? `@${originalPost.authorName}` : originalPost.authorPostId.slice(0, 8);
   const authorAvatar = toAbsoluteUrl(getAuthorAvatar(originalPost));
+  const focusedReplyId = searchParams.get('focusReply');
 
   return (
     <div className="min-h-screen bg-[#E3E2DE]">
@@ -330,7 +332,11 @@ const isOwnPost = !!originalPost && user?.id === originalPost.authorPostId;
               </button>
             </div>
 
-            <CommentSection postId={originalPost.id} onCommentPosted={handleCommentPosted} />
+            <CommentSection
+              postId={originalPost.id}
+              onCommentPosted={handleCommentPosted}
+              focusedCommentId={focusedReplyId ?? undefined}
+            />
           </div>
 
           <div className="hidden lg:block w-64 shrink-0">

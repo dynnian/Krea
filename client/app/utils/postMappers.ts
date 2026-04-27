@@ -181,6 +181,44 @@ export function feedItemToPostDto(item: FeedItem): PostDto {
     coverMimeType: item.coverMimeType ?? null,
   }] : [];
 
+  const repostMedia = item.repostOf?.mediaPreviewUrl ? [{
+    id: "",
+    fileName: item.repostOf.mediaPreviewUrl.split("/").pop() || "",
+    mimeType: item.repostOf.mediaMimeType || "",
+    url: item.repostOf.mediaPreviewUrl,
+    isWorkMedia: false,
+    coverMediaId: item.repostOf.coverMediaId ?? null,
+    coverUrl: item.repostOf.coverUrl ?? null,
+    coverMimeType: item.repostOf.coverMimeType ?? null,
+  }] : [];
+
+  const repostOf = item.repostOf ? {
+    id: item.repostOf.id,
+    authorPostId: item.repostOf.authorId,
+    authorName: item.repostOf.authorUsername,
+    author: {
+      id: item.repostOf.authorId,
+      username: item.repostOf.authorUsername,
+      displayName: item.repostOf.authorUsername,
+      avatar: normalizeAssetUrl(
+        item.repostOf.authorProfilePictureUrl ?? null
+      ),
+    },
+    title: item.repostOf.title,
+    content: item.repostOf.content,
+    isWork: false,
+    isLocal: false,
+    uploadCount: repostMedia.length,
+    likesCount: item.repostOf.likeCount ?? 0,
+    repostCount: item.repostOf.repostCount ?? 0,
+    uploadedAt: item.repostOf.uploadedAt,
+    media: repostMedia,
+    isLikedByCurrentUser: false,
+    isRetweetedByCurrentUser: item.isRetweetedByCurrentUser,
+    isFavoritedByCurrentUser: item.isFavorite ?? false,
+    replies: [],
+  } satisfies PostDto : undefined;
+
   return {
     id: item.id,
     authorPostId: item.authorId,                 // ← usar authorId
@@ -204,11 +242,15 @@ export function feedItemToPostDto(item: FeedItem): PostDto {
     isLocal: false,
     uploadCount: media.length,
     likesCount: item.likeCount,
+    repostCount: item.repostCount,
     uploadedAt: item.uploadedAt,
     media,
     isLikedByCurrentUser: item.isLikedByCurrentUser,
-    isRetweetedByCurrentUser: false,
+    isRetweetedByCurrentUser: item.isRetweetedByCurrentUser,
     isFavoritedByCurrentUser: item.isFavorite ?? false, // ← para bookmark
+    repliedToId: item.repliedToId ?? null,
+    repostOfId: item.repostOfId ?? undefined,
+    repostOf,
     replies: [],
   };
 }

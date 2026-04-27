@@ -21,6 +21,7 @@ namespace Krea.Application.Features.Posts.Dto {
         public int ReplyCount { get; set; }
         public int RepostCount { get; set; }
 
+        public Guid? RepliedToId { get; set; }
         public Guid? RepostOfId { get; set; }
         public RepostFeedReferenceDto? RepostOf { get; set; }
     }

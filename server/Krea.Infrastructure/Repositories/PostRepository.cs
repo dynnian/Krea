@@ -152,6 +152,17 @@ namespace Krea.Infrastructure.Repositories {
                                          p.AuthorPostId == userId &&
                                          !p.IsDeleted, cancellationToken);
 
+        public async Task<Post?> GetRepostByUserAndTargetAsync(
+            Guid originalPostId,
+            Guid userId,
+            CancellationToken cancellationToken = default) =>
+            await _context.Posts
+                          .FirstOrDefaultAsync(p =>
+                              p.RepostOfId == originalPostId &&
+                              p.AuthorPostId == userId &&
+                              !p.IsDeleted,
+                              cancellationToken);
+
         public async Task<HashSet<Guid>> GetRepostedTargetIdsAsync(
             Guid authorId,
             IReadOnlyCollection<Guid> repostTargetIds,

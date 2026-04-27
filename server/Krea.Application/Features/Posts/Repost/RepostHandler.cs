@@ -32,13 +32,17 @@ namespace Krea.Application.Features.Posts.Repost {
 
             Guid repostTargetId = original.RepostOfId ?? original.Id;
 
-            bool alreadyReposted = await _postRepository.ExistsRepostAsync(
+            Post? existingRepost = await _postRepository.GetRepostByUserAndTargetAsync(
                 repostTargetId,
                 command.AuthorId,
                 cancellationToken);
 
-            if (alreadyReposted)
-                throw new InvalidOperationException("You have already reposted this post");
+            if (existingRepost is not null) {
+                existingRepost.Delete();
+                await _postRepository.UpdateAsync(existingRepost, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                return existingRepost.Id;
+            }
 
             var repost = new Post(
                 command.AuthorId,

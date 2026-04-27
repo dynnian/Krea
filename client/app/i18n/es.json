@@ -135,7 +135,11 @@
     "report_error": "Error al enviar el reporte. Inténtalo de nuevo.",
     "report_submit": "Enviar reporte",
     "reposted_by": "Republicado de",
-    "reposted":"Reposted"
+    "reposted": "Republicado",
+    "repost_removed": "Se quitó la republicación",
+    "reposted_by_user": "Republicado por {{user}}",
+    "reply_in_thread": "Respuesta en hilo",
+    "someone": "alguien"
   },
   "tags": {
     "latest_illustration": "Lo último en Ilustración",

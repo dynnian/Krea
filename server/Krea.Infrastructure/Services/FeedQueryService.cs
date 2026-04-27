@@ -61,7 +61,10 @@ namespace Krea.Infrastructure.Services {
                               IsFavorite = currentUserId != null &&
                                            p.Favorites.Any(f => f.UserId == currentUserId),
                               ReplyCount = _context.Posts.Count(r => r.RepliedToId == p.Id),
-                              RepostCount = _context.Posts.Count(r => r.RepostOfId == (p.RepostOfId ?? p.Id)),
+                              RepostCount = _context.Posts.Count(r =>
+                                  !r.IsDeleted &&
+                                  r.RepostOfId == (p.RepostOfId ?? p.Id)),
+                              RepliedToId = p.RepliedToId,
                               RepostOfId = p.RepostOfId,
                               RepostOf = p.RepostOf == null
                                   ? null
@@ -83,7 +86,9 @@ namespace Krea.Infrastructure.Services {
                                                        .FirstOrDefault(),
                                       LikeCount = p.RepostOf.Likes.Count(),
                                       ReplyCount = _context.Posts.Count(r => r.RepliedToId == p.RepostOf.Id),
-                                      RepostCount = _context.Posts.Count(r => r.RepostOfId == p.RepostOf.Id)
+                                      RepostCount = _context.Posts.Count(r =>
+                                          !r.IsDeleted &&
+                                          r.RepostOfId == p.RepostOf.Id)
                                   }
                           })
                           .ToListAsync(ct);
@@ -127,7 +132,10 @@ namespace Krea.Infrastructure.Services {
                                          r.RepostOfId == (p.RepostOfId ?? p.Id)),
                                      IsFavorite = p.Favorites.Any(f => f.UserId == currentUserId),
                                      ReplyCount = _context.Posts.Count(r => r.RepliedToId == p.Id),
-                                     RepostCount = _context.Posts.Count(r => r.RepostOfId == (p.RepostOfId ?? p.Id)),
+                                     RepostCount = _context.Posts.Count(r =>
+                                         !r.IsDeleted &&
+                                         r.RepostOfId == (p.RepostOfId ?? p.Id)),
+                                     RepliedToId = p.RepliedToId,
                                      RepostOfId = p.RepostOfId,
                                      RepostOf = p.RepostOf == null
                                          ? null
@@ -159,7 +167,9 @@ namespace Krea.Infrastructure.Services {
                                                               .FirstOrDefault(),
                                              LikeCount = p.RepostOf.Likes.Count(),
                                              ReplyCount = _context.Posts.Count(r => r.RepliedToId == p.RepostOf.Id),
-                                             RepostCount = _context.Posts.Count(r => r.RepostOfId == p.RepostOf.Id)
+                                             RepostCount = _context.Posts.Count(r =>
+                                                 !r.IsDeleted &&
+                                                 r.RepostOfId == p.RepostOf.Id)
                                          }
                                  })
                                  .ToListAsync(ct);
@@ -215,7 +225,10 @@ namespace Krea.Infrastructure.Services {
                                                   x.Post.Favorites.Any(f => f.UserId == currentUserId.Value),
                                      ReplyCount = _context.Posts.Count(r => r.RepliedToId == x.Post.Id),
                                      RepostCount =
-                                         _context.Posts.Count(r => r.RepostOfId == (x.Post.RepostOfId ?? x.Post.Id)),
+                                         _context.Posts.Count(r =>
+                                             !r.IsDeleted &&
+                                             r.RepostOfId == (x.Post.RepostOfId ?? x.Post.Id)),
+                                     RepliedToId = x.Post.RepliedToId,
                                      RepostOfId = x.Post.RepostOfId,
                                      RepostOf = x.Post.RepostOf == null
                                          ? null
@@ -240,7 +253,9 @@ namespace Krea.Infrastructure.Services {
                                              LikeCount = x.Post.RepostOf.Likes.Count(),
                                              ReplyCount =
                                                  _context.Posts.Count(r => r.RepliedToId == x.Post.RepostOf.Id),
-                                             RepostCount = _context.Posts.Count(r => r.RepostOfId == x.Post.RepostOf.Id)
+                                             RepostCount = _context.Posts.Count(r =>
+                                                 !r.IsDeleted &&
+                                                 r.RepostOfId == x.Post.RepostOf.Id)
                                          }
                                  })
                                  .ToListAsync(ct);

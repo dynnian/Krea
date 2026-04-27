@@ -1,9 +1,9 @@
 // deno-lint-ignore-file
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 import { Avatar, message, Modal, Dropdown} from 'antd';
-import { Heart, MessageCircle, Repeat2, Bookmark, MoreHorizontal, User, FileText, Flag, Play, Pause } from 'lucide-react';
+import { Heart, MessageCircle, Repeat2, Bookmark, MoreHorizontal, User, Flag, Play, Pause, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext.tsx';
 import AudioWaveform from '../WaveSurfer/AudioWaveform.tsx';
 import { postsApi } from '../../services/postsService.ts';
@@ -55,13 +55,15 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
 
   const originalPost = post.repostOf ?? post;
   const isRepost = !!post.repostOf;
-  const repostAuthorName = isRepost ? post.authorName : null;
+  const repostAuthorName = isRepost ? (post.authorName ?? post.author?.displayName ?? post.author?.username ?? '') : null;
+  const repliedToId = post.repliedToId ?? (post as any).replyToPostId ?? (post as any).postRepliedTo ?? null;
+  const isReply = !!repliedToId;
   const isOwnPost = user?.id === originalPost.authorPostId;
 
   const [liked, setLiked] = useState(originalPost.isLikedByCurrentUser);
   const [likesCount, setLikesCount] = useState(originalPost.likesCount);
   const [reposted, setReposted] = useState(post.isRetweetedByCurrentUser);
-  const [repostsCount, setRepostsCount] = useState(post.isRetweetedByCurrentUser ? 1 : 0);
+  const [repostsCount, setRepostsCount] = useState(post.repostCount ?? (post.isRetweetedByCurrentUser ? 1 : 0));
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(post.isFavoritedByCurrentUser ?? false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
@@ -81,6 +83,11 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
   useEffect(() => {
     setIsBookmarked(post.isFavoritedByCurrentUser ?? false);
   }, [post.id, post.isFavoritedByCurrentUser]);
+
+  useEffect(() => {
+    setReposted(post.isRetweetedByCurrentUser ?? false);
+    setRepostsCount(post.repostCount ?? (post.isRetweetedByCurrentUser ? 1 : 0));
+  }, [post.id, post.isRetweetedByCurrentUser, post.repostCount]);
 
   const requireAuth = () => {
     if (!user) {
@@ -121,7 +128,7 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
     setRepostsCount(prev => (wasReposted ? prev - 1 : prev + 1));
     try {
       await postsApi.repost(originalPost.id, { authorId: user!.id, originalPostId: originalPost.id });
-      message.success(t('post.reposted'));
+      message.success(t(wasReposted ? 'post.repost_removed' : 'post.reposted'));
       onRepost?.(originalPost.id);
     } catch {
       setReposted(wasReposted);
@@ -231,11 +238,34 @@ const bookCoverUrl =
     navigate(`/post/${originalPost.id}`);
   };
 
+  const openReplyThread = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!repliedToId) return;
+    navigate(`/post/${String(repliedToId)}?focusReply=${post.id}`);
+  };
+
   return (
     <article className="w-full min-w-0 bg-[#E8F1FC] hover:bg-[#DFEAF8] rounded-[15px] ring-[1.5px] ring-[#95ACCC] hover:ring-[2px] hover:ring-[#1351AA] hover:-translate-y-[1px] hover:shadow-[4px_6px_15px_rgba(19,81,170,0.2)] transition-all duration-300 ease-in-out p-[22px] shadow-[4px_4px_12.6px_rgba(0,0,0,0.25)]">
-      {isRepost && (
-        <div className="text-xs text-gray-500 mb-2 ml-[60px]">
-          {t('post.reposted_by')} {repostAuthorName}
+      {(isRepost || isReply) && (
+        <div className="mb-3 ml-0 sm:ml-[60px] flex flex-wrap items-center gap-2">
+          {isRepost && (
+            <div className="inline-flex items-center gap-1.5 rounded-full border !border-[#95ACCC] bg-transparent px-3 py-1 !text-[12px] font-medium !text-[#1351AA] leading-none h-[26px]">
+              <Repeat2 size={13} className="!text-[#1351AA]" />
+              <span className="leading-none mt-[1px]">{t('post.reposted_by_user', { user: repostAuthorName || t('post.someone') })}</span>
+            </div>
+          )}
+          {isReply && (
+            <button
+              type="button"
+              onClick={openReplyThread}
+              className="group inline-flex items-center gap-1.5 rounded-full border !border-[#95ACCC] bg-transparent px-3 py-1 !text-[12px] font-medium !text-[#1351AA] hover:!border-[#1351AA] hover:bg-[#DDEAFB] transition cursor-pointer m-0 leading-none h-[26px]"
+            >
+              <MessageCircle size={13} className="!text-[#1351AA]" />
+              <span className="leading-none mt-[1px]">{t('post.reply_in_thread')}</span>
+              <ChevronRight size={14} className="ml-0.5 opacity-70 group-hover:opacity-100 group-hover:translate-x-[2px] transition-all !text-[#1351AA]" />
+            </button>
+          )}
         </div>
       )}
       <div className="flex gap-3">

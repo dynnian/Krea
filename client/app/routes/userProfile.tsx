@@ -525,6 +525,8 @@ export default function PublicProfilePage() {
                 isLikedByCurrentUser: post.isLikedByCurrentUser ?? false,
                 isFavoritedByCurrentUser: false,
                 isRetweetedByCurrentUser: false,
+                repliedToId: post.postRepliedTo ? String(post.postRepliedTo) : null,
+                repostOfId: post.postRepostOf ? String(post.postRepostOf) : undefined,
                 replies: post.replies ?? [],
               }}
             />

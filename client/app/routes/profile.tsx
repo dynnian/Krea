@@ -864,6 +864,8 @@ onEditAlbum={async (album) => {
                       post.isFavorite ??
                       false,
                     isRetweetedByCurrentUser: false,
+                    repliedToId: post.postRepliedTo ? String(post.postRepliedTo) : null,
+                    repostOfId: post.postRepostOf ? String(post.postRepostOf) : undefined,
                     replies: post.replies ?? [],
                   }}
                   canDelete={activeMainTab === "publications"}
