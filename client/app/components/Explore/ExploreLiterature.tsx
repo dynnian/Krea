@@ -7,9 +7,12 @@ import { useAuth } from "../../contexts/AuthContext";
 import { postsApi } from "../../services/postsService";
 import { userService } from "../../services/userService";
 import type { ExplorePostDto } from "../../types/api";
+import { useNavigate } from "react-router-dom";
 
 const LiteratureFeaturedCard: React.FC<{ book: ExplorePostDto; onLike: (id: string) => void; onFavorite: (id: string) => void; onFollow: (userId: string) => void }> = ({ book, onLike, onFavorite, onFollow }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
   return (
     <div className="bg-[#E9F1FC] border border-[#95ACCC] rounded-[10px] p-6 flex gap-6">
       <img src={book.coverUrl || book.previewUrl || "https://placehold.co/182x281"} alt={book.title} className="w-44 h-64 object-cover shadow-md" />
@@ -33,7 +36,7 @@ const LiteratureFeaturedCard: React.FC<{ book: ExplorePostDto; onLike: (id: stri
           <p className="text-sm text-justify">{book.content || t("explore.literature.no_description")}</p>
         </div>
         <div className="flex gap-4 mt-4">
-          <Button type="primary" className="bg-green-700">{t("explore.literature.read_now")}</Button>
+          <Button type="primary"  onClick={() => navigate(`/read/${book.id}`)} className="bg-green-700">{t("explore.literature.read_now")}</Button>
           <button onClick={() => onLike(book.id)} className="w-10 h-10 rounded-full border border-green-700 bg-green-50 flex items-center justify-center">
             <Heart size={20} className={book.isLikedByCurrentUser ? "fill-green-700" : ""} />
           </button>
@@ -46,18 +49,25 @@ const LiteratureFeaturedCard: React.FC<{ book: ExplorePostDto; onLike: (id: stri
   );
 };
 
-const LiteratureTrendingBook: React.FC<{ book: ExplorePostDto }> = ({ book }) => (
-  <div className="w-36 shrink-0 cursor-pointer hover:opacity-80">
-    <img src={book.coverUrl || book.previewUrl || "https://placehold.co/123x190"} alt={book.title} className="w-full h-48 object-cover rounded shadow" />
-    <p className="font-medium text-sm truncate mt-1">{book.title}</p>
-    <p className="text-xs text-gray-500 truncate">@{book.authorUsername}</p>
-  </div>
-);
+const LiteratureTrendingBook: React.FC<{ book: ExplorePostDto }> = ({ book }) => {
+  const navigate = useNavigate(); 
+  return (
+
+    <div className="w-36 shrink-0 cursor-pointer hover:opacity-80" onClick={() => navigate(`/read/${book.id}`)}>
+      <img src={book.coverUrl || book.previewUrl || "https://placehold.co/123x190"} alt={book.title} className="w-full h-48 object-cover rounded shadow" />
+      <p className="font-medium text-sm truncate mt-1">{book.title}</p>
+      <p className="text-xs text-gray-500 truncate">@{book.authorUsername}</p>
+    </div>
+  );
+};
 
 const LiteratureRecentBook: React.FC<{ book: ExplorePostDto; onLike: (id: string) => void; onFavorite: (id: string) => void }> = ({ book, onLike, onFavorite }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate(); 
+
   return (
-    <div className="bg-[#E9F1FC] border border-[#95ACCC] rounded-[10px] p-4 flex gap-4">
+    <div className="bg-[#E9F1FC] border border-[#95ACCC] rounded-[10px] p-4 flex gap-4"   onClick={() => navigate(`/read/${book.id}`)}
+>
       <img src={book.coverUrl || book.previewUrl || "https://placehold.co/92x143"} alt={book.title} className="w-24 h-36 object-cover shadow" />
       <div className="flex-1">
         <div className="flex justify-between items-start flex-wrap">

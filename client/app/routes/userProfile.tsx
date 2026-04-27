@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";

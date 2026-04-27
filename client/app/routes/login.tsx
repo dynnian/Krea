@@ -8,13 +8,13 @@ import {
   Checkbox,
   Grid,
 } from "antd";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext.tsx";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useI18n } from "../contexts/I18nContext";
+import { useI18n } from "../contexts/I18nContext.tsx";
 import backgroundImage from "../../assets/landscape.jpg";
-import {BrandLogo} from "../components/BrandLogo";
+import { BrandLogo } from "../components/BrandLogo.tsx";
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
@@ -161,8 +161,8 @@ export default function LoginRoute() {
                   </div>
                 </div>
                 <div className="flex justify-center gap-6 mt-12">
-                  <button onClick={() => setLanguage("en")} className="text-white hover:text-blue-300 text-lg transition-colors">English</button>
-                  <button onClick={() => setLanguage("es")} className="text-white hover:text-blue-300 text-lg transition-colors">Español</button>
+                  <button type="button" onClick={() => setLanguage("en")} className="text-white hover:text-blue-300 text-lg transition-colors">English</button>
+                  <button type="button" onClick={() => setLanguage("es")} className="text-white hover:text-blue-300 text-lg transition-colors">Español</button>
                 </div>
               </div>
             )}

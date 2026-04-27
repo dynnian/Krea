@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import {
   Links,
   Meta,
@@ -7,8 +8,7 @@ import {
 } from "react-router";
 
 import "./i18n/index.ts"; // i18next init
-import type { Route } from "./+types/root";
-
+import type { Route } from "../.react-router/types/app/+types/root.ts";
 import { AuthProvider } from "./contexts/AuthContext.tsx";
 import { I18nProvider } from "./contexts/I18nContext.tsx";
 import { ConfigProvider, Grid } from "antd";

@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import { useForm, Controller } from "react-hook-form";
 import {
   Button,
