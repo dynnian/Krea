@@ -71,22 +71,23 @@ export default function SignUpRoute() {
     };
   }, [profilePictureFile]);
 
-  const {
-    control,
-    handleSubmit,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm<SignUpDTO>({
-    mode: "onBlur",
-    defaultValues: {
-      username: "",
-      displayName: "",
-      biography: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
-  });
+const {
+  control,
+  handleSubmit,
+  watch,
+  setError,
+  formState: { errors, isSubmitting },
+} = useForm<SignUpDTO>({
+  mode: "onBlur",
+  defaultValues: {
+    username: "",
+    displayName: "",
+    biography: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  },
+});
 
   const password = watch("password");
 
@@ -260,17 +261,26 @@ export default function SignUpRoute() {
           registrationNotice,
         },
       });
-    } catch (error: any) {
-      const msg = error.message;
-      if (msg?.includes("Username already taken")) {
-        setAuthError(t("errors.username_taken"));
-      } else if (msg?.includes("Email already registered")) {
-        setAuthError(t("errors.email_taken"));
-      } else {
-        setAuthError(msg || t("errors.registration_failed"));
-      }
+  } catch (error: any) {
+    const rawMessage = String(error?.message || "");
+    const msg = rawMessage.toLowerCase().trim();
+
+    if (msg.includes("username already taken")) {
+      setError("username", {
+        type: "server",
+        message: t("errors.username_taken"),
+      });
+      setAuthError(t("errors.username_taken"));
+    } else if (msg.includes("email already registered")) {
+      setError("email", {
+        type: "server",
+        message: t("errors.email_taken"),
+      });
+      setAuthError(t("errors.email_taken"));
+    } else {
+      setAuthError(rawMessage || t("errors.registration_failed"));
     }
-  };
+  }
 
   if (authLoading || !isMounted) {
     return (
@@ -563,4 +573,5 @@ export default function SignUpRoute() {
       </Content>
     </Layout>
   );
+  }
 }

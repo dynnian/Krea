@@ -1,20 +1,34 @@
+// deno-lint-ignore-file
 import {
   type ApiPost,
   type UserDto,
   type CreatePostData,
   type FeedPost,
   type PostDto,
-} from "../types/api";
-import { type Post } from "../types/post";
-import { type AuthUser } from "../contexts/AuthContext";
-import { PostType } from "../types/common";
+} from "../types/api.ts";
+import { type Post } from "../types/post.ts";
+import { type AuthUser } from "../contexts/AuthContext.tsx";
+import { PostType } from "../types/common.ts";
 import type { FeedItem } from "../types/feed.ts";
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:5101";
+const API_BASE_URL =
+  (import.meta.env.VITE_API_BASE_URL ||
+    import.meta.env.VITE_API_URL ||
+    "http://127.0.0.1:5101/api").replace(/\/api\/?$/, "");
 
-function toAbsoluteUrl(url: string | null | undefined): string | undefined {
+const normalizeAssetUrl = (url?: string | null) => {
   if (!url) return undefined;
-  return url.startsWith("http") ? url : `${API_BASE_URL}${url}`;
-}
+
+  if (
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("blob:") ||
+    url.startsWith("data:")
+  ) {
+    return url;
+  }
+
+  return `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+};
 // Mapeo de números a enum PostType
 export function postTypeFromApi(apiType: number): PostType {
   const map: { [key: number]: PostType } = {
@@ -138,10 +152,17 @@ export function feedPostToPost(feedPost: FeedPost): Post {
       id: feedPost.authorId,
       name: feedPost.authorUsername,
       handle: feedPost.authorUsername,
-      avatar: toAbsoluteUrl(feedPost.authorProfilePictureUrl),
+      avatar: normalizeAssetUrl(
+        (feedPost as any).authorProfilePictureUrl ??
+          (feedPost as any).AuthorProfilePictureUrl ??
+          (feedPost as any).profilePictureUrl ??
+          (feedPost as any).ProfilePictureUrl ??
+          (feedPost as any).avatarUrl ??
+          (feedPost as any).AvatarUrl
+      ),
       sub: feedPost.authorId,
       email: "",
-    },
+    } as any,
     media: media,
     likesCount: feedPost.likeCount,
     favoritesCount: feedPost.repostCount,
@@ -155,6 +176,9 @@ export function feedItemToPostDto(item: FeedItem): PostDto {
     mimeType: item.mediaMimeType || "",
     url: item.mediaPreviewUrl,
     isWorkMedia: false,
+    coverMediaId: item.coverMediaId ?? null,
+    coverUrl: item.coverUrl ?? null,
+    coverMimeType: item.coverMimeType ?? null,
   }] : [];
 
   return {
@@ -164,8 +188,15 @@ export function feedItemToPostDto(item: FeedItem): PostDto {
     author: {
       id: item.authorId,
       username: item.authorUsername,
-      displayName: item.authorUsername,          // fallback
-      avatar: toAbsoluteUrl(item.authorProfilePictureUrl),
+      displayName: item.authorUsername,
+      avatar: normalizeAssetUrl(
+        (item as any).authorProfilePictureUrl ??
+          (item as any).AuthorProfilePictureUrl ??
+          (item as any).profilePictureUrl ??
+          (item as any).ProfilePictureUrl ??
+          (item as any).avatarUrl ??
+          (item as any).AvatarUrl
+      ),
     },
     title: item.title,
     content: item.content,

@@ -10,6 +10,8 @@ import {
   type FeedPost,
   type PostDto,
   type PaginatedReplies,
+  type ExplorePostDto,
+  type TrendingResponse,
 } from "../types/api.ts";
 import type { FeedItem } from "../types/feed.ts";
 import type { ReplyDto } from "./comments.ts";
@@ -20,7 +22,7 @@ export interface PostsQuery {
 }
 
 export interface PaginatedResponse<T> {
-  items: { $values: T[] };
+  items: T[];
   page: number;
   pageSize: number;
   totalCount: number;
@@ -97,15 +99,20 @@ export const postsApi = {
   ) => axiosClient.post<{ postId: string }>(`/Posts/${postId}/reply`, data),
   // Explorar contenido
   explore: (params: {
-    category?: string;
+    category?: "Image" | "Music" | "Text";
     genres?: string[];
     tags?: string[];
     sortBy?: string;
     page?: number;
     pageSize?: number;
-  }) => axiosClient.get<PostDto[]>("/Posts/explore", { params }),
+  }) =>
+    axiosClient.get<PaginatedResponse<ExplorePostDto>>("/Posts/explore", {
+      params,
+    }),
+
   toggleFavorite: (postId: string) =>
     axiosClient.post(`/Posts/${postId}/favorite/toggle`),
+
   getFavorites: async (page = 1, pageSize = 20) => {
     const response = await axiosClient.get("/Posts/me/favorites", {
       params: { page, pageSize },
@@ -128,12 +135,27 @@ export const feedApi = {
     axiosClient.get<FeedItem[]>("/feed/recent", {
       params: { currentUserId, page, pageSize },
     }),
-  getFollowing: (currentUserId: string, page = 1, pageSize = 20) =>
+  getFollowing: (page = 1, pageSize = 20) =>
     axiosClient.get<FeedItem[]>("/feed/following", {
-      params: { currentUserId, page, pageSize },
+      params: { page, pageSize },
     }),
-  getTrending: (currentUserId?: string, page = 1, pageSize = 20) =>
-    axiosClient.get<FeedItem[]>("/feed/trending", {
-      params: { currentUserId, page, pageSize },
-    }),
+  getTrending: async () => {
+  try {
+    const response = await axiosClient.get("/feed/trending");
+    // Normalizar respuesta (si es array, extraer primer elemento)
+    let data = response.data;
+    if (Array.isArray(data) && data.length > 0) {
+      data = data[0];
+    }
+    if (!data || typeof data !== 'object') {
+      data = { genres: [], tags: [] };
+    }
+    return { ...response, data: data as { genres: string[]; tags: string[] } };
+  } catch (error) {
+    console.warn("Error fetching trending, returning empty", error);
+    // Retornar un objeto vacío en lugar de lanzar error
+    return { data: { genres: [], tags: [] } } as any;
+  }
+},
 };
+

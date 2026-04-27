@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import type { MusicSong } from "../components/Profile/MusicPortfolio.tsx";
 import type { WriterWork } from "../components/Profile/WriterPortfolio.tsx";
 import type {
@@ -39,11 +40,21 @@ export function normalizeApiPosts(
       post.CreatedAt ??
       new Date().toISOString();
 
+    const postGenres =
+      post.genres ??
+      post.Genres ??
+      [];
+
     const likesCount = post.likesCount ?? post.LikesCount ?? 0;
     const isLikedByCurrentUser =
       post.isLikedByCurrentUser ?? post.IsLikedByCurrentUser ?? false;
     const favoritesCount = post.favoritesCount ?? post.FavoritesCount ?? 0;
-
+    const isFavorite =
+      post.isFavorite ??
+      post.IsFavorite ??
+      post.isFavoritedByCurrentUser ??
+      post.IsFavoritedByCurrentUser ??
+      false;
     return {
       backendId,
       id: Number.isFinite(Number(backendId)) ? Number(backendId) : index + 1,
@@ -53,14 +64,15 @@ export function normalizeApiPosts(
         post.authorPostId ??
         post.AuthorPostId ??
         index + 1,
-      type: hasAudio
-        ? PostType.AUDIO
-        : hasDocument
-          ? PostType.LINK
-          : hasImage
-            ? PostType.IMAGE
-            : PostType.LINK,
-      title: post.title ?? post.Title ?? null,
+        type: hasAudio
+          ? PostType.AUDIO
+          : hasDocument
+            ? PostType.LINK
+            : hasImage
+              ? PostType.IMAGE
+              : PostType.LINK,
+        genres: postGenres,
+        title: post.title ?? post.Title ?? null,
       content: post.content ?? post.Content ?? "",
       isWork:
         post.isWork ??
@@ -112,12 +124,15 @@ export function normalizeApiPosts(
           uploadedAt,
           coverUrl: m.coverUrl ?? m.CoverUrl,
           coverMediaId: m.coverMediaId ?? m.CoverMediaId,
+          genres: m.genres ?? m.Genres ?? [],
         },
       })),
-      likesCount,
-      favoritesCount,
-      replies: post.replies ?? post.Replies ?? [],
-      isLikedByCurrentUser,
+        likesCount,
+        favoritesCount,
+        replies: post.replies ?? post.Replies ?? [],
+        isLikedByCurrentUser,
+        isFavorite,
+        isFavoritedByCurrentUser: isFavorite,
     };
   });
 }
@@ -163,13 +178,18 @@ export function mapPostsToMusicSongs(posts: Post[]): MusicSong[] {
         isImageMime(m.media?.mimeType)
       );
 
+      const genres =
+        audioMedia?.media.genres?.length
+          ? audioMedia.media.genres
+          : post.genres ?? [];
+
       if (!audioMedia) return null;
 
       return {
         id: String(post.backendId ?? post.id),
         postId: String(post.backendId ?? post.id),
         title: post.title ?? "Sin título",
-        genre: "Sin género",
+        genre: genres.length ? genres.join(", ") : "Sin género",
         coverUrl:
           audioMedia?.media.coverUrl ??
           coverMedia?.media.path ??
@@ -177,6 +197,10 @@ export function mapPostsToMusicSongs(posts: Post[]): MusicSong[] {
         audioUrl: audioMedia.media.path,
         likesCount: post.likesCount ?? 0,
         isLiked: post.isLikedByCurrentUser ?? false,
+        isBookmarked:
+          post.isFavoritedByCurrentUser ??
+          post.isFavorite ??
+          false,
       };
     })
     .filter((song): song is MusicSong => song !== null);
@@ -200,20 +224,40 @@ export function mapPostsToWriterWorks(posts: Post[]): WriterWork[] {
         isImageMime(m.media?.mimeType)
       );
 
+      const genres =
+        documentMedia?.media.genres?.length
+          ? documentMedia.media.genres
+          : post.genres ?? [];
+
       return {
         id: String(post.backendId ?? post.id),
         postId: String(post.backendId ?? post.id),
         title: post.title ?? "Sin título",
+
         coverUrl:
           documentMedia?.media.coverUrl ??
           coverMedia?.media.path ??
-          "https://placehold.co/240x360?text=Libro",
+          null,
+
+        documentUrl:
+          documentMedia?.media.path ??
+          null,
+
+        mimeType:
+          documentMedia?.media.mimeType ??
+          null,
+
+
         chaptersCount: 1,
-        genre: "Sin género",
+        genre: genres.length ? genres.join(", ") : "Sin género",
         description: post.content ?? "",
         likesCount: post.likesCount ?? 0,
         isLiked: post.isLikedByCurrentUser ?? false,
         createdAt: post.createdAt,
+        isBookmarked:
+          post.isFavoritedByCurrentUser ??
+          post.isFavorite ??
+          false,
       };
     });
 }

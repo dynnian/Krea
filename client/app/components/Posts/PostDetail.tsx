@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -11,14 +12,26 @@ import CommentSection from './CommentSection.tsx';
 import { postsApi } from '../../services/postsService.ts';
 import type { PostDto } from '../../types/api.ts';
 import ReportModal from "../Reports/ReportModal.tsx";
+import PostLinkDetail from './PostLinkDetail.tsx';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5101';
-
-const getMediaType = (mimeType?: string): 'image' | 'audio' | 'pdf' | 'text' => {
+const getMediaType = (mimeType?: string): 'image' | 'audio' | 'book' | 'text' => {
   if (!mimeType) return 'text';
   if (mimeType.startsWith('image/')) return 'image';
-  if (mimeType === 'music/mpeg' || mimeType === 'audio/mpeg') return 'audio';
-  if (mimeType === 'application/pdf') return 'pdf';
+  if (
+    mimeType === 'music/mpeg' ||
+    mimeType === 'audio/mpeg' ||
+    mimeType === 'audio/mp3' ||
+    mimeType.startsWith('audio/')
+  ) {
+    return 'audio';
+  }
+  if (
+    mimeType === 'application/pdf' ||
+    mimeType === 'application/epub+zip'
+  ) {
+    return 'book';
+  }
   return 'text';
 };
 
@@ -26,6 +39,13 @@ const toAbsoluteUrl = (url?: string | null): string | undefined => {
   if (!url) return undefined;
   return url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
 };
+
+const getAuthorAvatar = (post: any) =>
+  post.author?.avatar ??
+  post.author?.profilePictureUrl ??
+  post.authorProfilePictureUrl ??
+  post.profilePictureUrl ??
+  null;
 
 
 export default function PostDetail() {
@@ -195,12 +215,13 @@ const isOwnPost = !!originalPost && user?.id === originalPost.authorPostId;
 
   const authorName = originalPost.authorName || `Usuario ${originalPost.authorPostId.slice(0, 8)}`;
   const authorHandle = originalPost.authorName ? `@${originalPost.authorName}` : originalPost.authorPostId.slice(0, 8);
-  const authorAvatar = toAbsoluteUrl(originalPost.author?.avatar ?? originalPost.authorProfilePictureUrl);
+  const authorAvatar = toAbsoluteUrl(getAuthorAvatar(originalPost));
 
   return (
     <div className="min-h-screen bg-[#E3E2DE]">
       <div className="flex items-center gap-3 my-[11px] max-w-7xl mx-auto px-4">
         <button
+          type="button"
           onClick={() => navigate(-1)}
           className="flex items-center justify-center w-[32px] h-[32px] hover:bg-gray-200 rounded-full transition cursor-pointer"
         >
@@ -219,56 +240,58 @@ const isOwnPost = !!originalPost && user?.id === originalPost.authorPostId;
                   {t('post.reposted_by')} {repostAuthorName}
                 </div>
               )}
-              <div className="flex justify-between items-start mb-[20px]">
-                <div className="flex gap-3">
-                  <Avatar
-                    src={authorAvatar}
-                    icon={<User />}
-                    size={48}
-                    className="bg-white border border-black rounded-full"
+                {mediaType === 'audio' ? (
+                  <PostAudioDetail
+                    post={originalPost}
+                    formattedDate={formattedDate}
+                    formattedTime={formattedTime}
+                    menuItems={menuItems}
                   />
-                  <div>
-                    <Link to={`/user/${originalPost.authorPostId}`} className="hover:text-[#1351AA]">
-                      <div className="font-medium text-[#1B1C1E]">{authorName}</div>
-                      <div className="text-gray-500 text-sm">@{authorHandle}</div>
-                    </Link>
-                  </div>
-                </div>
-                <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">
-                  <button className="hover:bg-gray-200 rounded-full p-1">
-                    <MoreHorizontal size={20} className="text-gray-500" />
-                  </button>
-                </Dropdown>
-              </div>
+                ) : (
+                  <>
+                    <div className="flex justify-between items-start mb-[20px]">
+                      <div className="flex gap-3">
+                        <Avatar
+                          src={authorAvatar ?? undefined}
+                          icon={!authorAvatar && <User />}
+                          size={48}
+                          className="bg-white border border-black rounded-full"
+                        />
+                        <div>
+                          <Link to={`/user/${originalPost.authorPostId}`} className="hover:text-[#1351AA]">
+                            <div className="font-medium text-[#1B1C1E]">{authorName}</div>
+                            <div className="text-gray-500 text-sm">{authorHandle}</div>
+                          </Link>
+                        </div>
+                      </div>
 
-              <p className="text-[#1B1C1E] text-justify text-[16px] leading-6 mt-4 mb-6">
-                {originalPost.content}
-              </p>
-
-              {firstMedia && mediaUrl && (
-                <div className="mb-6">
-                  {mediaType === 'image' && <PostImageDetail post={originalPost} />}
-                  {mediaType === 'audio' && <PostAudioDetail post={originalPost} />}
-                  {mediaType === 'pdf' && (
-                    <div className="bg-[#F3F3F1] p-4 rounded-lg border border-[#8F8E8A] flex items-center gap-2">
-                      <a
-                        href={mediaUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#1351AA] underline hover:text-[#0B5107]"
-                      >
-                        {t('post.view_document') || 'Ver documento'}
-                      </a>
+                      <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">
+                        <button className="hover:bg-gray-200 rounded-full p-1">
+                          <MoreHorizontal size={20} className="text-gray-500" />
+                        </button>
+                      </Dropdown>
                     </div>
-                  )}
-                </div>
-              )}
 
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <span>{formattedTime}</span>
-                <span>·</span>
-                <span>{formattedDate}</span>
-              </div>
+                    {mediaType !== 'book' && (
+                      <p className="text-[#1B1C1E] text-justify text-[16px] leading-6 mt-4 mb-6">
+                        {originalPost.content}
+                      </p>
+                    )}
+
+                    {firstMedia && mediaUrl && (
+                      <div className="mb-6">
+                        {mediaType === 'image' && <PostImageDetail post={originalPost} />}
+                        {mediaType === 'book' && <PostLinkDetail post={originalPost} />}
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <span>{formattedTime}</span>
+                      <span>·</span>
+                      <span>{formattedDate}</span>
+                    </div>
+                  </>
+                )}
             </div>
 
             <div className="flex items-center justify-around py-4 border-[#8F8E8A] mb-6 bg-[#E8F1FC] px-[22px] py-[24px] border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
@@ -283,7 +306,7 @@ const isOwnPost = !!originalPost && user?.id === originalPost.authorPostId;
                 <span>{likesCount}</span>
               </button>
               <button
-                onClick={() => {}} // puedes enfocar el input si lo deseas
+                onClick={() => {}} 
                 className="flex items-center gap-2 text-gray-700 hover:text-blue-600 cursor-pointer"
               >
                 <MessageCircle size={22} />

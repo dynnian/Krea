@@ -9,13 +9,13 @@ namespace Krea.Infrastructure.Repositories {
 
         public SubscriptionRepository(AppDbContext context) => _context = context;
 
-        public async Task<Subscription?> GetByIdAsync(Guid id) =>
+        public async Task<Subscription?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
             await _context.Subscriptions
                           .Include(s => s.Subscriber)
                           .Include(s => s.Plan)
-                          .FirstOrDefaultAsync(s => s.Id == id);
+                          .FirstOrDefaultAsync(s => s.Id == id,  cancellationToken);
 
-        public async Task<Subscription?> GetByIdWithPaymentsAsync(Guid id) =>
+        public async Task<Subscription?> GetByIdWithPaymentsAsync(Guid id, CancellationToken cancellationToken) =>
             await _context.Subscriptions
                           .Include(s => s.Subscriber)
                           .Include(s => s.Plan)
@@ -23,21 +23,22 @@ namespace Krea.Infrastructure.Repositories {
                           .ThenInclude(p => p.Payer)
                           .FirstOrDefaultAsync(s => s.Id == id);
 
-        public async Task<IReadOnlyList<Subscription>> GetBySubscriberAsync(Guid subscriberId) =>
+        public async Task<IReadOnlyList<Subscription>> GetBySubscriberAsync(Guid subscriberId, CancellationToken cancellationToken) =>
             await _context.Subscriptions
                           .Include(s => s.Plan)
                           .Where(s => EF.Property<Guid>(s, "SubscriberId") == subscriberId)
-                          .ToListAsync();
+                          .ToListAsync(cancellationToken);
 
-        public async Task<IReadOnlyList<Subscription>> GetByPlanAsync(Guid planId) =>
+        public async Task<IReadOnlyList<Subscription>> GetByPlanAsync(Guid planId,
+            CancellationToken cancellationToken) =>
             await _context.Subscriptions
                           .Include(s => s.Subscriber)
                           .Where(s => EF.Property<Guid>(s, "PlanId") == planId)
-                          .ToListAsync();
+                          .ToListAsync(cancellationToken);
 
-        public async Task AddAsync(Subscription subscription) => await _context.Subscriptions.AddAsync(subscription);
+        public async Task Add(Subscription subscription) => await _context.Subscriptions.AddAsync(subscription);
 
-        public Task UpdateAsync(Subscription subscription) {
+        public Task Update(Subscription subscription) {
             _context.Subscriptions.Update(subscription);
             return Task.CompletedTask;
         }

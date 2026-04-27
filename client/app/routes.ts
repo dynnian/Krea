@@ -29,10 +29,20 @@ export default [
         path: "post/:id",
         file: "routes/post.tsx",
       },
+      // Vista de imagen individual (modal)
+      {
+        path: "image-view",
+        file: "routes/image-view.tsx",
+      },
       // Vista de Album.
       {
         path: "album/:id",
         file: "routes/album.tsx",
+      },
+      // Reader de literatura PDF/EPUB
+      {
+        path: "read/:postId",
+        file: "routes/read.tsx",
       },
       // Exploración (búsqueda por tags/categorías)
       {
@@ -62,6 +72,18 @@ export default [
           {
             path: "commissions/:commissionId",
             file: "routes/commission-detail.tsx",
+          },
+          {
+            path: "/donations/:userId",
+            file: "routes/donation.tsx",
+          },
+          {
+            path: "/donations/success",
+            file: "routes/donation-success.tsx",
+          },
+          {
+            path: "/donations/cancel",
+            file: "routes/donation-cancel.tsx",
           },
           {
             path: "settings",

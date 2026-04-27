@@ -1,6 +1,8 @@
 using Krea.Domain.Entities;
 
 namespace Krea.Domain.Repositories {
+    using Abstractions;
+
     public interface IPostRepository {
         Task<Post?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
@@ -44,5 +46,11 @@ namespace Krea.Domain.Repositories {
             Guid userId,
             IReadOnlyCollection<Guid> targetIds,
             CancellationToken ct);
+        
+        Task<PaginatedList<Post>> SearchAsync(
+            string query,
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken = default);
     }
 }

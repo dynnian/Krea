@@ -1,8 +1,7 @@
 // components/Home/Home.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Grid, message } from "antd";
-import InfiniteScroll from "react-infinite-scroll-component";
+import { Grid, message, Spin } from "antd";
 import { useAuth } from "../../contexts/AuthContext";
 import Composer from "../Composer";
 import FeedTabs from "../FeedTabs";
@@ -23,13 +22,18 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"forYou" | "following">("forYou");
   const [posts, setPosts] = useState<PostDto[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [initialLoading, setInitialLoading] = useState(true);
+  
+  const pageRef = useRef(1);
+  const loadingRef = useRef(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
-  const loadMore = async () => {
-    if (loading) return;
+  // Función para cargar una página
+  const loadPage = useCallback(async (page: number, isInitial: boolean) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     setLoading(true);
     try {
       let res;
@@ -40,94 +44,88 @@ export default function Home() {
           setActiveTab("forYou");
           return;
         }
-        res = await feedApi.getFollowing(user.id, page, 10);
+        res = await feedApi.getFollowing(page, 10);
       }
-      const newItems = res.data.map(feedItemToPostDto);
-      if (newItems.length === 0) {
+      const items = Array.isArray(res.data) ? res.data : [];
+      const newPosts = items.map(feedItemToPostDto);
+      if (newPosts.length === 0) {
         setHasMore(false);
       } else {
-        setPosts((prev) => [...prev, ...newItems]);
-        setPage((prev) => prev + 1);
-        setHasMore(newItems.length === 10);
+        if (isInitial) {
+          setPosts(newPosts);
+        } else {
+          setPosts(prev => [...prev, ...newPosts]);
+        }
+        pageRef.current = page + 1;
+        if (newPosts.length < 10) setHasMore(false);
       }
     } catch (err) {
-      console.error("Error loading feed:", err);
-      setError(t("home.errorLoadingFeed"));
+      console.error(err);
       message.error(t("home.errorLoadingFeed"));
+      setHasMore(false);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
-  };
-
-  // Recargar al cambiar de pestaña
-  const refresh = () => {
-    setPosts([]);
-    setPage(1);
-    setHasMore(true);
-    setInitialLoading(true);
-    loadMore().finally(() => setInitialLoading(false));
-  };
-
-  useEffect(() => {
-    setPosts([]);
-    setPage(1);
-    setHasMore(true);
-    setInitialLoading(true);
-    loadMore().finally(() => setInitialLoading(false));
-  }, [activeTab, user]);
-
-  useEffect(() => {
-    if (activeTab === "following" && !user) {
-      setActiveTab("forYou");
-      message.info(t("home.loginToSeeFollowing"));
-    }
   }, [activeTab, user, t]);
+
+  // Observador de intersección para scroll infinito (persistente)
+  useEffect(() => {
+    if (observerRef.current) observerRef.current.disconnect();
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadingRef.current && hasMore && !initialLoading) {
+          loadPage(pageRef.current, false);
+        }
+      },
+      { rootMargin: "0px 0px 200px 0px", threshold: 0.1 }
+    );
+    if (sentinelRef.current) observerRef.current.observe(sentinelRef.current);
+    return () => observerRef.current?.disconnect();
+  }, [hasMore, initialLoading, loadPage]);
+
+  // Cargar primera página al cambiar pestaña o usuario
+  useEffect(() => {
+    setPosts([]);
+    setHasMore(true);
+    pageRef.current = 1;
+    setInitialLoading(true);
+    loadPage(1, true).finally(() => setInitialLoading(false));
+  }, [activeTab, user, loadPage]);
 
   const handleNewPost = (newPost: PostDto) => {
     setPosts([newPost, ...posts]);
   };
 
-  const handleLike = async (postId: string) => {
-    console.log("Like", postId);
-  };
-
-  const handleRepost = async (postId: string) => {
-    console.log("Repost", postId);
-  };
-
   if (initialLoading && posts.length === 0) {
     return (
       <div className="min-h-screen bg-[#E3E2DE] flex justify-center items-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1351AA]" />
+        <Spin size="large" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen bg-[#E3E2DE]">
       <main className="flex justify-center px-2 sm:px-4 gap-6">
         <div className={`flex-1 ${!isMobile ? "w-[870px] mx-auto" : "w-full"} py-4`}>
           {user && <Composer onPost={handleNewPost} />}
           <FeedTabs activeTab={activeTab} onTabChange={setActiveTab} />
-          <InfiniteScroll
-            dataLength={posts.length}
-            next={loadMore}
-            hasMore={hasMore}
-            loader={<div className="flex justify-center py-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#1351AA]" /></div>}
-            endMessage={<p className="text-center py-4 text-gray-500">{t("home.no_more_posts")}</p>}
-            style={{ overflow: "visible" }} // evita scroll interno conflictivo
-          >
-            <div className="space-y-6 pb-6"> {/* ← Aquí agregamos pb-20 para evitar clipping */}
-              {posts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  onLike={handleLike}
-                  onRepost={handleRepost}
-                />
-              ))}
-            </div>
-          </InfiniteScroll>
+          <div className="space-y-6 pb-6">
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+            {loading && (
+              <div className="flex justify-center py-4">
+                <Spin />
+              </div>
+            )}
+            {/* Centinela siempre presente, pero invisible cuando no hay más */}
+            <div ref={sentinelRef} className="h-10 w-full" style={{ opacity: hasMore ? 1 : 0, pointerEvents: "none" }} />
+            {!hasMore && posts.length > 0 && (
+              <p className="text-center py-4 text-gray-500">{t("home.no_more_posts")}</p>
+            )}
+          </div>
         </div>
         {!isMobile && (
           <div className="w-64 shrink-0 py-2">

@@ -41,11 +41,16 @@ namespace Krea.API.Controllers {
         }
 
         [HttpGet("trending")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetTrending(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             CancellationToken ct = default) {
-            Guid currentUserId = GetCurrentUserId();
+            Guid? currentUserId = null;
+            
+            if (User.Identity?.IsAuthenticated == true) {
+                currentUserId = GetCurrentUserId();
+            }
 
             var query = new GetTrendingFeedQuery(currentUserId, page, pageSize);
 

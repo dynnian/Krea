@@ -9,6 +9,9 @@ namespace Krea.Application.Features.Posts.Dto {
         public DateTime UploadedAt { get; set; }
         public string? MediaPreviewUrl { get; set; }
         public string? MediaMimeType { get; set; }
+        public Guid? CoverMediaId { get; set; }
+        public string? CoverUrl { get; set; }
+        public string? CoverMimeType { get; set; }
         public int LikeCount { get; set; }
         public int ReplyCount { get; set; }
         public int RepostCount { get; set; }

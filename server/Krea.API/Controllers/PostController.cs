@@ -19,6 +19,7 @@ namespace Krea.API.Controllers {
     using Application.Features.Posts.ReplyPost;
     using Application.Features.Posts.ReplyPost.GetReplies;
     using Application.Features.Posts.Repost;
+    using Application.Features.Posts.SearchPosts;
     using Application.Features.PostUploads.CreatePostUpload;
     using Contracts;
     using Domain.Abstractions;
@@ -82,7 +83,7 @@ namespace Krea.API.Controllers {
         /// <returns>
         /// A paginated collection of posts authored by the specified user.
         /// </returns>
-        [HttpGet("user/{authorId:guid}")]
+        [HttpGet("user/{authorPostId:guid}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetByUser(
             Guid authorPostId,
@@ -90,7 +91,11 @@ namespace Krea.API.Controllers {
             [FromQuery] int pageSize = 10,
             CancellationToken ct = default)
         {
-            Guid? currentUserId = GetCurrentUserId();
+            Guid? currentUserId = null;
+
+            if (User.Identity?.IsAuthenticated == true) {
+                currentUserId = GetCurrentUserId();
+            }
 
             var result = await _sender.Send(
                 new GetPostsByUserQuery(
@@ -351,8 +356,19 @@ namespace Krea.API.Controllers {
         [AllowAnonymous]
         public async Task<IActionResult> Explore(
             [FromQuery] ExploreQuery query,
-            CancellationToken cancellationToken) {
-            PagedResult<ExplorePostDto> result = await _sender.Send(query, cancellationToken);
+            CancellationToken cancellationToken)
+        {
+            Guid? currentUserId = TryGetCurrentUserId();
+
+            ExploreQuery queryWithUser = query with
+            {
+                CurrentUserId = currentUserId
+            };
+
+            PagedResult<ExplorePostDto> result = await _sender.Send(
+                queryWithUser,
+                cancellationToken);
+
             return Ok(result);
         }
         
@@ -388,7 +404,7 @@ namespace Krea.API.Controllers {
         ///     ]
         /// </remarks>
         /// <response code="200">Genres retrieved successfully.</response>
-        [HttpGet]
+        [HttpGet("genres")]
         [ProducesResponseType(typeof(IReadOnlyList<GenreDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll(CancellationToken ct)
         {
@@ -511,6 +527,58 @@ namespace Krea.API.Controllers {
 
             return Ok(new { isFavorite });
         }
+        
+        /// <summary>
+        /// Searches posts by title or content.
+        /// </summary>
+        /// <param name="query">
+        /// Text used to search posts. The search is case-insensitive and supports partial
+        /// matches in both title and content.
+        /// </param>
+        /// <param name="page">The page number to retrieve. Default is 1.</param>
+        /// <param name="pageSize">The number of results per page. Default is 20.</param>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>
+        /// Returns a paginated list of posts matching the search criteria.
+        /// </returns>
+        /// <remarks>
+        /// This endpoint searches posts using partial and case-insensitive matches on:
+        /// - Title
+        /// - Content
+        ///
+        /// Business rules:
+        /// - Excludes deleted posts
+        /// - Excludes replies
+        /// - Excludes reposts
+        /// - Supports pagination using page and pageSize
+        ///
+        /// Example request:
+        ///
+        ///     GET /api/posts/search?query=arte&page=1&pageSize=10
+        ///
+        /// </remarks>
+        /// <response code="200">Returns the paginated list of matching posts.</response>
+        /// <response code="400">Returned when the query is empty or invalid.</response>
+        [HttpGet("search")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SearchPosts(
+            [FromQuery] string query,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return BadRequest("Query is required.");
+
+            var request = new SearchPostsQuery(
+                query.Trim(),
+                page,
+                pageSize);
+
+            PaginatedList<PostSearchItemDto> result = await _sender.Send(request, ct);
+
+            return Ok(result);
+        }
 
         private Guid GetCurrentUserId() {
             string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -519,6 +587,15 @@ namespace Krea.API.Controllers {
             }
 
             return userId;
+        }
+        
+        private Guid? TryGetCurrentUserId()
+        {
+            string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+            return Guid.TryParse(userIdClaim, out Guid userId)
+                ? userId
+                : null;
         }
     }
 }

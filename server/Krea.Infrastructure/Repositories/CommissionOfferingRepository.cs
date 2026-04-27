@@ -3,34 +3,67 @@ using Krea.Domain.Repositories;
 using Krea.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Krea.Infrastructure.Repositories {
-    public sealed class CommissionOfferingRepository
-        : ICommissionOfferingRepository {
-        private readonly AppDbContext _context;
+namespace Krea.Infrastructure.Repositories;
 
-        public CommissionOfferingRepository(AppDbContext context) => _context = context;
+using Domain.ValueObjects;
 
-        public async Task<CommissionOffering?> GetByIdAsync(Guid id) =>
-            await _context.CommissionOfferings
-                          .Include(o => o.Artist)
-                          .FirstOrDefaultAsync(o => o.Id == id);
+public sealed class CommissionOfferingRepository(AppDbContext context) : ICommissionOfferingRepository
+{
+    public async Task<CommissionOffering?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await context.CommissionOfferings
+            .AsNoTracking()
+            .Include(o => o.Artist)
+            .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+    }
 
-        public async Task<IReadOnlyList<CommissionOffering>> GetByArtistAsync(Guid artistId) =>
-            await _context.CommissionOfferings
-                          .Where(o => EF.Property<Guid>(o, "ArtistId") == artistId)
-                          .ToListAsync();
+    public async Task<IReadOnlyList<CommissionOffering>> GetByArtistAsync(Guid artistId, CancellationToken cancellationToken = default)
+    {
+        return await context.CommissionOfferings
+            .AsNoTracking()
+            .Where(o => o.Artist.Id == artistId)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
 
-        public async Task<IReadOnlyList<CommissionOffering>> GetActiveAsync() =>
-            await _context.CommissionOfferings
-                          .Where(o => o.IsActive)
-                          .ToListAsync();
+    public async Task<IReadOnlyList<CommissionOffering>> GetActiveAsync(CancellationToken cancellationToken = default)
+    {
+        return await context.CommissionOfferings
+            .AsNoTracking()
+            .Include(o => o.Artist)
+            .Where(o => o.IsActive)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
 
-        public async Task AddAsync(CommissionOffering offering) =>
-            await _context.CommissionOfferings.AddAsync(offering);
+    public async Task<int> GetActiveRequestCountAsync(Guid offeringId, CancellationToken cancellationToken = default)
+    {
+        var statuses = new[] { CommissionRequestStatus.Accepted, CommissionRequestStatus.InProgress, CommissionRequestStatus.Delivered };
+        return await context.CommissionRequests
+            .CountAsync(cr => cr.Offering.Id == offeringId && statuses.Contains(cr.Status), cancellationToken);
+    }
 
-        public Task UpdateAsync(CommissionOffering offering) {
-            _context.CommissionOfferings.Update(offering);
-            return Task.CompletedTask;
-        }
+    public async Task AddAsync(CommissionOffering offering, CancellationToken cancellationToken = default)
+    {
+        await context.CommissionOfferings.AddAsync(offering, cancellationToken);
+    }
+
+    public Task UpdateAsync(CommissionOffering offering, CancellationToken cancellationToken = default)
+    {
+        context.CommissionOfferings.Update(offering);
+        return Task.CompletedTask;
+    }
+
+    public async Task<CommissionOffering?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await context.CommissionOfferings
+            .Include(o => o.Artist)
+            .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+    }
+    
+    public Task DeleteAsync(CommissionOffering offering, CancellationToken cancellationToken = default)
+    {
+        context.CommissionOfferings.Remove(offering);
+        return Task.CompletedTask;
     }
 }

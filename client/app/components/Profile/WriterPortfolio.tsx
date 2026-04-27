@@ -1,5 +1,6 @@
 // deno-lint-ignore-file
 import React, { useEffect, useRef, useState } from "react";
+import { Document, Page, pdfjs } from "react-pdf";
 import { Bookmark, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Dropdown, Modal, message } from "antd";
@@ -7,19 +8,108 @@ import type { MenuProps } from "antd";
 import { useAuth } from "../../contexts/AuthContext.tsx";
 import { postsApi } from "../../services/postsService.ts";
 import { ChevronLeft, MoreHorizontal } from "lucide-react";
+import LiteratureCover from "../LiteratureCover.tsx";
+
+
 
 export type WriterWork = {
   id: string;
   postId: string;
   title: string;
-  coverUrl: string;
+  coverUrl?: string | null;
+  documentUrl?: string | null;
+  mimeType?: string | null;
   chaptersCount: number;
   genre: string;
   description: string;
   likesCount: number;
   isLiked: boolean;
   createdAt: string;
+  isBookmarked?: boolean;
 };
+
+function isPdfWork(work: Pick<WriterWork, "mimeType" | "documentUrl">) {
+  return (
+    work.mimeType?.toLowerCase().includes("pdf") ||
+    work.documentUrl?.toLowerCase().endsWith(".pdf")
+  );
+}
+
+function BookCoverFallback({ title }: { title: string }) {
+  return (
+    <div className="w-full h-full bg-[#D9D9D9] flex items-center justify-center">
+      <span className="text-[#8F8E8A] text-[24px] font-bold">
+        Libro
+      </span>
+    </div>
+  );
+}
+
+function PdfCoverPreview({
+  pdfUrl,
+  title,
+}: {
+  pdfUrl: string;
+  title: string;
+}) {
+  return (
+    <div className="w-full h-full bg-white flex items-center justify-center overflow-hidden">
+      <Document
+        file={pdfUrl}
+        loading={<BookCoverFallback title={title} />}
+        error={<BookCoverFallback title={title} />}
+      >
+        <Page
+          pageNumber={1}
+          width={110}
+          renderAnnotationLayer={false}
+          renderTextLayer={false}
+        />
+      </Document>
+    </div>
+  );
+}
+
+function WorkCover({
+  work,
+  className = "",
+  onClick,
+}: {
+  work: WriterWork;
+  className?: string;
+  onClick?: () => void;
+}) {
+  const isPlaceholderCover =
+    work.coverUrl?.includes("placehold.co") ||
+    work.coverUrl?.includes("text=Libro");
+
+  const hasCover = Boolean(
+    work.coverUrl &&
+      work.coverUrl.trim().length > 0 &&
+      !isPlaceholderCover
+  );
+
+  const canUsePdfCover = !hasCover && isPdfWork(work) && Boolean(work.documentUrl);
+
+  return (
+    <div
+      onClick={onClick}
+      className={`w-full h-full overflow-hidden bg-[#D9D9D9] ${onClick ? "cursor-pointer" : ""} ${className}`}
+    >
+      {hasCover ? (
+        <img
+          src={work.coverUrl!}
+          alt={work.title}
+          className="w-full h-full object-cover"
+        />
+      ) : canUsePdfCover ? (
+        <PdfCoverPreview pdfUrl={work.documentUrl!} title={work.title} />
+      ) : (
+        <BookCoverFallback title={work.title} />
+      )}
+    </div>
+  );
+}
 
 const WriterCard: React.FC<{ work: WriterWork }> = ({ work }) => {
   const navigate = useNavigate();
@@ -29,6 +119,9 @@ const WriterCard: React.FC<{ work: WriterWork }> = ({ work }) => {
   const [liked, setLiked] = useState(work.isLiked);
   const [likesCount, setLikesCount] = useState(work.likesCount);
   const [actionLoading, setActionLoading] = useState(false);
+  const [bookmarked, setBookmarked] = useState(work.isBookmarked ?? false);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
+
 
   useEffect(() => {
     setLiked(work.isLiked);
@@ -71,6 +164,24 @@ const WriterCard: React.FC<{ work: WriterWork }> = ({ work }) => {
       setActionLoading(false);
     }
   };
+
+  const handleBookmark = async () => {
+    if (!requireAuth() || bookmarkLoading) return;
+
+    setBookmarkLoading(true);
+    const wasBookmarked = bookmarked;
+    setBookmarked(!wasBookmarked);
+
+    try {
+      await postsApi.toggleFavorite(work.postId);
+    } catch {
+      setBookmarked(wasBookmarked);
+      message.error("No se pudo actualizar el guardado.");
+    } finally {
+      setBookmarkLoading(false);
+    }
+  };
+
 useEffect(() => {
   const el = descriptionRef.current;
   if (!el) return;
@@ -80,46 +191,44 @@ useEffect(() => {
 }, [work.description]);
 
 	return (
-		<div className="w-[687px] h-[170px] bg-[#E8F1FC] border border-[#8F8E8A] p-[15px]">
-			<div className="flex h-full gap-[22px] items-center">
-        <div className="h-full aspect-[2/3] shrink-0 overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
-          <img
-            src={work.coverUrl}
-            alt={work.title}
+    <div className="w-full min-h-[170px] bg-[#E8F1FC] border border-[#8F8E8A] p-[14px] ">
+      <div className="flex h-full gap-3 sm:gap-[22px] items-start">
+        <div className="self-stretch h-auto aspect-[2/3] shrink-0 max-w-[110px] overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
+          <WorkCover
+            work={work}
             onClick={openPostDetail}
-            className="w-full h-full object-cover cursor-pointer"
           />
-				</div>
-
-				<div className=" h-full flex flex-col min-w-0 pb-[4px] pt-[5px] gap-[0px]">
+        </div>
+				<div className="flex-1 h-full flex flex-col min-w-0 pb-[4px] pt-[2px] sm:pt-[5px] gap-0">
 					<div className="flex items-start justify-between gap-[0px]">
             <div className="min-w-0 flex flex-col gap-[0px]">
               <div className="h-full">
                 <h3 
-                className="text-[20px] leading-[20px] font-bold text-[#1B1C1E] cursor-pointer hover:underline"
-                onClick={openPostDetail}
+                  className="text-[22px] sm:text-[24px] leading-[22px] sm:leading-[24px] font-bold text-[#1B1C1E] cursor-pointer hover:underline truncate max-w-full"
+                  onClick={openPostDetail}
+                  title={work.title}
                 >
                   {work.title}
                 </h3>
               </div>
               
               <div className="-mt-[5px]">
-                <p className=" text-[13px] leading-[13px] font-medium text-[#1B1C1E]">
+                <p className="text-[13px] sm:text-[14px] leading-[14px] sm:leading-[15px] font-medium text-[#1B1C1E]">
                   {work.chaptersCount} Capítulos
                 </p>
               </div>
             </div>
 
-						<span className="pt-[2px] text-[12px] font-medium text-[#1B1C1E] whitespace-nowrap">
+						<span className="pt-[2px] text-[12px] sm:text-[13px] font-medium text-[#1B1C1E] whitespace-nowrap shrink-0 pl-2">
 							{work.genre}
 						</span>
 					</div>
 
-					<div className="mt-[0px] h-auto min-w-0">
-            <div className="mt-[px] min-w-0">
+          <div className="mt-[0px] min-w-0 h-[48px] sm:h-[54px]">
+            <div className="min-w-0 h-full">
               <p
                 ref={descriptionRef}
-                className="text-[11px] leading-[16px] text-justify font-medium text-[#1B1C1E] line-clamp-3 overflow-hidden"
+                className="text-[12px] sm:text-[13px] leading-[16px] sm:leading-[18px] text-justify font-medium text-[#1B1C1E] line-clamp-2 sm:line-clamp-3 overflow-hidden"
               >
                 {work.description}
               {showReadMore && (
@@ -133,30 +242,36 @@ useEffect(() => {
               </p>
             </div>
           </div>
-					<div className="mt-auto pt-[0px] flex items-center gap-3">
-						<button
-							type="button"
-							className="px-[33px] py-[1px] cursor-pointer hover:bg-[#093B05] rounded-full bg-[#0B5107] border border-[#1B1C1E]"
-						>
-							<span className="text-[11px] font-medium leading-5 text-[#E3E2DE]">
-								Leer
-							</span>
-						</button>
+					<div className="mt-auto pt-[6px] flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate(`/read/${work.postId}`)}
+              className="px-[36px] py-[4px] cursor-pointer hover:bg-[#093B05] rounded-full bg-[#0B5107] border border-[#1B1C1E]"
+            >
+              <span className="text-[13px] font-medium leading-5 text-[#E3E2DE]">
+                Leer
+              </span>
+            </button>
 
-						<button
-							type="button"
-							className="w-[24px] h-[24px] rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center"
-						>
-							<Bookmark size={14} />
-						</button>
+            <button
+              type="button"
+              onClick={handleBookmark}
+              disabled={bookmarkLoading}
+              className="w-[30px] h-[30px] rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center disabled:opacity-50"
+            >
+              <Bookmark
+                size={16}
+                className={bookmarked ? "fill-[#0B5107] text-[#0B5107]" : ""}
+              />
+            </button>
 
             <button
               type="button"
               onClick={handleLike}
               disabled={actionLoading}
-              className="w-[24px] h-[24px] rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] cursor-pointer flex items-center justify-center disabled:opacity-50"
+              className="w-[30px] h-[30px] rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] cursor-pointer flex items-center justify-center disabled:opacity-50"
             >
-              <Heart size={14} className={liked ? "fill-[#0B5107] text-[#0B5107]" : ""} />
+              <Heart size={16} className={liked ? "fill-[#0B5107] text-[#0B5107]" : ""} />
             </button>
 					</div>
 				</div>
@@ -235,53 +350,23 @@ function WriterPortfolioGeneralCard({
           onClick={onOpen}
         >
           <div className="absolute left-[0px] top-[0px] w-[105px] h-[162px] overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
-            {firstBook && (
-              <img
-                src={firstBook.coverUrl}
-                alt={firstBook.title}
-                className="w-full h-full object-cover"
-              />
-            )}
+            {firstBook && <WorkCover work={firstBook} />}
           </div>
 
           <div className="absolute left-[46px] top-[16px] w-[105px] h-[162px] overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
-            {secondBook && (
-              <img
-                src={secondBook.coverUrl}
-                alt={secondBook.title}
-                className="w-full h-full object-cover"
-              />
-            )}
+            {secondBook && <WorkCover work={secondBook} />}
           </div>
 
           <div className="absolute left-[91px] top-[32px] w-[105px] h-[162px] overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
-            {thirdBook && (
-              <img
-                src={thirdBook.coverUrl}
-                alt={thirdBook.title}
-                className="w-full h-full object-cover"
-              />
-            )}
+            {thirdBook && <WorkCover work={thirdBook} />}
           </div>
 
           <div className="absolute left-[137px] top-[47px] w-[105px] h-[162px] overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
-            {fourthBook && (
-              <img
-                src={fourthBook.coverUrl}
-                alt={fourthBook.title}
-                className="w-full h-full object-cover"
-              />
-            )}
+            {fourthBook && <WorkCover work={fourthBook} />}
           </div>
 
           <div className="absolute left-[182px] top-[63px] w-[105px] h-[162px] overflow-hidden shadow-[4px_4px_4px_rgba(0,0,0,0.15)]">
-            {fifthBook && (
-              <img
-                src={fifthBook.coverUrl}
-                alt={fifthBook.title}
-                className="w-full h-full object-cover"
-              />
-            )}
+            {fifthBook && <WorkCover work={fifthBook} />}
           </div>
         </div>
 
@@ -307,19 +392,31 @@ function WriterPortfolioGeneralCard({
 function WriterCollectionCard({
   collection,
   itemCount,
+  collectionWorks,
   onOpen,
   onEdit,
   onDelete,
 }: {
   collection: WriterCollectionPreview;
   itemCount: number;
+  collectionWorks: WriterWork[];
   onOpen: (collectionId: string) => void;
   onEdit: (collectionId: string) => void;
   onDelete: (collectionId: string) => void;
 }) {
-  const rightTop = collection.previewCovers[2];
-  const rightMiddle = collection.previewCovers[1];
-  const rightBottom = collection.previewCovers[0];
+  const previewWorks = collectionWorks.slice(0, 3);
+
+  const rightTopWork = previewWorks[2];
+  const rightMiddleWork = previewWorks[1];
+  const rightBottomWork = previewWorks[0];
+
+  const mainCoverWork = collectionWorks[0];
+
+  const hasCollectionCover =
+    collection.coverUrl &&
+    collection.coverUrl.trim().length > 0 &&
+    !collection.coverUrl.includes("placehold.co") &&
+    !collection.coverUrl.includes("text=Libro");
 
   const collectionMenuItems: MenuProps["items"] = [
     {
@@ -368,39 +465,55 @@ function WriterCollectionCard({
           onClick={() => onOpen(collection.id)}
         >
           <div className="absolute left-0 top-0 w-[196px] h-[225px] rounded-[10px] overflow-hidden bg-[#D9D9D9] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
-            <img
-              src={collection.coverUrl}
-              alt={collection.title}
-              className="w-full h-full object-cover"
-            />
+            {hasCollectionCover ? (
+              <img
+                src={collection.coverUrl}
+                alt={collection.title}
+                className="w-full h-full object-cover"
+              />
+            ) : mainCoverWork ? (
+              <LiteratureCover
+                title={mainCoverWork.title}
+                coverUrl={mainCoverWork.coverUrl}
+                documentUrl={mainCoverWork.documentUrl}
+                mimeType={mainCoverWork.mimeType}
+                width={196}
+              />
+            ) : null}
           </div>
 
           <div className="absolute right-[0px] top-[0px] w-[69px] h-[107px] rounded-[0px] overflow-hidden bg-[#D9D9D9] shadow-[4px_4px_8px_rgba(0,0,0,0.18)]">
-            {rightTop && (
-              <img
-                src={rightTop}
-                alt={collection.title}
-                className="w-full h-full object-cover"
+            {rightTopWork && (
+              <LiteratureCover
+                title={rightTopWork.title}
+                coverUrl={rightTopWork.coverUrl}
+                documentUrl={rightTopWork.documentUrl}
+                mimeType={rightTopWork.mimeType}
+                width={69}
               />
             )}
           </div>
 
           <div className="absolute right-[7px] top-[59px] w-[69px] h-[107px] rounded-[0px] overflow-hidden bg-[#D9D9D9] shadow-[4px_4px_8px_rgba(0,0,0,0.18)]">
-            {rightMiddle && (
-              <img
-                src={rightMiddle}
-                alt={collection.title}
-                className="w-full h-full object-cover"
+            {rightMiddleWork && (
+              <LiteratureCover
+                title={rightMiddleWork.title}
+                coverUrl={rightMiddleWork.coverUrl}
+                documentUrl={rightMiddleWork.documentUrl}
+                mimeType={rightMiddleWork.mimeType}
+                width={69}
               />
             )}
           </div>
 
           <div className="absolute right-[14px] top-[118px] w-[69px] h-[107px] rounded-[0px] overflow-hidden bg-[#D9D9D9] shadow-[4px_4px_8px_rgba(0,0,0,0.18)]">
-            {rightBottom && (
-              <img
-                src={rightBottom}
-                alt={collection.title}
-                className="w-full h-full object-cover"
+            {rightBottomWork && (
+              <LiteratureCover
+                title={rightBottomWork.title}
+                coverUrl={rightBottomWork.coverUrl}
+                documentUrl={rightBottomWork.documentUrl}
+                mimeType={rightBottomWork.mimeType}
+                width={69}
               />
             )}
           </div>
@@ -502,7 +615,7 @@ export default function WriterPortfolio({
 
   if (showGeneralPortfolio) {
     return (
-      <div className="w-full -mt-[60px]">
+      <div className="w-full md:-mt-[60px]">
         <div className="max-w-[1388px] mx-auto">
           <PortfolioViewHeader
             title="Portafolio General"
@@ -517,7 +630,7 @@ export default function WriterPortfolio({
 
   if (activeCollection) {
     return (
-      <div className="w-full -mt-[60px]">
+      <div className="w-full md:-mt-[60px]">
         <div className="max-w-[1388px] mx-auto">
           <PortfolioViewHeader
             title={activeCollection.title}
@@ -542,16 +655,23 @@ export default function WriterPortfolio({
           onOpen={() => setShowGeneralPortfolio(true)}
         />
 
-      {collections.map((collection) => (
-        <WriterCollectionCard
-          key={collection.id}
-          collection={collection}
-          itemCount={collection.workIds.length}
-          onOpen={setActiveCollectionId}
-          onEdit={handleEditCollection}
-          onDelete={handleDeleteCollection}
-        />
-      ))}
+        {collections.map((collection) => {
+          const collectionWorks = works.filter((work) =>
+            collection.workIds.includes(work.id)
+          );
+
+          return (
+            <WriterCollectionCard
+              key={collection.id}
+              collection={collection}
+              itemCount={collection.workIds.length}
+              collectionWorks={collectionWorks}
+              onOpen={setActiveCollectionId}
+              onEdit={handleEditCollection}
+              onDelete={handleDeleteCollection}
+            />
+          );
+        })}
       </div>
     </div>
   );

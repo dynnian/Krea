@@ -5,13 +5,16 @@ import { Modal } from "antd";
 import MoveElementsModal, { type MoveTargetCollection } from "./MoveElementsModal.tsx";
 import AddElementsModal, { type AddElementItem } from "./AddElementsModal.tsx";
 import type { MockImageCollection } from "../../../data/mockImageCollections.ts";
+import LiteratureCover from "../../LiteratureCover.tsx";
 
 export type CollectionType = "images" | "literature" | "music";
 
 type CollectionItem = {
   id: string;
   title: string;
-  imageUrl: string;
+  imageUrl?: string | null;
+  documentUrl?: string | null;
+  mimeType?: string | null;
 };
 
 type StagedMoveMap = Record<string, CollectionItem[]>;
@@ -133,7 +136,7 @@ function SelectableArtworkGrid({
             className="relative aspect-square overflow-hidden bg-white group cursor-pointer"
           >
             <img
-              src={item.imageUrl}
+              src={item.imageUrl ?? ""}
               alt={item.title}
               className={`w-full h-full object-cover transition ${
                 isSelected ? "opacity-80" : "group-hover:scale-[1.03]"
@@ -194,7 +197,7 @@ function SelectableMusicGrid({
               className="relative w-full aspect-square group cursor-pointer shadow-[4px_4px_13px_rgba(0,0,0,0.18)]"
             >
               <img
-                src={item.imageUrl}
+                src={item.imageUrl ?? ""}
                 alt={item.title}
                 className={`w-full h-full object-cover transition rounded-[8px] ${
                   isSelected ? "opacity-80" : "group-hover:scale-[1.03] "
@@ -252,12 +255,16 @@ function SelectableLiteratureGrid({
             <div className="relative group ">
               
               {/*  Cover libro */}
-              <div className="w-full  aspect-[2/3] shadow-[4px_4px_13px_rgba(0,0,0,0.18)]">
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  className={`w-full h-full object-cover transition ${
-                    isSelected ? "opacity-80 " : " group-hover:scale-[1.03]"
+              <div className="w-full aspect-[2/3] overflow-hidden bg-[#D9D9D9] shadow-[4px_4px_13px_rgba(0,0,0,0.18)]">
+                <LiteratureCover
+                  title={item.title}
+                  coverUrl={item.imageUrl}
+                  documentUrl={item.documentUrl}
+                  mimeType={item.mimeType}
+                  width={192}
+                  fit="cover"
+                  className={`transition ${
+                    isSelected ? "opacity-80" : "group-hover:scale-[1.03]"
                   }`}
                 />
               </div>
@@ -327,13 +334,13 @@ export default function EditCollectionView({
     setCoverUrl(collection.coverUrl ?? "");
     setCoverFile(null);
 
-    const normalizedSelected = collection.posts
-      .map((post) => ({
-        id: post.id,
-        title: post.title,
-        imageUrl: post.imageUrl,
-      }))
-      .filter((post) => post.imageUrl);
+    const normalizedSelected = collection.posts.map((post) => ({
+      id: post.id,
+      title: post.title,
+      imageUrl: post.imageUrl,
+      documentUrl: (post as any).documentUrl ?? null,
+      mimeType: (post as any).mimeType ?? null,
+    }));
 
     setStagedItems(normalizedSelected);
     setSelectedIds([]);
@@ -373,7 +380,9 @@ export default function EditCollectionView({
     .map((item) => ({
       id: item.id,
       title: item.title,
-      imageUrl: item.imageUrl,
+      imageUrl: item.imageUrl ?? undefined,
+      documentUrl: item.documentUrl ?? undefined,
+      mimeType: item.mimeType ?? undefined,
     }));
   }, [allItems, stagedItems]);
 
@@ -554,9 +563,11 @@ const handleConfirmMove = () => {
         return {
           id: item.id,
           title: item.title,
-          imageUrl: item.imageUrl,
+          imageUrl: item.imageUrl ?? "",
+          documentUrl: item.documentUrl ?? null,
+          mimeType: item.mimeType ?? null,
           createdAt: existingPost?.createdAt ?? new Date().toISOString(),
-        };
+        } as any;
       }),
     };
   };
@@ -644,7 +655,16 @@ const handleSave = () => {
             </label>
 
             <div className="w-[216px] h-[216px] rounded-[18px] overflow-hidden bg-[#D9D9D9]">
-              {coverUrl ? (
+              {collectionType === "literature" ? (
+                <LiteratureCover
+                  title={title}
+                  coverUrl={coverUrl}
+                  documentUrl={stagedItems[0]?.documentUrl}
+                  mimeType={stagedItems[0]?.mimeType}
+                  width={216}
+                  fit="cover"
+                />
+              ) : coverUrl ? (
                 <img
                   src={coverUrl}
                   alt="cover"

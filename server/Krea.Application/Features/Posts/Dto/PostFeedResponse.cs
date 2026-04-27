@@ -10,6 +10,9 @@ namespace Krea.Application.Features.Posts.Dto {
 
         public string? MediaPreviewUrl { get; set; }
         public string? MediaMimeType { get; set; }
+        public Guid? CoverMediaId { get; set; }
+        public string? CoverUrl { get; set; }
+        public string? CoverMimeType { get; set; }
 
         public int LikeCount { get; set; }
         public bool IsLikedByCurrentUser { get; set; }

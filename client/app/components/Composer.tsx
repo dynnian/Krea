@@ -1,15 +1,16 @@
 // components/Composer.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext.tsx";
 import { useNavigate } from "react-router";
 import { Avatar, Button, Input, message } from "antd";
 import { User, Image, Music, FileText } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
-import { postsApi } from "../services/postsService";
-import type { PostDto } from "../types/api";
+import { postsApi } from "../services/postsService.ts";
+import axiosClient from "../lib/axios.ts";
+import type { PostDto } from "../types/api.ts";
 import CreatePortfolioPostModal from "@/components/Posts/CreatePortfolioPostModal.tsx"; 
-import { PostType } from "../types/common";
+import { PostType } from "../types/common.ts";
 
 const { TextArea } = Input;
 
@@ -21,12 +22,48 @@ interface ComposerProps {
   onPost: (newPost: PostDto) => void;
 }
 
+const getCurrentUserAvatar = (user: any) =>
+  user?.avatar ??
+  user?.profilePictureUrl ??
+  user?.ProfilePictureUrl ??
+  user?.profile?.avatar ??
+  user?.profile?.profilePictureUrl ??
+  null;
+
 export default function Composer({ onPost }: ComposerProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      setProfileAvatar(null);
+      return;
+    }
+
+    const loadCurrentUserProfile = async () => {
+      try {
+        const res = await axiosClient.get("/users/me/profile");
+        const apiProfile = res.data;
+
+        setProfileAvatar(
+          apiProfile.profilePictureUrl ??
+            apiProfile.ProfilePictureUrl ??
+            null
+        );
+      } catch (error) {
+        console.error("Error loading current user avatar:", error);
+        setProfileAvatar(null);
+      }
+    };
+
+    void loadCurrentUserProfile();
+  }, [user]);
+
+  const currentUserAvatar = getCurrentUserAvatar(user) ?? profileAvatar;
 
   const { control, handleSubmit, reset } = useForm<ComposerForm>({
     defaultValues: { content: "" },
@@ -64,7 +101,7 @@ export default function Composer({ onPost }: ComposerProps) {
           id: user.id,
           username: user.handle || user.email.split("@")[0],
           displayName: user.name || user.handle || user.email.split("@")[0],
-          avatar: undefined,
+          avatar: currentUserAvatar ?? undefined,
         },
         title: title,
         content: data.content,
@@ -95,7 +132,8 @@ export default function Composer({ onPost }: ComposerProps) {
       <div className="bg-[#E8F1FC] rounded-[15px] outline outline-[1.5px] outline-[#95ACCC] p-[22px] shadow-md mb-6 min-h-[140px]">
         <div className="flex items-start gap-6">
           <Avatar
-            icon={<User />}
+            src={currentUserAvatar ?? undefined}
+            icon={!currentUserAvatar && <User />}
             size={48}
             className="bg-white border border-black rounded-full"
           />

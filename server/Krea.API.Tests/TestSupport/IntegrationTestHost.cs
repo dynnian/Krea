@@ -13,6 +13,9 @@ namespace Krea.API.Tests.TestSupport {
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Npgsql;
+    using Application.Abstractions.Auth;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Logging;
 
     public sealed class IntegrationTestHost : IAsyncDisposable {
         private const string DefaultAdminDatabase = "postgres";
@@ -35,6 +38,7 @@ namespace Krea.API.Tests.TestSupport {
 
         public static async Task<IntegrationTestHost> CreateAsync(
             PostgresContainerFixture? postgres = null,
+            Action<IServiceCollection>? configureServices = null,
             Func<IServiceProvider, Task>? seed = null,
             string? databaseName = null) {
             string dbName = databaseName ?? $"krea_test_{Guid.NewGuid():N}";
@@ -73,6 +77,7 @@ namespace Krea.API.Tests.TestSupport {
             builder.Services.AddScoped<Application.Abstractions.Files.IFileCoverExtractor, FakeFileCoverExtractor>();
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<IConfirmationUrlBuilder, ConfirmationUrlBuilder>();
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
             builder.Services.AddControllers().AddApplicationPart(typeof(AdminController).Assembly);
             builder.Services.AddAuthentication(options => {
                        options.DefaultAuthenticateScheme = "Test";
@@ -80,6 +85,10 @@ namespace Krea.API.Tests.TestSupport {
                    })
                    .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", _ => { });
             builder.Services.AddAuthorization();
+
+            configureServices?.Invoke(builder.Services);
+
+            builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
 
             WebApplication app = builder.Build();
 

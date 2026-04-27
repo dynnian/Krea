@@ -102,9 +102,10 @@ namespace Krea.API.Controllers {
         [HttpGet("{userId:guid}/profile")]
         public async Task<ActionResult<PublicUserProfileResponse>> GetPublicProfile(
             Guid userId,
-            CancellationToken cancellationToken) {
+            CancellationToken cancellationToken)
+        {
             PublicUserProfileResponse? profile = await _sender.Send(
-                new GetPublicUserProfileQuery(userId),
+                new GetPublicUserProfileQuery(userId, TryGetCurrentUserId()),
                 cancellationToken);
 
             if (profile is null)

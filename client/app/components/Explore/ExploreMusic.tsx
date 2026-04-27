@@ -1,327 +1,259 @@
-import React, { useRef, useState } from "react";
-import { Heart, Bookmark, Play, Pause } from "lucide-react";
-
+// app/components/Explore/ExploreMusic.tsx
+import React, { useEffect, useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { Spin, message, Button } from "antd";
+import { Heart, Bookmark, Play, Pause, UserPlus, UserCheck } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
+import { postsApi, feedApi } from "../../services/postsService";
+import { userService } from "../../services/userService";
+import { collectionsApi } from "../../services/collectionsService";
 import AudioWaveform from "../WaveSurfer/AudioWaveform";
-import {
-  featuredTrackMock,
-  newAlbumsMock,
-  latestSongsMock,
-  trendingGenresMock,
-  trendingArtistsMock,
-} from "../../data/exploreMusicMock.ts";
+import type { ExplorePostDto } from "../../types/api";
 
-interface ExploreMusicProps {
-  selectedTag?: string | null;
-  selectedArtist?: string | null;
+interface AlbumForMusic {
+  id: string;
+  title: string;
+  coverUrl: string;
+  ownerName: string;
 }
 
+const AlbumCard: React.FC<{ album: AlbumForMusic }> = ({ album }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="w-40 shrink-0 cursor-pointer hover:opacity-80" onClick={() => (window.location.href = `/album/${album.id}`)}>
+      <img src={album.coverUrl || "https://placehold.co/168x168"} alt={album.title} className="w-40 h-40 object-cover rounded shadow-md" />
+      <p className="font-semibold text-[#1B1C1E] mt-1 truncate">{album.title}</p>
+      <p className="text-sm text-gray-500 truncate">{album.ownerName}</p>
+    </div>
+  );
+};
 
-export default function ExploreMusic({
-  selectedTag,
-  selectedArtist,
-}: ExploreMusicProps) {
+const MusicFeaturedCard: React.FC<{ song: ExplorePostDto; onLike: (id: string) => void; onFavorite: (id: string) => void; onFollow: (userId: string) => void }> = ({ song, onLike, onFavorite, onFollow }) => {
+  const { t } = useTranslation();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isWaveReady, setIsWaveReady] = useState(false);
+  const waveformControls = useRef<{ playPause: () => void } | null>(null);
+  const audioUrl = song.previewUrl;
 
-  const waveformControls = useRef<{
-    playPause: () => void;
-    pause: () => void;
-  } | null>(null);
-function ExploreSongCard({
-  song,
-}: {
-  song: {
-    id: string;
-    title: string;
-    artist: string;
-    coverUrl: string;
-    audioUrl: string;
-    genre: string;
+  const handlePlayPause = () => {
+    if (isWaveReady) waveformControls.current?.playPause();
   };
-}) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isWaveReady, setIsWaveReady] = useState(false);
-
-  const waveformControls = useRef<{
-    playPause: () => void;
-    pause: () => void;
-  } | null>(null);
 
   return (
-    <div className="w-full h-[240px] bg-[#E8F1FC] border border-[#8F8E8A] rounded-[10px] shadow-[4px_4px_4px_rgba(0,0,0,0.15)] p-[20px]">
-      <div className="flex gap-4 items-stretch h-full">
-        <img
-          src={song.coverUrl}
-          alt={song.title}
-          className="h-full aspect-square object-cover rounded shadow-[4px_4px_4px_rgba(0,0,0,0.15)]"
-        />
-
-        <div className="flex-1 min-w-0">
-          <div className=""></div>
-
-          <div className="flex items-start justify-between gap-0 mb-[0px]">
-            <h1>
-              <span className="text-[30px] hover:underline cursor-pointer text-[#1B1C1E] font-bold">
-              {song.title}
-              </span>
-            </h1>
-            <span className="text-[15px] text-[#1B1C1E] whitespace-nowrap">
-              {song.genre}
-            </span>
+    <div className="w-full bg-[#E9F1FC] border border-[#95ACCC] rounded-[10px] p-6 flex flex-col md:flex-row gap-6">
+      <img src={song.coverUrl || "https://placehold.co/190x190"} alt={song.title} className="w-48 h-48 object-cover rounded shadow-md" />
+      <div className="flex-1">
+        <div className="flex justify-between items-start flex-wrap">
+          <div>
+            <div className="flex items-center gap-4 mb-2">
+              <span className="text-gray-500 text-lg">@{song.authorUsername}</span>
+              <Button size="small" onClick={() => onFollow(song.userId)} icon={song.isFollowingAuthor ? <UserCheck size={14} /> : <UserPlus size={14} />}>
+                {song.isFollowingAuthor ? t("profile.unfollow") : t("profile.follow")}
+              </Button>
+            </div>
+            <h2 className="text-3xl font-bold text-[#1B1C1E]">{song.title}</h2>
           </div>
-
-          <div className="pb-[18px]">
-            <span className="hover:underline cursor-pointer text-[#6B6B6B] text-[20px]">
-              {song.artist}
-            </span>
+          <div className="flex gap-2 flex-wrap">
+            {song.genres.map(g => <span key={g} className="px-3 py-1 rounded-full border border-gray-500 text-xs bg-white">{g}</span>)}
           </div>
-          <div className="px-[35px]">
-            <AudioWaveform
-              audioUrl={song.audioUrl}
-              showPlayButton={false}
-              showTime={true}
-              onPlayingChange={setIsPlaying}
-              onReady={(actions) => {
-                waveformControls.current = actions;
-                setIsWaveReady(true);
-              }}
-            />
-          </div>
-
-          <div className="flex justify-center gap-4 pt-[10px]">
-            <button className="w-11 h-11 rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center">
-              <Heart size={20} />
-            </button>
-
-            <button
-              type="button"
-              disabled={!isWaveReady}
-              onClick={() => waveformControls.current?.playPause()}
-              className={`w-11 h-11 rounded-full border flex items-center justify-center ${
-                isWaveReady
-                  ? "border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] cursor-pointer"
-                  : "border-gray-300 bg-gray-200 text-gray-400 cursor-not-allowed"
-              }`}
-            >
-              {isPlaying ? <Pause size={22} /> : <Play size={22} />}
-            </button>
-
-            <button className="w-11 h-11 rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center">
-              <Bookmark size={20} />
-            </button>
-          </div>
+        </div>
+        <div className="mt-4">
+          {audioUrl ? (
+            <div className="px-6">
+              <AudioWaveform
+                audioUrl={audioUrl}
+                showPlayButton={false}
+                showTime={true}
+                onPlayingChange={setIsPlaying}
+                onReady={actions => { waveformControls.current = actions; setIsWaveReady(true); }}
+              />
+            </div>
+          ) : (
+            <div className="text-center text-gray-400">{t("explore.music.no_audio")}</div>
+          )}
+        </div>
+        <div className="flex justify-center gap-4 mt-4">
+          <button onClick={() => onLike(song.id)} className="w-10 h-10 rounded-full border border-green-700 bg-green-50 flex items-center justify-center">
+            <Heart size={20} className={song.isLikedByCurrentUser ? "fill-green-700 text-green-700" : ""} />
+          </button>
+          <button onClick={handlePlayPause} disabled={!isWaveReady} className="w-10 h-10 rounded-full border border-green-700 bg-green-50 flex items-center justify-center">
+            {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+          </button>
+          <button onClick={() => onFavorite(song.id)} className="w-10 h-10 rounded-full border border-green-700 bg-green-50 flex items-center justify-center">
+            <Bookmark size={20} className={song.isFavorite ? "fill-green-700" : ""} />
+          </button>
         </div>
       </div>
     </div>
   );
-}
+};
+
+const MusicTrackCard: React.FC<{ track: ExplorePostDto; onLike: (id: string) => void; onFavorite: (id: string) => void }> = ({ track, onLike, onFavorite }) => {
+  const { t } = useTranslation();
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isWaveReady, setIsWaveReady] = useState(false);
+  const waveformControls = useRef<{ playPause: () => void } | null>(null);
+  const audioUrl = track.previewUrl;
+
+  const handlePlayPause = () => {
+    if (isWaveReady) waveformControls.current?.playPause();
+  };
 
   return (
-    <div className="w-full pt-0 items-enter">
-      {/* Featured section */}
-      <section className="w-full h-[350px] bg-[#E8F1FC] border border-[#8F8E8A] px-[94px] pt-[18px] pb-[25px] flex flex-col ">
-        
-        <div className="shrink-0 pb-[5px]">
-          <h2>
-            <span className="text-[#1B1C1E] text-[36px] font-bold">
-            Destacado
-            </span>
-          </h2>
+    <div className="bg-[#E9F1FC] border border-[#95ACCC] rounded-[10px] p-5 flex gap-5">
+      <img src={track.coverUrl || "https://placehold.co/180x180"} alt={track.title} className="w-44 h-44 object-cover rounded shadow-md" />
+      <div className="flex-1">
+        <div className="flex justify-between">
+          <div>
+            <h3 className="text-2xl font-semibold">{track.title}</h3>
+            <p className="text-gray-500">@{track.authorUsername}</p>
+          </div>
+          <div className="text-gray-600">{track.genres.join(", ")}</div>
         </div>
-
-        <div className="flex-1 min-h-0 flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-          {/* Left side */}
-          <div className="flex h-full min-h-0 flex-row gap-6 items-stretch flex-1">
-            {/* Cover */}
-              <img
-                src={featuredTrackMock.coverUrl}
-                alt={featuredTrackMock.title}
-                className="h-full aspect-square object-cover rounded shadow-[4px_4px_4px_rgba(0,0,0,0.15)]"
-              />
-
-
-            {/* Info + waveform + controls */}
-            <div className="h-full flex-1 min-w-0">
-              <div className="flex flex-row items-start pt-[17px] justify-between gap-6">
-                <div className="self-start">
-                  <div className="flex items-baseline gap-[23px]">
-                    <p className="text-[#6B6B6B] hover:underline cursor-pointer text-[16px] md:text-[18px] leading-none m-0">
-                      {featuredTrackMock.artist}
-                    </p>
-
-                    <button className="h-[24px] px-[22px] rounded-full border border-[#1B1C1E] bg-[#E8F1FC] hover:bg-[#BFD1EA] cursor-pointer">
-                      <span className="text-[#1B1C1E] text-[11px] font-medium leading-none">
-                        Seguir
-                      </span>
-                    </button>
-                  </div>     
-                  <div className="pb-[10px]">
-                    <span className="text-[#1B1C1E] hover:underline cursor-pointer text-[30px] font-semibold  ">
-                    {featuredTrackMock.title}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Tags */}
-                <div className="flex flex-row gap-2 self-start">
-                  {featuredTrackMock.genre.map((genre) => (
-                    <span
-                      key={genre}
-                      className="inline-flex items-center justify-center h-[26px] px-4 rounded-full border border-[#464749] text-[#464749] text-[11px] font-medium bg-[#E8F1FC]"
-                    >
-                      {genre}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-[15px] w-full ">
-                {/* Waveform */}
-                <div className="w-full relative">
-                  <AudioWaveform
-                    audioUrl={featuredTrackMock.audioUrl}
-                    showPlayButton={false}
-                    showTime={true}
-                    onPlayingChange={setIsPlaying}
-                    onReady={(actions) => {
-                      waveformControls.current = actions;
-                      setIsWaveReady(true);
-                    }}
-                    
-                  />
-
-                </div>
-
-                {/* Controls */}
-                <div className="flex items-center justify-center gap-4">
-                  <button className="w-11 h-11 rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center">
-                    <Heart size={20} />
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={!isWaveReady}
-                    onClick={() => waveformControls.current?.playPause()}
-                    className={`w-11 h-11 rounded-full border flex items-center justify-center ${
-                      isWaveReady
-                        ? "border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] cursor-pointer"
-                        : "border-gray-300 bg-gray-200 text-gray-400 cursor-not-allowed"
-                    }`}
-                  >
-                    {isPlaying ? <Pause size={22} /> : <Play size={22} />}
-                  </button>
-
-                  <button className="w-11 h-11 rounded-full border border-[#0B5107] bg-[#E9FDE8] text-[#0B5107] flex items-center justify-center">
-                    <Bookmark size={20} />
-                  </button>
-                  </div>
-                </div>
-              </div>
+        {audioUrl ? (
+          <div className="mt-3 px-8">
+            <AudioWaveform
+              audioUrl={audioUrl}
+              showPlayButton={false}
+              showTime={true}
+              onPlayingChange={setIsPlaying}
+              onReady={actions => { waveformControls.current = actions; setIsWaveReady(true); }}
+            />
           </div>
+        ) : (
+          <div className="text-center text-gray-400 py-4">{t("explore.music.no_audio")}</div>
+        )}
+        <div className="flex justify-center gap-4 mt-2">
+          <button onClick={() => onLike(track.id)} className="w-9 h-9 rounded-full border border-green-700 bg-green-50 flex items-center justify-center">
+            <Heart size={18} className={track.isLikedByCurrentUser ? "fill-green-700" : ""} />
+          </button>
+          <button onClick={handlePlayPause} disabled={!isWaveReady} className="w-9 h-9 rounded-full border border-green-700 bg-green-50 flex items-center justify-center">
+            {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+          </button>
+          <button onClick={() => onFavorite(track.id)} className="w-9 h-9 rounded-full border border-green-700 bg-green-50 flex items-center justify-center">
+            <Bookmark size={18} className={track.isFavorite ? "fill-green-700" : ""} />
+          </button>
         </div>
-      </section>
-
-{/* Main content container */}
-    <div className="mt-6 flex flex-col lg:flex-row gap-6 pb-[20px]">
-    {/* Left column */}
-    <div className="flex-1 min-w-0">
-      <div className="flex flex-col gap-8">
-        {/* New albums */}
-        <section>
-          <div className="pb-[10px]">
-          <h3>
-           <span className="text-[#1B1C1E] text-[24px] font-bold">
-            ¡Albumes nuevos!
-            </span>
-          
-          </h3>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
-            {newAlbumsMock.map((album) => (
-              <div key={album.id} className="min-w-0">
-                <div className="aspect-square cursor-pointer overflow-hidden rounded-[10px] shadow-[4px_4px_4px_rgba(0,0,0,0.15)] mb-2">
-                  <img
-                    src={album.coverUrl}
-                    alt={album.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                <div className="flex flex-col">
-                  <span className="text-[#1B1C1E] mx-[4px] cursor-pointer hover:underline text-[18px] font-semibold font-medium leading-tight truncate">
-                    {album.title}
-                  </span>
-                  <span className="text-[#6B6B6B] mx-[4px]  cursor-pointer hover:underline text-[14px] leading-tight truncate">
-                    {album.artist}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Song cards go here next */}
-        <section>
-          <div className="pb-[10px]">
-            <h3>
-              <span className="text-[#1B1C1E] text-[24px] font-bold">
-                ¡Ultimas canciones!
-              </span>
-            </h3>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            {latestSongsMock.map((song) => (
-              <ExploreSongCard key={song.id} song={song} />
-            ))}
-          </div>
-        </section>
       </div>
     </div>
+  );
+};
 
-    {/* Right sidebar */}
-    <aside className="w-full lg:w-[265px] shrink-0">
-      <div className="flex flex-col gap-6 pt-[46px]">
-        <section className="bg-[#E8F1FC] border border-[#8F8E8A] rounded-[10px]  px-5 py-4">
-          <h4>
-          <span className="text-[#1B1C1E] text-[20px] font-bold leading-none mb-4">  
-            Generos en tendencia
-          </span>
-          </h4>
+export default function ExploreMusic({ selectedTag }: { selectedTag?: string | null }) {
+  const { t } = useTranslation();
+  const { user, isAuthenticated } = useAuth();
+  const [tracks, setTracks] = useState<ExplorePostDto[]>([]);
+  const [trending, setTrending] = useState<{ genres: string[]; tags: string[] }>({ genres: [], tags: [] });
+  const [loading, setLoading] = useState(true);
+  const [albums, setAlbums] = useState<AlbumForMusic[]>([]);
+  const [loadingAlbums, setLoadingAlbums] = useState(true);
 
-          <div className="flex flex-wrap gap-2">
-            {trendingGenresMock.map((genre) => (
-              <span
-                key={genre}
-                className="inline-flex items-center justify-center h-[26px] px-4 rounded-full border border-[#464749] text-[#464749] text-[11px] font-medium bg-[#E8F1FC]"
-              >
-                {genre}
-              </span>
-            ))}
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const tags = selectedTag ? [selectedTag] : undefined;
+        const [musicRes, trendingRes] = await Promise.all([
+          postsApi.explore({ category: "Music", tags, pageSize: 20 }),
+          feedApi.getTrending(),
+        ]);
+        setTracks(musicRes.data.items || []);
+        let trendingData = trendingRes.data;
+        if (Array.isArray(trendingData) && trendingData.length > 0) trendingData = trendingData[0];
+        setTrending({ genres: trendingData?.genres ?? [], tags: trendingData?.tags ?? [] });
+      } catch (err) {
+        console.error(err);
+        message.error(t("common.error"));
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [selectedTag, t]);
+
+  useEffect(() => {
+    const loadAlbums = async () => {
+      setLoadingAlbums(true);
+      try {
+        const res = await collectionsApi.exploreCollections({ sortBy: "newest", pageSize: 10 });
+        const all = res.data.items || [];
+        const musicAlbums = all.filter(col => col.type === 1).slice(0, 4);
+        setAlbums(musicAlbums.map(col => ({ id: col.id, title: col.title, coverUrl: col.coverUrl || "https://placehold.co/168x168", ownerName: col.ownerName })));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingAlbums(false);
+      }
+    };
+    loadAlbums();
+  }, []);
+
+  const handleLike = async (postId: string) => {
+    if (!isAuthenticated) { message.warning(t("post.auth_required")); return; }
+    const track = tracks.find(t => t.id === postId);
+    if (!track) return;
+    const wasLiked = track.isLikedByCurrentUser;
+    setTracks(prev => prev.map(t => t.id === postId ? { ...t, isLikedByCurrentUser: !wasLiked, likesCount: t.likesCount + (wasLiked ? -1 : 1) } : t));
+    try {
+      if (wasLiked) await postsApi.unlike(postId, { postId, userId: user!.id });
+      else await postsApi.like(postId, { postId, userId: user!.id });
+    } catch {
+      setTracks(prev => prev.map(t => t.id === postId ? { ...t, isLikedByCurrentUser: wasLiked, likesCount: t.likesCount + (wasLiked ? 1 : -1) } : t));
+      message.error(t("post.like_error"));
+    }
+  };
+
+  const handleFavorite = async (postId: string) => {
+    if (!isAuthenticated) { message.warning(t("post.auth_required")); return; }
+    const track = tracks.find(t => t.id === postId);
+    if (!track) return;
+    const wasFav = track.isFavorite;
+    setTracks(prev => prev.map(t => t.id === postId ? { ...t, isFavorite: !wasFav } : t));
+    try {
+      await postsApi.toggleFavorite(postId);
+    } catch {
+      setTracks(prev => prev.map(t => t.id === postId ? { ...t, isFavorite: wasFav } : t));
+      message.error(t("post.bookmark_error"));
+    }
+  };
+
+  const handleFollow = async (userId: string) => {
+    if (!isAuthenticated) { message.warning(t("post.auth_required")); return; }
+    const track = tracks.find(t => t.userId === userId);
+    if (!track) return;
+    const wasFollowing = track.isFollowingAuthor;
+    setTracks(prev => prev.map(t => t.userId === userId ? { ...t, isFollowingAuthor: !wasFollowing } : t));
+    try {
+      if (wasFollowing) await userService.unfollow(userId);
+      else await userService.follow(userId);
+    } catch {
+      setTracks(prev => prev.map(t => t.userId === userId ? { ...t, isFollowingAuthor: wasFollowing } : t));
+      message.error(t("profile.follow_error"));
+    }
+  };
+
+  if (loading) return <div className="flex justify-center p-20"><Spin size="large" /></div>;
+
+  const featured = tracks[0];
+  const remaining = tracks.slice(1);
+
+  return (
+    <div className="w-full max-w-[1129px] mx-auto px-4">
+      {featured && <MusicFeaturedCard song={featured} onLike={handleLike} onFavorite={handleFavorite} onFollow={handleFollow} />}
+      {!loadingAlbums && albums.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-2xl font-bold text-[#1B1C1E] mb-4">{t("explore.music.new_albums")}</h2>
+          <div className="flex gap-6 overflow-x-auto pb-2">
+            {albums.map(album => <AlbumCard key={album.id} album={album} />)}
           </div>
-        </section>
-
-        <section className="bg-[#E8F1FC] border border-[#8F8E8A] rounded-[10px] px-5 py-4">
-          <h4>
-          <span className="text-[#1B1C1E] text-[20px] font-bold leading-none mb-4">  
-            Artistas en tendencia
-          </span>
-          </h4>
-
-          <div className="flex flex-wrap gap-2">
-            {trendingArtistsMock.map((artist) => (
-              <span
-                key={artist}
-                className="inline-flex items-center justify-center h-[26px] px-4 rounded-full border border-[#464749] text-[#464749] text-[11px] font-medium bg-[#E8F1FC]"
-              >
-                {artist}
-              </span>
-            ))}
-          </div>
-        </section>
+        </div>
+      )}
+      <div className="mt-10">
+        <h2 className="text-2xl font-bold text-[#1B1C1E] mb-4">{t("explore.music.latest_songs")}</h2>
+        <div className="space-y-4">
+          {remaining.map(track => <MusicTrackCard key={track.id} track={track} onLike={handleLike} onFavorite={handleFavorite} />)}
+        </div>
       </div>
-    </aside>
-  </div>
-  </div>
+    </div>
   );
 }

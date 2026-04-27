@@ -1,12 +1,13 @@
+// deno-lint-ignore-file
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext.tsx';
 import { useNavigate } from 'react-router';
 import { Avatar, Input, Button, message } from 'antd';
 import { Heart, MessageCircle, Repeat2, Share2, MoreHorizontal, User } from 'lucide-react';
-import { postsApi } from '../../services/postsService';
-import type { ReplyDto } from '../../services/comments';
-import axiosClient from '../../lib/axios';
+import { postsApi } from '../../services/postsService.ts';
+import axiosClient from '../../lib/axios.ts';
+import type { ReplyDto } from '../../services/comments.ts';
 import type { UserProfileResponse } from '../../types/api';
 
 const { TextArea } = Input;
@@ -22,6 +23,22 @@ interface CommentSectionProps {
   onCommentPosted?: () => void;
 }
 
+const getCurrentUserAvatar = (user: any) =>
+  user?.avatar ??
+  user?.profilePictureUrl ??
+  user?.ProfilePictureUrl ??
+  user?.profile?.avatar ??
+  user?.profile?.profilePictureUrl ??
+  null;
+
+const getCommentAvatar = (comment: any) =>
+  comment.authorAvatar ??
+  comment.authorProfilePictureUrl ??
+  comment.profilePictureUrl ??
+  comment.author?.avatar ??
+  comment.author?.profilePictureUrl ??
+  null;
+
 export default function CommentSection({ postId, onCommentPosted }: CommentSectionProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -31,42 +48,51 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [composerDisplayName, setComposerDisplayName] = useState('');
-  const [composerHandle, setComposerHandle] = useState('');
-  const [composerAvatarUrl, setComposerAvatarUrl] = useState<string | undefined>(undefined);
+const [composerDisplayName, setComposerDisplayName] = useState('');
+const [composerHandle, setComposerHandle] = useState('');
+const [composerAvatarUrl, setComposerAvatarUrl] = useState<string | undefined>(undefined);
 
-  useEffect(() => {
-    if (!user) {
-      setComposerDisplayName('');
-      setComposerHandle('');
-      setComposerAvatarUrl(undefined);
-      return;
-    }
-
-    setComposerDisplayName(user.name || user.handle || user.email.split('@')[0]);
-    setComposerHandle(user.handle || user.email.split('@')[0]);
+useEffect(() => {
+  if (!user) {
+    setComposerDisplayName('');
+    setComposerHandle('');
     setComposerAvatarUrl(undefined);
+    return;
+  }
 
-    const fetchComposerProfile = async () => {
-      try {
-        const { data } = await axiosClient.get<UserProfileResponse>('/users/me/profile');
-        setComposerDisplayName(data.displayName || user.name || user.handle || user.email.split('@')[0]);
-        setComposerHandle(data.username || user.handle || user.email.split('@')[0]);
-        setComposerAvatarUrl(toAbsoluteUrl(data.profilePictureUrl));
-      } catch {
-        // Keep auth-context fallbacks when profile fetch is unavailable.
-      }
-    };
+  const fallbackName = user.name || user.handle || user.email.split('@')[0];
+  const fallbackHandle = user.handle || user.email.split('@')[0];
 
-    fetchComposerProfile();
-  }, [user]);
+  setComposerDisplayName(fallbackName);
+  setComposerHandle(fallbackHandle);
+  setComposerAvatarUrl(toAbsoluteUrl(getCurrentUserAvatar(user)));
+
+  const fetchComposerProfile = async () => {
+    try {
+      const { data } = await axiosClient.get<UserProfileResponse>('/users/me/profile');
+
+      setComposerDisplayName(data.displayName || fallbackName);
+      setComposerHandle(data.username || fallbackHandle);
+      setComposerAvatarUrl(
+        toAbsoluteUrl(
+          data.profilePictureUrl ??
+            (data as any).ProfilePictureUrl ??
+            getCurrentUserAvatar(user)
+        )
+      );
+    } catch (error) {
+      console.error("Error loading current user profile for comments:", error);
+    }
+  };
+
+  void fetchComposerProfile();
+}, [user]);
 
   useEffect(() => {
     const fetchReplies = async () => {
       try {
         const res = await postsApi.getReplies(postId);
-        // Acceder a la propiedad 'flat' del objeto retornado por la API
-        const data = res.data?.flat?.items ?? [];
+        const data = (res.data as any)?.flat?.items ?? [];
         setComments(data);
       } catch (err) {
         console.error(err);
@@ -91,10 +117,11 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
     const optimisticComment: ReplyDto = {
       id: `temp-${Date.now()}`,
       authorId: user.id,
-      authorName: user.name || user.handle || user.email.split('@')[0],
+      authorName: composerDisplayName || user.name || user.handle || user.email.split('@')[0],
       content: newComment,
       createdAt: new Date().toISOString(),
-    };
+      authorAvatar: composerAvatarUrl,
+    } as ReplyDto;
     setComments(prev => [optimisticComment, ...prev]);
     const originalContent = newComment;
     setNewComment('');
@@ -122,7 +149,12 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
   return (
     <div>
       <div className="flex gap-3 mb-6 bg-[#E8F1FC] px-[22px] py-[15px] border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
-        <Avatar src={composerAvatarUrl} icon={!composerAvatarUrl && <User />} size={40} className="bg-white border border-gray-800" />
+        <Avatar
+          src={composerAvatarUrl}
+          icon={!composerAvatarUrl && <User />}
+          size={40}
+          className="bg-white border border-gray-800"
+        />
         <div className="flex-1">
           {user && (
             <div className="mb-2">
@@ -150,9 +182,17 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
       </div>
 
       <div className="space-y-4">
-        {comments.map((comment) => (
-          <div key={comment.id} className="flex gap-3 bg-[#E8F1FC] p-[22px] border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
-            <Avatar icon={<User />} size={40} className="bg-white border border-gray-800" />
+        {comments.map((comment) => {
+          const commentAvatar = getCommentAvatar(comment);
+
+          return (
+            <div key={comment.id} className="flex gap-3 bg-[#E8F1FC] p-[22px] border-[1.5px] rounded-[10px] border-[#95ACCC] shadow-[4px_4px_13px_rgba(0,0,0,0.25)]">
+              <Avatar
+                src={commentAvatar ?? undefined}
+                icon={!commentAvatar && <User />}
+                size={40}
+                className="bg-white border border-gray-800"
+              />
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium text-gray-900">{comment.authorName}</span>
@@ -166,23 +206,32 @@ export default function CommentSection({ postId, onCommentPosted }: CommentSecti
               </div>
               <p className="text-gray-800 mt-1">{comment.content}</p>
               <div className="flex items-center gap-4 mt-2 text-gray-600">
-                <button className="flex items-center gap-1 hover:text-blue-600">
+                <button 
+                type="button"
+                className="flex items-center gap-1 hover:text-blue-600">
                   <Heart size={16} />
                   <span className="text-xs">0</span>
                 </button>
-                <button className="flex items-center gap-1 hover:text-blue-600">
+                <button 
+                type="button"
+                className="flex items-center gap-1 hover:text-blue-600">
                   <MessageCircle size={16} />
                 </button>
-                <button className="flex items-center gap-1 hover:text-blue-600">
+                <button 
+                type="button"
+                className="flex items-center gap-1 hover:text-blue-600">
                   <Repeat2 size={16} />
                 </button>
-                <button className="flex items-center gap-1 hover:text-blue-600">
+                <button 
+                type="button"
+                className="flex items-center gap-1 hover:text-blue-600">
                   <Share2 size={16} />
                 </button>
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
 namespace Krea.Application {
     using Abstractions;
     using Abstractions.Notification;
+    using Abstractions.Feed;
+    using Abstractions.Payments; 
     using Domain.Abstractions;
     using Domain.Entities;
     using Features.Auth;
@@ -30,13 +32,16 @@ namespace Krea.Application {
     using Features.PostUploads.CreatePostUpload;
     using Microsoft.Extensions.DependencyInjection;
     using Features.DirectMessages.Mappings;
+    using Features.Donations.CreateDonation;
     using Features.Feed;
     using Features.Follows;
+    using Features.Payments.ConfirmPayment;
     using Features.User;
     using Features.Admin.Configuration;
     using Features.Admin.Dashboard;
     using Features.Admin.Reports;
     using Features.Admin.Users;
+    using Features.Collections.ExploreCollections;
     using Features.Collections.UpdateCollectionTitle;
     using Features.Collections.UploadCollectionCover;
     using Features.Favorites.AddPostToFavorites;
@@ -54,6 +59,34 @@ namespace Krea.Application {
     using Features.Notifications.MarkAllNotificationsAsRead;
     using Features.Notifications.MarkNotificationAsRead;
     using Features.Notifications.UpdateReferences;
+    using Features.Commissions.AcceptCommissionRequest;
+    using Features.Commissions.ActivateOffering;
+    using Features.Commissions.AddSubmission;
+    using Features.Commissions.AddSubmissionFeedback;
+    using Features.Commissions.ApproveCommission;
+    using Features.Commissions.CancelCommission;
+    using Features.Commissions.CreateCommissionOffering;
+    using Features.Commissions.CreateCommissionRequest;
+    using Features.Commissions.CreatePaymentForCommission;
+    using Features.Commissions.DeactivateOffering;
+    using Features.Commissions.DeleteOffering;
+    using Features.Commissions.DeliverCommission;
+    using Features.Commissions.Dtos;
+    using Features.Commissions.EditSubmissionFeedback;
+    using Features.Commissions.GetCommissionRequests;
+    using Features.Commissions.GetFeedback;
+    using Features.Commissions.GetOfferingDetails;
+    using Features.Commissions.GetOfferings;
+    using Features.Commissions.GetRequestDetails;
+    using Features.Commissions.GetSubmissions;
+    using Features.Commissions.RequestChanges;
+    using Features.Commissions.UpdateCommissionOffering;
+    using Features.Donations.Dtos;
+    using Features.Donations.GetUserDonations;
+    using Features.Payments.Dtos;
+    using Features.Payments.GetReceivedPayments;
+    using Features.Payments.GetSentPayments;
+    using CommissionsPagedResult = Features.Commissions.GetSubmissions.PagedResult<Features.Commissions.Dtos.SubmissionDto>;
     using Features.Posts.CreatePost;
     using Features.Posts.DeletePost;
     using Features.Posts.Explore;
@@ -63,11 +96,13 @@ namespace Krea.Application {
     using Features.Posts.ReplyPost;
     using Features.Posts.ReplyPost.GetReplies;
     using Features.Posts.Repost;
+    using Features.Posts.SearchPosts;
     using Features.Posts.UserReports;
+    using PostsPagedResult = Features.Posts.Explore.PagedResult<Features.Posts.Dto.ExplorePostDto>;
     using Features.User.GetReportsByUser;
     using Features.User.SearchUser;
     using Features.User.UploadUserProfilePicture;
-
+    
     public static class DependencyInjection {
         public static IServiceCollection AddApplication(this IServiceCollection services) {
             services.AddAutoMapper(cfg => { }, typeof(DirectMessageProfile));
@@ -113,11 +148,23 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<CreateCollectionCommand, CreateCollectionResponse>, CreateCollectionHandler>();
             services.AddScoped<IRequestHandler<GetUserCollectionsQuery, IReadOnlyList<UserCollectionDto>>, GetUserCollectionsHandler>();
             services.AddScoped<IRequestHandler<DeleteCollectionCommand, Unit>, DeleteCollectionHandler>();
-            services.AddScoped<IRequestHandler<AddPostToCollectionCommand, AddPostToCollectionResponse>, AddPostToCollectionHandler>();
-            services.AddScoped<IRequestHandler<RemovePostFromCollectionCommand, Unit>, RemovePostFromCollectionHandler>();
-            services.AddScoped<IRequestHandler<GetCollectionByIdQuery, CollectionDetailDto?>, GetCollectionByIdQueryHandler>();
-            services.AddScoped<IRequestHandler<UploadCollectionCoverCommand, UploadCollectionCoverResponse>, UploadCollectionCoverHandler>();
-            services.AddScoped<IRequestHandler<UpdateCollectionTitleCommand, UpdateCollectionTitleResponse>, UpdateCollectionTitleCommandHandler>();
+            services
+                .AddScoped<IRequestHandler<AddPostToCollectionCommand, AddPostToCollectionResponse>,
+                    AddPostToCollectionHandler>();
+            services
+                .AddScoped<IRequestHandler<RemovePostFromCollectionCommand, Unit>, RemovePostFromCollectionHandler>();
+            services
+                .AddScoped<IRequestHandler<GetCollectionByIdQuery, CollectionDetailDto?>,
+                    GetCollectionByIdQueryHandler>();
+            services
+                .AddScoped<IRequestHandler<UploadCollectionCoverCommand, UploadCollectionCoverResponse>,
+                    UploadCollectionCoverHandler>();
+            services
+                .AddScoped<IRequestHandler<UpdateCollectionTitleCommand, UpdateCollectionTitleResponse>,
+                    UpdateCollectionTitleCommandHandler>();
+            services.AddScoped<
+                IRequestHandler<ExploreCollectionsQuery, PaginatedList<CollectionExploreDto>>,
+                ExploreCollectionsHandler>();
 
             // Posts
             services.AddScoped<IRequestHandler<GetAllPostsQuery, IReadOnlyList<PostDto>>, GetAllPostsHandler>();
@@ -131,7 +178,7 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<LikePostCommand, Unit>, LikePostHandler>();
             services.AddScoped<IRequestHandler<UnlikePostCommand, Unit>, UnlikePostHandler>();
             services.AddScoped<IRequestHandler<CreatePostUploadCommand, CreatePostUploadResponse>, CreatePostUploadHandler>();
-            services.AddScoped<IRequestHandler<ExploreQuery, PagedResult<ExplorePostDto>>, ExploreHandler>();
+            services.AddScoped<IRequestHandler<ExploreQuery, PostsPagedResult>, ExploreHandler>();
             services.AddScoped<IRequestHandler<AssignGenresToUploadCommand, Unit>, AssignGenresToUploadHandler>();
             services.AddScoped<IRequestHandler<GetAllGenresCommand, IReadOnlyList<GenreDto>>, GetAllGenresHandler>();
             services.AddScoped<IRequestHandler<AddHashtagCommand, Unit>, AddHashtagHandler>();
@@ -141,6 +188,7 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<RemovePostFromFavoritesCommand, bool>, RemovePostFromFavoritesHandler>();
             services.AddScoped<IRequestHandler<GetUserFavoritesQuery, FavoritePostsResponse>, GetUserFavoritesHandler>();
             services.AddScoped<IRequestHandler<TogglePostFavoriteCommand, bool>, TogglePostFavoriteHandler>();
+            services.AddScoped<IRequestHandler<SearchPostsQuery, PaginatedList<PostSearchItemDto>>, SearchPostsHandler>();
 
             // Reports
             services.AddScoped<IRequestHandler<CreatePostModerationReportCommand, CreatePostModerationReportResponse>, CreatePostModerationReportHandler>();
@@ -148,6 +196,8 @@ namespace Krea.Application {
 
             services.AddScoped<ISender, Sender>();
 
+            services.AddScoped<IRequestHandler<ExploreQuery, Features.Posts.Explore.PagedResult<ExplorePostDto>>, ExploreHandler>();
+            
             // Messaging
             services.AddScoped<IRequestHandler<GetConversationQuery, ConversationDto>, GetConversationQueryHandler>();
             services.AddScoped<IRequestHandler<MarkMessageAsReadCommand, bool>, MarkMessageAsReadCommandHandler>();
@@ -164,7 +214,54 @@ namespace Krea.Application {
             services.AddScoped<IRequestHandler<GetNotificationPreferencesQuery, NotificationPreferencesDto>, GetNotificationPreferencesHandler>();
             services.AddScoped<IRequestHandler<UpdateNotificationPreferencesCommand, Unit>, UpdateNotificationPreferencesHandler>();
             services.AddScoped<INotificationService, NotificationService>();
+            services
+                .AddScoped<IRequestHandler<SendDirectMessageCommand, DirectMessageDto>,
+                    SendDirectMessageCommandHandler>();
+            services
+                .AddScoped<IRequestHandler<GetUserConversationsQuery, List<ConversationPreviewDto>>,
+                    GetUserConversationsQueryHandler>();
+            services
+                .AddScoped<IRequestHandler<GetConversationMessagesQuery, List<DirectMessageDto>>,
+                    GetConversationMessagesQueryHandler>();
+            
+            // Payments
+            services.AddScoped<IRequestHandler<ConfirmPaymentCommand, Unit>, ConfirmPaymentCommandHandler>();
+            services.AddScoped<IRequestHandler<GetSentPaymentsQuery, Abstractions.Payments.PagedResult<PaymentSummaryDto>>, GetSentPaymentsQueryHandler>();
+            services.AddScoped<IRequestHandler<GetReceivedPaymentsQuery, Abstractions.Payments.PagedResult<PaymentSummaryDto>>, GetReceivedPaymentsQueryHandler>();
+            
+            // Donations
+            services.AddScoped<IRequestHandler<CreateDonationCommand, CreateDonationResponse>, CreateDonationCommandHandler>();
+            services.AddScoped<IRequestHandler<GetUserDonationsQuery, Abstractions.Payments.PagedResult<DonationDto>>, GetUserDonationsQueryHandler>();
+            
+            // Commission Offering
+            services.AddScoped<IRequestHandler<CreateCommissionOfferingCommand, CreateCommissionOfferingResponse>, CreateCommissionOfferingCommandHandler>();
+            services.AddScoped<IRequestHandler<UpdateCommissionOfferingCommand, Unit>, UpdateCommissionOfferingCommandHandler>();
+            services.AddScoped<IRequestHandler<ActivateOfferingCommand, Unit>, ActivateOfferingCommandHandler>();
+            services.AddScoped<IRequestHandler<DeactivateOfferingCommand, Unit>, DeactivateOfferingCommandHandler>();
+            services.AddScoped<IRequestHandler<DeleteOfferingCommand, Unit>, DeleteOfferingCommandHandler>();
+            services.AddScoped<IRequestHandler<GetOfferingsQuery, IReadOnlyList<CommissionOfferingDto>>, GetOfferingsQueryHandler>();
+            services.AddScoped<IRequestHandler<GetOfferingDetailsQuery, CommissionOfferingDto>, GetOfferingDetailsQueryHandler>();
 
+            // Commission Request
+            services.AddScoped<IRequestHandler<CreateCommissionRequestCommand, CreateCommissionRequestResponse>, CreateCommissionRequestCommandHandler>();
+            services.AddScoped<IRequestHandler<AcceptCommissionRequestCommand, Unit>, AcceptCommissionRequestCommandHandler>();
+            services.AddScoped<IRequestHandler<CreatePaymentForCommissionCommand, CreatePaymentForCommissionResponse>, CreatePaymentForCommissionCommandHandler>();
+            services.AddScoped<IRequestHandler<AddSubmissionCommand, Unit>, AddSubmissionCommandHandler>();
+            services.AddScoped<IRequestHandler<DeliverCommissionCommand, Unit>, DeliverCommissionCommandHandler>();
+            services.AddScoped<IRequestHandler<ApproveCommissionCommand, Unit>, ApproveCommissionCommandHandler>();
+            services.AddScoped<IRequestHandler<RequestChangesCommand, Unit>, RequestChangesCommandHandler>();
+            services.AddScoped<IRequestHandler<CancelCommissionCommand, Unit>, CancelCommissionCommandHandler>();
+            services.AddScoped<IRequestHandler<GetCommissionRequestsQuery, IReadOnlyList<CommissionRequestDto>>, GetCommissionRequestsQueryHandler>();
+            services.AddScoped<IRequestHandler<GetRequestDetailsQuery, CommissionRequestDto>, GetRequestDetailsQueryHandler>();
+            services.AddScoped<IRequestHandler<GetSubmissionsQuery, CommissionsPagedResult>, GetSubmissionsQueryHandler>();
+
+            // Submission Feedback
+            services.AddScoped<IRequestHandler<AddSubmissionFeedbackCommand, Unit>, AddSubmissionFeedbackCommandHandler>();
+            services.AddScoped<IRequestHandler<EditSubmissionFeedbackCommand, Unit>, EditSubmissionFeedbackCommandHandler>();
+            services.AddScoped<IRequestHandler<GetFeedbackQuery, IReadOnlyList<SubmissionFeedbackDto>>, GetFeedbackQueryHandler>();
+            
+            services.AddScoped<ISender, Sender>();
+            
             return services;
         }
     }

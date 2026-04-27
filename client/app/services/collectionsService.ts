@@ -1,4 +1,6 @@
 import axiosClient from "../lib/axios.ts";
+import type { PaginatedResponse, PublicCollectionDto } from "../types/api";
+
 
 export type CollectionType = 0 | 1 | 2;
 
@@ -145,5 +147,15 @@ export const collectionsApi = {
 
     return res.data;
   },
+  exploreCollections: (params?: {
+    search?: string;
+    sortBy?: "newest" | "oldest";
+    page?: number;
+    pageSize?: number;
+  }) =>
+    axiosClient.get<PaginatedResponse<PublicCollectionDto>>(
+      "/collections/explore/collections",
+      { params }
+    ),
 };
 

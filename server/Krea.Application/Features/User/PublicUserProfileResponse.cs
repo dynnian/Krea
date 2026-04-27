@@ -8,6 +8,7 @@ namespace Krea.Application.Features.User {
         string TimeZoneId,
         int FollowersCount,
         int FollowingCount,
-        string? ProfilePictureUrl
+        string? ProfilePictureUrl,
+        bool IsFollowedByCurrentUser
     );
 }

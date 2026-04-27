@@ -37,6 +37,19 @@ namespace Krea.Application.Features.User {
 
             int followingCount = await _followRepository
                 .GetFollowingCountAsync(request.UserId, cancellationToken);
+            
+            bool isFollowedByCurrentUser = false;
+
+            if (request.CurrentUserId.HasValue &&
+                request.CurrentUserId.Value != request.UserId)
+            {
+                HashSet<Guid> followedIds = await _followRepository.GetFollowedTargetIdsAsync(
+                    request.CurrentUserId.Value,
+                    new[] { request.UserId },
+                    cancellationToken);
+
+                isFollowedByCurrentUser = followedIds.Contains(request.UserId);
+            }
 
             return new PublicUserProfileResponse(
                 domainUser.Id,
@@ -47,7 +60,8 @@ namespace Krea.Application.Features.User {
                 domainUser.TimeZoneId,
                 followersCount,
                 followingCount,
-                domainUser.ProfilePicture?.Path
+                domainUser.ProfilePicture?.Path,
+                isFollowedByCurrentUser
             );
         }
     }

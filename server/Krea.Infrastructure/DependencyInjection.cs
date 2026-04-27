@@ -18,6 +18,7 @@ namespace Krea.Infrastructure {
     using Application.Abstractions.Identity;
     using Application.Abstractions.Notification;
     using Application.Features.Notifications;
+    using Application.Abstractions.Payments;
     using Configuration;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
@@ -76,9 +77,12 @@ namespace Krea.Infrastructure {
                     .AddEntityFrameworkStores<AppDbContext>()
                     .AddDefaultTokenProviders();
 
+            // Pagos
+            services.AddScoped<IPaymentQueryService, PaymentQueryService>();
+            services.AddScoped<IPaymentReadService, PaymentReadService>();
+
             // Repositorios
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<IDonationRepository, DonationRepository>();
             services.AddScoped<IMembershipPlanRepository, MembershipPlanRepository>();
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();

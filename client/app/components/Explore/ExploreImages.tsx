@@ -1,74 +1,245 @@
-import React from "react";
+// app/components/Explore/ExploreImages.tsx
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Spin, message, Modal, Avatar, Dropdown, Button } from "antd";
+import { Heart, Bookmark, MessageCircle, Repeat2, MoreHorizontal, User, ArrowLeft, UserPlus, UserCheck } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
+import { postsApi } from "../../services/postsService";
+import { userService } from "../../services/userService";
+import CommentSection from "../Posts/CommentSection";
+import type { ExplorePostDto, PostDto } from "../../types/api";
 
-type ExploreImagesProps = {
+interface ExploreImagesProps {
   selectedTag?: string | null;
-  selectedArtist?: string | null;
-};
+}
 
-const ART_IMAGES = [
-  "https://64.media.tumblr.com/c022bc0620e545c6c7e6f9e70608fc78/cc7da65a337ab8f3-64/s540x810/b03c7c28697d943ef5b09f9de1de7d40b7b8b645.jpg",
-  "https://www.fightersgeneration.com/characters3/sol-hd.jpg",
-  "https://c10.patreonusercontent.com/4/patreon-media/p/campaign/3847911/e6d51604975e41f3b1694320e9aa2f8a/eyJxIjoxMDAsIndlYnAiOjB9/4.jpeg?token-hash=etAZlxhge5yBFSd-PelVxgg2HI4gDLubJd_EP3fPsdI%3D&token-time=1773964800",
-  "https://cdn.cara.app/production/posts/2fb2f165-1539-421c-9ed3-3d2486d874c4/exphrasis-T5MMHdZnefrch6dJTznsH-geoffrey-ernault-linkhouse-painting-finallq.jpg",
-  "https://pbs.twimg.com/media/GVZwD5HbQAAmMYG.jpg",
-  "https://cdn.cara.app/production/posts/dc559eb3-22d6-4367-9a81-26ca82cb8822/anatofinnstark-hBeJtWJy5Kcy4PHRNdK6H-twitter.jpg",
-  "https://pbs.twimg.com/media/Gj9aZDga8AAwy_J.jpg",
-  "https://preview.redd.it/hi-here-is-a-series-of-illustration-i-did-showing-each-v0-j810rddc60ma1.jpg?width=640&crop=smart&auto=webp&s=93644c992ecb773e3697f2c25a1193dc8da95cf0",
-  "https://cdn.cara.app/production/posts/7afd1769-146e-42e5-b6cc-4cb1f16adfeb/gabinguede-rTO2DA020FUxJHq0YhSmK-GabinGuede_CDC_Harajuku_Final-protected.png",
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4D7w0iUg64wYkldvcXFxDC6FxDnHoFk_mGg&s",
-  "https://cdn.cara.app/production/posts/c4954c8f-de91-4e63-b676-9788992bc704/rouz-YIehju7dRXKdCLUxEPwzZ-1_3.jpg",
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOIQeX9T9UpAjoWyFq4eIy0Ijjm7I2OHv4tg&s",
-  "https://cdn.cara.app/production/posts/21873dca-c5f5-4e86-9365-2de565b91c1b/3FD0F02E-3854-49B3-92E9-0E67105BB233.jpg-s8QW07-kf3g_sSHiadNcc-3FD0F02E-3854-49B3-92E9-0E67105BB233.jpg",
-  "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/bcdbac5b-cdc4-410e-8020-c863a7210f66/desn50s-7a231a68-b6d6-4995-a9bd-8abc812ff31f.jpg/v1/fill/w_1600,h_900,q_75,strp/iyenss_by_neytirix_desn50s-fullview.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9OTAwIiwicGF0aCI6Ii9mL2JjZGJhYzViLWNkYzQtNDEwZS04MDIwLWM4NjNhNzIxMGY2Ni9kZXNuNTBzLTdhMjMxYTY4LWI2ZDYtNDk5NS1hOWJkLThhYmM4MTJmZjMxZi5qcGciLCJ3aWR0aCI6Ijw9MTYwMCJ9XV0sImF1ZCI6WyJ1cm46c2VydmljZTppbWFnZS5vcGVyYXRpb25zIl19.TgnpC4omHSOFYWk5YLwxvVK5zRM0fkbS-H2APwcJ1rU",
-  "https://cdn.cara.app/production/posts/3dd1a104-92fd-4dc6-9e47-6f421ccd1ee4/exphrasis-R807-XWw2CI8M16i8Hgd7-geoffrey-ernault-thecollapsedminesofuriyvna-nightshade-intensity-low-v1.jpg",
-  "https://pbs.twimg.com/media/GVZwD5HbQAAmMYG.jpg",
-  "https://i.redd.it/g28j012cskgb1.jpg",
-  "https://i.redd.it/zquumfgobnn41.jpg",
-  "https://pbs.twimg.com/media/GTCXo_LbgAAL54w.jpg",
-  "https://i.ytimg.com/vi/cywUzYCae6w/maxresdefault.jpg",
-  "https://i.redd.it/hb4ef9d6x8o91.png",
-  "https://www.fangamer.com/cdn/shop/products/product_OW_ash_and_ember_poster_photo2.png?crop=center&height=1200&v=1743203623&width=1800",
-  "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/bcdbac5b-cdc4-410e-8020-c863a7210f66/dfljvk0-6df24fff-c079-4b3c-af02-67dd0efb1794.jpg/v1/fill/w_1192,h_670,q_70,strp/heading_home_by_neytirix_dfljvk0-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9OTAwIiwicGF0aCI6Ii9mL2JjZGJhYzViLWNkYzQtNDEwZS04MDIwLWM4NjNhNzIxMGY2Ni9kZmxqdmswLTZkZjI0ZmZmLWMwNzktNGIzYy1hZjAyLTY3ZGQwZWZiMTc5NC5qcGciLCJ3aWR0aCI6Ijw9MTYwMCJ9XV0sImF1ZCI6WyJ1cm46c2VydmljZTppbWFnZS5vcGVyYXRpb25zIl19.jl-snsWgUXwWyRyVEPBFDwYLSG0UOvhQzbZXLK7YID8",
-  "https://cdn.cara.app/production/posts/895c5186-246b-4f44-b6e5-9a328e2b9437/anatofinnstark-C-c2Y1CQOkc7I3r12Uv_3-anato-finnstark-anato-finnstark-anato-finnstark-web-petit-1.jpg",
-  "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/bcdbac5b-cdc4-410e-8020-c863a7210f66/dfhoanh-90b65e72-551a-4f15-acd9-ac7f265922f7.jpg/v1/fit/w_828,h_1472,q_70,strp/can_you_not_read___by_neytirix_dfhoanh-414w-2x.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9Mjg0NSIsInBhdGgiOiIvZi9iY2RiYWM1Yi1jZGM0LTQxMGUtODAyMC1jODYzYTcyMTBmNjYvZGZob2FuaC05MGI2NWU3Mi01NTFhLTRmMTUtYWNkOS1hYzdmMjY1OTIyZjcuanBnIiwid2lkdGgiOiI8PTE2MDAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.3rL3MHyGUHTws3DdEHu4nqMmIHRrgi53vS9mGNLLUAc",
-  "https://cdn.cara.app/production/posts/48a2af3b-85a0-4145-956e-aea4d753af0e/F9CC42FC-416F-4B13-AB06-DB3F3935B55D.jpg-C0ggd0XSrlL1kfi3HyGGe-F9CC42FC-416F-4B13-AB06-DB3F3935B55D.jpg",
-  "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/bcdbac5b-cdc4-410e-8020-c863a7210f66/desjf2j-94cd470e-918b-4221-9efe-48ff7aa8bd04.jpg/v1/fill/w_1281,h_624,q_70,strp/flee_puny_mortals_fleeeee__by_neytirix_desjf2j-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9Nzc5IiwicGF0aCI6Ii9mL2JjZGJhYzViLWNkYzQtNDEwZS04MDIwLWM4NjNhNzIxMGY2Ni9kZXNqZjJqLTk0Y2Q0NzBlLTkxOGItNDIyMS05ZWZlLTQ4ZmY3YWE4YmQwNC5qcGciLCJ3aWR0aCI6Ijw9MTYwMCJ9XV0sImF1ZCI6WyJ1cm46c2VydmljZTppbWFnZS5vcGVyYXRpb25zIl19.Um3ubCbBJCO6JDYQwYAiscbfuFu4ef6tjQxSTfyjAWo",
-  "https://cdn.cara.app/production/posts/679e55bf-1df0-48fa-b4e8-162bc9471a6a/rouz-vLK77KN7O6eqbW0v9v_C3-1.jpg",
-  "https://www.pcgamesn.com/wp-content/sites/pcgamesn/2025/11/outer-wilds-lowest-price-fanatical-birthday-bash.jpg",
-  "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/bcdbac5b-cdc4-410e-8020-c863a7210f66/dej67tg-9c0bfeaa-2211-4838-af11-ef44bc0f9379.jpg/v1/fill/w_1048,h_763,q_70,strp/theo_the_butcher_by_neytirix_dej67tg-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTE2NSIsInBhdGgiOiIvZi9iY2RiYWM1Yi1jZGM0LTQxMGUtODAyMC1jODYzYTcyMTBmNjYvZGVqNjd0Zy05YzBiZmVhYS0yMjExLTQ4MzgtYWYxMS1lZjQ0YmMwZjkzNzkuanBnIiwid2lkdGgiOiI8PTE2MDAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.W_XZGnoDTt9bvDKsh_Xxi8nzpuQjRXR91n0xNadp0X4",
-  "https://cdn.cara.app/production/posts/0d681d1d-81d5-4a2d-a3c9-b3bb070153eb/gabinguede-dIFvj8KcJ-qV1I6Qp7Vu--Elden-Ring_Thumbnail.png",
-  "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=900&q=80",
+const ImageViewerModal: React.FC<{ open: boolean; postId: string | null; onClose: () => void }> = ({ open, postId, onClose }) => {
+  const { t } = useTranslation();
+  const { user, isAuthenticated } = useAuth();
+  const [post, setPost] = useState<PostDto | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const [reposted, setReposted] = useState(false);
+  const [repostsCount, setRepostsCount] = useState(0);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(0);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [following, setFollowing] = useState(false);
 
-];
+  useEffect(() => {
+    if (!open || !postId) return;
+    const fetchPost = async () => {
+      setLoading(true);
+      try {
+        const res = await postsApi.getPost(postId);
+        const data = res.data;
+        setPost(data);
+        setLiked(data.isLikedByCurrentUser);
+        setLikesCount(data.likesCount);
+        setReposted(data.isRetweetedByCurrentUser);
+        setRepostsCount(data.isRetweetedByCurrentUser ? 1 : 0);
+        setIsBookmarked((data as any).isFavoritedByCurrentUser ?? false);
+        setCommentsCount(data.replies?.length ?? 0);
+      } catch (err) {
+        console.error(err);
+        message.error(t("post.load_error"));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPost();
+  }, [open, postId, t]);
 
-export default function ExploreImages({
-  selectedTag,
-  selectedArtist,
-}: ExploreImagesProps) {
+  const requireAuth = () => {
+    if (!isAuthenticated) {
+      message.warning(t("post.auth_required"));
+      return false;
+    }
+    return true;
+  };
+
+  const handleLike = async () => {
+    if (!requireAuth() || actionLoading || !post) return;
+    setActionLoading("like");
+    const wasLiked = liked;
+    setLiked(!wasLiked);
+    setLikesCount((prev) => (wasLiked ? prev - 1 : prev + 1));
+    try {
+      if (wasLiked) {
+        await postsApi.unlike(post.id, { postId: post.id, userId: user!.id });
+      } else {
+        await postsApi.like(post.id, { postId: post.id, userId: user!.id });
+      }
+    } catch {
+      setLiked(wasLiked);
+      setLikesCount((prev) => (wasLiked ? prev + 1 : prev - 1));
+      message.error(t("post.like_error"));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleRepost = async () => {
+    if (!requireAuth() || actionLoading || !post) return;
+    setActionLoading("repost");
+    const wasReposted = reposted;
+    setReposted(!wasReposted);
+    setRepostsCount((prev) => (wasReposted ? prev - 1 : prev + 1));
+    try {
+      await postsApi.repost(post.id, { authorId: user!.id, originalPostId: post.id });
+      message.success(t("post.reposted"));
+    } catch {
+      setReposted(wasReposted);
+      setRepostsCount((prev) => (wasReposted ? prev + 1 : prev - 1));
+      message.error(t("post.repost_error"));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleBookmark = async () => {
+    if (!requireAuth() || !post) return;
+    try {
+      await postsApi.toggleFavorite(post.id);
+      setIsBookmarked((prev) => !prev);
+      message.success(t("post.bookmark_toggled"));
+    } catch {
+      message.error(t("post.bookmark_error"));
+    }
+  };
+
+  const handleFollow = async () => {
+    if (!requireAuth() || !post) return;
+    const wasFollowing = following;
+    setFollowing(!wasFollowing);
+    try {
+      if (wasFollowing) {
+        await userService.unfollow(post.authorPostId);
+      } else {
+        await userService.follow(post.authorPostId);
+      }
+      message.success(wasFollowing ? t("profile.unfollowed") : t("profile.followed"));
+    } catch {
+      setFollowing(wasFollowing);
+      message.error(t("profile.follow_error"));
+    }
+  };
+
+  const handleCommentPosted = () => {
+    setCommentsCount((prev) => prev + 1);
+  };
+
+  if (!post) return null;
+
+  const authorAvatar = post.author?.avatar ?? post.authorProfilePictureUrl;
+  const isOwnPost = user?.id === post.authorPostId;
+
   return (
-    <div className="pb-[1px]">
-      {(selectedTag || selectedArtist) && (
-        <div className="max-w-[1200px] mx-auto mb-4 text-[#1B1C1E] text-sm px-2 md:px-4">
-          {selectedTag && <span>Tag: {selectedTag}</span>}
-          {selectedTag && selectedArtist && <span> · </span>}
-          {selectedArtist && <span>Artist: {selectedArtist}</span>}
+    <Modal open={open} onCancel={onClose} footer={null} width="90%" style={{ maxWidth: 1200 }} bodyStyle={{ padding: 0 }} closeIcon={<ArrowLeft size={24} />}>
+      {loading ? (
+        <div className="flex justify-center p-20"><Spin /></div>
+      ) : (
+        <div className="flex flex-col md:flex-row min-h-[80vh] bg-[#E3E2DE]">
+          <div className="md:w-3/5 bg-black flex items-center justify-center p-4">
+            {post.media?.[0]?.url ? (
+              <img src={post.media[0].url} alt={post.title} className="max-w-full max-h-[80vh] object-contain" />
+            ) : (
+              <div className="text-white">{t("common.no_image")}</div>
+            )}
+          </div>
+          <div className="md:w-2/5 bg-[#E8F1FC] p-5 flex flex-col overflow-auto">
+            <div className="flex justify-between items-start">
+              <div className="flex gap-3">
+                <Avatar src={authorAvatar} icon={<User />} size={48} className="bg-white border border-black rounded-full" />
+                <div>
+                  <div className="font-medium text-[#1B1C1E]">{post.authorName || `Usuario ${post.authorPostId.slice(0, 8)}`}</div>
+                  <div className="text-gray-500 text-sm">@{post.authorName || post.authorPostId.slice(0, 8)}</div>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {!isOwnPost && (
+                  <Button size="small" onClick={handleFollow} icon={following ? <UserCheck size={14} /> : <UserPlus size={14} />}>
+                    {following ? t("profile.unfollow") : t("profile.follow")}
+                  </Button>
+                )}
+                <Dropdown menu={{ items: [{ key: "report", label: t("post.report") }] }} trigger={["click"]}>
+                  <button className="hover:bg-gray-200 rounded-full p-1">
+                    <MoreHorizontal size={20} className="text-gray-500" />
+                  </button>
+                </Dropdown>
+              </div>
+            </div>
+            <h2 className="text-xl font-bold mt-4 text-[#1B1C1E]">{post.title}</h2>
+            <p className="text-[#1B1C1E] text-justify text-[16px] leading-6 mt-2">{post.content}</p>
+            <div className="flex items-center gap-2 text-sm text-gray-600 mt-3">
+              <span>{new Date(post.uploadedAt).toLocaleTimeString()}</span>
+              <span>·</span>
+              <span>{new Date(post.uploadedAt).toLocaleDateString()}</span>
+            </div>
+            <div className="flex items-center justify-around py-4 border-[#8F8E8A] my-4 bg-[#E8F1FC] px-4 border rounded-lg">
+              <button onClick={handleLike} disabled={actionLoading !== null} className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 ${actionLoading === "like" ? "opacity-50" : ""}`}>
+                <Heart size={22} className={liked ? "fill-red-500 text-red-500" : ""} />
+                <span>{likesCount}</span>
+              </button>
+              <button className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
+                <MessageCircle size={22} />
+                <span>{commentsCount}</span>
+              </button>
+              <button onClick={handleRepost} disabled={actionLoading !== null} className={`flex items-center gap-2 text-gray-700 hover:text-blue-600 ${actionLoading === "repost" ? "opacity-50" : ""}`}>
+                <Repeat2 size={22} className={reposted ? "text-[#0B5107]" : ""} />
+                <span>{repostsCount}</span>
+              </button>
+              <button onClick={handleBookmark} className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
+                <Bookmark size={22} className={isBookmarked ? "fill-[#0B5107] text-[#0B5107]" : ""} />
+              </button>
+            </div>
+            <CommentSection postId={post.id} onCommentPosted={handleCommentPosted} />
+          </div>
         </div>
       )}
+    </Modal>
+  );
+};
 
-      <div className="grid grid-cols-2 md:grid-cols-8 w-full gap-[1px]">
-        {ART_IMAGES.map((src, index) => (
-          <div
-            key={index}
-            className="aspect-square overflow-hidden bg-[#ddd]"
-          >
-        <img
-        src={src}
-        alt={`art-${index}`}
-        className="w-full h-full object-cover cursor-pointer hover:scale-105 transition duration-200"
-        />
-          </div>
-        ))}
+export default function ExploreImages({ selectedTag }: ExploreImagesProps) {
+  const { t } = useTranslation();
+  const [images, setImages] = useState<ExplorePostDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      setLoading(true);
+      try {
+        const tags = selectedTag ? [selectedTag] : undefined;
+        const res = await postsApi.explore({ category: "Image", tags, pageSize: 30 });
+        setImages(res.data.items || []);
+      } catch (err) {
+        console.error(err);
+        message.error(t("common.error"));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchImages();
+  }, [selectedTag, t]);
+
+  if (loading) return <div className="flex justify-center p-20"><Spin size="large" /></div>;
+
+  return (
+    <>
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] px-4 md:px-0">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-[1px] bg-[#E3E2DE]">
+          {images.map((img) => (
+            <div key={img.id} className="aspect-square overflow-hidden bg-white cursor-pointer" onClick={() => { setSelectedPostId(img.id); setModalOpen(true); }}>
+              <img src={img.previewUrl || "https://placehold.co/400x400"} alt={img.title} className="w-full h-full object-cover hover:scale-105 transition" />
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+      <ImageViewerModal open={modalOpen} postId={selectedPostId} onClose={() => setModalOpen(false)} />
+    </>
   );
 }
