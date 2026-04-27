@@ -9,14 +9,13 @@ import {
   Button,
   message,
   Tabs,
-  Typography,
   Modal,
   List,
   Pagination,
   Input,
   Dropdown,
 } from "antd";
-import { UserOutlined, MailOutlined, HeartOutlined } from "@ant-design/icons";
+import { UserOutlined } from "@ant-design/icons";
 import { ChevronDown } from "lucide-react";
 import type { MenuProps } from "antd";
 import { useAuth } from "../contexts/AuthContext.tsx";
@@ -35,88 +34,14 @@ import {
   mapPostsToWriterWorks,
 } from "../utils/profileMapper.ts";
 import type { MusicSong, MusicAlbum } from "../components/Profile/MusicPortfolio.tsx";
-import type { WriterWork } from "../components/Profile/WriterPortfolio.tsx";
+import type {
+  WriterWork,
+  WriterCollectionPreview,
+} from "../components/Profile/WriterPortfolio.tsx";
+import ProfileHeader from "../components/Profile/ProfileHeader.tsx";
+import type { ProfileData } from "../types/profile.ts";
 
-const { Title, Text } = Typography;
 const { TextArea } = Input;
-
-// Componente de cabecera pública (tamaño fijo, no cambia según el contenido)
-const PublicProfileHeader: React.FC<{
-  profile: PublicUserProfile;
-  isFollowing: boolean;
-  onFollow: () => void;
-  followLoading: boolean;
-  onOpenDM: () => void;
-  onOpenDonation: ()=> void;
-  onOpenFollowers: () => void;
-  onOpenFollowing: () => void;
-}> = ({
-  profile,
-  isFollowing,
-  onFollow,
-  followLoading,
-  onOpenDM,
-  onOpenDonation,
-  onOpenFollowers,
-  onOpenFollowing,
-}) => {
-  const { t } = useTranslation();
-
-  return (
-    <div className="w-full bg-white rounded-lg shadow p-6 mb-6">
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-        <Avatar
-          size={96}
-          icon={<UserOutlined />}
-          src={profile.profilePictureUrl}
-          className="bg-gray-200 flex-shrink-0"
-        />
-        <div className="flex-1 min-w-0 text-center md:text-left">
-          <div className="flex items-center justify-center md:justify-start gap-2">
-            <Title level={3} className="mb-0!">{profile.displayName}</Title>
-          </div>
-          <Text type="secondary">@{profile.username}</Text>
-          {profile.biography && (
-            <p className="mt-2 text-gray-700 whitespace-pre-wrap break-words line-clamp-3">
-              {profile.biography}
-            </p>
-          )}
-          <div className="flex gap-6 mt-4 text-sm">
-            <button
-              type="button"
-              onClick={onOpenFollowing}
-              className="cursor-pointer hover:underline focus:outline-none"
-            >
-              <strong>{profile.followingCount}</strong> {t("profile.following")}
-            </button>
-            <button
-              type="button"
-              onClick={onOpenFollowers}
-              className="cursor-pointer hover:underline focus:outline-none"
-            >
-              <strong>{profile.followersCount}</strong> {t("profile.followers")}
-            </button>
-          </div>
-          <div className="mt-4 flex gap-2 justify-center md:justify-start">
-            <Button
-              type={isFollowing ? "default" : "primary"}
-              loading={followLoading}
-              onClick={onFollow}
-            >
-              {isFollowing ? t("profile.unfollow") : t("profile.follow")}
-            </Button>
-            <Button icon={<MailOutlined />} onClick={onOpenDM}>
-              {t("profile.message")}
-            </Button>
-            <Button icon={<HeartOutlined />} onClick={onOpenDonation}>
-              {t("profile.donate")}
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // --- Modal de lista de usuarios (followers / following) ---
 const FollowListModal: React.FC<{
@@ -315,6 +240,7 @@ export default function PublicProfilePage() {
   const [musicSongs, setMusicSongs] = useState<MusicSong[]>([]);
   const [musicAlbums, setMusicAlbums] = useState<MusicAlbum[]>([]);
   const [writerWorks, setWriterWorks] = useState<WriterWork[]>([]);
+  const [writerCollections, setWriterCollections] = useState<WriterCollectionPreview[]>([]);
   const [posts, setPosts] = useState<any[]>([]);
   const [postsLoading, setPostsLoading] = useState(false);
   const [postsError, setPostsError] = useState<string | null>(null);
@@ -338,8 +264,16 @@ export default function PublicProfilePage() {
       setLoading(true);
       try {
         const res = await userService.getPublicProfile(userId);
+        const publicProfile = res.data as any;
+
         setProfile(res.data);
-        setIsFollowing(res.data.isFollowing ?? false);
+        setIsFollowing(
+          publicProfile.isFollowing ??
+            publicProfile.IsFollowing ??
+            publicProfile.isFollowedByCurrentUser ??
+            publicProfile.IsFollowedByCurrentUser ??
+            false
+        );
       } catch (err) {
         console.error(err);
         setError(t("profile.load_error"));
@@ -366,17 +300,79 @@ export default function PublicProfilePage() {
         setWriterWorks(mapPostsToWriterWorks(normalized));
 
         const collections = await collectionsApi.getUserCollections(userId);
-        // Ajusta según el tipo real (type o collectionType)
-        const musicCollections = collections.filter((c: any) => (c.type ?? c.collectionType) === 1);
+
+        const getCollectionType = (collection: any) =>
+          collection.type ??
+          collection.collectionType ??
+          collection.CollectionType;
+
+        const musicCollections = collections.filter(
+          (collection: any) => getCollectionType(collection) === 1
+        );
+
+        const literatureCollections = collections.filter(
+          (collection: any) => getCollectionType(collection) === 2
+        );
+
         setMusicAlbums(
-          musicCollections.map((c: any) => ({
-            id: c.id,
-            title: c.title,
-            releaseDate: c.updatedAt,
-            songsCount: c.itemCount,
-            coverUrl: (c.coverUrl ?? c.coverImageUrl) || "https://placehold.co/240x240?text=Album",
+          musicCollections.map((collection: any) => ({
+            id: collection.id,
+            title: collection.title,
+            releaseDate: collection.updatedAt,
+            songsCount: collection.itemCount,
+            coverUrl:
+              collection.coverUrl ??
+              collection.coverImageUrl ??
+              "https://placehold.co/240x240?text=Album",
             tracks: [],
           }))
+        );
+
+        const literatureCollectionsWithPreview = await Promise.all(
+          literatureCollections.map(async (collection: any) => {
+            try {
+              const detail = await collectionsApi.getCollectionById(collection.id);
+
+              const collectionWorks = detail.posts
+                .map((post: any) => {
+                  const matchingWork = resolvedWriterWorks.find(
+                    (work) => work.postId === post.id
+                  );
+
+                  if (!matchingWork) return null;
+
+                  return matchingWork;
+                })
+                .filter((work: any): work is WriterWork => work !== null);
+
+              const latestThreeBooks = collectionWorks.slice(0, 3);
+
+              return {
+                id: collection.id,
+                title: collection.title,
+                workIds: collectionWorks.map((work) => work.id),
+                coverUrl:
+                  collection.coverUrl ??
+                  collection.coverImageUrl ??
+                  collectionWorks[0]?.coverUrl ??
+                  "",
+                previewCovers: latestThreeBooks.map((work) => work.coverUrl),
+              };
+            } catch (collectionError) {
+              console.error(
+                "Error loading public literature collection preview:",
+                collection.id,
+                collectionError
+              );
+              return null;
+            }
+          })
+        );
+
+        setWriterCollections(
+          literatureCollectionsWithPreview.filter(
+            (collection): collection is WriterCollectionPreview => collection !== null
+          )
         );
       } catch (err) {
         console.error(err);
@@ -470,67 +466,10 @@ export default function PublicProfilePage() {
     {
       key: "portfolio",
       label: portfolioTabLabel,
-      children: hasPortfolio ? (
-        <div className="space-y-6">
-          {activePortfolioSubTab === "images" && (
-            <DigitalPortfolio
-              items={visualItems}
-              onEditCollection={() => {}}
-            />
-          )}
-          {activePortfolioSubTab === "music" && (
-            <MusicPortfolio songs={musicSongs} albums={musicAlbums} error={postsError} />
-          )}
-          {activePortfolioSubTab === "literature" && (
-            <WriterPortfolio works={writerWorks} error={postsError} />
-          )}
-        </div>
-      ) : (
-        <div className="text-center text-gray-500 py-8">{t("profile.no_portfolio")}</div>
-      ),
     },
     {
       key: "publications",
       label: t("profile.tabs.publications"),
-      children: (
-        <div className="space-y-4">
-          {postsLoading && <Spin />}
-          {postsError && <Alert message={postsError} type="error" />}
-          {!postsLoading && !postsError && posts.length === 0 && (
-            <div className="text-center text-gray-500 py-8">{t("profile.no_posts")}</div>
-          )}
-          {posts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={{
-                id: post.backendId ?? String(post.id),
-                authorPostId: post.author.id ?? String(post.id),
-                authorName: post.author.name,
-                uploadedAt: post.createdAt,
-                uploadCount: post.userPostId,
-                title: post.title,
-                content: post.content,
-                isWork: post.isWork,
-                isLocal: post.isLocal,
-                media: post.media.map((m: any) => ({
-                  id: m.media.id,
-                  url: m.media.path,
-                  mimeType: m.media.mimeType,
-                  fileName: m.media.fileName,
-                  isWorkMedia: m.isWorkMedia,
-                  coverUrl: m.media.coverUrl,
-                  coverMediaId: m.media.coverMediaId,
-                })),
-                likesCount: post.likesCount,
-                isLikedByCurrentUser: post.isLikedByCurrentUser ?? false,
-                isFavoritedByCurrentUser: false,
-                isRetweetedByCurrentUser: false,
-                replies: post.replies ?? [],
-              }}
-            />
-          ))}
-        </div>
-      ),
     },
   ];
 
@@ -550,20 +489,152 @@ export default function PublicProfilePage() {
     );
   }
 
-  return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-8">  
-      <PublicProfileHeader
-        profile={profile}
-        isFollowing={isFollowing}
-        onFollow={handleFollow}
-        followLoading={followLoading}
-        onOpenDM={() => setDmModalOpen(true)}
-        onOpenDonation={handleDonation}
-        onOpenFollowers={() => setFollowersModalOpen(true)}
-        onOpenFollowing={() => setFollowingModalOpen(true)}
-      />
+const profileHeaderData: ProfileData = {
+  user: {
+    id: profile.id,
+    name: profile.displayName || profile.username,
+    handle: profile.username,
+    avatar: profile.profilePictureUrl ?? undefined,
+    isVerified: false,
+  },
+  bio: profile.biography ?? "",
+  followingCount: profile.followingCount ?? 0,
+  followersCount: profile.followersCount ?? 0,
+  posts: [],
+};
 
-      <Tabs activeKey={activeMainTab} onChange={setActiveMainTab} items={tabItems} centered />
+return (
+  <div className="w-[870px] flex flex-col items-center-safe h-full min-h-screen">
+    <div className="w-full h-full bg-transparent">
+      <div className="pt-6">
+        <ProfileHeader
+          variant="public"
+          profile={profileHeaderData}
+          isFollowing={isFollowing}
+          followLoading={followLoading}
+          onFollow={handleFollow}
+          onOpenDM={() => setDmModalOpen(true)}
+          onOpenDonation={handleDonation}
+          onOpenFollowers={() => setFollowersModalOpen(true)}
+          onOpenFollowing={() => setFollowingModalOpen(true)}
+        />
+
+        <div className="w-full flex justify-center relative z-[100] pointer-events-auto">
+          <div className="krea-tabs relative z-[100] pointer-events-auto">
+            <Tabs
+              activeKey={activeMainTab}
+              onChange={setActiveMainTab}
+              items={tabItems}
+              centered
+              tabBarStyle={{ borderBottom: "none" }}
+              tabBarGutter={46}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div
+        className={`relative z-0 ${
+          activeMainTab === "portfolio" ? "pt-[20px]" : ""
+        }`}
+      >
+        {activeMainTab === "portfolio" && !hasPortfolio && (
+          <div className="text-center text-gray-500 py-8">
+            {t("profile.no_portfolio")}
+          </div>
+        )}
+
+        {activeMainTab === "portfolio" &&
+          hasPortfolio &&
+          activePortfolioSubTab === "images" && (
+            <div className="w-screen relative z-0 left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+              <DigitalPortfolio userId={userId ?? ""} items={visualItems} />
+            </div>
+          )}
+
+        {activeMainTab === "portfolio" &&
+          hasPortfolio &&
+          activePortfolioSubTab === "music" && (
+            <div className="w-screen relative z-0 left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
+              <MusicPortfolio
+                songs={musicSongs}
+                albums={musicAlbums}
+                error={postsError}
+              />
+            </div>
+          )}
+
+        {activeMainTab === "portfolio" &&
+          hasPortfolio &&
+          activePortfolioSubTab === "literature" && (
+            <div className="w-screen relative z-0 left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
+              <WriterPortfolio
+                works={writerWorks}
+                collections={writerCollections}
+                error={postsError}
+              />
+            </div>
+          )}
+
+        {activeMainTab === "publications" && (
+          <div className="space-y-4">
+            {postsLoading && <Spin />}
+
+            {postsError && <Alert message={postsError} type="error" />}
+
+            {!postsLoading && !postsError && posts.length === 0 && (
+              <div className="text-center text-gray-500 py-8">
+                {t("profile.no_posts")}
+              </div>
+            )}
+
+            {posts.map((post) => (
+              <div key={post.id} className="mt-[15px] w-full">
+                <PostCard
+                  post={{
+                    id: post.backendId ?? String(post.id),
+                    authorPostId: post.author.id ?? String(post.id),
+                    authorName: post.author.name,
+                    author: {
+                      id: post.author.id ? String(post.author.id) : String(userId),
+                      username: post.author.handle ?? profile.username ?? "",
+                      displayName: post.author.name ?? profile.displayName ?? "",
+                      avatar: post.author.avatar ?? profile.profilePictureUrl ?? "",
+                    },
+                    uploadedAt: post.createdAt,
+                    uploadCount: post.userPostId,
+                    title: post.title,
+                    content: post.content,
+                    genres:
+                      (post as any).genres ??
+                      (post as any).Genres ??
+                      [],
+                    isWork: post.isWork,
+                    isLocal: post.isLocal,
+                    media: post.media.map((m: any) => ({
+                      id: m.media.id,
+                      url: m.media.path,
+                      mimeType: m.media.mimeType,
+                      fileName: m.media.fileName,
+                      isWorkMedia: m.isWorkMedia,
+                      coverUrl: m.media.coverUrl,
+                      coverMediaId: m.media.coverMediaId,
+                    })),
+                    likesCount: post.likesCount,
+                    isLikedByCurrentUser: post.isLikedByCurrentUser ?? false,
+                    isFavoritedByCurrentUser:
+                      post.isFavoritedByCurrentUser ??
+                      post.isFavorite ??
+                      false,
+                    isRetweetedByCurrentUser: false,
+                    replies: post.replies ?? [],
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <FollowListModal
         open={followersModalOpen}
@@ -586,5 +657,6 @@ export default function PublicProfilePage() {
         onClose={() => setDmModalOpen(false)}
       />
     </div>
-  );
+  </div>
+);
 }

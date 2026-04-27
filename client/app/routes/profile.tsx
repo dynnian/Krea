@@ -639,6 +639,7 @@ const editingCollectionConfig = getEditingCollectionConfig();
     <div className=" pt-6 ">
       {/* Perfil header */}
       <ProfileHeader
+        variant="own"
         profile={profile}
         onGoToSettings={handleGoToSettings}
         onGoToSaved={handleGoToSaved}
