@@ -1,25 +1,29 @@
 namespace Krea.Application.Features.Posts.Like {
+    using Abstractions.Notification;
     using Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;
+    using Domain.ValueObjects;
 
     public sealed class LikePostHandler
         : IRequestHandler<LikePostCommand, Unit> {
         private readonly IPostRepository _postRepository;
+        private readonly INotificationService _notificationService;
         private readonly IUnitOfWork _unitOfWork;
 
         public LikePostHandler(
             IPostRepository postRepository,
+            INotificationService notificationService,
             IUnitOfWork unitOfWork) {
             _postRepository = postRepository;
+            _notificationService = notificationService;
             _unitOfWork = unitOfWork;
         }
 
         public async Task<Unit> Handle(
             LikePostCommand command,
             CancellationToken ct) {
-            Post? post = await _postRepository
-                .GetFullPostAsync(command.PostId, ct);
+            Post? post = await _postRepository.GetFullPostAsync(command.PostId, ct);
 
             if (post is null)
                 throw new Exception("Post not found");
@@ -27,6 +31,15 @@ namespace Krea.Application.Features.Posts.Like {
             post.AddLike(command.UserId);
 
             await _unitOfWork.SaveChangesAsync(ct);
+
+            await _notificationService.NotifyAsync(
+                recipientUserId: post.AuthorPostId,
+                actorUserId: command.UserId,
+                type: NotificationType.PostLiked,
+                content: "A alguien le gustó tu publicacion.",
+                entityId: post.Id,
+                entityType: NotificationEntityType.Post,
+                cancellationToken: ct);
 
             return Unit.Value;
         }
