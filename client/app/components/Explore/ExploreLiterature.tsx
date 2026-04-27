@@ -7,7 +7,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { postsApi } from "../../services/postsService";
 import { userService } from "../../services/userService";
 import type { ExplorePostDto } from "../../types/api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 const LiteratureFeaturedCard: React.FC<{ book: ExplorePostDto; onLike: (id: string) => void; onFavorite: (id: string) => void; onFollow: (userId: string) => void }> = ({ book, onLike, onFavorite, onFollow }) => {
   const { t } = useTranslation();

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Spin, message } from "antd";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { postsApi } from "../../services/postsService";
 import type { ExplorePostDto } from "../../types/api";
 
