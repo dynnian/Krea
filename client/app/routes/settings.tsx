@@ -1,3 +1,4 @@
+// app/routes/settings.tsx
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Avatar, Button, Input, Select, Switch, Tabs, Grid, message, Spin, Tag, Table } from "antd";
 import { ImagePlus, User, LogOut, Heart } from "lucide-react";
@@ -13,6 +14,7 @@ import { useAuth } from "../contexts/AuthContext.tsx";
 import { useNavigate } from "react-router";
 import i18n from "../i18n";
 import { reportsApi } from "../services/reportsService.ts";
+import { paymentsApi, type PaymentItem } from "../services/paymentsService.ts";
 
 const { useBreakpoint } = Grid;
 
@@ -34,7 +36,7 @@ const settingsSections: { key: SettingsSectionKey; label: string }[] = [
   { key: "portfolio", label: "Portafolios" },
   { key: "security", label: "Seguridad" },
   { key: "donations", label: "Donaciones" },
-  { key: "reports", label: "Reportes" },   
+  { key: "reports", label: "Reportes" },
 ];
 
 const emptyProfileDraft: ProfileSettings = {
@@ -81,12 +83,18 @@ export default function SettingsRoute() {
   const [reportsLoading, setReportsLoading] = useState(false);
   const [reportsPage, setReportsPage] = useState(1);
   const [reportsHasMore, setReportsHasMore] = useState(true);
+  const [sentPayments, setSentPayments] = useState<PaymentItem[]>([]);
+  const [receivedPayments, setReceivedPayments] = useState<PaymentItem[]>([]);
+  const [sentLoading, setSentLoading] = useState(false);
+  const [receivedLoading, setReceivedLoading] = useState(false);
+  const [sentPagination, setSentPagination] = useState({ current: 1, pageSize: 10, total: 0 });
+  const [receivedPagination, setReceivedPagination] = useState({ current: 1, pageSize: 10, total: 0 });
 
+  // --- Carga inicial de settings ---
   useEffect(() => {
     const loadSettings = async () => {
       try {
         const data = await settingsRepository.getSettings();
-        // Normalizar idioma y zona horaria
         const normalizedProfile = {
           ...data.profile,
           languageCode: normalizeLanguageCode(data.profile.languageCode),
@@ -107,6 +115,8 @@ export default function SettingsRoute() {
     };
     void loadSettings();
   }, [t]);
+
+  // --- Cargar reportes al entrar a la pestaña ---
   useEffect(() => {
     if (activeSection === "reports") {
       setReportsPage(1);
@@ -114,6 +124,15 @@ export default function SettingsRoute() {
     }
   }, [activeSection]);
 
+  // --- Cargar pagos al entrar a la pestaña ---
+  useEffect(() => {
+    if (activeSection === "donations") {
+      loadSentPayments(1, 10);
+      loadReceivedPayments(1, 10);
+    }
+  }, [activeSection]);
+
+  // --- Funciones auxiliares de perfil ---
   const handleInputChange =
     (field: keyof ProfileSettings) =>
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -129,12 +148,7 @@ export default function SettingsRoute() {
     if (!originalProfile) return;
     try {
       setIsSavingProfile(true);
-      // Antes de guardar, convertir la zona horaria al formato que espera el backend (si usa "1")
-      const profileToSave = {
-        ...profileDraft,
-        // Si el backend espera "1" para esta zona, puedes mapear de vuelta:
-        // timeZoneId: profileDraft.timeZoneId === "America/Santo_Domingo" ? "1" : profileDraft.timeZoneId,
-      };
+      const profileToSave = { ...profileDraft };
       const next = await settingsRepository.saveProfile(profileToSave, originalProfile);
       const normalizedNextProfile = {
         ...next.profile,
@@ -161,7 +175,6 @@ export default function SettingsRoute() {
   };
 
   const handleOpenAvatarPicker = () => fileInputRef.current?.click();
-
   const handleLogout = async () => {
     await logout();
     navigate("/");
@@ -187,6 +200,7 @@ export default function SettingsRoute() {
     }
   };
 
+  // --- Portfolio toggles ---
   const handlePortfolioToggle = async (
     field: "imagesEnabled" | "musicEnabled" | "literatureEnabled",
     value: boolean
@@ -198,6 +212,7 @@ export default function SettingsRoute() {
     message.success(t("settingsUser.portfolio_toggled"));
   };
 
+  // --- Security toggles ---
   const handleSecurityToggle = async (
     field: "email2faEnabled" | "sms2faEnabled",
     value: boolean
@@ -209,6 +224,7 @@ export default function SettingsRoute() {
     message.success(t("settingsUser.security_toggled"));
   };
 
+  // --- Carga de reportes (paginar con "cargar más") ---
   const loadReports = async (page: number) => {
     if (reportsLoading) return;
     setReportsLoading(true);
@@ -221,6 +237,42 @@ export default function SettingsRoute() {
       message.error(t("settingsUser.reports.load_error"));
     } finally {
       setReportsLoading(false);
+    }
+  };
+
+  // --- Carga de pagos enviados ---
+  const loadSentPayments = async (page: number, pageSize: number) => {
+    setSentLoading(true);
+    try {
+      const res = await paymentsApi.getSentPayments({ page, pageSize });
+      setSentPayments(res.data.items);
+      setSentPagination({
+        current: res.data.page,
+        pageSize: res.data.pageSize,
+        total: res.data.totalCount,
+      });
+    } catch {
+      message.error(t("settingsUser.donations.sent_load_error"));
+    } finally {
+      setSentLoading(false);
+    }
+  };
+
+  // --- Carga de pagos recibidos ---
+  const loadReceivedPayments = async (page: number, pageSize: number) => {
+    setReceivedLoading(true);
+    try {
+      const res = await paymentsApi.getReceivedPayments({ page, pageSize });
+      setReceivedPayments(res.data.items);
+      setReceivedPagination({
+        current: res.data.page,
+        pageSize: res.data.pageSize,
+        total: res.data.totalCount,
+      });
+    } catch {
+      message.error(t("settingsUser.donations.received_load_error"));
+    } finally {
+      setReceivedLoading(false);
     }
   };
 
@@ -237,7 +289,7 @@ export default function SettingsRoute() {
     );
   }
 
-  // Renderizado de secciones (sin cambios)
+  // --- Renderizadores de secciones ---
   const renderProfileSection = () => (
     <>
       <h2 className="settings-content-title">{t("settingsUser.profile.edit")}</h2>
@@ -402,50 +454,110 @@ export default function SettingsRoute() {
     </>
   );
 
+  // --- Configuración de colores para estados de pago (fuera de la función) ---
+  const paymentStatusConfig: Record<string, { color: string; bg: string }> = {
+    Pending: { color: "#D48806", bg: "#FFF7E6" },
+    Completed: { color: "#0B5107", bg: "#E9FDE8" },
+    Failed: { color: "#D4380D", bg: "#FFF2E8" },
+    default: { color: "#1B1C1E", bg: "#F3F3F1" },
+  };
+
+  // Columnas de la tabla de pagos (usado en renderPaymentsTable)
+  const paymentColumns = [
+    { title: t("settingsUser.donations.columns.type"), dataIndex: "paymentType", key: "type" },
+    { title: t("settingsUser.donations.columns.amount"), dataIndex: "amount", key: "amount", render: (val: number) => `${val} ${t("settingsUser.donations.currency")}` },
+    {
+      title: t("settingsUser.donations.columns.status"),
+      dataIndex: "status",
+      key: "status",
+      render: (status: string) => {
+        const config = paymentStatusConfig[status] || paymentStatusConfig.default;
+        return (
+          <Tag
+            style={{
+              backgroundColor: config.bg,
+              border: `1px solid ${config.color}`,
+              color: config.color,
+              borderRadius: "9999px",
+              fontWeight: 500,
+              fontSize: "12px",
+              padding: "2px 12px",
+            }}
+            className="capitalize"
+          >
+            {t(`settingsUser.donations.status.${status.toLowerCase()}`)}
+          </Tag>
+        );
+      },
+    },
+    { title: t("settingsUser.donations.columns.date"), dataIndex: "paidAt", key: "date", render: (date: string) => (date ? new Date(date).toLocaleString() : "—") },
+    { title: t("settingsUser.donations.columns.counterparty"), dataIndex: "counterpartyName", key: "counterparty" },
+    { title: t("settingsUser.donations.columns.reference"), dataIndex: "reference", key: "reference", render: (ref: string | null) => ref || "—" },
+  ];
+
+  // Componente reutilizable de tabla de pagos
+  const renderPaymentsTable = (
+    data: PaymentItem[],
+    loading: boolean,
+    pagination: { current: number; pageSize: number; total: number },
+    onPageChange: (page: number, pageSize: number) => void
+  ) => (
+    <Table
+      columns={paymentColumns}
+      dataSource={data}
+      rowKey="paymentId"
+      loading={loading}
+      pagination={{
+        current: pagination.current,
+        pageSize: pagination.pageSize,
+        total: pagination.total,
+        onChange: onPageChange,
+        showSizeChanger: true,
+        showTotal: (total) => `${t("common.total")} ${total} ${t("common.items")}`,
+      }}
+      scroll={{ x: "max-content" }}
+      components={{
+        header: {
+          cell: (props: any) => (
+            <th {...props} style={{ backgroundColor: "#F9FAFB", color: "#1B1C1E", fontWeight: 600 }} />
+          ),
+        },
+      }}
+      className="payments-table"
+    />
+  );
+
+  // Render de la sección Donaciones
   const renderDonationsSection = () => (
     <>
       <div className="settings-section-header-row">
         <h2 className="settings-section-title">{t("settingsUser.donations.title")}</h2>
       </div>
-      <div className="settings-donations-content">
-        <p className="settings-description">{t("settingsUser.donations.description")}</p>
-        <div className="settings-donations-buttons">
-          <Button type="primary" icon={<Heart size={16} />} href="https://www.paypal.com/donate" target="_blank">
-            PayPal
-          </Button>
-          <Button icon={<Heart size={16} />} href="https://www.patreon.com/" target="_blank">
-            Patreon
-          </Button>
-          <Button href="https://ko-fi.com/" target="_blank">
-            Ko-fi
-          </Button>
-        </div>
-        <p className="settings-donations-note">{t("settingsUser.donations.note")}</p>
-      </div>
+      <Tabs
+        defaultActiveKey="sent"
+        items={[
+          {
+            key: "sent",
+            label: t("settingsUser.donations.sent"),
+            children: renderPaymentsTable(sentPayments, sentLoading, sentPagination, (page, pageSize) => {
+              setSentPagination((prev) => ({ ...prev, current: page, pageSize }));
+              loadSentPayments(page, pageSize);
+            }),
+          },
+          {
+            key: "received",
+            label: t("settingsUser.donations.received"),
+            children: renderPaymentsTable(receivedPayments, receivedLoading, receivedPagination, (page, pageSize) => {
+              setReceivedPagination((prev) => ({ ...prev, current: page, pageSize }));
+              loadReceivedPayments(page, pageSize);
+            }),
+          },
+        ]}
+      />
     </>
   );
-  // Columnas de la tabla (con traducciones)
-const reportColumns = [
-  { title: t("settingsUser.reports.columns.reportId"), dataIndex: "reportId", key: "reportId", ellipsis: true },
-  { title: t("settingsUser.reports.columns.postId"), dataIndex: "postId", key: "postId", ellipsis: true },
-  { title: t("settingsUser.reports.columns.reason"), dataIndex: "reason", key: "reason" },
-  { title: t("settingsUser.reports.columns.details"), dataIndex: "details", key: "details", ellipsis: true },
-  {
-    title: t("settingsUser.reports.columns.status"),
-    dataIndex: "status",
-    key: "status",
-    render: (status: number) => (
-      <Tag color={status === 1 ? "gold" : "green"}>
-        {status === 1 ? t("settingsUser.reports.pending") : t("settingsUser.reports.resolved")}
-      </Tag>
-    ),
-  },
-  { title: t("settingsUser.reports.columns.resolvedAction"), dataIndex: "resolvedAction", key: "resolvedAction", render: (v: any) => v || "—" },
-  { title: t("settingsUser.reports.columns.moderatorNote"), dataIndex: "moderatorNote", key: "moderatorNote", render: (v: any) => v || "—" },
-  { title: t("settingsUser.reports.columns.createdAt"), dataIndex: "createdAt", key: "createdAt", render: (d: string) => new Date(d).toLocaleString() },
-  { title: t("settingsUser.reports.columns.updatedAt"), dataIndex: "updatedAt", key: "updatedAt", render: (d: string) => new Date(d).toLocaleString() },
-];
 
+  // Render de la sección Reportes (lista simple con "cargar más")
   const renderReportsSection = () => (
     <>
       <div className="settings-section-header-row">
@@ -456,36 +568,54 @@ const reportColumns = [
           <p className="settings-empty">{t("settingsUser.reports.empty")}</p>
         )}
         {reports.map((report) => (
-          <div key={report.reportId} className="report-card settings-toggle-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px', padding: '12px 0', borderBottom: '1px solid #e8e8e8' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+          <div
+            key={report.reportId}
+            className="report-card settings-toggle-row"
+            style={{
+              flexDirection: "column",
+              alignItems: "flex-start",
+              gap: "8px",
+              padding: "12px 0",
+              borderBottom: "1px solid #e8e8e8",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
               <strong>{report.reason}</strong>
-              <span className={`report-status-${report.status === 1 ? 'pending' : 'resolved'}`}>
+              <span className={`report-status-${report.status === 1 ? "pending" : "resolved"}`}>
                 {report.status === 1 ? t("settingsUser.reports.pending") : t("settingsUser.reports.resolved")}
               </span>
             </div>
             {report.details && (
-              <div className="report-details" style={{ fontSize: '13px', color: '#555' }}>
+              <div style={{ fontSize: "13px", color: "#555" }}>
                 <strong>{t("settingsUser.reports.details")}:</strong> {report.details}
               </div>
             )}
             {report.resolvedAction && (
-              <div style={{ fontSize: '13px' }}>
+              <div style={{ fontSize: "13px" }}>
                 <strong>{t("settingsUser.reports.resolved_action")}:</strong> {report.resolvedAction}
               </div>
             )}
             {report.moderatorNote && (
-              <div style={{ fontSize: '13px' }}>
+              <div style={{ fontSize: "13px" }}>
                 <strong>{t("settingsUser.reports.moderator_note")}:</strong> {report.moderatorNote}
               </div>
             )}
-            <div style={{ fontSize: '12px', color: '#999' }}>
-              {new Date(report.createdAt).toLocaleString()}
-            </div>
+            <div style={{ fontSize: "12px", color: "#999" }}>{new Date(report.createdAt).toLocaleString()}</div>
           </div>
         ))}
-        {reportsLoading && <div className="text-center py-2"><Spin /></div>}
+        {reportsLoading && (
+          <div className="text-center py-2">
+            <Spin />
+          </div>
+        )}
         {reportsHasMore && !reportsLoading && (
-          <Button type="link" onClick={() => { setReportsPage(p => p + 1); loadReports(reportsPage + 1); }}>
+          <Button
+            type="link"
+            onClick={() => {
+              setReportsPage((p) => p + 1);
+              loadReports(reportsPage + 1);
+            }}
+          >
             {t("common.load_more")}
           </Button>
         )}
@@ -495,12 +625,18 @@ const reportColumns = [
 
   const renderActiveContent = () => {
     switch (activeSection) {
-      case "profile": return renderProfileSection();
-      case "portfolio": return renderPortfolioSection();
-      case "security": return renderSecuritySection();
-      case "donations": return renderDonationsSection();
-      case "reports": return renderReportsSection();
-      default: return renderProfileSection();
+      case "profile":
+        return renderProfileSection();
+      case "portfolio":
+        return renderPortfolioSection();
+      case "security":
+        return renderSecuritySection();
+      case "donations":
+        return renderDonationsSection();
+      case "reports":
+        return renderReportsSection();
+      default:
+        return renderProfileSection();
     }
   };
 
@@ -509,7 +645,7 @@ const reportColumns = [
     { key: "portfolio", label: t("settingsUser.sections.portfolio"), children: renderPortfolioSection() },
     { key: "security", label: t("settingsUser.sections.security"), children: renderSecuritySection() },
     { key: "donations", label: t("settingsUser.sections.donations"), children: renderDonationsSection() },
-    { key: "reports", label: t("settingsUser.sections.reports"), children: renderReportsSection() }
+    { key: "reports", label: t("settingsUser.sections.reports"), children: renderReportsSection() },
   ];
 
   return (

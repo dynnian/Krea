@@ -106,6 +106,7 @@
     "comment_error": "Failed to post comment. Please try again.",
     "bookmark_toggled": "Bookmark toggled successfully",
     "bookmark_error": "Failed to toggle bookmark. Please try again.",
+    "reposted":"Reposted",
     "reposted_by": "Reposted by",
     "report": "Report",
     "report_title": "Report post",
@@ -651,8 +652,24 @@
     },
     "donations": {
       "title": "Donations",
-      "description": "If you like my work, consider making a donation to support the creation of more content.",
-      "note": "Thank you for your support ❤️"
+      "sent": "Sent",
+      "received": "Received",
+      "currency": "USD",
+      "sent_load_error": "Error loading sent payments",
+      "received_load_error": "Error loading received payments",
+      "columns": {
+        "type": "Type",
+        "amount": "Amount",
+        "status": "Status",
+        "date": "Date",
+        "counterparty": "Counterparty",
+        "reference": "Reference"
+      },
+      "status": {
+        "pending": "Pending",
+        "completed": "Completed",
+        "failed": "Failed"
+      }
     },
     "reports": {
       "title": "My reports",

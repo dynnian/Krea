@@ -124,7 +124,8 @@
     "report_success": "Reporte enviado. Gracias por ayudar a mantener la comunidad segura.",
     "report_error": "Error al enviar el reporte. Inténtalo de nuevo.",
     "report_submit": "Enviar reporte",
-    "reposted_by": "Republicado de"
+    "reposted_by": "Republicado de",
+    "reposted":"Reposted"
   },
   "tags": {
     "latest_illustration": "Lo último en Ilustración",
@@ -658,10 +659,26 @@
       "email_2fa": "Activar verificación por correo",
       "sms_2fa": "Activar verificación por SMS"
     },
-    "donations": {
+     "donations": {
       "title": "Donaciones",
-      "description": "Si te gusta mi trabajo, considera hacer una donación para apoyar la creación de más contenido.",
-      "note": "Gracias por tu apoyo ❤️"
+      "sent": "Enviados",
+      "received": "Recibidos",
+      "currency": "USD",
+      "sent_load_error": "Error al cargar los pagos enviados",
+      "received_load_error": "Error al cargar los pagos recibidos",
+      "columns": {
+        "type": "Tipo",
+        "amount": "Monto",
+        "status": "Estado",
+        "date": "Fecha",
+        "counterparty": "Contraparte",
+        "reference": "Referencia"
+      }
+    },
+    "status": {
+      "pending": "Pendiente",
+      "completed": "Completado",
+      "failed": "Fallido"
     },
     "reports": {
       "title": "Mis reportes",
