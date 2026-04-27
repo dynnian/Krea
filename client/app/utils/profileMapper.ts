@@ -40,10 +40,12 @@ export function normalizeApiPosts(
       post.CreatedAt ??
       new Date().toISOString();
 
-    const postGenres =
-      post.genres ??
-      post.Genres ??
-      [];
+      const postGenres =
+        post.genres ??
+        post.Genres ??
+        post.genreNames ??
+        post.GenreNames ??
+        [];
 
     const likesCount = post.likesCount ?? post.LikesCount ?? 0;
     const isLikedByCurrentUser =
@@ -127,12 +129,12 @@ export function normalizeApiPosts(
           genres: m.genres ?? m.Genres ?? [],
         },
       })),
-        likesCount,
-        favoritesCount,
-        replies: post.replies ?? post.Replies ?? [],
-        isLikedByCurrentUser,
-        isFavorite,
-        isFavoritedByCurrentUser: isFavorite,
+      likesCount,
+      favoritesCount,
+      replies: post.replies ?? post.Replies ?? [],
+      isLikedByCurrentUser,
+      isFavorite,
+      isFavoritedByCurrentUser: isFavorite,
     };
   });
 }

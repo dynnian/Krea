@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-sloppy-imports jsx-button-has-type no-unused-vars
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Modal, Upload, Input, Select, ConfigProvider, message } from "antd";
 import { InboxOutlined, CloseOutlined } from "@ant-design/icons";
 import type { UploadFile, UploadProps } from "antd/es/upload/interface";
@@ -26,6 +26,7 @@ type CreateCollectionModalProps = {
   open: boolean;
   onClose: () => void;
   ownerId: string;
+  initialPortfolioType?: PortfolioCollectionType;
   availableItemsByType: Record<PortfolioCollectionType, CollectionSelectableItem[]>;
   onSuccess?: (
     created: CreateCollectionResponse,
@@ -39,15 +40,23 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
   open,
   onClose,
   ownerId,
+  initialPortfolioType = "images",
   availableItemsByType,
   onSuccess,
 }) => {
-  const [portfolioType, setPortfolioType] = useState<PortfolioCollectionType>("images");
+  const [portfolioType, setPortfolioType] = useState<PortfolioCollectionType>(initialPortfolioType);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
   const [selectedItems, setSelectedItems] = useState<CollectionSelectableItem[]>([]);
+  useEffect(() => {
+    if (!open) return;
+
+    setPortfolioType(initialPortfolioType);
+    setSelectedItemId(undefined);
+    setSelectedItems([]);
+  }, [open, initialPortfolioType]);
 
   const availableItems = useMemo(
     () => availableItemsByType[portfolioType] ?? [],
@@ -94,7 +103,7 @@ const CreateCollectionModal: React.FC<CreateCollectionModalProps> = ({
     }
   };
   const resetForm = () => {
-    setPortfolioType("images");
+    setPortfolioType(initialPortfolioType);
     setFileList([]);
     setTitle("");
     setDescription("");

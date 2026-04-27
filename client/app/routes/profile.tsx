@@ -404,7 +404,6 @@ const mainTabItems = [
     ),
   },
     { key: "publications", label: t("Publicaciones") },
-    { key: "members", label: t("Miembros") },
   ];
 
 const getFilteredPosts = () => {
@@ -639,12 +638,13 @@ const editingCollectionConfig = getEditingCollectionConfig();
     <div className=" pt-6 ">
       {/* Perfil header */}
       <ProfileHeader
+        variant="own"
         profile={profile}
         onGoToSettings={handleGoToSettings}
         onGoToSaved={handleGoToSaved}
       />
-      <div className="w-full flex justify-center">
-        <div className=" krea-tabs">
+      <div className="w-full flex justify-center relative z-[100] pointer-events-auto">
+        <div className="krea-tabs relative z-[100] pointer-events-auto">
           <Tabs
             activeKey={activeMainTab}
             onChange={(key) => {
@@ -669,7 +669,7 @@ const editingCollectionConfig = getEditingCollectionConfig();
     {activeMainTab === "portfolio" && (
       
       <div className="lg:pl-[70px]  md:mt-[-10px] mb-[10px] flex justify-end pr-[0px]">
-        <div className="w-full flex justify-center mt-[32px] md:mt-0 md:pl-[520px]">
+        <div className="z-[200] w-full flex justify-center mt-[32px] md:mt-0 md:pl-[520px]">
         <div className="flex items-center gap-[10px] md:-mt-[30px] relative z-20 md:translate-x-[55px]">
         <button
           type="button"
@@ -700,7 +700,8 @@ const editingCollectionConfig = getEditingCollectionConfig();
     )}
   </div> 
 
-  <div className={` ${
+  <div
+    className={`relative z-0 ${
       isPortfolioView
         ? "pt-[20px]"
         : ""
@@ -708,20 +709,20 @@ const editingCollectionConfig = getEditingCollectionConfig();
   >
 
     {activeMainTab === "portfolio" && effectivePortfolioTab === "images" && (
-     <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-    <DigitalPortfolio
-      userId={profile.user.id ?? ""}
-      items={visualPortfolioItems}
-      onEditCollection={(collection, moveTargets) => {
-        setEditingImageCollection(collection);
-        setEditingImageMoveTargets(moveTargets);
-      }}
-    />
-     </div>
+      <div className="w-screen relative z-0 left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+        <DigitalPortfolio
+          userId={profile.user.id ?? ""}
+          items={visualPortfolioItems}
+          onEditCollection={(collection, moveTargets) => {
+            setEditingImageCollection(collection);
+            setEditingImageMoveTargets(moveTargets);
+          }}
+        />
+      </div>
     )}
 
     {activeMainTab === "portfolio" && effectivePortfolioTab === "music" && (
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
+      <div className="w-screen relative z-0 left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pb-[25px]">
        <MusicPortfolio
         songs={musicSongs}
         albums={musicAlbums}
@@ -846,7 +847,12 @@ onEditAlbum={async (album) => {
                     uploadCount: post.userPostId,
                     title: post.title,
                     content: post.content,
+                    genres:
+                      (post as any).genres ??
+                      (post as any).Genres ??
+                      [],
                     isWork: post.isWork,
+                    
                     isLocal: post.isLocal,
                     media: post.media.map((m) => ({
                       id: m.media.id,
@@ -905,6 +911,7 @@ onEditAlbum={async (album) => {
     open={isCreateCollectionModalOpen}
     onClose={() => setIsCreateCollectionModalOpen(false)}
     ownerId={profile.user.id ?? ""}
+    initialPortfolioType={effectivePortfolioTab as "images" | "music" | "literature"}
     availableItemsByType={collectionModalItemsByType}
     onSuccess={() => {
       setIsCreateCollectionModalOpen(false);

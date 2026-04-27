@@ -225,7 +225,7 @@ export default function ImageView() {
 
         {/* Right panel */}
         <aside
-          className={`fixed md:static top-0 right-0 z-[1150] h-screen md:min-h-screen w-[88vw] max-w-[440px] md:w-[440px] text-[#1B1C1E] flex flex-col py-3 pr-3 pl-3 md:pl-0 bg-black/0 transition-transform duration-200 ${
+          className={`fixed md:static top-0 right-0 z-[1150] h-screen md:min-h-screen w-[88vw] max-w-[440px] md:w-[440px] text-[#1B1C1E] py-3 pr-3 pl-3 md:pl-0 bg-black/0 transition-transform duration-200 overflow-y-auto ${
             isMobilePanelOpen ? "translate-x-0" : "translate-x-full md:translate-x-0"
           }`}
           onClick={(event) => event.stopPropagation()}
@@ -277,7 +277,7 @@ export default function ImageView() {
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto">
+          <div>
             <CommentSection postId={originalPost.id} onCommentPosted={handleCommentPosted} />
           </div>
         </aside>

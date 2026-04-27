@@ -54,6 +54,7 @@ const [albumHeaderData, setAlbumHeaderData] = useState<{
   const [bookmarkedTrackIds, setBookmarkedTrackIds] = useState<string[]>([]);
   const [shouldAutoplayOnReady, setShouldAutoplayOnReady] = useState(false);
   const [likeLoadingTrackIds, setLikeLoadingTrackIds] = useState<string[]>([]);
+  const [bookmarkLoadingTrackIds, setBookmarkLoadingTrackIds] = useState<string[]>([]);
   const [isLoadingAlbum, setIsLoadingAlbum] = useState(true);
   const [trackDurationsById, setTrackDurationsById] = useState<Record<string, string>>({});
 
@@ -194,10 +195,14 @@ const [albumHeaderData, setAlbumHeaderData] = useState<{
       return;
     }
 
+    if (bookmarkLoadingTrackIds.includes(trackId)) return;
+
     const track = albumTracks.find((item) => item.id === trackId);
     if (!track) return;
 
     const wasBookmarked = bookmarkedTrackIds.includes(trackId);
+
+    setBookmarkLoadingTrackIds((prev) => [...prev, trackId]);
 
     setBookmarkedTrackIds((prev) =>
       wasBookmarked
@@ -205,15 +210,42 @@ const [albumHeaderData, setAlbumHeaderData] = useState<{
         : [...prev, trackId]
     );
 
+    setAlbumTracks((prev) =>
+      prev.map((item) =>
+        item.id === trackId
+          ? {
+              ...item,
+              isBookmarked: !wasBookmarked,
+            }
+          : item
+      )
+    );
+
     try {
       await postsApi.toggleFavorite(track.postId);
-    } catch {
+    } catch (error) {
+      console.error("Error toggling bookmark on track:", error);
+
       setBookmarkedTrackIds((prev) =>
         wasBookmarked
           ? [...prev, trackId]
           : prev.filter((id) => id !== trackId)
       );
+
+      setAlbumTracks((prev) =>
+        prev.map((item) =>
+          item.id === trackId
+            ? {
+                ...item,
+                isBookmarked: wasBookmarked,
+              }
+            : item
+        )
+      );
+
       message.error("No se pudo actualizar el guardado.");
+    } finally {
+      setBookmarkLoadingTrackIds((prev) => prev.filter((id) => id !== trackId));
     }
   };
   const formatDuration = (seconds: number) => {
@@ -315,7 +347,13 @@ const getAudioDurationFromWaveSurfer = async (audioUrl: string) => {
                 isLiked: post.isLikedByCurrentUser ?? false,
                 isBookmarked:
                   post.isFavoritedByCurrentUser ??
-                  post.isFavorite ??
+                  (post as any).IsFavoritedByCurrentUser ??
+                  (post as any).isFavorite ??
+                  (post as any).IsFavorite ??
+                  (post as any).isFavorited ??
+                  (post as any).IsFavorited ??
+                  (post as any).favorited ??
+                  (post as any).Favorited ??
                   false,
               };
             } catch (trackError) {
@@ -329,15 +367,44 @@ const getAudioDurationFromWaveSurfer = async (audioUrl: string) => {
           (track): track is NonNullable<typeof track> => track !== null
         );
 
-        setAlbumTracks(validTracks);
+        let favoritePostIds = new Set<string>();
+
+        if (user) {
+          try {
+            const favoritesResponse = await postsApi.getFavorites(1, 500);
+            const favoritePosts = Array.isArray(favoritesResponse.data)
+              ? favoritesResponse.data
+              : [];
+
+            favoritePostIds = new Set(
+              favoritePosts
+                .map((post: any) => post.id ?? post.Id ?? post.postId ?? post.PostId)
+                .filter(Boolean)
+            );
+          } catch (favoritesError) {
+            console.error("Error loading favorite posts for album:", favoritesError);
+          }
+        }
+
+        const tracksWithBookmarkState = validTracks.map((track) => ({
+          ...track,
+          isBookmarked: track.isBookmarked || favoritePostIds.has(track.postId),
+        }));
+
+        setAlbumTracks(tracksWithBookmarkState);
+
         setLikedTrackIds(
-          validTracks.filter((track) => track.isLiked).map((track) => track.id)
+          tracksWithBookmarkState
+            .filter((track) => track.isLiked)
+            .map((track) => track.id)
         );
+
         setBookmarkedTrackIds(
-          validTracks
+          tracksWithBookmarkState
             .filter((track) => track.isBookmarked)
             .map((track) => track.id)
         );
+
         setIsLoadingAlbum(false);
       } catch (error) {
         console.error("Error loading album data:", error);
@@ -348,7 +415,7 @@ const getAudioDurationFromWaveSurfer = async (audioUrl: string) => {
     };
 
     void loadAlbumData();
-  }, [id]);
+  }, [id, user?.id]);
 
   useEffect(() => {
   if (albumTracks.length === 0) return;
@@ -482,7 +549,10 @@ const getAudioDurationFromWaveSurfer = async (audioUrl: string) => {
                   <p className="text-[18px] lg:text-[24px] leading-[1.2] text-[#6A6A6A]">
                     <button
                       type="button"
-                      onClick={() => navigate(`/profile/${effectiveOwnerHandle}`)}
+                      onClick={() => {
+                        if (!albumHeaderData?.ownerId) return;
+                        navigate(`/user/${albumHeaderData.ownerId}`);
+                      }}
                       className="cursor-pointer hover:underline"
                     >
                       {effectiveOwnerName}
@@ -490,7 +560,10 @@ const getAudioDurationFromWaveSurfer = async (audioUrl: string) => {
                     {" · "}
                     <button
                       type="button"
-                      onClick={() => navigate(`/profile/${effectiveOwnerHandle}`)}
+                      onClick={() => {
+                        if (!albumHeaderData?.ownerId) return;
+                        navigate(`/user/${albumHeaderData.ownerId}`);
+                      }}
                       className="cursor-pointer hover:underline"
                     >
                       @{effectiveOwnerHandle}
@@ -634,11 +707,12 @@ const getAudioDurationFromWaveSurfer = async (audioUrl: string) => {
                       </button>
                       <button
                         type="button"
-                        onClick={(event) => {
+                        disabled={bookmarkLoadingTrackIds.includes(track.id)}
+                        onClick={async (event) => {
                           event.stopPropagation();
-                          handleToggleBookmark(track.id);
+                          await handleToggleBookmark(track.id);
                         }}
-                        className="flex items-center justify-center text-[#1B1C1E] cursor-pointer"
+                        className="flex items-center justify-center text-[#1B1C1E] cursor-pointer disabled:opacity-50"
                       >
                         <Bookmark
                           size={19}

@@ -294,6 +294,7 @@ type WriterPortfolioProps = {
   collections?: WriterCollectionPreview[];
   onEditCollection?: (collectionId: string) => void;
   onDeleteCollection?: (collectionId: string) => void;
+  readOnly?: boolean;
 };
 
 function getLatestPortfolioBooks(works: WriterWork[]) {
@@ -313,7 +314,7 @@ function PortfolioViewHeader({
       <button
         type="button"
         onClick={onBack}
-        className="flex items-center justify-center w-[32px] h-[32px] hover:bg-gray-200 rounded-full transition cursor-pointer"
+        className="pointer-events-auto flex items-center justify-center w-[32px] h-[32px] hover:bg-gray-200 rounded-full transition cursor-pointer"
       >
         <ChevronLeft size={20} />
       </button>
@@ -396,6 +397,7 @@ function WriterCollectionCard({
   onOpen,
   onEdit,
   onDelete,
+  readOnly = false,
 }: {
   collection: WriterCollectionPreview;
   itemCount: number;
@@ -403,6 +405,7 @@ function WriterCollectionCard({
   onOpen: (collectionId: string) => void;
   onEdit: (collectionId: string) => void;
   onDelete: (collectionId: string) => void;
+  readOnly?: boolean;
 }) {
   const previewWorks = collectionWorks.slice(0, 3);
 
@@ -532,22 +535,23 @@ function WriterCollectionCard({
               {itemCount} Obras
             </h3>
           </div>
-
-          <Dropdown
-            menu={{ items: collectionMenuItems, onClick: handleCollectionMenuClick }}
-            trigger={["click"]}
-            placement="bottomRight"
-          >
-            <button
-              type="button"
-              className="h-[20px] w-[20px] flex items-center justify-center rounded-full cursor-pointer"
-              onClick={(event) => {
-                event.stopPropagation();
-              }}
+          {!readOnly && (
+            <Dropdown
+              menu={{ items: collectionMenuItems, onClick: handleCollectionMenuClick }}
+              trigger={["click"]}
+              placement="bottomRight"
             >
-              <MoreHorizontal size={16} />
-            </button>
-          </Dropdown>
+              <button
+                type="button"
+                className="h-[20px] w-[20px] flex items-center justify-center rounded-full cursor-pointer"
+                onClick={(event) => {
+                  event.stopPropagation();
+                }}
+              >
+                <MoreHorizontal size={16} />
+              </button>
+            </Dropdown>
+          )}
         </div>
       </div>
     </div>
@@ -589,6 +593,7 @@ export default function WriterPortfolio({
   collections = [],
   onEditCollection,
   onDeleteCollection,
+  readOnly = false,
 }: WriterPortfolioProps) {
   const [showGeneralPortfolio, setShowGeneralPortfolio] = useState(false);
   const [activeCollectionId, setActiveCollectionId] = useState<string | null>(null);
@@ -615,7 +620,7 @@ export default function WriterPortfolio({
 
   if (showGeneralPortfolio) {
     return (
-      <div className="w-full md:-mt-[60px]">
+      <div className="w-full md:-mt-[60px] pointer-events-none">
         <div className="max-w-[1388px] mx-auto">
           <PortfolioViewHeader
             title="Portafolio General"
@@ -630,7 +635,7 @@ export default function WriterPortfolio({
 
   if (activeCollection) {
     return (
-      <div className="w-full md:-mt-[60px]">
+      <div className="w-full md:-mt-[60px] pointer-events-none">
         <div className="max-w-[1388px] mx-auto">
           <PortfolioViewHeader
             title={activeCollection.title}
@@ -669,6 +674,7 @@ export default function WriterPortfolio({
               onOpen={setActiveCollectionId}
               onEdit={handleEditCollection}
               onDelete={handleDeleteCollection}
+              readOnly={readOnly}
             />
           );
         })}
