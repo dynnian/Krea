@@ -23,6 +23,15 @@ import '../../app.css'
 const { Dragger } = Upload;
 const { TextArea } = Input;
 const { Option } = Select;
+const MAX_FILE_SIZE_MB: Record<PostType, number> = {
+  [PostType.PLAIN]: 0,
+  [PostType.IMAGE]: 10,
+  [PostType.MUSIC]: 20,
+  [PostType.TEXT]: 40,
+};
+const getMaxFileSizeBytes = (postType: PostType) => {
+  return MAX_FILE_SIZE_MB[postType] * 1024 * 1024;
+};
 const ACCEPTED_MIME_TYPES: Record<PostType, string[]> = {
   [PostType.PLAIN]: [],
   [PostType.IMAGE]: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
@@ -60,13 +69,23 @@ const CreatePortfolioPostModal: React.FC<CreatePortfolioPostModalProps> = ({
   const [collections, setCollections] = useState<UserCollectionDto[]>([]);
   const [collectionsLoading, setCollectionsLoading] = useState(false);
   const beforeUpload = (file: File) => {
-  const allowedTypes = ACCEPTED_MIME_TYPES[postType as PostType];
-  if (allowedTypes && allowedTypes.length && !allowedTypes.includes(file.type)) {
-    message.error(t('createPost.invalidFileType', { type: getTitleText() }));
-    return Upload.LIST_IGNORE;
-  }
-  return false;
-};
+    const currentPostType = postType as PostType;
+    const allowedTypes = ACCEPTED_MIME_TYPES[currentPostType];
+    const maxSizeMb = MAX_FILE_SIZE_MB[currentPostType];
+    const maxSizeBytes = getMaxFileSizeBytes(currentPostType);
+
+    if (allowedTypes && allowedTypes.length && !allowedTypes.includes(file.type)) {
+      message.error(t('createPost.invalidFileType', { type: getTitleText() }));
+      return Upload.LIST_IGNORE;
+    }
+
+    if (maxSizeMb > 0 && file.size > maxSizeBytes) {
+      message.error(`El archivo supera el límite de ${maxSizeMb} MB.`);
+      return Upload.LIST_IGNORE;
+    }
+
+    return false;
+  };
 
 useEffect(() => {
   if (!visible) return;
@@ -231,7 +250,25 @@ const getGenreLabel = () => {
       return;
     }
 
+    const currentPostType = postType as PostType;
+    const maxSizeMb = MAX_FILE_SIZE_MB[currentPostType];
+    const maxSizeBytes = getMaxFileSizeBytes(currentPostType);
+
+    const oversizedFile = fileList.find((file) => {
+      const origin = file.originFileObj as File | undefined;
+      return origin && maxSizeMb > 0 && origin.size > maxSizeBytes;
+    });
+
+    if (oversizedFile) {
+      message.error(`El archivo "${oversizedFile.name}" supera el límite de ${maxSizeMb} MB.`);
+      return;
+    }
+
     setLoading(true);
+
+    setLoading(true);
+    let createdPostId: string | null = null;
+
     try {
       const createData: CreatePostData = {
         authorPostId: user.id,
@@ -255,6 +292,8 @@ const getGenreLabel = () => {
         throw new Error('No se recibió el ID del post');
       }
 
+      createdPostId = postId;
+
       for (const file of fileList) {
         await handleUpload(postId, file);
       }
@@ -272,7 +311,25 @@ const getGenreLabel = () => {
       console.error('Error al crear post:', error);
       console.error('response data:', (error as any)?.response?.data);
       console.error('response status:', (error as any)?.response?.status);
-      message.error(t('createPost.error'));
+
+      if (createdPostId) {
+        try {
+          await postsApi.deletePost(createdPostId);
+          console.warn('Post eliminado por rollback tras fallo:', createdPostId);
+        } catch (rollbackError) {
+          console.error('No se pudo eliminar el post creado tras el fallo:', rollbackError);
+        }
+      }
+
+      const status = (error as any)?.response?.status;
+
+      if (status === 413) {
+        message.error('El archivo es demasiado grande.');
+      } else if (status === 400) {
+        message.error('No se pudo subir el archivo. Revisa el formato, tamaño o metadatos.');
+      } else {
+        message.error(t('createPost.error'));
+      }
     } finally {
       setLoading(false);
     }
