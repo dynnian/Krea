@@ -1,89 +1,81 @@
-import { useState } from 'react';
-import dayjs from '../lib/dayjs';
-import { useNotifications } from '../contexts/NotificationContext';
+import dayjs from '../lib/dayjs.ts';
+import { useNotifications } from '../contexts/NotificationContext.tsx';
 import './styles/NotificationsPanel.css';
 
-export default function NotificationCenter() {
+type NotificationCenterProps = {
+  open: boolean;
+};
+
+export default function NotificationCenter({ open }: NotificationCenterProps) {
   const {
     notifications,
     unreadCount,
-    isLoading,
-    isConnecting,
     markAsRead,
     markAllAsRead,
-    removeNotification,
   } = useNotifications();
 
-  const [open, setOpen] = useState(false);
+  if (!open) return null;
 
   return (
     <div className="notifications-wrapper">
-      <button
-        className="notifications-trigger"
-        onClick={() => setOpen((prev) => !prev)}
-        aria-label="Abrir notificaciones"
-        type="button"
-      >
-        <span>🔔</span>
-        {unreadCount > 0 && <span className="notifications-badge">{unreadCount}</span>}
-      </button>
-
-      {open && (
-        <div className="notifications-panel">
-          <div className="notifications-panel-header">
-            <div>
-              <h3>Notificaciones</h3>
-              <small>{isConnecting ? 'Reconectando...' : 'Tiempo real activo'}</small>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => void markAllAsRead()}
-              disabled={!notifications.length}
-            >
-              Marcar todas
-            </button>
+      <div className="notifications-panel">
+        <div className="notifications-panel-header">
+          <div>
+            <h3>Notificaciones</h3>
+            <small>Tiempo real activo</small>
           </div>
 
-          <div className="notifications-panel-body">
-            {isLoading ? (
-              <div className="notifications-empty">Cargando notificaciones...</div>
-            ) : notifications.length === 0 ? (
-              <div className="notifications-empty">No tienes notificaciones.</div>
-            ) : (
-              notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`notification-item ${notification.isRead ? 'read' : 'unread'}`}
-                >
-                  <div className="notification-item-content">
-                    <p>{notification.content}</p>
-                    <small>{dayjs(notification.createdAt).fromNow()}</small>
-                  </div>
+          <button
+            type="button"
+            className="krea-white-button"
+            onClick={() => void markAllAsRead()}
+            disabled={unreadCount === 0}
+          >
+            Marcar todas
+          </button>
+        </div>
 
-                  <div className="notification-item-actions">
-                    {!notification.isRead && (
-                      <button
-                        type="button"
-                        onClick={() => void markAsRead(notification.id)}
-                      >
-                        Leída
-                      </button>
-                    )}
+        <div className="notifications-panel-body">
+          {notifications.length === 0 ? (
+            <div className="notifications-empty">No tienes notificaciones.</div>
+          ) : (
+            notifications.map((notification) => (
+              <div
+                key={notification.id}
+                className={`notification-item ${notification.read ? 'read' : 'unread'}`}
+              >
+                <div className="notification-item-content">
+                  <p>{notification.content}</p>
+                  <small>{dayjs(notification.createdAt).fromNow()}</small>
+                </div>
 
+                <div className="notification-item-actions">
+                  {!notification.read && (
                     <button
                       type="button"
-                      onClick={() => void removeNotification(notification.id)}
+                      className="krea-save-button"
+                      onClick={() => void markAsRead(notification.id)}
                     >
-                      Eliminar
+                      Leída
                     </button>
-                  </div>
+                  )}
+
+                  {/* Lo dejamos oculto por ahora porque tu contexto no tiene removeNotification tipado */}
+                  {/* 
+                  <button
+                    type="button"
+                    className="krea-cancel-button"
+                    onClick={() => void removeNotification(notification.id)}
+                  >
+                    Eliminar
+                  </button>
+                  */}
                 </div>
-              ))
-            )}
-          </div>
+              </div>
+            ))
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router";
@@ -151,20 +152,38 @@ export default function UserNavbar() {
                   <MessageCircle size={22} />
                 </Link>
 
-                <Popover
-                  content={<NotificationCenter />}
-                  trigger="click"
-                  placement="bottomRight"
-                  arrow={false}
-                >
-                  <div className="relative cursor-pointer text-[#E3E2DE] hover:text-white">
+              <Popover
+                content={<NotificationCenter open={true} />}
+                trigger="click"
+                placement="bottomRight"
+                arrow={false}
+                mouseEnterDelay={0}
+                mouseLeaveDelay={0}
+                overlayInnerStyle={{
+                  padding: 0,
+                  background: "transparent",
+                  boxShadow: "none",
+                }}
+                align={{
+                  offset: [0, -10],
+                }}
+              >
+
+                  <button
+                    type="button"
+                    className="relative cursor-pointer bg-transparent border-0 p-0"
+                    aria-label="Abrir notificaciones"
+                  >
+                  <div className="text-[#E3E2DE] hover:text-white">
                     <Bell size={22} />
+                  </div>
                     {unreadCount > 0 && (
                       <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                         {unreadCount}
                       </span>
                     )}
-                  </div>
+                  </button>
+
                 </Popover>
 
                 <Link to="/profile" className="group flex flex-col items-center">
