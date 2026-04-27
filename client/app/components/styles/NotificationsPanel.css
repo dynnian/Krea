@@ -1,4 +1,4 @@
-.notification-popover .ant-popover-inner {
+/* .notification-popover .ant-popover-inner {
   padding: 0;
   background-color: transparent;
   border-radius: 13px;
@@ -6,4 +6,120 @@
 }
 .notification-popover .ant-popover-arrow {
   display: none;
+} */
+
+.notifications-wrapper {
+  position: relative;
+}
+
+.notifications-trigger {
+  position: relative;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: inherit;
+}
+
+.notifications-badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notifications-panel {
+  position: absolute;
+  right: 0;
+  top: 42px;
+  width: 380px;
+  max-height: 500px;
+  overflow: hidden;
+  border: 1px solid #2a2a2a;
+  background: #111;
+  color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  z-index: 1000;
+}
+
+.notifications-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid #222;
+}
+
+.notifications-panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.notifications-panel-header small {
+  color: #9ca3af;
+}
+
+.notifications-panel-body {
+  max-height: 430px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  padding: 12px;
+  border-bottom: 1px solid #1e1e1e;
+}
+
+.notification-item.unread {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.notification-item.read {
+  opacity: 0.8;
+}
+
+.notification-item-content p {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+.notification-item-content small {
+  color: #9ca3af;
+}
+
+.notification-item-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.notification-item-actions button,
+.notifications-panel-header button {
+  background: #1f2937;
+  color: #fff;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.notification-item-actions button:hover,
+.notifications-panel-header button:hover {
+  background: #374151;
+}
+
+.notifications-empty {
+  padding: 24px;
+  text-align: center;
+  color: #9ca3af;
 }

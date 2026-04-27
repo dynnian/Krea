@@ -58,7 +58,7 @@ export default function UserNavbar() {
     <nav className="bg-[#1351AA] border-b-2 border-[#8F8E8A] sticky top-0 z-[1000] w-full ">
       <div className="max-w-screen-2xl mx-auto">
         {isMobile ? (
-          /* 📱 MOBILE LAYOUT */
+          /* MOBILE LAYOUT */
           <div className="flex items-center justify-between px-4 py-2">
             <Link to="/">
               <BrandLogoC ariaLabel="Logo" color="#F3F3F1" height={40} className="block" />

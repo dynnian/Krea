@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import { useForm, Controller } from "react-hook-form";
 import {
   Button,
@@ -12,13 +13,13 @@ import {
 import { Link, useNavigate } from "react-router";
 import { useState, useEffect, type ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { useI18n } from "../contexts/I18nContext";
-import { useAuth, type RegisterDTO } from "@/contexts/AuthContext";
+import { useI18n } from "../contexts/I18nContext.tsx";
+import { useAuth, type RegisterDTO } from "../contexts/AuthContext.tsx";
 import { Navigate } from "react-router-dom";
-import axiosClient from "../lib/axios";
+import axiosClient from "../lib/axios.ts";
 import "../components/styles/signUpRouteFieldoverride.css";
 import backgroundImage from "../../assets/landscapeB.jpg";
-import BrandLogo from "../components/BrandLogo";
+import { BrandLogo } from "../components/BrandLogo.tsx";
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
@@ -281,6 +282,7 @@ const {
       setAuthError(rawMessage || t("errors.registration_failed"));
     }
   }
+};
 
   if (authLoading || !isMounted) {
     return (
@@ -574,4 +576,4 @@ const {
     </Layout>
   );
   }
-}
+

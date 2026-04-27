@@ -565,6 +565,110 @@ namespace Krea.Infrastructure.Data.Migrations
                     b.UseTphMappingStrategy();
                 });
 
+            modelBuilder.Entity("Krea.Domain.Entities.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ActorUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("EntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("EntityType")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorUserId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "IsRead", "CreatedAt");
+
+                    b.ToTable("notifications", (string)null);
+                });
+
+            modelBuilder.Entity("Krea.Domain.Entities.NotificationGlobalPreference", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("AllNotificationsPaused")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("notification_global_preferences", (string)null);
+                });
+
+            modelBuilder.Entity("Krea.Domain.Entities.NotificationPreference", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("EmailEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("InAppEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPaused")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Type")
+                        .IsUnique();
+
+                    b.ToTable("notification_preferences", (string)null);
+                });
+
             modelBuilder.Entity("Krea.Domain.Entities.Payment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1596,6 +1700,46 @@ namespace Krea.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Upload");
+                });
+
+            modelBuilder.Entity("Krea.Domain.Entities.Notification", b =>
+                {
+                    b.HasOne("Krea.Domain.Entities.User", "ActorUser")
+                        .WithMany()
+                        .HasForeignKey("ActorUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Krea.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ActorUser");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Krea.Domain.Entities.NotificationGlobalPreference", b =>
+                {
+                    b.HasOne("Krea.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Krea.Domain.Entities.NotificationPreference", b =>
+                {
+                    b.HasOne("Krea.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Krea.Domain.Entities.Payment", b =>
