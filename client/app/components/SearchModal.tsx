@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { Search, X, UserPlus, UserCheck, Clock, Heart, Image, FileText, Video } from "lucide-react";
 import { Avatar, Spin, message } from "antd";
-import { searchApi, type UserSearchItem, type PostSearchItem } from "../services/searchService";
+import { searchApi, type UserSearchItem, type PostSearchItem } from "../services/searchService.ts";
 import { userService } from "../services/userService.ts";
 import { useAuth } from "../contexts/AuthContext.tsx";
 
@@ -25,7 +25,6 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [hasSearched, setHasSearched] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Debounce para evitar muchas llamadas
   useEffect(() => {
     if (!query.trim()) {
       setUsers([]);
@@ -33,11 +32,9 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       setHasSearched(false);
       return;
     }
-
     const timer = setTimeout(() => {
       performSearch();
     }, 300);
-
     return () => clearTimeout(timer);
   }, [query]);
 
@@ -48,7 +45,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     setHasSearched(true);
     try {
       const [usersRes, postsRes] = await Promise.all([
-        searchApi.searchUsers(query, 1, 5),  // limitar a 5 resultados por sección
+        searchApi.searchUsers(query, 1, 5),
         searchApi.searchPosts(query, 1, 5),
       ]);
       setUsers(usersRes.data.items);
@@ -67,7 +64,6 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       message.warning(t("profile.login_to_follow"));
       return;
     }
-    // Optimistic update
     setUsers(prev =>
       prev.map(u =>
         u.id === targetUserId ? { ...u, isFollowing: !isCurrentlyFollowing } : u
@@ -80,7 +76,6 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         await userService.follow(targetUserId);
       }
     } catch {
-      // revert
       setUsers(prev =>
         prev.map(u =>
           u.id === targetUserId ? { ...u, isFollowing: isCurrentlyFollowing } : u
@@ -96,18 +91,14 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     return <Video size={14} />;
   };
 
-  // Cerrar con Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
-        onClose();
-      }
+      if (e.key === "Escape" && isOpen) onClose();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Auto focus al abrir
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 100);
@@ -124,10 +115,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center pt-20 px-4">
       {/* Fondo oscuro */}
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
       <motion.div
@@ -136,22 +124,22 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         exit={{ opacity: 0, y: -20, scale: 0.95 }}
         className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-white/10"
       >
-        {/* Header con input */}
-        <div className="p-4 border-b border-gray-100 flex items-center gap-3 bg-[#1351AA]">
-          <Search className="text-white/70" size={20} />
+        {/* Header con input - fondo azul, texto e iconos blancos */}
+        <div className="p-4 border-b border-white/20 flex items-center gap-3 bg-[#1351AA]">
+          <Search className="text-white" size={20} />
           <input
             ref={inputRef}
             type="text"
             placeholder={t("search.placeholder")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 bg-transparent border-none focus:ring-0 text-base py-2 outline-none text-white placeholder:text-white/50"
+            className="flex-1 bg-transparent border-none focus:ring-0 text-base py-2 outline-none text-white placeholder:text-white/70"
           />
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/70"
+            className="p-2 hover:bg-white/10 rounded-full transition-colors text-white"
           >
-            <X size={20} />
+            <X size={20} color="white" />
           </button>
         </div>
 
@@ -166,7 +154,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
             <div className="flex justify-center py-12">
               <Spin size="large" />
             </div>
-          ) : (users.length === 0 && posts.length === 0) ? (
+          ) : users.length === 0 && posts.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
               <p>{t("search.no_results", { query })}</p>
             </div>
@@ -239,7 +227,6 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                           onClose();
                         }}
                       >
-                        {/* Miniatura para imágenes */}
                         {post.postType === "Image" && post.previewUrl && (
                           <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
                             <img
@@ -288,14 +275,14 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           )}
         </div>
 
-        {/* Footer con información */}
-        <div className="p-3 bg-[#1351AA] border-t border-white/10 flex justify-between items-center text-[10px] text-blue-100 font-medium">
+        {/* Footer */}
+        <div className="p-3 bg-[#1351AA] border-t border-white/20 flex justify-between items-center text-[10px] text-white/80 font-medium">
           <p>{t("search.esc_to_close")}</p>
           <p>{t("search.community_results")}</p>
         </div>
       </motion.div>
 
-      <style jsx>{`
+      <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 5px;
         }

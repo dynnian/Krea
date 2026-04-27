@@ -82,6 +82,16 @@
     "logout": "Cerrar sesión",
     "menu": "Menú"
   },
+  "search": {
+    "placeholder": "Buscar usuarios o publicaciones...",
+    "users": "Usuarios",
+    "posts": "Publicaciones",
+    "error": "Error en la búsqueda",
+    "no_results": "No se encontraron resultados para \"{{query}}\"",
+    "start_typing": "Escribe algo para comenzar la búsqueda",
+    "esc_to_close": "Presiona ESC para cerrar",
+    "community_results": "Mostrando resultados de la comunidad"
+  },
   "home": {
     "composer_placeholder": "¿Qué piensas?",
     "post_button": "Post",
@@ -159,7 +169,8 @@
     "submit": "Enviar",
     "send": "Enviar",
     "error": "Error",
-    "logout":"Cerrar Sesión"
+    "logout":"Cerrar Sesión",
+    "likes":"Me gusta"
   },
   "explore": {
     "tabs": {
@@ -187,7 +198,6 @@
       "featured_title": "Título del libro",
       "featured_author": "Autor",
       "synopsis": "Sinopsis",
-      "read_now": "Leer ahora",
       "trending": "En tendencia",
       "book_title": "Título del libro",
       "book_author": "Autor",

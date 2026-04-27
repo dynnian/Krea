@@ -6,7 +6,7 @@
     "npm:@fontsource/inter@5.2.8": "5.2.8",
     "npm:@microsoft/signalr@8.0.17": "8.0.17",
     "npm:@microsoft/signalr@^8.0.7": "8.0.17",
-    "npm:@react-router/dev@7.12.0": "7.12.0_@react-router+serve@7.12.0__react-router@7.12.0___react@19.2.4___react-dom@19.2.4____react@19.2.4__express@4.22.1__typescript@5.9.2__react@19.2.4__react-dom@19.2.4___react@19.2.4_react-router@7.12.0__react@19.2.4__react-dom@19.2.4___react@19.2.4_typescript@5.9.2_vite@7.1.7__@types+node@22.19.15__picomatch@4.0.3",
+    "npm:@react-router/dev@7.12.0": "7.12.0_@react-router+serve@7.12.0__react-router@7.12.0___react@19.2.4___react-dom@19.2.4____react@19.2.4__express@4.22.1__typescript@5.9.2__react@19.2.4__react-dom@19.2.4___react@19.2.4_react-router@7.12.0__react@19.2.4__react-dom@19.2.4___react@19.2.4_typescript@5.9.2_vite@7.1.7__@types+node@22.19.15__picomatch@4.0.3_@babel+core@7.29.0_react@19.2.4_react-dom@19.2.4__react@19.2.4_@types+node@22.19.15",
     "npm:@react-router/node@7.12.0": "7.12.0_react-router@7.12.0__react@19.2.4__react-dom@19.2.4___react@19.2.4_typescript@5.9.2_react@19.2.4_react-dom@19.2.4__react@19.2.4",
     "npm:@react-router/serve@7.12.0": "7.12.0_react-router@7.12.0__react@19.2.4__react-dom@19.2.4___react@19.2.4_express@4.22.1_typescript@5.9.2_react@19.2.4_react-dom@19.2.4__react@19.2.4",
     "npm:@tailwindcss/vite@4.1.13": "4.1.13_vite@7.1.7__@types+node@22.19.15__picomatch@4.0.3_@types+node@22.19.15",
@@ -30,6 +30,7 @@
     "npm:isbot@5.1.31": "5.1.31",
     "npm:jwt-decode@4.0.0": "4.0.0",
     "npm:lucide-react@0.564.0": "0.564.0_react@19.2.4",
+    "npm:motion@^12.38.0": "12.38.0_react@19.2.4_react-dom@19.2.4__react@19.2.4",
     "npm:pdfjs-dist@^5.4.296": "5.4.296",
     "npm:postcss@8.5.6": "8.5.6",
     "npm:react-dom@19.2.4": "19.2.4_react@19.2.4",
@@ -1047,7 +1048,7 @@
         "react-dom"
       ]
     },
-    "@react-router/dev@7.12.0_@react-router+serve@7.12.0__react-router@7.12.0___react@19.2.4___react-dom@19.2.4____react@19.2.4__express@4.22.1__typescript@5.9.2__react@19.2.4__react-dom@19.2.4___react@19.2.4_react-router@7.12.0__react@19.2.4__react-dom@19.2.4___react@19.2.4_typescript@5.9.2_vite@7.1.7__@types+node@22.19.15__picomatch@4.0.3": {
+    "@react-router/dev@7.12.0_@react-router+serve@7.12.0__react-router@7.12.0___react@19.2.4___react-dom@19.2.4____react@19.2.4__express@4.22.1__typescript@5.9.2__react@19.2.4__react-dom@19.2.4___react@19.2.4_react-router@7.12.0__react@19.2.4__react-dom@19.2.4___react@19.2.4_typescript@5.9.2_vite@7.1.7__@types+node@22.19.15__picomatch@4.0.3_@babel+core@7.29.0_react@19.2.4_react-dom@19.2.4__react@19.2.4_@types+node@22.19.15": {
       "integrity": "sha512-5GpwXgq4pnOVeG7l6ADkCHA1rthJus1q/A3NRYJAIypclUQDYAzg1/fDNjvaKuTSrq+Nr3u6aj2v+oC+47MX6g==",
       "dependencies": [
         "@babel/core",
@@ -2214,6 +2215,20 @@
         "react-dom"
       ]
     },
+    "framer-motion@12.38.0_react@19.2.4_react-dom@19.2.4__react@19.2.4": {
+      "integrity": "sha512-rFYkY/pigbcswl1XQSb7q424kSTQ8q6eAC+YUsSKooHQYuLdzdHjrt6uxUC+PRAO++q5IS7+TamgIw1AphxR+g==",
+      "dependencies": [
+        "motion-dom",
+        "motion-utils",
+        "react",
+        "react-dom",
+        "tslib"
+      ],
+      "optionalPeers": [
+        "react",
+        "react-dom"
+      ]
+    },
     "fresh@0.5.2": {
       "integrity": "sha512-zJ2mQYM18rEFOudeV4GShTGIQ7RbzA7ozbU9I/XBpm7kqgMywgmylMwXHxZJmkVoYkna9d2pVXVXPdYTP9ej8Q=="
     },
@@ -2568,6 +2583,19 @@
     },
     "motion-utils@12.36.0": {
       "integrity": "sha512-eHWisygbiwVvf6PZ1vhaHCLamvkSbPIeAYxWUuL3a2PD/TROgE7FvfHWTIH4vMl798QLfMw15nRqIaRDXTlYRg=="
+    },
+    "motion@12.38.0_react@19.2.4_react-dom@19.2.4__react@19.2.4": {
+      "integrity": "sha512-uYfXzeHlgThchzwz5Te47dlv5JOUC7OB4rjJ/7XTUgtBZD8CchMN8qEJ4ZVsUmTyYA44zjV0fBwsiktRuFnn+w==",
+      "dependencies": [
+        "framer-motion@12.38.0_react@19.2.4_react-dom@19.2.4__react@19.2.4",
+        "react",
+        "react-dom",
+        "tslib"
+      ],
+      "optionalPeers": [
+        "react",
+        "react-dom"
+      ]
     },
     "ms@2.0.0": {
       "integrity": "sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A=="
@@ -3400,6 +3428,7 @@
         "npm:isbot@5.1.31",
         "npm:jwt-decode@4.0.0",
         "npm:lucide-react@0.564.0",
+        "npm:motion@^12.38.0",
         "npm:pdfjs-dist@^5.4.296",
         "npm:postcss@8.5.6",
         "npm:react-dom@19.2.4",

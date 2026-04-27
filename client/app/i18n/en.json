@@ -82,6 +82,16 @@
     "logout": "Logout",
     "menu": "Menu"
   },
+  "search": {
+    "placeholder": "Search users or posts...",
+    "users": "Users",
+    "posts": "Posts",
+    "error": "Search error",
+    "no_results": "No results found for \"{{query}}\"",
+    "start_typing": "Start typing to search",
+    "esc_to_close": "Press ESC to close",
+    "community_results": "Showing community results"
+  },
   "home": {
     "composer_placeholder": "What's on your mind?",
     "post_button": "Post",
@@ -106,7 +116,7 @@
     "comment_error": "Failed to post comment. Please try again.",
     "bookmark_toggled": "Bookmark toggled successfully",
     "bookmark_error": "Failed to toggle bookmark. Please try again.",
-    "reposted":"Reposted",
+    "reposted": "Reposted",
     "reposted_by": "Reposted by",
     "report": "Report",
     "report_title": "Report post",
@@ -159,7 +169,8 @@
     "submit": "Submit",
     "send": "Send",
     "error": "Error",
-    "logout": "Logout"
+    "logout": "Logout",
+    "likes":"likes"
   },
   "explore": {
     "tabs": {
@@ -187,7 +198,6 @@
       "featured_title": "Book title",
       "featured_author": "Author",
       "synopsis": "Synopsis",
-      "read_now": "Read now",
       "trending": "Trending",
       "book_title": "Book title",
       "book_author": "Author",
@@ -310,7 +320,7 @@
     "dm_placeholder": "Write your message here...",
     "donate": "donate"
   },
-  "portfolio":{
+  "portfolio": {
     "images": "Images",
     "music": "Music",
     "literature": "Literature"
@@ -682,6 +692,6 @@
       "moderator_note": "Moderator Note"
     }
   },
-  
+
   "version": "Krea Platform v2.1.0"
 }
