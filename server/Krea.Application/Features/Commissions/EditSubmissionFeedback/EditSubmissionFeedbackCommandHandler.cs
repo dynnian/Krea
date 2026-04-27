@@ -10,20 +10,20 @@ namespace Krea.Application.Features.Commissions.EditSubmissionFeedback {
         ICommissionRequestRepository requestRepository,
         IUnitOfWork unitOfWork,
         ILogger<EditSubmissionFeedbackCommandHandler> logger)
-        : IRequestHandler<EditSubmissionFeedbackCommand, Unit>
-    {
-        public async Task<Unit> Handle(EditSubmissionFeedbackCommand request, CancellationToken cancellationToken)
-        {
+        : IRequestHandler<EditSubmissionFeedbackCommand, Unit> {
+        public async Task<Unit> Handle(EditSubmissionFeedbackCommand request, CancellationToken cancellationToken) {
             Guid currentUserId = currentUserService.UserId;
             if (currentUserId == Guid.Empty)
                 throw new UnauthorizedAccessException();
 
-            CommissionRequest? commissionRequest = await requestRepository.GetByFeedbackIdAsync(request.FeedbackId, cancellationToken);
+            CommissionRequest? commissionRequest =
+                await requestRepository.GetByFeedbackIdAsync(request.FeedbackId, cancellationToken);
             if (commissionRequest == null)
                 throw new Exception("Commission request not found.");
 
             // Find the submission containing the feedback
-            Submission? submission = commissionRequest.Submissions.FirstOrDefault(s => s.Feedback.Any(f => f.Id == request.FeedbackId));
+            Submission? submission =
+                commissionRequest.Submissions.FirstOrDefault(s => s.Feedback.Any(f => f.Id == request.FeedbackId));
             if (submission == null)
                 throw new Exception("Submission not found.");
 

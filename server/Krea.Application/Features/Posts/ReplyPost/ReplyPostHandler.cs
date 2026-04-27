@@ -14,8 +14,7 @@ namespace Krea.Application.Features.Posts.ReplyPost {
         public ReplyPostHandler(
             IPostRepository postRepository,
             INotificationService notificationService,
-            IUnitOfWork unitOfWork)
-        {
+            IUnitOfWork unitOfWork) {
             _postRepository = postRepository;
             _notificationService = notificationService;
             _unitOfWork = unitOfWork;
@@ -46,13 +45,13 @@ namespace Krea.Application.Features.Posts.ReplyPost {
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             await _notificationService.NotifyAsync(
-                recipientUserId: original.AuthorPostId,
-                actorUserId: command.AuthorId,
-                type: NotificationType.PostReplied,
-                content: "Han respondido a tu publicacion.",
-                entityId: original.Id,
-                entityType: NotificationEntityType.Post,
-                cancellationToken: cancellationToken);
+                original.AuthorPostId,
+                command.AuthorId,
+                NotificationType.PostReplied,
+                "Han respondido a tu publicacion.",
+                original.Id,
+                NotificationEntityType.Post,
+                cancellationToken);
 
             return reply.Id;
         }

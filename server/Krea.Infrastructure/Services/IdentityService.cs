@@ -94,10 +94,13 @@ namespace Krea.Infrastructure.Services {
             if (normalizedRoles.Count == 0)
                 return (false, ["At least one role is required."]);
 
+            var resolvedRoles = new List<string>(normalizedRoles.Count);
             foreach (string role in normalizedRoles) {
-                bool roleExists = await _roleManager.RoleExistsAsync(role);
-                if (!roleExists)
+                string? resolvedRole = await ResolveRoleNameAsync(role, createIfMissing: false);
+                if (resolvedRole is null)
                     return (false, [$"Role '{role}' does not exist."]);
+
+                resolvedRoles.Add(resolvedRole);
             }
 
             IList<string> currentRoles = await _userManager.GetRolesAsync(appUser);
@@ -106,7 +109,7 @@ namespace Krea.Infrastructure.Services {
             if (!removeResult.Succeeded)
                 return (false, removeResult.Errors.Select(e => e.Description).ToArray());
 
-            IdentityResult addResult = await _userManager.AddToRolesAsync(appUser, normalizedRoles);
+            IdentityResult addResult = await _userManager.AddToRolesAsync(appUser, resolvedRoles);
             if (!addResult.Succeeded)
                 return (false, addResult.Errors.Select(e => e.Description).ToArray());
 
@@ -172,7 +175,13 @@ namespace Krea.Infrastructure.Services {
 
             // Optionally assign roles if provided
             foreach (string role in user.Roles) {
-                await _userManager.AddToRoleAsync(appUser, role);
+                string? resolvedRole = await ResolveRoleNameAsync(role, createIfMissing: true);
+                if (resolvedRole is null)
+                    return (false, [$"Role '{role}' does not exist."]);
+
+                IdentityResult addRoleResult = await _userManager.AddToRoleAsync(appUser, resolvedRole);
+                if (!addRoleResult.Succeeded)
+                    return (false, addRoleResult.Errors.Select(e => e.Description).ToArray());
             }
 
             return (true, Array.Empty<string>());
@@ -218,6 +227,32 @@ namespace Krea.Infrastructure.Services {
             if (appUser == null) return false;
             IdentityResult result = await _userManager.ConfirmEmailAsync(appUser, token);
             return result.Succeeded;
+        }
+
+        private async Task<string?> ResolveRoleNameAsync(string role, bool createIfMissing) {
+            string normalizedRole = role.Trim();
+            if (string.IsNullOrWhiteSpace(normalizedRole))
+                return null;
+
+            List<IdentityRole<Guid>> existingRoles = await _roleManager.Roles
+                .AsNoTracking()
+                .ToListAsync();
+
+            IdentityRole<Guid>? existingRole = existingRoles.FirstOrDefault(r =>
+                r.Name != null && r.Name.Equals(normalizedRole, StringComparison.OrdinalIgnoreCase));
+
+            if (existingRole != null && !string.IsNullOrWhiteSpace(existingRole.Name))
+                return existingRole.Name;
+
+            if (!createIfMissing)
+                return null;
+
+            IdentityRole<Guid> roleEntity = new(normalizedRole);
+            IdentityResult createResult = await _roleManager.CreateAsync(roleEntity);
+            if (!createResult.Succeeded)
+                return null;
+
+            return roleEntity.Name;
         }
     }
 }

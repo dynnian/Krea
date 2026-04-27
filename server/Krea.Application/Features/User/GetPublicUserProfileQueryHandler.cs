@@ -37,12 +37,11 @@ namespace Krea.Application.Features.User {
 
             int followingCount = await _followRepository
                 .GetFollowingCountAsync(request.UserId, cancellationToken);
-            
+
             bool isFollowedByCurrentUser = false;
 
             if (request.CurrentUserId.HasValue &&
-                request.CurrentUserId.Value != request.UserId)
-            {
+                request.CurrentUserId.Value != request.UserId) {
                 HashSet<Guid> followedIds = await _followRepository.GetFollowedTargetIdsAsync(
                     request.CurrentUserId.Value,
                     new[] { request.UserId },

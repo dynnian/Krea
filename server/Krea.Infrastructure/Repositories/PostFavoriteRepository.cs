@@ -34,35 +34,35 @@ namespace Krea.Infrastructure.Repositories {
             int pageSize,
             CancellationToken ct) {
             IOrderedQueryable<Post> query = _context.Posts
-                .AsNoTracking()
-                .Where(p => p.Favorites.Any(f => f.UserId == userId) && !p.IsDeleted)
-                .Include(p => p.AuthorPost)
-                    .ThenInclude(u => u.ProfilePicture)
-                .Include(p => p.Likes)
-                .Include(p => p.Uploads)
-                    .ThenInclude(u => u.Media)
-                .Include(p => p.Uploads)
-                    .ThenInclude(u => u.CoverMedia)
-                .OrderByDescending(p => p.UploadedAt);
+                                                    .AsNoTracking()
+                                                    .Where(p => p.Favorites.Any(f => f.UserId == userId) &&
+                                                                !p.IsDeleted)
+                                                    .Include(p => p.AuthorPost)
+                                                    .ThenInclude(u => u.ProfilePicture)
+                                                    .Include(p => p.Likes)
+                                                    .Include(p => p.Uploads)
+                                                    .ThenInclude(u => u.Media)
+                                                    .Include(p => p.Uploads)
+                                                    .ThenInclude(u => u.CoverMedia)
+                                                    .OrderByDescending(p => p.UploadedAt);
 
             return await PaginatedList<Post>.CreateAsync(query, page, pageSize, ct);
         }
-        
+
         public async Task<HashSet<Guid>> GetFavoritePostIdsAsync(
             Guid userId,
             IReadOnlyCollection<Guid> postIds,
-            CancellationToken ct)
-        {
+            CancellationToken ct) {
             if (postIds.Count == 0)
                 return [];
 
             return await _context.PostFavorites
-                .AsNoTracking()
-                .Where(x =>
-                    x.UserId == userId &&
-                    postIds.Contains(x.PostId))
-                .Select(x => x.PostId)
-                .ToHashSetAsync(ct);
+                                 .AsNoTracking()
+                                 .Where(x =>
+                                     x.UserId == userId &&
+                                     postIds.Contains(x.PostId))
+                                 .Select(x => x.PostId)
+                                 .ToHashSetAsync(ct);
         }
     }
 }

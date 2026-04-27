@@ -1,5 +1,4 @@
-namespace Krea.API.Controllers
-{
+namespace Krea.API.Controllers {
     using Application.Features.Commissions.CreateCommissionRequest;
     using Application.Features.Commissions.AcceptCommissionRequest;
     using Application.Features.Commissions.CreatePaymentForCommission;
@@ -22,18 +21,14 @@ namespace Krea.API.Controllers
     [Authorize]
     [ApiController]
     [Route("api/commission-requests")]
-    public class CommissionRequestController : ControllerBase
-    {
+    public class CommissionRequestController : ControllerBase {
         private readonly ISender _sender;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CommissionRequestController"/> class.
         /// </summary>
         /// <param name="sender">The mediator sender for dispatching commands.</param>
-        public CommissionRequestController(ISender sender)
-        {
-            _sender = sender;
-        }
+        public CommissionRequestController(ISender sender) => _sender = sender;
 
         /// <summary>
         /// Creates a new commission request for a specific offering.
@@ -47,10 +42,10 @@ namespace Krea.API.Controllers
         [ProducesResponseType(typeof(CreateCommissionRequestResponse), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
-        public async Task<ActionResult<CreateCommissionRequestResponse>> CreateCommissionRequest(CreateCommissionRequestRequest request)
-        {
+        public async Task<ActionResult<CreateCommissionRequestResponse>> CreateCommissionRequest(
+            CreateCommissionRequestRequest request) {
             var command = new CreateCommissionRequestCommand(request.OfferingId, request.Brief);
-            var result = await _sender.Send(command);
+            CreateCommissionRequestResponse result = await _sender.Send(command);
             return Ok(result);
         }
 
@@ -70,8 +65,7 @@ namespace Krea.API.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Accept(Guid requestId)
-        {
+        public async Task<IActionResult> Accept(Guid requestId) {
             var command = new AcceptCommissionRequestCommand(requestId);
             await _sender.Send(command);
             return NoContent();
@@ -96,15 +90,14 @@ namespace Krea.API.Controllers
         [ProducesResponseType(404)]
         public async Task<ActionResult<CreatePaymentForCommissionResponse>> CreatePayment(
             Guid requestId,
-            CreatePaymentForCommissionRequest request)
-        {
+            CreatePaymentForCommissionRequest request) {
             var command = new CreatePaymentForCommissionCommand(
                 requestId,
                 request.Amount,
                 request.Currency,
                 request.SuccessUrl,
                 request.CancelUrl);
-            var result = await _sender.Send(command);
+            CreatePaymentForCommissionResponse result = await _sender.Send(command);
             return Ok(result);
         }
 
@@ -125,8 +118,7 @@ namespace Krea.API.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> AddSubmission(Guid requestId, AddSubmissionRequest request)
-        {
+        public async Task<IActionResult> AddSubmission(Guid requestId, AddSubmissionRequest request) {
             var command = new AddSubmissionCommand(requestId, request.MediaId);
             await _sender.Send(command);
             return NoContent();
@@ -148,8 +140,7 @@ namespace Krea.API.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Deliver(Guid requestId)
-        {
+        public async Task<IActionResult> Deliver(Guid requestId) {
             var command = new DeliverCommissionCommand(requestId);
             await _sender.Send(command);
             return NoContent();
@@ -171,8 +162,7 @@ namespace Krea.API.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Approve(Guid requestId)
-        {
+        public async Task<IActionResult> Approve(Guid requestId) {
             var command = new ApproveCommissionCommand(requestId);
             await _sender.Send(command);
             return NoContent();
@@ -194,8 +184,7 @@ namespace Krea.API.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> RequestChanges(Guid requestId)
-        {
+        public async Task<IActionResult> RequestChanges(Guid requestId) {
             var command = new RequestChangesCommand(requestId);
             await _sender.Send(command);
             return NoContent();
@@ -217,13 +206,12 @@ namespace Krea.API.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Cancel(Guid requestId)
-        {
+        public async Task<IActionResult> Cancel(Guid requestId) {
             var command = new CancelCommissionCommand(requestId);
             await _sender.Send(command);
             return NoContent();
         }
-        
+
         /// <summary>
         /// Retrieves a list of commission requests for the authenticated user.
         /// </summary>
@@ -234,10 +222,10 @@ namespace Krea.API.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(IReadOnlyList<CommissionRequestDto>), 200)]
         [ProducesResponseType(401)]
-        public async Task<ActionResult<IReadOnlyList<CommissionRequestDto>>> GetRequests([FromQuery] bool asBidder = true)
-        {
+        public async Task<ActionResult<IReadOnlyList<CommissionRequestDto>>> GetRequests(
+            [FromQuery] bool asBidder = true) {
             var query = new GetCommissionRequestsQuery(asBidder);
-            var result = await _sender.Send(query);
+            IReadOnlyList<CommissionRequestDto> result = await _sender.Send(query);
             return Ok(result);
         }
 
@@ -255,10 +243,9 @@ namespace Krea.API.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<CommissionRequestDto>> GetRequest(Guid requestId)
-        {
+        public async Task<ActionResult<CommissionRequestDto>> GetRequest(Guid requestId) {
             var query = new GetRequestDetailsQuery(requestId);
-            var result = await _sender.Send(query);
+            CommissionRequestDto result = await _sender.Send(query);
             return Ok(result);
         }
 
@@ -278,14 +265,14 @@ namespace Krea.API.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<PagedResult<SubmissionDto>>> GetSubmissions(Guid requestId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
-        {
+        public async Task<ActionResult<PagedResult<SubmissionDto>>> GetSubmissions(
+            Guid requestId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) {
             var query = new GetSubmissionsQuery(requestId, page, pageSize);
-            var result = await _sender.Send(query);
+            PagedResult<SubmissionDto> result = await _sender.Send(query);
             return Ok(result);
         }
     }
-    
+
 
     /// <summary>
     /// Request payload for creating a commission request.

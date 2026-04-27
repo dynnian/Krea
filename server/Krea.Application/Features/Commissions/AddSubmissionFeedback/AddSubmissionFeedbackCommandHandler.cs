@@ -11,16 +11,15 @@ namespace Krea.Application.Features.Commissions.AddSubmissionFeedback {
         IUserRepository userRepository,
         IUnitOfWork unitOfWork,
         ILogger<AddSubmissionFeedbackCommandHandler> logger)
-        : IRequestHandler<AddSubmissionFeedbackCommand, Unit>
-    {
-        public async Task<Unit> Handle(AddSubmissionFeedbackCommand request, CancellationToken cancellationToken)
-        {
+        : IRequestHandler<AddSubmissionFeedbackCommand, Unit> {
+        public async Task<Unit> Handle(AddSubmissionFeedbackCommand request, CancellationToken cancellationToken) {
             Guid currentUserId = currentUserService.UserId;
             if (currentUserId == Guid.Empty)
                 throw new UnauthorizedAccessException();
 
             // Load commission request containing the submission
-            CommissionRequest? commissionRequest = await requestRepository.GetBySubmissionIdAsync(request.SubmissionId, cancellationToken);
+            CommissionRequest? commissionRequest =
+                await requestRepository.GetBySubmissionIdAsync(request.SubmissionId, cancellationToken);
             if (commissionRequest == null)
                 throw new Exception("Commission request not found.");
 
@@ -41,7 +40,8 @@ namespace Krea.Application.Features.Commissions.AddSubmissionFeedback {
             submission.AddFeedback(author, request.Content);
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            logger.LogInformation("Feedback added to submission {SubmissionId} by user {UserId}", request.SubmissionId, currentUserId);
+            logger.LogInformation("Feedback added to submission {SubmissionId} by user {UserId}", request.SubmissionId,
+                currentUserId);
             return Unit.Value;
         }
     }

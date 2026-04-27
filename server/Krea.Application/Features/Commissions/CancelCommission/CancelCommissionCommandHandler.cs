@@ -11,12 +11,10 @@ namespace Krea.Application.Features.Commissions.CancelCommission {
         ICommissionRequestRepository requestRepository,
         IUnitOfWork unitOfWork,
         ILogger<CancelCommissionCommandHandler> logger)
-        : IRequestHandler<CancelCommissionCommand, Unit>
-    {
+        : IRequestHandler<CancelCommissionCommand, Unit> {
         public async Task<Unit> Handle(
             CancelCommissionCommand request,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             Guid currentUserId = currentUserService.UserId;
             if (currentUserId == Guid.Empty)
                 throw new UnauthorizedAccessException();

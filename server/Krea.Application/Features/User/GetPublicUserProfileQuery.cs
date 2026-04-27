@@ -4,5 +4,5 @@ namespace Krea.Application.Features.User {
     public sealed record GetPublicUserProfileQuery(
         Guid UserId,
         Guid? CurrentUserId = null
-        ) : IRequest<PublicUserProfileResponse?>;
+    ) : IRequest<PublicUserProfileResponse?>;
 }

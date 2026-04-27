@@ -36,6 +36,7 @@ export interface AuthUser {
   email: string;
   name: string;
   handle: string;
+  profilePictureUrl?: string | null;
   biography?: string | null;
   languageCode?: string;
   timeZoneId?: string;
@@ -62,6 +63,7 @@ interface AuthContextType {
   login: (credentials: LoginDTO, rememberMe?: boolean) => Promise<void>;
   register: (data: RegisterDTO, rememberMe?: boolean) => Promise<LoginResponse>;
   confirmEmail: (userId: string, token: string) => Promise<void>;
+  updateUser: (updates: Partial<AuthUser>) => void;
   logout: () => void;
   isAuthenticated: boolean;
   loading: boolean;
@@ -135,6 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: userData.email,
         name: userData.displayName,
         handle: userData.username,
+        profilePictureUrl: null,
         biography: userData.biography,
         languageCode: userData.languageCode,
         timeZoneId: userData.timeZoneId,
@@ -202,11 +205,25 @@ const register = async (data: RegisterDTO, rememberMe = false) => {
     signalRInitialized.current = false;
   };
 
+  const updateUser = (updates: Partial<AuthUser>) => {
+    setUser((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const nextUser = { ...current, ...updates };
+      const rememberMe = storage.getRememberMe?.() ?? false;
+      storage.setUser(nextUser, rememberMe);
+      return nextUser;
+    });
+  };
+
   const value: AuthContextType = {
     user,
     login,
     register,
     confirmEmail,
+    updateUser,
     logout,
     isAuthenticated: !!user,
     loading,

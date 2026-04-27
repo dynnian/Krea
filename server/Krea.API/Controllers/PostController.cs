@@ -90,15 +90,14 @@ namespace Krea.API.Controllers {
             Guid authorPostId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
-            CancellationToken ct = default)
-        {
+            CancellationToken ct = default) {
             Guid? currentUserId = null;
 
             if (User.Identity?.IsAuthenticated == true) {
                 currentUserId = GetCurrentUserId();
             }
 
-            var result = await _sender.Send(
+            IReadOnlyList<PostDtoV2> result = await _sender.Send(
                 new GetPostsByUserQuery(
                     authorPostId,
                     page,
@@ -356,7 +355,7 @@ namespace Krea.API.Controllers {
                 return NotFound(new { error = ex.Message });
             }
             catch (Exception ex) {
-                return StatusCode(StatusCodes.Status500InternalServerError, 
+                return StatusCode(StatusCodes.Status500InternalServerError,
                     new { error = ex.Message, type = ex.GetType().Name, detail = "Internal processing error" });
             }
         }
@@ -371,14 +370,10 @@ namespace Krea.API.Controllers {
         [AllowAnonymous]
         public async Task<IActionResult> Explore(
             [FromQuery] ExploreQuery query,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             Guid? currentUserId = TryGetCurrentUserId();
 
-            ExploreQuery queryWithUser = query with
-            {
-                CurrentUserId = currentUserId
-            };
+            ExploreQuery queryWithUser = query with { CurrentUserId = currentUserId };
 
             PagedResult<ExplorePostDto> result = await _sender.Send(
                 queryWithUser,
@@ -386,7 +381,7 @@ namespace Krea.API.Controllers {
 
             return Ok(result);
         }
-        
+
         /// <summary>
         /// Retrieves all available genres.
         /// </summary>
@@ -421,8 +416,7 @@ namespace Krea.API.Controllers {
         /// <response code="200">Genres retrieved successfully.</response>
         [HttpGet("genres")]
         [ProducesResponseType(typeof(IReadOnlyList<GenreDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAll(CancellationToken ct)
-        {
+        public async Task<IActionResult> GetAll(CancellationToken ct) {
             IReadOnlyList<GenreDto> result = await _sender.Send(
                 new GetAllGenresCommand(),
                 ct);
@@ -542,7 +536,7 @@ namespace Krea.API.Controllers {
 
             return Ok(new { isFavorite });
         }
-        
+
         /// <summary>
         /// Searches posts by title or content.
         /// </summary>
@@ -580,8 +574,7 @@ namespace Krea.API.Controllers {
             [FromQuery] string query,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            CancellationToken ct = default)
-        {
+            CancellationToken ct = default) {
             if (string.IsNullOrWhiteSpace(query))
                 return BadRequest("Query is required.");
 
@@ -603,11 +596,10 @@ namespace Krea.API.Controllers {
 
             return userId;
         }
-        
-        private Guid? TryGetCurrentUserId()
-        {
+
+        private Guid? TryGetCurrentUserId() {
             string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        
+
             return Guid.TryParse(userIdClaim, out Guid userId)
                 ? userId
                 : null;

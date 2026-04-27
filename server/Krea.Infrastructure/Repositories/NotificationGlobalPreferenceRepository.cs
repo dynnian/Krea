@@ -4,8 +4,7 @@ namespace Krea.Infrastructure.Repositories {
     using Domain.Repositories;
     using Microsoft.EntityFrameworkCore;
 
-    public sealed class NotificationGlobalPreferenceRepository : INotificationGlobalPreferenceRepository
-    {
+    public sealed class NotificationGlobalPreferenceRepository : INotificationGlobalPreferenceRepository {
         private readonly AppDbContext _context;
 
         public NotificationGlobalPreferenceRepository(AppDbContext context) => _context = context;
@@ -14,7 +13,7 @@ namespace Krea.Infrastructure.Repositories {
             Guid userId,
             CancellationToken cancellationToken) =>
             await _context.NotificationGlobalPreferences
-                .FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
+                          .FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
 
         public async Task AddAsync(NotificationGlobalPreference preference, CancellationToken cancellationToken) =>
             await _context.NotificationGlobalPreferences.AddAsync(preference, cancellationToken);

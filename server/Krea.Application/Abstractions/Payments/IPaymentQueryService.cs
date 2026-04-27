@@ -3,15 +3,14 @@ namespace Krea.Application.Abstractions.Payments {
 
     public record PaymentParentInfo(Guid ParentId, PaymentParentType ParentType, Guid PaymentId);
 
-    public enum PaymentParentType
-    {
+    public enum PaymentParentType {
         CommissionRequest,
         Donation,
         Subscription
     }
 
-    public interface IPaymentQueryService
-    {
-        Task<PaymentParentInfo?> GetParentByExternalRefAsync(ExternalPaymentRef externalRef, CancellationToken cancellationToken = default);
+    public interface IPaymentQueryService {
+        Task<PaymentParentInfo?> GetParentByExternalRefAsync(ExternalPaymentRef externalRef,
+                                                             CancellationToken cancellationToken = default);
     }
 }

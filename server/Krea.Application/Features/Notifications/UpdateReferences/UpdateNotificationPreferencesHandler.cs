@@ -2,6 +2,7 @@ namespace Krea.Application.Features.Notifications.UpdateReferences {
     using Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;
+    using Dto;
 
     public sealed class UpdateNotificationPreferencesHandler
         : IRequestHandler<UpdateNotificationPreferencesCommand, Unit> {
@@ -21,7 +22,8 @@ namespace Krea.Application.Features.Notifications.UpdateReferences {
         public async Task<Unit> Handle(
             UpdateNotificationPreferencesCommand request,
             CancellationToken cancellationToken) {
-            var global = await _globalPreferences.GetByUserAsync(request.UserId, cancellationToken);
+            NotificationGlobalPreference? global =
+                await _globalPreferences.GetByUserAsync(request.UserId, cancellationToken);
 
             if (global is null) {
                 global = new NotificationGlobalPreference(request.UserId, request.AllNotificationsPaused);
@@ -31,8 +33,8 @@ namespace Krea.Application.Features.Notifications.UpdateReferences {
                 global.SetPaused(request.AllNotificationsPaused);
             }
 
-            foreach (var item in request.Preferences) {
-                var existing = await _preferences.GetByUserAndTypeAsync(
+            foreach (NotificationPreferenceUpdateItem item in request.Preferences) {
+                NotificationPreference? existing = await _preferences.GetByUserAndTypeAsync(
                     request.UserId,
                     item.Type,
                     cancellationToken);

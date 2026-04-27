@@ -1,6 +1,5 @@
 namespace Krea.Application.Features.Posts.Dto {
-    public sealed class PostMediaDtoV2
-    {
+    public sealed class PostMediaDtoV2 {
         public Guid Id { get; init; }
         public string FileName { get; init; } = default!;
         public string MimeType { get; init; } = default!;

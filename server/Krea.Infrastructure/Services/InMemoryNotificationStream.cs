@@ -5,25 +5,23 @@ namespace Krea.Infrastructure.Services {
     using System.Threading.Channels;
 
     public sealed class InMemoryNotificationStream : INotificationStream {
-        private readonly ConcurrentDictionary<Guid, ConcurrentDictionary<Guid, Channel<NotificationEventDto>>> _connections = new();
+        private readonly ConcurrentDictionary<Guid, ConcurrentDictionary<Guid, Channel<NotificationEventDto>>>
+            _connections = new();
 
-        public ChannelReader<NotificationEventDto> Subscribe(Guid userId, CancellationToken cancellationToken)
-        {
+        public ChannelReader<NotificationEventDto> Subscribe(Guid userId, CancellationToken cancellationToken) {
             var connectionId = Guid.NewGuid();
 
-            var channel = Channel.CreateUnbounded<NotificationEventDto>(new UnboundedChannelOptions
-            {
-                SingleReader = true,
-                SingleWriter = false
-            });
+            var channel =
+                Channel.CreateUnbounded<NotificationEventDto>(
+                    new UnboundedChannelOptions { SingleReader = true, SingleWriter = false });
 
-            var userConnections = _connections.GetOrAdd(userId, _ => new ConcurrentDictionary<Guid, Channel<NotificationEventDto>>());
+            ConcurrentDictionary<Guid, Channel<NotificationEventDto>> userConnections =
+                _connections.GetOrAdd(userId, _ => new ConcurrentDictionary<Guid, Channel<NotificationEventDto>>());
             userConnections[connectionId] = channel;
 
-            cancellationToken.Register(() =>
-            {
-                if (_connections.TryGetValue(userId, out var connections))
-                {
+            cancellationToken.Register(() => {
+                if (_connections.TryGetValue(userId,
+                        out ConcurrentDictionary<Guid, Channel<NotificationEventDto>>? connections)) {
                     connections.TryRemove(connectionId, out _);
 
                     if (connections.IsEmpty)
@@ -36,12 +34,12 @@ namespace Krea.Infrastructure.Services {
             return channel.Reader;
         }
 
-        public Task PublishAsync(Guid userId, NotificationEventDto notification, CancellationToken cancellationToken)
-        {
-            if (!_connections.TryGetValue(userId, out var connections))
+        public Task PublishAsync(Guid userId, NotificationEventDto notification, CancellationToken cancellationToken) {
+            if (!_connections.TryGetValue(userId,
+                    out ConcurrentDictionary<Guid, Channel<NotificationEventDto>>? connections))
                 return Task.CompletedTask;
 
-            foreach (var (_, channel) in connections)
+            foreach ((Guid _, Channel<NotificationEventDto> channel) in connections)
                 channel.Writer.TryWrite(notification);
 
             return Task.CompletedTask;

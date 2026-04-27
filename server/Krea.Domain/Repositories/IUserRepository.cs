@@ -1,5 +1,5 @@
 namespace Krea.Domain.Repositories {
-    using Krea.Domain.Entities;
+    using Entities;
 
     public interface IUserRepository {
         Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);

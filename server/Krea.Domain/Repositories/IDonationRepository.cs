@@ -3,19 +3,19 @@ using Krea.Domain.Entities;
 namespace Krea.Domain.Repositories {
     public interface IDonationRepository {
         Task<Donation?> GetByIdAsync(
-            Guid id, 
+            Guid id,
             CancellationToken cancellationToken = default);
 
         Task<Donation?> GetByIdWithPaymentsAsync(
-            Guid id,  
+            Guid id,
             CancellationToken cancellationToken = default);
 
         Task<IReadOnlyList<Donation>> GetByDonorAsync(
-            Guid donorId,  
+            Guid donorId,
             CancellationToken cancellationToken = default);
 
         Task<IReadOnlyList<Donation>> GetByRecipientAsync(
-            Guid recipientId,  
+            Guid recipientId,
             CancellationToken cancellationToken = default);
 
         Task Add(Donation donation);

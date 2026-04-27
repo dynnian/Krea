@@ -12,12 +12,10 @@ namespace Krea.Application.Features.Commissions.CreateCommissionRequest {
         ICommissionRequestRepository requestRepository,
         IUnitOfWork unitOfWork,
         ILogger<CreateCommissionRequestCommandHandler> logger)
-        : IRequestHandler<CreateCommissionRequestCommand, CreateCommissionRequestResponse>
-    {
+        : IRequestHandler<CreateCommissionRequestCommand, CreateCommissionRequestResponse> {
         public async Task<CreateCommissionRequestResponse> Handle(
             CreateCommissionRequestCommand request,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             Guid bidderId = currentUserService.UserId;
             if (bidderId == Guid.Empty)
                 throw new UnauthorizedAccessException();

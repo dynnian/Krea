@@ -10,12 +10,11 @@ namespace Krea.Domain.Entities {
 
         public User User { get; private set; } = default!;
 
-        #pragma warning disable CS8618 
+        #pragma warning disable CS8618
         private NotificationGlobalPreference() { }
         #pragma warning restore CS8618
-        
-        public NotificationGlobalPreference(Guid userId, bool allNotificationsPaused = false)
-        {
+
+        public NotificationGlobalPreference(Guid userId, bool allNotificationsPaused = false) {
             Id = Guid.NewGuid();
             UserId = userId;
             AllNotificationsPaused = allNotificationsPaused;
@@ -23,8 +22,7 @@ namespace Krea.Domain.Entities {
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public void SetPaused(bool paused)
-        {
+        public void SetPaused(bool paused) {
             AllNotificationsPaused = paused;
             UpdatedAt = DateTime.UtcNow;
         }

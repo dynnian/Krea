@@ -14,8 +14,8 @@ namespace Krea.Infrastructure.Repositories {
 
         public async Task<Notification?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
             await _context.Notifications
-                .AsTracking()
-                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+                          .AsTracking()
+                          .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         public async Task<IReadOnlyList<Notification>> GetByUserAsync(
             Guid userId,
@@ -23,27 +23,26 @@ namespace Krea.Infrastructure.Repositories {
             int pageSize,
             CancellationToken cancellationToken) =>
             await _context.Notifications
-                .AsNoTracking()
-                .Where(x => x.UserId == userId)
-                .OrderByDescending(x => x.CreatedAt)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(cancellationToken);
+                          .AsNoTracking()
+                          .Where(x => x.UserId == userId)
+                          .OrderByDescending(x => x.CreatedAt)
+                          .Skip((page - 1) * pageSize)
+                          .Take(pageSize)
+                          .ToListAsync(cancellationToken);
 
         public async Task<int> CountUnreadAsync(Guid userId, CancellationToken cancellationToken) =>
             await _context.Notifications
-                .AsNoTracking()
-                .CountAsync(x => x.UserId == userId && !x.IsRead, cancellationToken);
+                          .AsNoTracking()
+                          .CountAsync(x => x.UserId == userId && !x.IsRead, cancellationToken);
 
         public async Task<IReadOnlyList<Notification>> GetUnreadByUserAsync(
             Guid userId,
             CancellationToken cancellationToken) =>
             await _context.Notifications
-                .Where(x => x.UserId == userId && !x.IsRead)
-                .ToListAsync(cancellationToken);
+                          .Where(x => x.UserId == userId && !x.IsRead)
+                          .ToListAsync(cancellationToken);
 
-        public Task DeleteAsync(Notification notification, CancellationToken cancellationToken)
-        {
+        public Task DeleteAsync(Notification notification, CancellationToken cancellationToken) {
             _context.Notifications.Remove(notification);
             return Task.CompletedTask;
         }

@@ -10,6 +10,7 @@ namespace Krea.Infrastructure.Setup {
         public static async Task InitializeAsync(IServiceProvider services) {
             var context = services.GetRequiredService<AppDbContext>();
             await context.Database.MigrateAsync();
+            await NormalizeMediaPathsAsync(context);
 
             SeedingOptions options = services.GetRequiredService<IOptions<SeedingOptions>>().Value;
 
@@ -18,6 +19,14 @@ namespace Krea.Infrastructure.Setup {
 
             await IdentityInitializer.InitializeAsync(services);
             await AdminSeeder.SeedAsync(services);
+        }
+
+        private static async Task NormalizeMediaPathsAsync(AppDbContext context) {
+            await context.Database.ExecuteSqlRawAsync("""
+                UPDATE media
+                SET "Path" = substring("Path" from '(/uploads/.*)$')
+                WHERE "Path" ~* '^https?://[^/]+/uploads/'
+                """);
         }
     }
 }

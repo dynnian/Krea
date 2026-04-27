@@ -41,12 +41,12 @@ namespace Krea.Domain.Repositories {
             Guid originalPostId,
             Guid userId,
             CancellationToken cancellationToken = default);
-        
+
         Task<HashSet<Guid>> GetRepostedTargetIdsAsync(
             Guid userId,
             IReadOnlyCollection<Guid> targetIds,
             CancellationToken ct);
-        
+
         Task<PaginatedList<Post>> SearchAsync(
             string query,
             int page,

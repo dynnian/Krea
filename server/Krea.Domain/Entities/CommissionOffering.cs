@@ -74,9 +74,8 @@ namespace Krea.Domain.Entities {
         public void Deactivate() => IsActive = false;
 
         public void Activate() => IsActive = true;
-        
-        public void Update(string title, string? description, Money basePrice, int maxSlots)
-        {
+
+        public void Update(string title, string? description, Money basePrice, int maxSlots) {
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Title is required.");
             if (maxSlots <= 0)

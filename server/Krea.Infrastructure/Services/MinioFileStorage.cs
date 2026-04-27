@@ -65,20 +65,27 @@ namespace Krea.Infrastructure.Services {
         private string BuildUrl(string objectName) {
             string cleanBaseUrl = _baseUrl.Trim('\"', ' ').TrimEnd('/');
 
+            if (string.IsNullOrWhiteSpace(cleanBaseUrl)) {
+                return $"/uploads/{objectName}";
+            }
+
             // If it's a relative path (like /uploads), we assume it's already mapped to the bucket
             if (cleanBaseUrl.StartsWith("/")) {
                 return $"{cleanBaseUrl}/{objectName}";
             }
 
             // If it starts with http, it's an absolute URL
-            if (cleanBaseUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase)) {
-                // Check if we should include the bucket in the path
-                // If the base URL is the public URL, we route through /uploads proxy
+            if (Uri.TryCreate(cleanBaseUrl, UriKind.Absolute, out Uri? absoluteUri)) {
+                if (absoluteUri.IsLoopback || absoluteUri.Host.Equals("minio", StringComparison.OrdinalIgnoreCase)) {
+                    return $"/uploads/{objectName}";
+                }
+
+                // If the base URL is a public origin, route through the uploads proxy.
                 return $"{cleanBaseUrl}/uploads/{objectName}";
             }
 
             // Fallback: assume it's a hostname and use https
-            return $"https://{cleanBaseUrl}/{_bucketName}/{objectName}";
+            return $"/uploads/{objectName}";
         }
 
         public async Task DeleteAsync(string fileName, CancellationToken cancellationToken) {

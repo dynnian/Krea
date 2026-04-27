@@ -12,17 +12,15 @@ namespace Krea.Application.Features.Commissions.CreateCommissionOffering {
         ICommissionOfferingRepository offeringRepository,
         IUnitOfWork unitOfWork,
         ILogger<CreateCommissionOfferingCommandHandler> logger)
-        : IRequestHandler<CreateCommissionOfferingCommand, CreateCommissionOfferingResponse>
-    {
+        : IRequestHandler<CreateCommissionOfferingCommand, CreateCommissionOfferingResponse> {
         public async Task<CreateCommissionOfferingResponse> Handle(
             CreateCommissionOfferingCommand request,
-            CancellationToken cancellationToken)
-        {
-            var artistId = currentUserService.UserId;
+            CancellationToken cancellationToken) {
+            Guid artistId = currentUserService.UserId;
             if (artistId == Guid.Empty)
                 throw new UnauthorizedAccessException("User not authenticated.");
 
-            var artist = await userRepository.GetByIdAsync(artistId, cancellationToken);
+            User? artist = await userRepository.GetByIdAsync(artistId, cancellationToken);
             if (artist == null)
                 throw new Exception("Artist not found.");
 
@@ -38,7 +36,8 @@ namespace Krea.Application.Features.Commissions.CreateCommissionOffering {
             await offeringRepository.AddAsync(offering);
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            logger.LogInformation("Commission offering {OfferingId} created by artist {ArtistId}", offering.Id, artistId);
+            logger.LogInformation("Commission offering {OfferingId} created by artist {ArtistId}", offering.Id,
+                artistId);
 
             return new CreateCommissionOfferingResponse(offering.Id);
         }

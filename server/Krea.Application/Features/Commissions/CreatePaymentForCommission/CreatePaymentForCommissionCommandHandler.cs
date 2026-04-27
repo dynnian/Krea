@@ -13,17 +13,16 @@ namespace Krea.Application.Features.Commissions.CreatePaymentForCommission {
         IPaymentGateway paymentGateway,
         IUnitOfWork unitOfWork,
         ILogger<CreatePaymentForCommissionCommandHandler> logger)
-        : IRequestHandler<CreatePaymentForCommissionCommand, CreatePaymentForCommissionResponse>
-    {
+        : IRequestHandler<CreatePaymentForCommissionCommand, CreatePaymentForCommissionResponse> {
         public async Task<CreatePaymentForCommissionResponse> Handle(
             CreatePaymentForCommissionCommand request,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             Guid payerId = currentUserService.UserId;
             if (payerId == Guid.Empty)
                 throw new UnauthorizedAccessException();
 
-            CommissionRequest? commissionRequest = await requestRepository.GetByIdWithPaymentsAsync(request.RequestId, cancellationToken);
+            CommissionRequest? commissionRequest =
+                await requestRepository.GetByIdWithPaymentsAsync(request.RequestId, cancellationToken);
             if (commissionRequest == null)
                 throw new Exception("Commission request not found.");
 
@@ -47,7 +46,7 @@ namespace Krea.Application.Features.Commissions.CreatePaymentForCommission {
             var amount = new Money(request.Amount, request.Currency);
             var externalRef = new ExternalPaymentRef("stripe", session.SessionId);
             commissionRequest.CreatePayment(commissionRequest.Bidder, amount, externalRef);
-            
+
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
             logger.LogInformation("Payment for commission {RequestId} created with Stripe session {SessionId}",

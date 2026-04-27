@@ -77,23 +77,23 @@ namespace Krea.Infrastructure.Repositories {
             int pageSize,
             CancellationToken cancellationToken = default) =>
             await _context.Posts
-                        .AsNoTracking()
-                        .Where(p => p.AuthorPostId == authorPostId && !p.IsDeleted)
-                        .OrderByDescending(p => p.UploadedAt)
-                        .Skip((page - 1) * pageSize)
-                        .Take(pageSize)
-                        .Include(p => p.AuthorPost)
-                            .ThenInclude(u => u.ProfilePicture)
-                        .Include(p => p.Likes)
-                        .Include(p => p.Uploads)
-                        .ThenInclude(u => u.Media)
-                        .Include(p => p.Uploads)
-                        .ThenInclude(u => u.CoverMedia)
-                        .Include(p => p.Uploads)
-                        .ThenInclude(u => u.Metadata)
-                        .ThenInclude(m => m!.Genres)
-                        .Include(p => p.Hashtags)
-                        .ToListAsync(cancellationToken);
+                          .AsNoTracking()
+                          .Where(p => p.AuthorPostId == authorPostId && !p.IsDeleted)
+                          .OrderByDescending(p => p.UploadedAt)
+                          .Skip((page - 1) * pageSize)
+                          .Take(pageSize)
+                          .Include(p => p.AuthorPost)
+                          .ThenInclude(u => u.ProfilePicture)
+                          .Include(p => p.Likes)
+                          .Include(p => p.Uploads)
+                          .ThenInclude(u => u.Media)
+                          .Include(p => p.Uploads)
+                          .ThenInclude(u => u.CoverMedia)
+                          .Include(p => p.Uploads)
+                          .ThenInclude(u => u.Metadata)
+                          .ThenInclude(m => m!.Genres)
+                          .Include(p => p.Hashtags)
+                          .ToListAsync(cancellationToken);
 
         public Task<int> CountAsync(CancellationToken cancellationToken = default) =>
             _context.Posts.CountAsync(p => !p.IsDeleted, cancellationToken);
@@ -117,7 +117,7 @@ namespace Krea.Infrastructure.Repositories {
             CancellationToken cancellationToken = default) {
             IOrderedQueryable<Post> query = _context.Posts
                                                     .Include(p => p.AuthorPost)
-                                                        .ThenInclude(u => u.ProfilePicture)
+                                                    .ThenInclude(u => u.ProfilePicture)
                                                     .Where(p => p.RepliedToId == postId && !p.IsDeleted)
                                                     .OrderByDescending(p => p.UploadedAt);
 
@@ -139,7 +139,7 @@ namespace Krea.Infrastructure.Repositories {
                           .AsNoTracking()
                           .Where(p => !p.IsDeleted && p.RepliedToId != null)
                           .Include(p => p.AuthorPost)
-                              .ThenInclude(u => u.ProfilePicture)
+                          .ThenInclude(u => u.ProfilePicture)
                           .OrderBy(p => p.UploadedAt)
                           .ToListAsync(cancellationToken);
 
@@ -151,34 +151,31 @@ namespace Krea.Infrastructure.Repositories {
                           .AnyAsync(p => p.RepostOfId == originalPostId &&
                                          p.AuthorPostId == userId &&
                                          !p.IsDeleted, cancellationToken);
-        
+
         public async Task<HashSet<Guid>> GetRepostedTargetIdsAsync(
             Guid authorId,
             IReadOnlyCollection<Guid> repostTargetIds,
-            CancellationToken ct)
-        {
+            CancellationToken ct) {
             if (repostTargetIds.Count == 0)
                 return [];
 
             return await _context.Posts
-                .AsNoTracking()
-                .Where(p =>
-                    !p.IsDeleted &&
-                    p.AuthorPostId == authorId &&
-                    p.RepostOfId.HasValue &&
-                    repostTargetIds.Contains(p.RepostOfId.Value))
-                .Select(p => p.RepostOfId!.Value)
-                .ToHashSetAsync(ct);
+                                 .AsNoTracking()
+                                 .Where(p =>
+                                     !p.IsDeleted &&
+                                     p.AuthorPostId == authorId &&
+                                     p.RepostOfId.HasValue &&
+                                     repostTargetIds.Contains(p.RepostOfId.Value))
+                                 .Select(p => p.RepostOfId!.Value)
+                                 .ToHashSetAsync(ct);
         }
-        
+
         public async Task<PaginatedList<Post>> SearchAsync(
             string query,
             int page,
             int pageSize,
-            CancellationToken cancellationToken = default)
-        {
-            if (string.IsNullOrWhiteSpace(query))
-            {
+            CancellationToken cancellationToken = default) {
+            if (string.IsNullOrWhiteSpace(query)) {
                 return PaginatedList<Post>.FromItems(
                     Array.Empty<Post>(),
                     0,
@@ -195,26 +192,28 @@ namespace Krea.Infrastructure.Repositories {
             string containsPattern = $"%{query}%";
 
             IQueryable<Post> postsQuery = _context.Posts
-                .AsNoTracking()
-                .Include(p => p.AuthorPost)
-                .ThenInclude(u => u.ProfilePicture)
-                .Include(p => p.Likes)
-                .Include(p => p.Uploads)
-                .ThenInclude(u => u.Media)
-                .Include(p => p.Uploads)
-                .ThenInclude(u => u.CoverMedia)
-                .Where(p => !p.IsDeleted)
-                .Where(p => p.RepliedToId == null)
-                .Where(p => p.RepostOfId == null)
-                .Where(p =>
-                    (p.Title != null && EF.Functions.ILike(p.Title, containsPattern)) ||
-                    (p.Content != null && EF.Functions.ILike(p.Content, containsPattern)));
+                                                  .AsNoTracking()
+                                                  .Include(p => p.AuthorPost)
+                                                  .ThenInclude(u => u.ProfilePicture)
+                                                  .Include(p => p.Likes)
+                                                  .Include(p => p.Uploads)
+                                                  .ThenInclude(u => u.Media)
+                                                  .Include(p => p.Uploads)
+                                                  .ThenInclude(u => u.CoverMedia)
+                                                  .Where(p => !p.IsDeleted)
+                                                  .Where(p => p.RepliedToId == null)
+                                                  .Where(p => p.RepostOfId == null)
+                                                  .Where(p =>
+                                                      (p.Title != null &&
+                                                       EF.Functions.ILike(p.Title, containsPattern)) ||
+                                                      (p.Content != null &&
+                                                       EF.Functions.ILike(p.Content, containsPattern)));
 
             postsQuery = postsQuery
-                .OrderBy(p => p.Title != null && EF.Functions.ILike(p.Title, exactPattern) ? 0 : 1)
-                .ThenBy(p => p.Title != null && EF.Functions.ILike(p.Title, startsWithPattern) ? 0 : 1)
-                .ThenBy(p => p.Content != null && EF.Functions.ILike(p.Content, startsWithPattern) ? 0 : 1)
-                .ThenByDescending(p => p.UploadedAt);
+                         .OrderBy(p => p.Title != null && EF.Functions.ILike(p.Title, exactPattern) ? 0 : 1)
+                         .ThenBy(p => p.Title != null && EF.Functions.ILike(p.Title, startsWithPattern) ? 0 : 1)
+                         .ThenBy(p => p.Content != null && EF.Functions.ILike(p.Content, startsWithPattern) ? 0 : 1)
+                         .ThenByDescending(p => p.UploadedAt);
 
             return await PaginatedList<Post>.CreateAsync(
                 postsQuery,

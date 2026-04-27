@@ -1,5 +1,4 @@
-namespace Krea.API.Controllers
-{
+namespace Krea.API.Controllers {
     using Application.Abstractions.Payments;
     using Application.Features.Payments.ConfirmPayment;
     using Domain.Abstractions;
@@ -15,8 +14,7 @@ namespace Krea.API.Controllers
         IPaymentGateway paymentGateway,
         ISender sender,
         ILogger<StripeWebhookController> logger)
-        : ControllerBase
-    {
+        : ControllerBase {
         /// <summary>
         /// Receives Stripe webhook events, verifies the signature, and processes relevant events.
         /// </summary>
@@ -26,19 +24,16 @@ namespace Krea.API.Controllers
         /// verification for security. Only <c>checkout.session.completed</c> events are processed.
         /// </remarks>
         [HttpPost]
-        public async Task<IActionResult> HandleWebhook()
-        {
+        public async Task<IActionResult> HandleWebhook() {
             string json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
             string? stripeSignature = Request.Headers["Stripe-Signature"];
 
-            if (string.IsNullOrEmpty(stripeSignature))
-            {
+            if (string.IsNullOrEmpty(stripeSignature)) {
                 logger.LogWarning("Stripe-Signature header missing.");
                 return BadRequest();
             }
 
-            try
-            {
+            try {
                 StripeWebhookEvent webhookEvent = paymentGateway.ConstructStripeEvent(json, stripeSignature);
 
                 if (webhookEvent.Type != "checkout.session.completed" || webhookEvent.SessionId == null) return Ok();
@@ -47,8 +42,7 @@ namespace Krea.API.Controllers
 
                 return Ok();
             }
-            catch (StripeException ex)
-            {
+            catch (StripeException ex) {
                 logger.LogError(ex, "Stripe webhook signature verification failed.");
                 return BadRequest();
             }

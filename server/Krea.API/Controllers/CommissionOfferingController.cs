@@ -1,5 +1,4 @@
-namespace Krea.API.Controllers
-{
+namespace Krea.API.Controllers {
     using Application.Features.Commissions.ActivateOffering;
     using Application.Features.Commissions.CreateCommissionOffering;
     using Application.Features.Commissions.DeactivateOffering;
@@ -18,18 +17,14 @@ namespace Krea.API.Controllers
     [Authorize]
     [ApiController]
     [Route("api/commission-offerings")]
-    public class CommissionOfferingController : ControllerBase
-    {
+    public class CommissionOfferingController : ControllerBase {
         private readonly ISender _sender;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CommissionOfferingController"/> class.
         /// </summary>
         /// <param name="sender">The mediator sender for dispatching commands.</param>
-        public CommissionOfferingController(ISender sender)
-        {
-            _sender = sender;
-        }
+        public CommissionOfferingController(ISender sender) => _sender = sender;
 
         /// <summary>
         /// Creates a new commission offering for the authenticated artist.
@@ -43,8 +38,8 @@ namespace Krea.API.Controllers
         [ProducesResponseType(typeof(CreateCommissionOfferingResponse), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
-        public async Task<ActionResult<CreateCommissionOfferingResponse>> CreateCommissionOffering(CreateCommissionOfferingRequest request)
-        {
+        public async Task<ActionResult<CreateCommissionOfferingResponse>> CreateCommissionOffering(
+            CreateCommissionOfferingRequest request) {
             var command = new CreateCommissionOfferingCommand(
                 request.Title,
                 request.Description,
@@ -52,7 +47,7 @@ namespace Krea.API.Controllers
                 request.Currency,
                 request.MaxSlots);
 
-            var result = await _sender.Send(command);
+            CreateCommissionOfferingResponse result = await _sender.Send(command);
             return Ok(result);
         }
 
@@ -66,10 +61,10 @@ namespace Krea.API.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(IReadOnlyList<CommissionOfferingDto>), 200)]
         [ProducesResponseType(401)]
-        public async Task<ActionResult<IReadOnlyList<CommissionOfferingDto>>> GetOfferings([FromQuery] bool myOfferings = false)
-        {
+        public async Task<ActionResult<IReadOnlyList<CommissionOfferingDto>>> GetOfferings(
+            [FromQuery] bool myOfferings = false) {
             var query = new GetOfferingsQuery(myOfferings);
-            var result = await _sender.Send(query);
+            IReadOnlyList<CommissionOfferingDto> result = await _sender.Send(query);
             return Ok(result);
         }
 
@@ -85,10 +80,9 @@ namespace Krea.API.Controllers
         [ProducesResponseType(typeof(CommissionOfferingDto), 200)]
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<CommissionOfferingDto>> GetOffering(Guid offeringId)
-        {
+        public async Task<ActionResult<CommissionOfferingDto>> GetOffering(Guid offeringId) {
             var query = new GetOfferingDetailsQuery(offeringId);
-            var result = await _sender.Send(query);
+            CommissionOfferingDto result = await _sender.Send(query);
             return Ok(result);
         }
 
@@ -109,9 +103,9 @@ namespace Krea.API.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> UpdateOffering(Guid offeringId, UpdateCommissionOfferingRequest request)
-        {
-            var command = new UpdateCommissionOfferingCommand(offeringId, request.Title, request.Description, request.Amount, request.Currency, request.MaxSlots);
+        public async Task<IActionResult> UpdateOffering(Guid offeringId, UpdateCommissionOfferingRequest request) {
+            var command = new UpdateCommissionOfferingCommand(offeringId, request.Title, request.Description,
+                request.Amount, request.Currency, request.MaxSlots);
             await _sender.Send(command);
             return NoContent();
         }
@@ -130,8 +124,7 @@ namespace Krea.API.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Activate(Guid offeringId)
-        {
+        public async Task<IActionResult> Activate(Guid offeringId) {
             await _sender.Send(new ActivateOfferingCommand(offeringId));
             return NoContent();
         }
@@ -150,8 +143,7 @@ namespace Krea.API.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Deactivate(Guid offeringId)
-        {
+        public async Task<IActionResult> Deactivate(Guid offeringId) {
             await _sender.Send(new DeactivateOfferingCommand(offeringId));
             return NoContent();
         }
@@ -172,8 +164,7 @@ namespace Krea.API.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> DeleteOffering(Guid offeringId)
-        {
+        public async Task<IActionResult> DeleteOffering(Guid offeringId) {
             await _sender.Send(new DeleteOfferingCommand(offeringId));
             return NoContent();
         }
@@ -193,7 +184,7 @@ namespace Krea.API.Controllers
         decimal Amount,
         string Currency,
         int MaxSlots);
-    
+
     /// <summary>
     /// Request payload for updating a commission offering.
     /// </summary>

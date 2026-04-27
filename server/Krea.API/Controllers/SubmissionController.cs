@@ -1,5 +1,4 @@
-namespace Krea.API.Controllers 
-{
+namespace Krea.API.Controllers {
     using Application.Features.Commissions.AddSubmissionFeedback;
     using Application.Features.Commissions.Dtos;
     using Application.Features.Commissions.EditSubmissionFeedback;
@@ -14,8 +13,7 @@ namespace Krea.API.Controllers
     [Authorize]
     [ApiController]
     [Route("api/submissions")]
-    public class SubmissionController : ControllerBase
-    {
+    public class SubmissionController : ControllerBase {
         private readonly ISender _sender;
 
         /// <summary>
@@ -36,8 +34,7 @@ namespace Krea.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> AddFeedback(Guid submissionId, [FromBody] AddFeedbackRequest request)
-        {
+        public async Task<IActionResult> AddFeedback(Guid submissionId, [FromBody] AddFeedbackRequest request) {
             var command = new AddSubmissionFeedbackCommand(submissionId, request.Content);
             await _sender.Send(command);
             return NoContent();
@@ -55,13 +52,12 @@ namespace Krea.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> EditFeedback(Guid feedbackId, [FromBody] EditFeedbackRequest request)
-        {
+        public async Task<IActionResult> EditFeedback(Guid feedbackId, [FromBody] EditFeedbackRequest request) {
             var command = new EditSubmissionFeedbackCommand(feedbackId, request.NewContent);
             await _sender.Send(command);
             return NoContent();
         }
-        
+
         /// <summary>
         /// Retrieves all feedback entries for a specific submission.
         /// </summary>
@@ -76,10 +72,9 @@ namespace Krea.API.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<IReadOnlyList<SubmissionFeedbackDto>>> GetFeedback(Guid submissionId)
-        {
+        public async Task<ActionResult<IReadOnlyList<SubmissionFeedbackDto>>> GetFeedback(Guid submissionId) {
             var query = new GetFeedbackQuery(submissionId);
-            var result = await _sender.Send(query);
+            IReadOnlyList<SubmissionFeedbackDto> result = await _sender.Send(query);
             return Ok(result);
         }
     }

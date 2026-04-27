@@ -47,7 +47,7 @@ namespace Krea.API.Controllers {
             [FromQuery] int pageSize = 20,
             CancellationToken ct = default) {
             Guid? currentUserId = null;
-            
+
             if (User.Identity?.IsAuthenticated == true) {
                 currentUserId = GetCurrentUserId();
             }

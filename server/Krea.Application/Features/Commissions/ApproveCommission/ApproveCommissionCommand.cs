@@ -1,5 +1,5 @@
-namespace Krea.Application.Features.Commissions.ApproveCommission;
+namespace Krea.Application.Features.Commissions.ApproveCommission {
+    using Domain.Abstractions;
 
-using Domain.Abstractions;
-
-public record ApproveCommissionCommand(Guid RequestId) : IRequest<Unit>;
+    public record ApproveCommissionCommand(Guid RequestId) : IRequest<Unit>;
+}

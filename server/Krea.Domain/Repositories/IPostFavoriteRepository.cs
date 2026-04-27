@@ -16,7 +16,7 @@ namespace Krea.Domain.Repositories {
             int page,
             int pageSize,
             CancellationToken ct);
-        
+
         Task<HashSet<Guid>> GetFavoritePostIdsAsync(
             Guid userId,
             IReadOnlyCollection<Guid> postIds,

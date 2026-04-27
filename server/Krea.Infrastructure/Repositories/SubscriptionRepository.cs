@@ -13,7 +13,7 @@ namespace Krea.Infrastructure.Repositories {
             await _context.Subscriptions
                           .Include(s => s.Subscriber)
                           .Include(s => s.Plan)
-                          .FirstOrDefaultAsync(s => s.Id == id,  cancellationToken);
+                          .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 
         public async Task<Subscription?> GetByIdWithPaymentsAsync(Guid id, CancellationToken cancellationToken) =>
             await _context.Subscriptions
@@ -23,14 +23,15 @@ namespace Krea.Infrastructure.Repositories {
                           .ThenInclude(p => p.Payer)
                           .FirstOrDefaultAsync(s => s.Id == id);
 
-        public async Task<IReadOnlyList<Subscription>> GetBySubscriberAsync(Guid subscriberId, CancellationToken cancellationToken) =>
+        public async Task<IReadOnlyList<Subscription>> GetBySubscriberAsync(
+            Guid subscriberId, CancellationToken cancellationToken) =>
             await _context.Subscriptions
                           .Include(s => s.Plan)
                           .Where(s => EF.Property<Guid>(s, "SubscriberId") == subscriberId)
                           .ToListAsync(cancellationToken);
 
         public async Task<IReadOnlyList<Subscription>> GetByPlanAsync(Guid planId,
-            CancellationToken cancellationToken) =>
+                                                                      CancellationToken cancellationToken) =>
             await _context.Subscriptions
                           .Include(s => s.Subscriber)
                           .Where(s => EF.Property<Guid>(s, "PlanId") == planId)

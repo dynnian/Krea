@@ -1,8 +1,7 @@
 namespace Krea.Application.Features.Collections.Dto {
     using Domain.ValueObjects;
 
-    public sealed class CollectionExploreDto
-    {
+    public sealed class CollectionExploreDto {
         public Guid Id { get; init; }
         public string Title { get; init; } = default!;
         public string? Description { get; init; }

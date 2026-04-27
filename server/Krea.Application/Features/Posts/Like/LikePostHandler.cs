@@ -33,13 +33,13 @@ namespace Krea.Application.Features.Posts.Like {
             await _unitOfWork.SaveChangesAsync(ct);
 
             await _notificationService.NotifyAsync(
-                recipientUserId: post.AuthorPostId,
-                actorUserId: command.UserId,
-                type: NotificationType.PostLiked,
-                content: "A alguien le gustó tu publicacion.",
-                entityId: post.Id,
-                entityType: NotificationEntityType.Post,
-                cancellationToken: ct);
+                post.AuthorPostId,
+                command.UserId,
+                NotificationType.PostLiked,
+                "A alguien le gustó tu publicacion.",
+                post.Id,
+                NotificationEntityType.Post,
+                ct);
 
             return Unit.Value;
         }

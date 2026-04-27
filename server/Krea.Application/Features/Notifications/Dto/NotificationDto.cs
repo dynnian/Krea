@@ -14,8 +14,7 @@ namespace Krea.Application.Features.Notifications.Dto {
         public DateTime CreatedAt { get; init; }
         public DateTime? ReadAt { get; init; }
 
-        public static NotificationDto FromDomain(Notification notification) => new()
-        {
+        public static NotificationDto FromDomain(Notification notification) => new() {
             Id = notification.Id,
             UserId = notification.UserId,
             ActorUserId = notification.ActorUserId,

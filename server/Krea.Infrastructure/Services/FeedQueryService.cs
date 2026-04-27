@@ -14,91 +14,80 @@ namespace Krea.Infrastructure.Services {
             Guid? currentUserId,
             int page,
             int pageSize,
-            CancellationToken ct)
-        {
-            return await _context.Posts
-                .AsNoTracking()
-                .Where(p => !p.IsDeleted)
-                .OrderByDescending(p => p.UploadedAt)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(p => new PostFeedResponse {
-                    Id = p.Id, 
-                    Title = p.Title,
-                    Content = p.Content!,
-                    AuthorId = p.AuthorPostId,
-                    AuthorUsername = p.AuthorPost.DisplayName,
-                    AuthorProfilePictureUrl = p.AuthorPost.ProfilePicture != null
-                        ? p.AuthorPost.ProfilePicture.Path
-                        : null,
-                    UploadedAt = p.UploadedAt,
-                    
-                    MediaPreviewUrl = p.RepostOfId == null
-                        ? p.Uploads.Select(u => u.Media.Path).FirstOrDefault() 
-                        : p.RepostOf!.Uploads.Select(u => u.Media.Path).FirstOrDefault(),
+            CancellationToken ct) =>
+            await _context.Posts
+                          .AsNoTracking()
+                          .Where(p => !p.IsDeleted)
+                          .OrderByDescending(p => p.UploadedAt)
+                          .Skip((page - 1) * pageSize)
+                          .Take(pageSize)
+                          .Select(p => new PostFeedResponse {
+                              Id = p.Id,
+                              Title = p.Title,
+                              Content = p.Content!,
+                              AuthorId = p.AuthorPostId,
+                              AuthorUsername = p.AuthorPost.DisplayName,
+                              AuthorProfilePictureUrl = p.AuthorPost.ProfilePicture != null
+                                  ? p.AuthorPost.ProfilePicture.Path
+                                  : null,
+                              UploadedAt = p.UploadedAt,
+                              MediaPreviewUrl = p.RepostOfId == null
+                                  ? p.Uploads.Select(u => u.Media.Path).FirstOrDefault()
+                                  : p.RepostOf!.Uploads.Select(u => u.Media.Path).FirstOrDefault(),
+                              MediaMimeType = p.RepostOfId == null
+                                  ? p.Uploads.Select(u => u.Media.MimeType).FirstOrDefault()
+                                  : p.RepostOf!.Uploads.Select(u => u.Media.MimeType).FirstOrDefault(),
+                              CoverMediaId = p.RepostOfId == null
+                                  ? p.Uploads.Select(u => u.CoverMediaId).FirstOrDefault()
+                                  : p.RepostOf!.Uploads.Select(u => u.CoverMediaId).FirstOrDefault(),
+                              CoverUrl = p.RepostOfId == null
+                                  ? p.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.Path : null)
+                                     .FirstOrDefault()
+                                  : p.RepostOf!.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.Path : null)
+                                     .FirstOrDefault(),
+                              CoverMimeType = p.RepostOfId == null
+                                  ? p.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.MimeType : null)
+                                     .FirstOrDefault()
+                                  : p.RepostOf!.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.MimeType : null)
+                                     .FirstOrDefault(),
+                              LikeCount = p.Likes.Count(),
+                              IsLikedByCurrentUser = currentUserId != null &&
+                                                     p.Likes.Any(l => l.UserId == currentUserId),
+                              IsRetweetedByCurrentUser = currentUserId != null &&
+                                                         _context.Posts.Any(r =>
+                                                             !r.IsDeleted &&
+                                                             r.AuthorPostId == currentUserId &&
+                                                             r.RepostOfId == (p.RepostOfId ?? p.Id)),
+                              IsFavorite = currentUserId != null &&
+                                           p.Favorites.Any(f => f.UserId == currentUserId),
+                              ReplyCount = _context.Posts.Count(r => r.RepliedToId == p.Id),
+                              RepostCount = _context.Posts.Count(r => r.RepostOfId == (p.RepostOfId ?? p.Id)),
+                              RepostOfId = p.RepostOfId,
+                              RepostOf = p.RepostOf == null
+                                  ? null
+                                  : new RepostFeedReferenceDto {
+                                      Id = p.RepostOf.Id,
+                                      Title = p.RepostOf.Title,
+                                      Content = p.RepostOf.Content!,
+                                      AuthorId = p.RepostOf.AuthorPostId,
+                                      AuthorUsername = p.RepostOf.AuthorPost.DisplayName,
+                                      AuthorProfilePictureUrl = p.RepostOf.AuthorPost.ProfilePicture != null
+                                          ? p.RepostOf.AuthorPost.ProfilePicture.Path
+                                          : null,
+                                      UploadedAt = p.RepostOf.UploadedAt,
+                                      MediaPreviewUrl = p.RepostOf.Uploads
+                                                         .Select(u => u.Media.Path)
+                                                         .FirstOrDefault(),
+                                      MediaMimeType = p.RepostOf.Uploads
+                                                       .Select(u => u.Media.MimeType)
+                                                       .FirstOrDefault(),
+                                      LikeCount = p.RepostOf.Likes.Count(),
+                                      ReplyCount = _context.Posts.Count(r => r.RepliedToId == p.RepostOf.Id),
+                                      RepostCount = _context.Posts.Count(r => r.RepostOfId == p.RepostOf.Id)
+                                  }
+                          })
+                          .ToListAsync(ct);
 
-                    MediaMimeType = p.RepostOfId == null 
-                        ? p.Uploads.Select(u => u.Media.MimeType).FirstOrDefault() 
-                        : p.RepostOf!.Uploads.Select(u => u.Media.MimeType).FirstOrDefault(),
-
-                    CoverMediaId = p.RepostOfId == null
-                        ? p.Uploads.Select(u => u.CoverMediaId).FirstOrDefault()
-                        : p.RepostOf!.Uploads.Select(u => u.CoverMediaId).FirstOrDefault(),
-
-                    CoverUrl = p.RepostOfId == null
-                        ? p.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.Path : null).FirstOrDefault()
-                        : p.RepostOf!.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.Path : null).FirstOrDefault(),
-
-                    CoverMimeType = p.RepostOfId == null
-                        ? p.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.MimeType : null).FirstOrDefault()
-                        : p.RepostOf!.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.MimeType : null).FirstOrDefault(),
-                        
-                        LikeCount = p.Likes.Count(),
-                        
-                        IsLikedByCurrentUser = currentUserId != null && 
-                                               p.Likes.Any(l => l.UserId == currentUserId),
-                        
-                        IsRetweetedByCurrentUser = currentUserId != null && 
-                                                   _context.Posts.Any(r => 
-                                                       !r.IsDeleted && 
-                                                       r.AuthorPostId == currentUserId && 
-                                                       r.RepostOfId == (p.RepostOfId ?? p.Id)),
-                        
-                        IsFavorite = currentUserId != null && 
-                                     p.Favorites.Any(f => f.UserId == currentUserId),
-                        
-                        ReplyCount = _context.Posts.Count(r => r.RepliedToId == p.Id),
-                    
-                        RepostCount = _context.Posts.Count(r => r.RepostOfId == (p.RepostOfId ?? p.Id)),
-                        
-                        RepostOfId = p.RepostOfId,
-                        
-                        RepostOf = p.RepostOf == null 
-                            ? null 
-                            : new RepostFeedReferenceDto { 
-                                Id = p.RepostOf.Id, 
-                                Title = p.RepostOf.Title, 
-                                Content = p.RepostOf.Content!, 
-                                AuthorId = p.RepostOf.AuthorPostId, 
-                                AuthorUsername = p.RepostOf.AuthorPost.DisplayName, 
-                                AuthorProfilePictureUrl = p.RepostOf.AuthorPost.ProfilePicture != null
-                                    ? p.RepostOf.AuthorPost.ProfilePicture.Path
-                                    : null,
-                                UploadedAt = p.RepostOf.UploadedAt,
-                                MediaPreviewUrl = p.RepostOf.Uploads
-                                    .Select(u => u.Media.Path)
-                                    .FirstOrDefault(),
-                                    MediaMimeType = p.RepostOf.Uploads
-                                    .Select(u => u.Media.MimeType)
-                                    .FirstOrDefault(),
-                                    LikeCount = p.RepostOf.Likes.Count(),
-                                    ReplyCount = _context.Posts.Count(r => r.RepliedToId == p.RepostOf.Id), 
-                                    RepostCount = _context.Posts.Count(r => r.RepostOfId == p.RepostOf.Id) 
-                            } 
-                })
-                .ToListAsync(ct);
-        }
-        
         public async Task<IReadOnlyList<PostFeedResponse>> GetFollowingFeedAsync(
             Guid currentUserId,
             int page,
@@ -109,80 +98,71 @@ namespace Krea.Infrastructure.Services {
                                                     .Select(f => f.TargetId);
 
             return await _context.Posts
-                .AsNoTracking() 
-                .Where(p => !p.IsDeleted &&
-                            followingIds.Contains(p.AuthorPostId)) 
-                .OrderByDescending(p => p.UploadedAt) 
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(p => new PostFeedResponse { 
-                    Id = p.Id,
-                    Title = p.Title,
-                    Content = p.Content!,
-                    AuthorId = p.AuthorPostId,
-                    AuthorUsername = p.AuthorPost.DisplayName,
-                    AuthorProfilePictureUrl = p.AuthorPost.ProfilePicture != null
-                        ? p.AuthorPost.ProfilePicture.Path
-                        : null,
-                    UploadedAt = p.UploadedAt,
-                    
-                    MediaPreviewUrl = p.RepostOfId == null 
-                        ? p.Uploads.Select(u => u.Media.Path).FirstOrDefault() 
-                        : p.RepostOf!.Uploads.Select(u => u.Media.Path).FirstOrDefault(),
-                    
-                    MediaMimeType = p.RepostOfId == null 
-                        ? p.Uploads.Select(u => u.Media.MimeType).FirstOrDefault() 
-                        : p.RepostOf!.Uploads.Select(u => u.Media.MimeType).FirstOrDefault(),
-                    
-                    LikeCount = p.Likes.Count(),
-                    
-                    IsLikedByCurrentUser = p.Likes.Any(l => l.UserId == currentUserId),
-                    
-                    IsRetweetedByCurrentUser = _context.Posts.Any(r => !r.IsDeleted && 
-                                                                       r.AuthorPostId == currentUserId && 
-                                                                       r.RepostOfId == (p.RepostOfId ?? p.Id)),
-                    
-                    IsFavorite = p.Favorites.Any(f => f.UserId == currentUserId),
-                    
-                    ReplyCount = _context.Posts.Count(r => r.RepliedToId == p.Id),
-                    
-                    RepostCount = _context.Posts.Count(r => r.RepostOfId == (p.RepostOfId ?? p.Id)),
-                    
-                    RepostOfId = p.RepostOfId,
-                    
-                    RepostOf = p.RepostOf == null 
-                        ? null 
-                        : new RepostFeedReferenceDto { 
-                            Id = p.RepostOf.Id, 
-                            AuthorId = p.RepostOf.AuthorPostId, 
-                            AuthorUsername = p.RepostOf.AuthorPost.DisplayName,
-                            AuthorProfilePictureUrl = p.RepostOf.AuthorPost.ProfilePicture != null
-                                ? p.RepostOf.AuthorPost.ProfilePicture.Path
-                                : null, 
-                            Title = p.RepostOf.Title, 
-                            Content = p.RepostOf.Content!, 
-                            UploadedAt = p.RepostOf.UploadedAt,
-                            MediaPreviewUrl = p.RepostOf.Uploads
-                                .Select(u => u.Media.Path)
-                                .FirstOrDefault(),
-                            MediaMimeType = p.RepostOf.Uploads
-                                .Select(u => u.Media.MimeType)
-                                .FirstOrDefault(),
-                            CoverMediaId = p.RepostOf.Uploads
-                                .Select(u => u.CoverMediaId)
-                                .FirstOrDefault(),
-                            CoverUrl = p.RepostOf.Uploads
-                                .Select(u => u.CoverMedia != null ? u.CoverMedia.Path : null)
-                                .FirstOrDefault(),
-                            CoverMimeType = p.RepostOf.Uploads
-                                .Select(u => u.CoverMedia != null ? u.CoverMedia.MimeType : null)
-                                .FirstOrDefault(),
-                            LikeCount = p.RepostOf.Likes.Count(), 
-                            ReplyCount = _context.Posts.Count(r => r.RepliedToId == p.RepostOf.Id), 
-                            RepostCount = _context.Posts.Count(r => r.RepostOfId == p.RepostOf.Id) 
-                        } 
-                }) 
-                .ToListAsync(ct); 
+                                 .AsNoTracking()
+                                 .Where(p => !p.IsDeleted &&
+                                             followingIds.Contains(p.AuthorPostId))
+                                 .OrderByDescending(p => p.UploadedAt)
+                                 .Skip((page - 1) * pageSize)
+                                 .Take(pageSize)
+                                 .Select(p => new PostFeedResponse {
+                                     Id = p.Id,
+                                     Title = p.Title,
+                                     Content = p.Content!,
+                                     AuthorId = p.AuthorPostId,
+                                     AuthorUsername = p.AuthorPost.DisplayName,
+                                     AuthorProfilePictureUrl = p.AuthorPost.ProfilePicture != null
+                                         ? p.AuthorPost.ProfilePicture.Path
+                                         : null,
+                                     UploadedAt = p.UploadedAt,
+                                     MediaPreviewUrl = p.RepostOfId == null
+                                         ? p.Uploads.Select(u => u.Media.Path).FirstOrDefault()
+                                         : p.RepostOf!.Uploads.Select(u => u.Media.Path).FirstOrDefault(),
+                                     MediaMimeType = p.RepostOfId == null
+                                         ? p.Uploads.Select(u => u.Media.MimeType).FirstOrDefault()
+                                         : p.RepostOf!.Uploads.Select(u => u.Media.MimeType).FirstOrDefault(),
+                                     LikeCount = p.Likes.Count(),
+                                     IsLikedByCurrentUser = p.Likes.Any(l => l.UserId == currentUserId),
+                                     IsRetweetedByCurrentUser = _context.Posts.Any(r => !r.IsDeleted &&
+                                         r.AuthorPostId == currentUserId &&
+                                         r.RepostOfId == (p.RepostOfId ?? p.Id)),
+                                     IsFavorite = p.Favorites.Any(f => f.UserId == currentUserId),
+                                     ReplyCount = _context.Posts.Count(r => r.RepliedToId == p.Id),
+                                     RepostCount = _context.Posts.Count(r => r.RepostOfId == (p.RepostOfId ?? p.Id)),
+                                     RepostOfId = p.RepostOfId,
+                                     RepostOf = p.RepostOf == null
+                                         ? null
+                                         : new RepostFeedReferenceDto {
+                                             Id = p.RepostOf.Id,
+                                             AuthorId = p.RepostOf.AuthorPostId,
+                                             AuthorUsername = p.RepostOf.AuthorPost.DisplayName,
+                                             AuthorProfilePictureUrl = p.RepostOf.AuthorPost.ProfilePicture != null
+                                                 ? p.RepostOf.AuthorPost.ProfilePicture.Path
+                                                 : null,
+                                             Title = p.RepostOf.Title,
+                                             Content = p.RepostOf.Content!,
+                                             UploadedAt = p.RepostOf.UploadedAt,
+                                             MediaPreviewUrl = p.RepostOf.Uploads
+                                                                .Select(u => u.Media.Path)
+                                                                .FirstOrDefault(),
+                                             MediaMimeType = p.RepostOf.Uploads
+                                                              .Select(u => u.Media.MimeType)
+                                                              .FirstOrDefault(),
+                                             CoverMediaId = p.RepostOf.Uploads
+                                                             .Select(u => u.CoverMediaId)
+                                                             .FirstOrDefault(),
+                                             CoverUrl = p.RepostOf.Uploads
+                                                         .Select(u => u.CoverMedia != null ? u.CoverMedia.Path : null)
+                                                         .FirstOrDefault(),
+                                             CoverMimeType = p.RepostOf.Uploads
+                                                              .Select(u =>
+                                                                  u.CoverMedia != null ? u.CoverMedia.MimeType : null)
+                                                              .FirstOrDefault(),
+                                             LikeCount = p.RepostOf.Likes.Count(),
+                                             ReplyCount = _context.Posts.Count(r => r.RepliedToId == p.RepostOf.Id),
+                                             RepostCount = _context.Posts.Count(r => r.RepostOfId == p.RepostOf.Id)
+                                         }
+                                 })
+                                 .ToListAsync(ct);
         }
 
         public async Task<IReadOnlyList<PostFeedResponse>> GetTrendingAsync(
@@ -212,9 +192,10 @@ namespace Krea.Infrastructure.Services {
                                      AuthorId = x.Post.AuthorPostId,
                                      AuthorUsername = x.Post.AuthorPost.DisplayName,
                                      AuthorProfilePictureUrl = _context.Media
-                                         .Where(m => m.Id == x.Post.AuthorPost.ProfilePictureId)
-                                         .Select(m => m.Path)
-                                         .FirstOrDefault(),
+                                                                       .Where(m => m.Id ==
+                                                                           x.Post.AuthorPost.ProfilePictureId)
+                                                                       .Select(m => m.Path)
+                                                                       .FirstOrDefault(),
                                      UploadedAt = x.Post.UploadedAt,
                                      MediaPreviewUrl = x.Post.RepostOfId == null
                                          ? x.Post.Uploads.Select(u => u.Media.Path).FirstOrDefault()
@@ -245,9 +226,10 @@ namespace Krea.Infrastructure.Services {
                                              AuthorId = x.Post.RepostOf.AuthorPostId,
                                              AuthorUsername = x.Post.RepostOf.AuthorPost.DisplayName,
                                              AuthorProfilePictureUrl = _context.Media
-                                                 .Where(m => m.Id == x.Post.RepostOf.AuthorPost.ProfilePictureId)
-                                                 .Select(m => m.Path)
-                                                 .FirstOrDefault(),
+                                                                               .Where(m => m.Id == x.Post.RepostOf
+                                                                                   .AuthorPost.ProfilePictureId)
+                                                                               .Select(m => m.Path)
+                                                                               .FirstOrDefault(),
                                              UploadedAt = x.Post.RepostOf.UploadedAt,
                                              MediaPreviewUrl = x.Post.RepostOf.Uploads
                                                                 .Select(u => u.Media.Path)

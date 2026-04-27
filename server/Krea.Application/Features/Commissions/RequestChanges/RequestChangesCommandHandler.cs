@@ -11,17 +11,16 @@ namespace Krea.Application.Features.Commissions.RequestChanges {
         ICommissionRequestRepository requestRepository,
         IUnitOfWork unitOfWork,
         ILogger<RequestChangesCommandHandler> logger)
-        : IRequestHandler<RequestChangesCommand, Unit>
-    {
+        : IRequestHandler<RequestChangesCommand, Unit> {
         public async Task<Unit> Handle(
             RequestChangesCommand request,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             Guid currentUserId = currentUserService.UserId;
             if (currentUserId == Guid.Empty)
                 throw new UnauthorizedAccessException();
 
-            CommissionRequest? commissionRequest = await requestRepository.GetByIdWithOfferingForUpdateAsync(request.RequestId, cancellationToken);
+            CommissionRequest? commissionRequest =
+                await requestRepository.GetByIdWithOfferingForUpdateAsync(request.RequestId, cancellationToken);
             if (commissionRequest == null)
                 throw new Exception("Commission request not found.");
 

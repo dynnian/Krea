@@ -33,9 +33,9 @@ namespace Krea.API.Controllers {
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             CancellationToken ct = default) {
-            var userId = GetCurrentUserId();
+            Guid userId = GetCurrentUserId();
 
-            var result = await _sender.Send(
+            IReadOnlyList<NotificationDto> result = await _sender.Send(
                 new GetMyNotificationsQuery(userId, page, pageSize),
                 ct);
 
@@ -44,15 +44,15 @@ namespace Krea.API.Controllers {
 
         [HttpGet("unread-count")]
         public async Task<ActionResult<int>> GetUnreadCount(CancellationToken ct = default) {
-            var userId = GetCurrentUserId();
+            Guid userId = GetCurrentUserId();
 
-            var result = await _sender.Send(new GetUnreadCountQuery(userId), ct);
+            int result = await _sender.Send(new GetUnreadCountQuery(userId), ct);
             return Ok(result);
         }
 
         [HttpPatch("{notificationId:guid}/read")]
         public async Task<IActionResult> MarkAsRead(Guid notificationId, CancellationToken ct = default) {
-            var userId = GetCurrentUserId();
+            Guid userId = GetCurrentUserId();
 
             await _sender.Send(new MarkNotificationAsReadCommand(userId, notificationId), ct);
             return NoContent();
@@ -60,7 +60,7 @@ namespace Krea.API.Controllers {
 
         [HttpPatch("read-all")]
         public async Task<IActionResult> MarkAllAsRead(CancellationToken ct = default) {
-            var userId = GetCurrentUserId();
+            Guid userId = GetCurrentUserId();
 
             await _sender.Send(new MarkAllNotificationsAsReadCommand(userId), ct);
             return NoContent();
@@ -68,7 +68,7 @@ namespace Krea.API.Controllers {
 
         [HttpDelete("{notificationId:guid}")]
         public async Task<IActionResult> Delete(Guid notificationId, CancellationToken ct = default) {
-            var userId = GetCurrentUserId();
+            Guid userId = GetCurrentUserId();
 
             await _sender.Send(new DeleteNotificationCommand(userId, notificationId), ct);
             return NoContent();
@@ -76,9 +76,9 @@ namespace Krea.API.Controllers {
 
         [HttpGet("preferences")]
         public async Task<ActionResult<NotificationPreferencesDto>> GetPreferences(CancellationToken ct = default) {
-            var userId = GetCurrentUserId();
+            Guid userId = GetCurrentUserId();
 
-            var result = await _sender.Send(new GetNotificationPreferencesQuery(userId), ct);
+            NotificationPreferencesDto result = await _sender.Send(new GetNotificationPreferencesQuery(userId), ct);
             return Ok(result);
         }
 
@@ -86,7 +86,7 @@ namespace Krea.API.Controllers {
         public async Task<IActionResult> UpdatePreferences(
             [FromBody] UpdateNotificationPreferencesRequest request,
             CancellationToken ct = default) {
-            var userId = GetCurrentUserId();
+            Guid userId = GetCurrentUserId();
 
             await _sender.Send(new UpdateNotificationPreferencesCommand(
                     userId,
@@ -98,21 +98,18 @@ namespace Krea.API.Controllers {
         }
 
         [HttpGet("stream")]
-        public IResult Stream(CancellationToken ct)
-        {
-            var userId = GetCurrentUserId();
-            var reader = _stream.Subscribe(userId, ct);
+        public IResult Stream(CancellationToken ct) {
+            Guid userId = GetCurrentUserId();
+            ChannelReader<NotificationEventDto> reader = _stream.Subscribe(userId, ct);
 
             return TypedResults.ServerSentEvents(StreamEvents(reader, ct));
         }
 
         private static async IAsyncEnumerable<SseItem<NotificationEventDto>> StreamEvents(
             ChannelReader<NotificationEventDto> reader,
-            [EnumeratorCancellation] CancellationToken ct)
-        {
-            await foreach (var item in reader.ReadAllAsync(ct))
-            {
-                yield return new SseItem<NotificationEventDto>(item, eventType: "notification");
+            [EnumeratorCancellation] CancellationToken ct) {
+            await foreach (NotificationEventDto item in reader.ReadAllAsync(ct)) {
+                yield return new SseItem<NotificationEventDto>(item, "notification");
             }
         }
 

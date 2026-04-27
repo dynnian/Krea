@@ -3,7 +3,7 @@ namespace Krea.Domain.Entities {
 
     public sealed class Notification {
         public Guid Id { get; private set; }
-        public Guid UserId { get; private set; } // destinatario
+        public Guid UserId { get; private set; }       // destinatario
         public Guid? ActorUserId { get; private set; } // quien causo la accion
 
         public NotificationType Type { get; private set; }

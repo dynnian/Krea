@@ -9,156 +9,145 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Krea.API.Tests.Integration;
+namespace Krea.API.Tests.Integration {
+    using Domain.Entities;
+    using Domain.ValueObjects;
 
-using Domain.ValueObjects;
+    public sealed class DonationFlowIntegrationTests : IAsyncLifetime {
+        private IntegrationTestHost _host = null!;
+        private TestDataSeeder.SeededUsers _seeded = null!;
+        private TestStripePaymentGateway _testGateway = null!;
 
-public sealed class DonationFlowIntegrationTests : IAsyncLifetime
-{
-    private IntegrationTestHost _host = null!;
-    private TestDataSeeder.SeededUsers _seeded = null!;
-    private TestStripePaymentGateway _testGateway = null!;
+        public async Task InitializeAsync() {
+            _testGateway = new TestStripePaymentGateway();
 
-    public async Task InitializeAsync()
-    {
-        _testGateway = new TestStripePaymentGateway();
-
-        _host = await IntegrationTestHost.CreateAsync(
-            configureServices: services =>
-            {
-                // Replace real IPaymentGateway with test fake
-                services.AddSingleton<IPaymentGateway>(_testGateway);
-            },
-            seed: async sp =>
-            {
-                _seeded = await TestDataSeeder.SeedBasicUsersAsync(sp);
-            });
-    }
-
-    public async Task DisposeAsync()
-    {
-        await _host.DisposeAsync();
-    }
-
-    [Fact]
-    public async Task CreateDonation_ValidRequest_ReturnsCheckoutUrlAndPersistsDonation()
-    {
-        var request = new CreateDonationRequest(
-            RecipientId: _seeded.ArtistId,
-            Amount: 25.00m,
-            Currency: "USD",
-            Message: "Integration test donation",
-            SuccessUrl: "http://localhost/success",
-            CancelUrl: "http://localhost/cancel"
-        );
-
-        var response = await IntegrationTestHost.SendAuthenticatedAsync(
-            _host.Client,
-            HttpMethod.Post,
-            "/api/Donations",
-            _seeded.AdminId,
-            role: "User",
-            body: request
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var result = await response.Content.ReadFromJsonAsync<CreateDonationResponse>();
-        Assert.NotNull(result);
-        Assert.NotEqual(Guid.Empty, result.DonationId);
-        Assert.StartsWith("https://checkout.stripe.com/", result.CheckoutUrl);
-
-        using var scope = _host.App.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        var donation = await db.Donations
-            .Include(d => d.Payments)
-            .Include(d => d.Donor)
-            .Include(d => d.Recipient)
-            .FirstOrDefaultAsync(d => d.Id == result.DonationId);
-
-        Assert.NotNull(donation);
-        Assert.Equal(_seeded.AdminId, donation.Donor.Id);
-        Assert.Equal(_seeded.ArtistId, donation.Recipient.Id);
-        Assert.Equal(25.00m, donation.Amount.Amount);
-        Assert.Equal("USD", donation.Amount.Currency);
-        Assert.Single(donation.Payments);
-
-        var payment = donation.Payments.First();
-        Assert.Equal(PaymentStatus.Pending, payment.Status);
-        Assert.Equal("stripe", payment.ExternalRef.Provider);
-        Assert.NotNull(payment.ExternalRef.Value);
-    }
-
-    [Fact]
-    public async Task Webhook_CheckoutSessionCompleted_ConfirmsPayment()
-    {
-        var request = new CreateDonationRequest(
-            RecipientId: _seeded.ArtistId,
-            Amount: 15.00m,
-            Currency: "USD",
-            Message: "Webhook test",
-            SuccessUrl: "http://localhost/success",
-            CancelUrl: "http://localhost/cancel"
-        );
-
-        var createResponse = await IntegrationTestHost.SendAuthenticatedAsync(
-            _host.Client,
-            HttpMethod.Post,
-            "/api/Donations",
-            _seeded.AdminId,
-            role: "User",
-            body: request
-        );
-
-        var createResult = await createResponse.Content.ReadFromJsonAsync<CreateDonationResponse>();
-        Assert.NotNull(createResult);
-
-        var sessionId = _testGateway.LastSessionId;
-        var webhookPayload = $$"""
-        {
-            "id": "evt_test",
-            "type": "checkout.session.completed",
-            "data": {
-                "object": {
-                    "id": "{{sessionId}}",
-                    "object": "checkout.session"
-                }
-            }
+            _host = await IntegrationTestHost.CreateAsync(
+                configureServices: services => {
+                    // Replace real IPaymentGateway with test fake
+                    services.AddSingleton<IPaymentGateway>(_testGateway);
+                },
+                seed: async sp => {
+                    _seeded = await TestDataSeeder.SeedBasicUsersAsync(sp);
+                });
         }
-        """;
 
-        var webhookRequest = new HttpRequestMessage(HttpMethod.Post, "/api/webhooks/stripe")
-        {
-            Content = new StringContent(webhookPayload, System.Text.Encoding.UTF8, "application/json")
-        };
-        webhookRequest.Headers.Add("Stripe-Signature", "dummy_signature");
+        public async Task DisposeAsync() => await _host.DisposeAsync();
 
-        var webhookResponse = await _host.Client.SendAsync(webhookRequest);
-        Assert.Equal(HttpStatusCode.OK, webhookResponse.StatusCode);
+        [Fact]
+        public async Task CreateDonation_ValidRequest_ReturnsCheckoutUrlAndPersistsDonation() {
+            var request = new CreateDonationRequest(
+                _seeded.ArtistId,
+                25.00m,
+                "USD",
+                "Integration test donation",
+                "http://localhost/success",
+                "http://localhost/cancel"
+            );
 
-        using var scope = _host.App.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            HttpResponseMessage response = await IntegrationTestHost.SendAuthenticatedAsync(
+                _host.Client,
+                HttpMethod.Post,
+                "/api/Donations",
+                _seeded.AdminId,
+                "User",
+                request
+            );
 
-        var donation = await db.Donations
-            .Include(d => d.Payments)
-            .FirstOrDefaultAsync(d => d.Id == createResult.DonationId);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var result = await response.Content.ReadFromJsonAsync<CreateDonationResponse>();
+            Assert.NotNull(result);
+            Assert.NotEqual(Guid.Empty, result.DonationId);
+            Assert.StartsWith("https://checkout.stripe.com/", result.CheckoutUrl);
 
-        Assert.NotNull(donation);
-        var payment = donation.Payments.First();
-        Assert.Equal(PaymentStatus.Completed, payment.Status);
-        Assert.NotNull(payment.PaidAt);
-    }
+            using IServiceScope scope = _host.App.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    [Fact]
-    public async Task Webhook_WithInvalidSignature_ReturnsBadRequest()
-    {
-        var webhookRequest = new HttpRequestMessage(HttpMethod.Post, "/api/webhooks/stripe")
-        {
-            Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json")
-        };
-        webhookRequest.Headers.Add("Stripe-Signature", "invalid");
+            Donation? donation = await db.Donations
+                                         .Include(d => d.Payments)
+                                         .Include(d => d.Donor)
+                                         .Include(d => d.Recipient)
+                                         .FirstOrDefaultAsync(d => d.Id == result.DonationId);
 
-        var response = await _host.Client.SendAsync(webhookRequest);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.NotNull(donation);
+            Assert.Equal(_seeded.AdminId, donation.Donor.Id);
+            Assert.Equal(_seeded.ArtistId, donation.Recipient.Id);
+            Assert.Equal(25.00m, donation.Amount.Amount);
+            Assert.Equal("USD", donation.Amount.Currency);
+            Assert.Single(donation.Payments);
+
+            Payment payment = donation.Payments.First();
+            Assert.Equal(PaymentStatus.Pending, payment.Status);
+            Assert.Equal("stripe", payment.ExternalRef.Provider);
+            Assert.NotNull(payment.ExternalRef.Value);
+        }
+
+        [Fact]
+        public async Task Webhook_CheckoutSessionCompleted_ConfirmsPayment() {
+            var request = new CreateDonationRequest(
+                _seeded.ArtistId,
+                15.00m,
+                "USD",
+                "Webhook test",
+                "http://localhost/success",
+                "http://localhost/cancel"
+            );
+
+            HttpResponseMessage createResponse = await IntegrationTestHost.SendAuthenticatedAsync(
+                _host.Client,
+                HttpMethod.Post,
+                "/api/Donations",
+                _seeded.AdminId,
+                "User",
+                request
+            );
+
+            var createResult = await createResponse.Content.ReadFromJsonAsync<CreateDonationResponse>();
+            Assert.NotNull(createResult);
+
+            string? sessionId = _testGateway.LastSessionId;
+            string webhookPayload = $$"""
+                                      {
+                                          "id": "evt_test",
+                                          "type": "checkout.session.completed",
+                                          "data": {
+                                              "object": {
+                                                  "id": "{{sessionId}}",
+                                                  "object": "checkout.session"
+                                              }
+                                          }
+                                      }
+                                      """;
+
+            var webhookRequest = new HttpRequestMessage(HttpMethod.Post, "/api/webhooks/stripe") {
+                Content = new StringContent(webhookPayload, System.Text.Encoding.UTF8, "application/json")
+            };
+            webhookRequest.Headers.Add("Stripe-Signature", "dummy_signature");
+
+            HttpResponseMessage webhookResponse = await _host.Client.SendAsync(webhookRequest);
+            Assert.Equal(HttpStatusCode.OK, webhookResponse.StatusCode);
+
+            using IServiceScope scope = _host.App.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            Donation? donation = await db.Donations
+                                         .Include(d => d.Payments)
+                                         .FirstOrDefaultAsync(d => d.Id == createResult.DonationId);
+
+            Assert.NotNull(donation);
+            Payment payment = donation.Payments.First();
+            Assert.Equal(PaymentStatus.Completed, payment.Status);
+            Assert.NotNull(payment.PaidAt);
+        }
+
+        [Fact]
+        public async Task Webhook_WithInvalidSignature_ReturnsBadRequest() {
+            var webhookRequest = new HttpRequestMessage(HttpMethod.Post, "/api/webhooks/stripe") {
+                Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json")
+            };
+            webhookRequest.Headers.Add("Stripe-Signature", "invalid");
+
+            HttpResponseMessage response = await _host.Client.SendAsync(webhookRequest);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
     }
 }

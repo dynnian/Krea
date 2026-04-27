@@ -65,7 +65,7 @@ const normalizeTimeZoneId = (tz: string | undefined): string => {
 
 export default function SettingsRoute() {
   const { t } = useTranslation();
-  const { logout } = useAuth();
+  const { logout, updateUser } = useAuth();
   const navigate = useNavigate();
   const screens = useBreakpoint();
   const isMobile = !screens.md;
@@ -145,6 +145,13 @@ export default function SettingsRoute() {
       setSettingsState(nextState);
       setProfileDraft(normalizedNextProfile);
       setOriginalProfile(normalizedNextProfile);
+      updateUser({
+        name: normalizedNextProfile.displayName,
+        biography: normalizedNextProfile.biography,
+        languageCode: normalizedNextProfile.languageCode,
+        timeZoneId: normalizedNextProfile.timeZoneId,
+        profilePictureUrl: normalizedNextProfile.profilePictureUrl,
+      });
 
       const newLangCode = normalizedNextProfile.languageCode;
       const oldLangCode = originalProfile.languageCode;

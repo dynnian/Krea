@@ -1,6 +1,5 @@
 namespace Krea.Application.Abstractions.Payments {
-    public interface IPaymentGateway
-    {
+    public interface IPaymentGateway {
         Task<CheckoutSessionResult> CreateCheckoutSessionAsync(
             decimal amount,
             string currency,

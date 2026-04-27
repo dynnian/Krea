@@ -11,16 +11,19 @@ namespace Krea.API {
     using Application.Abstractions.Payments;
     using Application.Abstractions.Url;
     using Hubs;
+    using Infrastructure.Configuration;
     using Infrastructure.Services;
     using Infrastructure.Setup;
     using Microsoft.Extensions.Primitives;
+    using Microsoft.Extensions.Options;
     using Services;
-    using Services.Krea.API.Services;
 
     internal static class Program {
         private const string CorsPolicyName = "AllowFrontend";
+
         private const string InsecureDevelopmentJwtKey =
             "LaRevolucionIndustrialYSusConsecuenciasHanSidoUnDesastreParaLaRazaHumana";
+
         private static readonly string[] DevelopmentCorsOrigins =
             ["http://localhost:5173", "http://127.0.0.1:5173"];
 
@@ -40,11 +43,11 @@ namespace Krea.API {
             ConfigureCors(builder.Services, builder.Configuration, builder.Environment.IsDevelopment());
             ConfigureAuthentication(builder.Services, builder.Configuration, builder.Environment.IsDevelopment());
             builder.Services.AddAuthorization();
-            
+
             // Stripe
             builder.Services.Configure<StripeOptions>(builder.Configuration.GetSection("Stripe"));
             builder.Services.AddScoped<IPaymentGateway, StripePaymentGateway>();
-        
+
             // API Services
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddHttpClient();
@@ -59,7 +62,7 @@ namespace Krea.API {
                 ForwardedHeaders =
                     ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost
             };
-            forwardedHeadersOptions.KnownNetworks.Clear();
+            forwardedHeadersOptions.KnownIPNetworks.Clear();
             forwardedHeadersOptions.KnownProxies.Clear();
             app.UseForwardedHeaders(forwardedHeadersOptions);
 
@@ -85,6 +88,7 @@ namespace Krea.API {
             if (enforceHttpsRedirection) {
                 app.UseHttpsRedirection();
             }
+
             app.UseCors(CorsPolicyName);
             app.UseAuthentication();
             app.UseAuthorization();
@@ -112,19 +116,22 @@ namespace Krea.API {
 
             string? configuredJwtKey = configuration["Jwt:Key"];
             bool jwtKeyIsInvalid = string.IsNullOrWhiteSpace(configuredJwtKey)
-                                 || (!isDevelopment && configuredJwtKey.Equals(InsecureDevelopmentJwtKey, StringComparison.Ordinal));
-            
+                                   || (!isDevelopment && configuredJwtKey.Equals(InsecureDevelopmentJwtKey,
+                                       StringComparison.Ordinal));
+
             string jwtSigningKey;
             if (jwtKeyIsInvalid) {
                 // If it's missing or insecure, check if we've already generated one in this process group/env
                 string? envGeneratedKey = Environment.GetEnvironmentVariable("KREA_GENERATED_JWT_KEY");
                 if (!string.IsNullOrWhiteSpace(envGeneratedKey)) {
                     jwtSigningKey = envGeneratedKey;
-                } else {
+                }
+                else {
                     jwtSigningKey = GenerateJwtSigningKey();
                     // Optional: we could persist it to .env if we were allowed, but at least consistent for current process
                 }
-            } else {
+            }
+            else {
                 jwtSigningKey = configuredJwtKey!;
             }
 
@@ -195,7 +202,7 @@ namespace Krea.API {
             configuration.AddInMemoryCollection(normalizedOverrides);
         }
 
-        private static void MapSpaFallback(WebApplication app) {
+        private static void MapSpaFallback(WebApplication app) =>
             app.MapFallback(async context => {
                 PathString requestPath = context.Request.Path;
 
@@ -203,8 +210,7 @@ namespace Krea.API {
                     requestPath.StartsWithSegments("/hubs") ||
                     requestPath.StartsWithSegments("/health") ||
                     requestPath.StartsWithSegments("/uploads") ||
-                    Path.HasExtension(requestPath.Value))
-                {
+                    Path.HasExtension(requestPath.Value)) {
                     context.Response.StatusCode = StatusCodes.Status404NotFound;
                     return;
                 }
@@ -222,9 +228,8 @@ namespace Krea.API {
                 context.Response.ContentType = "text/html; charset=utf-8";
                 await context.Response.SendFileAsync(indexFilePath);
             });
-        }
 
-        private static void MapUploadsProxy(WebApplication app) {
+        private static void MapUploadsProxy(WebApplication app) =>
             app.MapMethods("/uploads/{**objectPath}", ["GET", "HEAD"], async context => {
                 string? objectPath = context.Request.RouteValues["objectPath"]?.ToString();
                 if (string.IsNullOrWhiteSpace(objectPath)) {
@@ -232,9 +237,33 @@ namespace Krea.API {
                     return;
                 }
 
-                string endpoint = GetRequiredConfiguration(app.Configuration, "Minio:Endpoint");
-                string bucket = app.Configuration["Minio:Bucket"] ?? "uploads";
-                bool useSsl = app.Configuration.GetValue<bool>("Minio:UseSsl");
+                MinioOptions? minioOptions =
+                    context.RequestServices.GetService<IOptions<MinioOptions>>()?.Value;
+
+                string endpoint =
+                    NormalizeMinioEndpoint(
+                        ReadFirstNonEmptyEnvironmentVariable("MINIO_ENDPOINT")
+                        ?? minioOptions?.Endpoint
+                        ?? app.Configuration["Minio:Endpoint"]
+                        ?? (app.Environment.IsDevelopment() ? "localhost:9000" : "minio:9000"));
+
+                if (string.IsNullOrWhiteSpace(endpoint)) {
+                    throw new InvalidOperationException("Missing required configuration value for MinIO endpoint.");
+                }
+
+                string bucket =
+                    ReadFirstNonEmptyEnvironmentVariable("MINIO_BUCKET")
+                    ?? minioOptions?.Bucket
+                    ?? app.Configuration["Minio:Bucket"]
+                    ?? "uploads";
+
+                string? rawUseSsl = ReadFirstNonEmptyEnvironmentVariable("MINIO_USE_SSL");
+                bool useSsl = !string.IsNullOrWhiteSpace(rawUseSsl)
+                    ? ResolveBooleanConfiguration(rawUseSsl, false)
+                        .Equals("true", StringComparison.OrdinalIgnoreCase)
+                    : minioOptions?.UseSsl
+                      ?? app.Configuration.GetValue<bool?>("Minio:UseSsl")
+                      ?? false;
 
                 string scheme = useSsl ? "https" : "http";
                 string sanitizedObjectPath = objectPath.TrimStart('/');
@@ -261,10 +290,10 @@ namespace Krea.API {
                     return;
                 }
 
-                await using Stream upstreamStream = await upstreamResponse.Content.ReadAsStreamAsync(context.RequestAborted);
+                await using Stream upstreamStream =
+                    await upstreamResponse.Content.ReadAsStreamAsync(context.RequestAborted);
                 await upstreamStream.CopyToAsync(context.Response.Body, context.RequestAborted);
             });
-        }
 
         private static void CopyProxyRequestHeaders(HttpRequest source, HttpRequestMessage target) {
             foreach ((string key, StringValues value) in source.Headers) {
@@ -299,16 +328,15 @@ namespace Krea.API {
             target.Headers.Remove("transfer-encoding");
         }
 
-        private static bool ShouldSkipProxyResponseHeader(string headerName) {
-            return string.Equals(headerName, "Connection", StringComparison.OrdinalIgnoreCase)
-                   || string.Equals(headerName, "Keep-Alive", StringComparison.OrdinalIgnoreCase)
-                   || string.Equals(headerName, "Proxy-Authenticate", StringComparison.OrdinalIgnoreCase)
-                   || string.Equals(headerName, "Proxy-Authorization", StringComparison.OrdinalIgnoreCase)
-                   || string.Equals(headerName, "TE", StringComparison.OrdinalIgnoreCase)
-                   || string.Equals(headerName, "Trailer", StringComparison.OrdinalIgnoreCase)
-                   || string.Equals(headerName, "Transfer-Encoding", StringComparison.OrdinalIgnoreCase)
-                   || string.Equals(headerName, "Upgrade", StringComparison.OrdinalIgnoreCase);
-        }
+        private static bool ShouldSkipProxyResponseHeader(string headerName) =>
+            string.Equals(headerName, "Connection", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(headerName, "Keep-Alive", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(headerName, "Proxy-Authenticate", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(headerName, "Proxy-Authorization", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(headerName, "TE", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(headerName, "Trailer", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(headerName, "Transfer-Encoding", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(headerName, "Upgrade", StringComparison.OrdinalIgnoreCase);
 
         private static void ConfigureCors(
             IServiceCollection services,
@@ -339,23 +367,24 @@ namespace Krea.API {
 
             if (!string.IsNullOrWhiteSpace(publicUrl)) {
                 // If the user forgot the protocol, try to be helpful
-                if (!publicUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && 
+                if (!publicUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
                     !publicUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) {
-                    
                     if (Uri.TryCreate($"https://{publicUrl}", UriKind.Absolute, out Uri? httpsUri)) {
                         configuredOrigins.Add(httpsUri.GetLeftPart(UriPartial.Authority));
                         configuredOrigins.Add($"http://{httpsUri.Authority}");
-                    } else if (Uri.TryCreate($"http://{publicUrl}", UriKind.Absolute, out Uri? httpUri)) {
+                    }
+                    else if (Uri.TryCreate($"http://{publicUrl}", UriKind.Absolute, out Uri? httpUri)) {
                         configuredOrigins.Add(httpUri.GetLeftPart(UriPartial.Authority));
                         configuredOrigins.Add($"https://{httpUri.Authority}");
                     }
                 }
                 else if (Uri.TryCreate(publicUrl, UriKind.Absolute, out Uri? uri)) {
                     configuredOrigins.Add(uri.GetLeftPart(UriPartial.Authority));
-                    
+
                     if (uri.Scheme == Uri.UriSchemeHttps) {
                         configuredOrigins.Add($"http://{uri.Authority}");
-                    } else if (uri.Scheme == Uri.UriSchemeHttp) {
+                    }
+                    else if (uri.Scheme == Uri.UriSchemeHttp) {
                         configuredOrigins.Add($"https://{uri.Authority}");
                     }
                 }
@@ -411,8 +440,7 @@ namespace Krea.API {
                                     (
                                         path.StartsWithSegments("/hubs") ||
                                         path.StartsWithSegments("/api/notifications/stream")
-                                    ))
-                                {
+                                    )) {
                                     context.Token = accessToken;
                                 }
 
@@ -456,12 +484,30 @@ namespace Krea.API {
             }
 
             return bool.TryParse(rawValue, out bool parsed)
-                ? (parsed ? "true" : "false")
-                : (fallback ? "true" : "false");
+                ? parsed ? "true" : "false"
+                : fallback
+                    ? "true"
+                    : "false";
         }
 
-        private static string GenerateJwtSigningKey() {
-            return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+        private static string NormalizeMinioEndpoint(string endpoint) {
+            if (string.IsNullOrWhiteSpace(endpoint)) {
+                return endpoint;
+            }
+
+            string candidate = endpoint.Trim();
+            if (!candidate.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                !candidate.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) {
+                return candidate.TrimEnd('/');
+            }
+
+            if (!Uri.TryCreate(candidate, UriKind.Absolute, out Uri? uri)) {
+                return candidate.TrimEnd('/');
+            }
+
+            return uri.IsDefaultPort ? uri.Host : $"{uri.Host}:{uri.Port}";
         }
+
+        private static string GenerateJwtSigningKey() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
     }
 }

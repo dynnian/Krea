@@ -13,7 +13,7 @@ namespace Krea.Domain.Repositories {
         Task AddAsync(Collection collection, CancellationToken ct = default);
 
         void Remove(Collection collection);
-        
+
         Task<PaginatedList<Collection>> ExploreAsync(
             string? search,
             string? sortBy,

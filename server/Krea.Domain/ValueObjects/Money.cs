@@ -1,12 +1,9 @@
-namespace Krea.Domain.ValueObjects
-{
-    public readonly struct Money : IEquatable<Money>
-    {
+namespace Krea.Domain.ValueObjects {
+    public readonly struct Money : IEquatable<Money> {
         public decimal Amount { get; }
         public string Currency { get; }
 
-        public Money(decimal amount, string currency = "USD")
-        {
+        public Money(decimal amount, string currency = "USD") {
             if (amount < 0)
                 throw new ArgumentException("Amount cannot be negative.", nameof(amount));
 
@@ -25,53 +22,55 @@ namespace Krea.Domain.ValueObjects
 
         public override int GetHashCode() =>
             HashCode.Combine(Amount, Currency);
-        
+
         public static Money Zero(string currency = "USD") => new(0, currency);
 
-        public static bool operator ==(Money left, Money right) => left.Equals(right);
-        public static bool operator !=(Money left, Money right) => !(left == right);
+        public static bool operator ==(Money left, Money right) {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Money left, Money right) {
+            return !(left == right);
+        }
 
         public static Money operator +(Money a, Money b) {
-            return a.Currency != b.Currency ? 
-                throw new InvalidOperationException("Cannot add money with different currencies.") 
+            return a.Currency != b.Currency
+                ? throw new InvalidOperationException("Cannot add money with different currencies.")
                 : new Money(a.Amount + b.Amount, a.Currency);
         }
 
         public static Money operator -(Money a, Money b) {
-            return a.Currency != b.Currency ? 
-                throw new InvalidOperationException("Cannot subtract money with different currencies.") 
+            return a.Currency != b.Currency
+                ? throw new InvalidOperationException("Cannot subtract money with different currencies.")
                 : new Money(a.Amount - b.Amount, a.Currency);
         }
 
-        public static Money operator *(Money money, decimal multiplier) =>
-            new Money(money.Amount * multiplier, money.Currency);
-        
-        public static bool operator >(Money a, Money b)
-        {
+        public static Money operator *(Money money, decimal multiplier) {
+            return new Money(money.Amount * multiplier, money.Currency);
+        }
+
+        public static bool operator >(Money a, Money b) {
             if (a.Currency != b.Currency)
                 throw new InvalidOperationException("Cannot compare money with different currencies.");
 
             return a.Amount > b.Amount;
         }
 
-        public static bool operator <(Money a, Money b)
-        {
+        public static bool operator <(Money a, Money b) {
             if (a.Currency != b.Currency)
                 throw new InvalidOperationException("Cannot compare money with different currencies.");
 
             return a.Amount < b.Amount;
         }
 
-        public static bool operator >=(Money a, Money b)
-        {
+        public static bool operator >=(Money a, Money b) {
             if (a.Currency != b.Currency)
                 throw new InvalidOperationException("Cannot compare money with different currencies.");
 
             return a.Amount >= b.Amount;
         }
 
-        public static bool operator <=(Money a, Money b)
-        {
+        public static bool operator <=(Money a, Money b) {
             if (a.Currency != b.Currency)
                 throw new InvalidOperationException("Cannot compare money with different currencies.");
 

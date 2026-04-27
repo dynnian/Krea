@@ -6,7 +6,7 @@ namespace Krea.Application.Features.Donations.CreateDonation {
     using Domain.Repositories;
     using Domain.ValueObjects;
     using Microsoft.Extensions.Logging;
-    
+
     public class CreateDonationCommandHandler(
         IUserRepository userRepository,
         IDonationRepository donationRepository,
@@ -15,9 +15,8 @@ namespace Krea.Application.Features.Donations.CreateDonation {
         ILogger<CreateDonationCommandHandler> logger,
         ICurrentUserService currentUserService)
         : IRequestHandler<CreateDonationCommand, CreateDonationResponse> {
-
-        public async Task<CreateDonationResponse> Handle(CreateDonationCommand request, CancellationToken cancellationToken)
-        {
+        public async Task<CreateDonationResponse> Handle(CreateDonationCommand request,
+                                                         CancellationToken cancellationToken) {
             // Get current user
             Guid donorId = currentUserService.UserId;
             if (donorId == Guid.Empty)
@@ -32,7 +31,7 @@ namespace Krea.Application.Features.Donations.CreateDonation {
                 throw new Exception("Recipient not found.");
 
             // Create Stripe Checkout Session
-            var session = await paymentGateway.CreateCheckoutSessionAsync(
+            CheckoutSessionResult session = await paymentGateway.CreateCheckoutSessionAsync(
                 request.Amount,
                 request.Currency,
                 request.SuccessUrl,
@@ -51,7 +50,8 @@ namespace Krea.Application.Features.Donations.CreateDonation {
             await donationRepository.Add(donation);
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            logger.LogInformation("Donation {DonationId} created with Stripe session {SessionId}", donation.Id, session.SessionId);
+            logger.LogInformation("Donation {DonationId} created with Stripe session {SessionId}", donation.Id,
+                session.SessionId);
 
             return new CreateDonationResponse(donation.Id, session.Url);
         }

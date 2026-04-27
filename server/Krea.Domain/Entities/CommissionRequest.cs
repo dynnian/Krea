@@ -1,9 +1,7 @@
 using Krea.Domain.ValueObjects;
 
-namespace Krea.Domain.Entities
-{
-    public sealed class CommissionRequest
-    {
+namespace Krea.Domain.Entities {
+    public sealed class CommissionRequest {
         public Guid Id { get; private set; }
         public User Bidder { get; private set; }
         public CommissionOffering Offering { get; private set; }
@@ -15,17 +13,16 @@ namespace Krea.Domain.Entities
         public IReadOnlyCollection<Submission> Submissions => _submissions;
 
         public string Brief { get; private set; }
-        
+
         public CommissionRequestStatus Status { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
 
-#pragma warning disable CS8618
+        #pragma warning disable CS8618
         private CommissionRequest() { }
-#pragma warning restore CS8618
+        #pragma warning restore CS8618
 
-        public CommissionRequest(User bidder, CommissionOffering offering, string brief)
-        {
+        public CommissionRequest(User bidder, CommissionOffering offering, string brief) {
             Validate(bidder, offering, brief);
 
             Id = Guid.NewGuid();
@@ -44,12 +41,10 @@ namespace Krea.Domain.Entities
             string brief,
             CommissionRequestStatus status,
             DateTime createdAt,
-            DateTime updatedAt)
-        {
+            DateTime updatedAt) {
             Validate(bidder, offering, brief);
 
-            return new CommissionRequest
-            {
+            return new CommissionRequest {
                 Id = id,
                 Bidder = bidder,
                 Offering = offering,
@@ -61,13 +56,11 @@ namespace Krea.Domain.Entities
         }
 
         // Create a payment associated with this commission
-        public Payment CreatePayment(User payer, Money amount, ExternalPaymentRef externalRef)
-        {
+        public Payment CreatePayment(User payer, Money amount, ExternalPaymentRef externalRef) {
             if (!ReferenceEquals(payer, Bidder))
                 throw new ArgumentException("Payer must be the bidder.");
 
-            if (Status != CommissionRequestStatus.Accepted && Status != CommissionRequestStatus.InProgress)
-            {
+            if (Status != CommissionRequestStatus.Accepted && Status != CommissionRequestStatus.InProgress) {
                 throw new InvalidOperationException(
                     "Payments can only be created for accepted or in-progress commissions.");
             }
@@ -83,8 +76,7 @@ namespace Krea.Domain.Entities
         }
 
         // Confirm a payment
-        public void ConfirmPayment(Guid paymentId)
-        {
+        public void ConfirmPayment(Guid paymentId) {
             Payment? payment = _payments.FirstOrDefault(p => p.Id == paymentId);
             if (payment == null)
                 throw new InvalidOperationException("Payment not found.");
@@ -92,14 +84,13 @@ namespace Krea.Domain.Entities
             payment.MarkCompleted();
 
             // If first completed payment
-            if (Status == CommissionRequestStatus.Accepted && _payments.Count(p => p.Status == PaymentStatus.Completed) == 1)
-            {
+            if (Status == CommissionRequestStatus.Accepted &&
+                _payments.Count(p => p.Status == PaymentStatus.Completed) == 1) {
                 SetStatus(CommissionRequestStatus.InProgress);
             }
         }
-        
-        public void AddSubmission(Media media)
-        {
+
+        public void AddSubmission(Media media) {
             ArgumentNullException.ThrowIfNull(media);
 
             // Allow adding submissions when in progress or early draft
@@ -112,8 +103,7 @@ namespace Krea.Domain.Entities
         }
 
         // Artist marks the commission as delivered
-        public void Deliver()
-        {
+        public void Deliver() {
             if (Status != CommissionRequestStatus.InProgress)
                 throw new InvalidOperationException("Can only deliver when commission is in progress.");
 
@@ -121,16 +111,14 @@ namespace Krea.Domain.Entities
         }
 
         // Bidder approves the delivered work
-        public void Approve()
-        {
+        public void Approve() {
             if (Status != CommissionRequestStatus.Delivered)
                 throw new InvalidOperationException("Can only approve delivered commission.");
 
             SetStatus(CommissionRequestStatus.Completed);
         }
 
-        public void RequestChanges()
-        {
+        public void RequestChanges() {
             if (Status != CommissionRequestStatus.Delivered)
                 throw new InvalidOperationException("Can only request changes on delivered commission.");
 
@@ -138,8 +126,7 @@ namespace Krea.Domain.Entities
         }
 
         // Cancel the commission
-        public void Cancel()
-        {
+        public void Cancel() {
             if (Status == CommissionRequestStatus.Completed || Status == CommissionRequestStatus.Delivered)
                 throw new InvalidOperationException("Cannot cancel completed or delivered commission.");
 
@@ -148,14 +135,12 @@ namespace Krea.Domain.Entities
 
         public void Accept() => SetStatus(CommissionRequestStatus.Accepted);
 
-        private void SetStatus(CommissionRequestStatus status)
-        {
+        private void SetStatus(CommissionRequestStatus status) {
             Status = status;
             UpdatedAt = DateTime.UtcNow;
         }
 
-        private static void Validate(User bidder, CommissionOffering offering, string brief)
-        {
+        private static void Validate(User bidder, CommissionOffering offering, string brief) {
             ArgumentNullException.ThrowIfNull(bidder);
             ArgumentNullException.ThrowIfNull(offering);
             if (string.IsNullOrWhiteSpace(brief))

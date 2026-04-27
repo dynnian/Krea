@@ -4,33 +4,31 @@ namespace Krea.Infrastructure.Data.Configurations {
     using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
     public sealed class NotificationGlobalPreferenceConfiguration
-        : IEntityTypeConfiguration<NotificationGlobalPreference>
-    {
-        public void Configure(EntityTypeBuilder<NotificationGlobalPreference> builder)
-        {
+        : IEntityTypeConfiguration<NotificationGlobalPreference> {
+        public void Configure(EntityTypeBuilder<NotificationGlobalPreference> builder) {
             builder.ToTable("notification_global_preferences");
 
             builder.HasKey(x => x.Id);
 
             builder.Property(x => x.Id)
-                .ValueGeneratedNever();
+                   .ValueGeneratedNever();
 
             builder.Property(x => x.AllNotificationsPaused)
-                .IsRequired();
+                   .IsRequired();
 
             builder.Property(x => x.CreatedAt)
-                .IsRequired();
+                   .IsRequired();
 
             builder.Property(x => x.UpdatedAt)
-                .IsRequired();
+                   .IsRequired();
 
             builder.HasIndex(x => x.UserId)
-                .IsUnique();
+                   .IsUnique();
 
             builder.HasOne(x => x.User)
-                .WithMany()
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                   .WithMany()
+                   .HasForeignKey(x => x.UserId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -39,21 +39,19 @@ namespace Krea.Infrastructure.Repositories {
             await _context.Collections.AddAsync(collection, ct);
 
         public void Remove(Collection collection) => _context.Collections.Remove(collection);
-        
+
         public async Task<PaginatedList<Collection>> ExploreAsync(
             string? search,
             string? sortBy,
             int page,
             int pageSize,
-            CancellationToken ct = default)
-        {
+            CancellationToken ct = default) {
             IQueryable<Collection> query = _context.Collections
-                .AsNoTracking()
-                .Include(c => c.Owner)
-                .Include(c => c.Image);
+                                                   .AsNoTracking()
+                                                   .Include(c => c.Owner)
+                                                   .Include(c => c.Image);
 
-            if (!string.IsNullOrWhiteSpace(search))
-            {
+            if (!string.IsNullOrWhiteSpace(search)) {
                 string term = search.Trim().ToLower();
 
                 query = query.Where(c =>
@@ -61,8 +59,7 @@ namespace Krea.Infrastructure.Repositories {
                     (c.Description != null && c.Description.ToLower().Contains(term)));
             }
 
-            query = sortBy?.ToLowerInvariant() switch
-            {
+            query = sortBy?.ToLowerInvariant() switch {
                 "oldest" => query.OrderBy(c => c.CreatedAt),
                 "newest" => query.OrderByDescending(c => c.CreatedAt),
                 _ => query.OrderByDescending(c => c.CreatedAt)

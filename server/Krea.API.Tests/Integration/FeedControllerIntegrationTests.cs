@@ -1,48 +1,32 @@
-namespace Krea.API.Tests.Integration;
+namespace Krea.API.Tests.Integration {
+    using System.Net;
+    using System.Text.Json;
+    using TestSupport;
+    using Xunit;
 
-using System.Net;
-using System.Text.Json;
-using Krea.API.Tests.TestSupport;
-using Xunit;
+    [Collection(IntegrationTestCollection.Name)]
+    public sealed class FeedControllerIntegrationTests(PostgresContainerFixture postgres) {
+        private readonly PostgresContainerFixture _postgres = postgres;
 
-public sealed class DirectMessagesControllerIntegrationTests {
-    [Fact]
-    public async Task SendMessage_ThenGetConversations_ReturnsCreatedConversation() {
-        TestDataSeeder.SeededUsers seeded = default!;
+        [Fact]
+        public async Task GetRecentFeed_ReturnsSeededPosts() {
+            TestDataSeeder.SeededUsers seeded = default!;
 
-        await using var host = await IntegrationTestHost.CreateAsync(
-            seed: async services =>
-            {
-                seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
-            });
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres,
+                seed: async services => {
+                    seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
+                    await TestDataSeeder.SeedPostAsync(services, seeded.ArtistId, "Test feed post");
+                });
 
-        HttpResponseMessage sendResponse = await IntegrationTestHost.SendAuthenticatedAsync(
-            host.Client,
-            HttpMethod.Post,
-            "/api/directmessages",
-            seeded.AdminId,
-            role: "Artist",
-            body: new {
-                senderId = seeded.AdminId,
-                receiverId = seeded.ArtistId,
-                content = "Hello from integration test"
-            });
+            HttpResponseMessage response =
+                await host.Client.GetAsync($"/api/feed/recent?currentUserId={seeded.AdminId}&page=1&pageSize=10");
 
-        Assert.Equal(HttpStatusCode.Created, sendResponse.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        HttpResponseMessage conversationsResponse = await IntegrationTestHost.SendAuthenticatedAsync(
-            host.Client,
-            HttpMethod.Get,
-            "/api/directmessages/conversations",
-            seeded.AdminId,
-            role: "Artist");
+            string body = await response.Content.ReadAsStringAsync();
+            using JsonDocument json = JsonDocument.Parse(body);
 
-        Assert.Equal(HttpStatusCode.OK, conversationsResponse.StatusCode);
-
-        string body = await conversationsResponse.Content.ReadAsStringAsync();
-        using var json = JsonDocument.Parse(body);
-
-        Assert.True(json.RootElement.GetArrayLength() >= 1);
-        Assert.Contains(json.RootElement.EnumerateArray(), item => item.GetProperty("otherParticipantId").GetGuid() == seeded.ArtistId);
+            Assert.True(json.RootElement.GetArrayLength() >= 1);
+        }
     }
 }

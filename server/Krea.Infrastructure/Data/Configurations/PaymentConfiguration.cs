@@ -35,22 +35,21 @@ namespace Krea.Infrastructure.Data.Configurations {
                    .HasForeignKey("CommissionRequestId")
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.ComplexProperty(p => p.Amount, money =>
-            {
+            builder.ComplexProperty(p => p.Amount, money => {
                 money.Property(m => m.Amount)
-                    .HasColumnName("amount")
-                    .HasColumnType("decimal(18,2)");
+                     .HasColumnName("amount")
+                     .HasColumnType("decimal(18,2)");
 
                 money.Property(m => m.Currency)
-                    .HasColumnName("currency")
-                    .HasMaxLength(3);
+                     .HasColumnName("currency")
+                     .HasMaxLength(3);
             });
 
             builder.OwnsOne(p => p.ExternalRef, ext => {
                 ext.Property(e => e.Provider)
-                    .HasColumnName("external_ref_provider")
-                    .HasMaxLength(20)
-                    .IsRequired();
+                   .HasColumnName("external_ref_provider")
+                   .HasMaxLength(20)
+                   .IsRequired();
                 ext.Property(e => e.Value)
                    .HasColumnName("external_ref_value")
                    .HasMaxLength(128)

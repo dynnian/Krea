@@ -1,5 +1,5 @@
 namespace Krea.Domain.Entities {
-    using Krea.Domain.ValueObjects;
+    using ValueObjects;
 
     public sealed class Donation {
         public Guid Id { get; private set; }
@@ -62,9 +62,8 @@ namespace Krea.Domain.Entities {
             _payments.Add(payment);
             return payment;
         }
-        
-        public void ConfirmPayment(Guid paymentId)
-        {
+
+        public void ConfirmPayment(Guid paymentId) {
             Payment? payment = _payments.FirstOrDefault(p => p.Id == paymentId);
             if (payment == null)
                 throw new InvalidOperationException("Payment not found in donation.");

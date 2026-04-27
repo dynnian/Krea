@@ -1,7 +1,6 @@
 using Krea.Domain.Abstractions;
 
-namespace Krea.Application.Features.Donations.CreateDonation 
-{
+namespace Krea.Application.Features.Donations.CreateDonation {
     public record CreateDonationCommand(
         Guid RecipientId,
         decimal Amount,

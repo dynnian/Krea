@@ -5,29 +5,28 @@ namespace Krea.Infrastructure.Data.Configurations {
 
     public sealed class SubmissionConfiguration
         : IEntityTypeConfiguration<Submission> {
-        
         public void Configure(EntityTypeBuilder<Submission> builder) {
             builder.ToTable("submissions");
 
             builder.HasKey(s => s.Id);
 
             builder.HasOne(s => s.Request)
-                .WithMany(s => s.Submissions)
-                .HasForeignKey(s => s.RequestId)
-                .OnDelete(DeleteBehavior.Cascade);
+                   .WithMany(s => s.Submissions)
+                   .HasForeignKey(s => s.RequestId)
+                   .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(s => s.Media)
-                .WithOne()
-                .HasForeignKey<Submission>(s => s.MediaId)
-                .OnDelete(DeleteBehavior.Restrict);
-            
+                   .WithOne()
+                   .HasForeignKey<Submission>(s => s.MediaId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasMany(s => s.Feedback)
-                .WithOne(f => f.Submission)
-                .HasForeignKey(f => f.SubmissionId)
-                .OnDelete(DeleteBehavior.Cascade);
+                   .WithOne(f => f.Submission)
+                   .HasForeignKey(f => f.SubmissionId)
+                   .OnDelete(DeleteBehavior.Cascade);
 
             builder.Metadata.FindNavigation(nameof(Submission.Feedback))
-                ?.SetPropertyAccessMode(PropertyAccessMode.Field);
+                   ?.SetPropertyAccessMode(PropertyAccessMode.Field);
 
             builder.HasIndex(s => s.MediaId).IsUnique();
         }

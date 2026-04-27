@@ -7,14 +7,14 @@ namespace Krea.Domain.Entities {
 
         public Guid MediaId { get; private set; }
         public Media Media { get; private set; }
-        
+
         private readonly List<SubmissionFeedback> _feedback = new();
         public IReadOnlyCollection<SubmissionFeedback> Feedback => _feedback;
 
         #pragma warning disable CS8618
         private Submission() { }
         #pragma warning disable CS8618
-        
+
         public Submission(CommissionRequest request, Media media) {
             ArgumentNullException.ThrowIfNull(request);
             ArgumentNullException.ThrowIfNull(media);
@@ -25,8 +25,8 @@ namespace Krea.Domain.Entities {
             Media = media;
             MediaId = media.Id;
         }
-        public void AddFeedback(User author, string content)
-        {
+
+        public void AddFeedback(User author, string content) {
             ArgumentNullException.ThrowIfNull(author);
             if (string.IsNullOrWhiteSpace(content)) throw new ArgumentException("Feedback content is required.");
 

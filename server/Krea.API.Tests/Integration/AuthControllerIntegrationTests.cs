@@ -10,17 +10,13 @@ namespace Krea.API.Tests.Integration {
     using Xunit;
 
     [Collection(IntegrationTestCollection.Name)]
-    public sealed class AuthControllerIntegrationTests {
-        private readonly PostgresContainerFixture _postgres;
-
-public sealed class AuthControllerIntegrationTests {
-    [Fact]
-    public async Task Register_PersistsIdentityAndDomainUser() {
-        await using var host = await IntegrationTestHost.CreateAsync(seed: TestDataSeeder.SeedRolesOnlyAsync);
+    public sealed class AuthControllerIntegrationTests(PostgresContainerFixture postgres) {
+        private readonly PostgresContainerFixture _postgres = postgres;
 
         [Fact]
         public async Task Register_PersistsIdentityAndDomainUser() {
-            await using var host = await IntegrationTestHost.CreateAsync(_postgres, TestDataSeeder.SeedRolesOnlyAsync);
+            await using var host =
+                await IntegrationTestHost.CreateAsync(_postgres, seed: TestDataSeeder.SeedRolesOnlyAsync);
 
             HttpResponseMessage response = await host.Client.PostAsJsonAsync("/api/auth/register",
                 new {
@@ -41,7 +37,8 @@ public sealed class AuthControllerIntegrationTests {
             AppUser? appUser = await db.Users.SingleOrDefaultAsync(u => u.UserName == "newuser");
             Assert.NotNull(appUser);
 
-            Domain.Entities.User? domainUser = await db.DomainUsers.SingleOrDefaultAsync(u => u.Id == appUser!.Id);
+            Domain.Entities.User? domainUser =
+                await db.DomainUsers.SingleOrDefaultAsync(u => u.Id == appUser!.Id);
             Assert.NotNull(domainUser);
             Assert.Equal("New User", domainUser!.DisplayName);
 
@@ -52,15 +49,12 @@ public sealed class AuthControllerIntegrationTests {
 
         [Fact]
         public async Task Login_ReturnsTokenForValidCredentials() {
-            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, seed: async services => {
                 await TestDataSeeder.SeedBasicUsersAsync(services);
             });
 
             HttpResponseMessage response = await host.Client.PostAsJsonAsync("/api/auth/login",
-                new {
-                    emailOrUsername = "admin",
-                    password = "Admin123!"
-                });
+                new { emailOrUsername = "admin", password = "Admin123!" });
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -70,7 +64,8 @@ public sealed class AuthControllerIntegrationTests {
 
         [Fact]
         public async Task ConfirmEmail_WithInvalidToken_ReturnsBadRequest() {
-            await using var host = await IntegrationTestHost.CreateAsync(_postgres, TestDataSeeder.SeedRolesOnlyAsync);
+            await using var host =
+                await IntegrationTestHost.CreateAsync(_postgres, seed: TestDataSeeder.SeedRolesOnlyAsync);
 
             HttpResponseMessage response = await host.Client.GetAsync(
                 $"/api/auth/confirm-email?userId={Guid.NewGuid()}&token=invalid-token");
@@ -80,9 +75,11 @@ public sealed class AuthControllerIntegrationTests {
 
         [Fact]
         public async Task RefreshToken_WithoutCookie_ReturnsUnauthorized() {
-            await using var host = await IntegrationTestHost.CreateAsync(_postgres, TestDataSeeder.SeedRolesOnlyAsync);
+            await using var host =
+                await IntegrationTestHost.CreateAsync(_postgres, seed: TestDataSeeder.SeedRolesOnlyAsync);
 
-            HttpResponseMessage response = await host.Client.PostAsJsonAsync("/api/auth/refresh-token", new { });
+            HttpResponseMessage response =
+                await host.Client.PostAsJsonAsync("/api/auth/refresh-token", new { });
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
@@ -91,7 +88,7 @@ public sealed class AuthControllerIntegrationTests {
         public async Task RevokeToken_WithoutCookie_ReturnsOk_WhenAuthenticated() {
             TestDataSeeder.SeededUsers seeded = default!;
 
-            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, seed: async services => {
                 seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
             });
 
@@ -109,7 +106,7 @@ public sealed class AuthControllerIntegrationTests {
         public async Task ChangePassword_WithMismatchedUserId_ReturnsUnauthorized() {
             TestDataSeeder.SeededUsers seeded = default!;
 
-            await using var host = await IntegrationTestHost.CreateAsync(_postgres, async services => {
+            await using var host = await IntegrationTestHost.CreateAsync(_postgres, seed: async services => {
                 seeded = await TestDataSeeder.SeedBasicUsersAsync(services);
             });
 
@@ -119,11 +116,7 @@ public sealed class AuthControllerIntegrationTests {
                 "/api/auth/change-password",
                 seeded.AdminId,
                 "Artist",
-                new {
-                    userId = seeded.ArtistId,
-                    currentPassword = "Admin123!",
-                    newPassword = "Admin123!x"
-                });
+                new { userId = seeded.ArtistId, currentPassword = "Admin123!", newPassword = "Admin123!x" });
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }

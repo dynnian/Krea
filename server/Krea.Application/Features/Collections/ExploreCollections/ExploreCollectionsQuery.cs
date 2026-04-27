@@ -8,4 +8,5 @@ namespace Krea.Application.Features.Collections.ExploreCollections {
         string? SortBy,
         int Page = 1,
         int PageSize = 20
-    ) : IRequest<PaginatedList<CollectionExploreDto>>;}
+    ) : IRequest<PaginatedList<CollectionExploreDto>>;
+}

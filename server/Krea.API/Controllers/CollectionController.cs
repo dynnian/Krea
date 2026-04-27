@@ -155,7 +155,7 @@ namespace Krea.API.Controllers {
 
             return NoContent();
         }
-        
+
         /// <summary>
         /// Searches and retrieves public collections across all users.
         /// </summary>
@@ -181,8 +181,7 @@ namespace Krea.API.Controllers {
         [ProducesResponseType(typeof(PaginatedList<CollectionExploreDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ExploreCollections(
             [FromQuery] ExploreCollectionsQuery query,
-            CancellationToken ct)
-        {
+            CancellationToken ct) {
             PaginatedList<CollectionExploreDto> result = await _sender.Send(query, ct);
 
             return Ok(result);

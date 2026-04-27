@@ -4,6 +4,7 @@ namespace Krea.Domain.Repositories {
     public interface INotificationRepository {
         Task AddAsync(Notification notification, CancellationToken cancellationToken);
         Task<Notification?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+
         Task<IReadOnlyList<Notification>> GetByUserAsync(
             Guid userId,
             int page,

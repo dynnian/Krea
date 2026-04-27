@@ -102,8 +102,7 @@ namespace Krea.API.Controllers {
         [HttpGet("{userId:guid}/profile")]
         public async Task<ActionResult<PublicUserProfileResponse>> GetPublicProfile(
             Guid userId,
-            CancellationToken cancellationToken)
-        {
+            CancellationToken cancellationToken) {
             PublicUserProfileResponse? profile = await _sender.Send(
                 new GetPublicUserProfileQuery(userId, TryGetCurrentUserId()),
                 cancellationToken);
@@ -393,7 +392,9 @@ namespace Krea.API.Controllers {
                 return NotFound(new { error = ex.Message });
             }
             catch (Exception ex) {
-                return BadRequest(new { error = ex.Message, type = ex.GetType().Name, detail = "Internal processing error" });
+                return BadRequest(new {
+                    error = ex.Message, type = ex.GetType().Name, detail = "Internal processing error"
+                });
             }
         }
 

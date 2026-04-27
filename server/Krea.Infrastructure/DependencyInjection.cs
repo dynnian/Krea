@@ -18,7 +18,6 @@ namespace Krea.Infrastructure {
     using Application.Abstractions.Filter;
     using Application.Abstractions.Identity;
     using Application.Abstractions.Notification;
-    using Application.Features.Notifications;
     using Application.Abstractions.Payments;
     using Configuration;
     using Microsoft.AspNetCore.Identity;
@@ -42,8 +41,8 @@ namespace Krea.Infrastructure {
             // DbContext
             services.AddDbContext<AppDbContext>(options => {
                 options.UseNpgsql(connectionString,
-                    npgsql => npgsql.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(10),
-                        errorCodesToAdd: null));
+                    npgsql => npgsql.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10),
+                        null));
 
                 if (isDevelopment) {
                     options.EnableDetailedErrors();
@@ -136,16 +135,20 @@ namespace Krea.Infrastructure {
                 services.AddScoped<IEmailService, EmailService>();
             }
 
-            string rawMinioEndpoint = infrastructureConfiguration["Minio:Endpoint"];
-            string minioEndpoint = NormalizeMinioEndpoint(!string.IsNullOrWhiteSpace(rawMinioEndpoint) ? rawMinioEndpoint : (isDevelopment ? "localhost:9000" : "minio:9000"));
-            
+            string? rawMinioEndpoint = infrastructureConfiguration["Minio:Endpoint"];
+            string minioEndpoint = NormalizeMinioEndpoint(!string.IsNullOrWhiteSpace(rawMinioEndpoint)
+                ? rawMinioEndpoint
+                : isDevelopment
+                    ? "localhost:9000"
+                    : "minio:9000");
+
             if (string.IsNullOrWhiteSpace(minioEndpoint)) {
                 minioEndpoint = isDevelopment ? "localhost:9000" : "minio:9000";
             }
 
             string minioAccessKey = infrastructureConfiguration["Minio:AccessKey"] ?? "minioadmin";
             string minioSecretKey = infrastructureConfiguration["Minio:SecretKey"] ?? "minioadmin";
-            string minioBaseUrl = infrastructureConfiguration["Minio:BaseUrl"] ?? ""; 
+            string minioBaseUrl = infrastructureConfiguration["Minio:BaseUrl"] ?? "";
             string minioBucket = infrastructureConfiguration["Minio:Bucket"] ?? "uploads";
             bool minioUseSsl = ResolveBooleanConfiguration(infrastructureConfiguration["Minio:UseSsl"], false);
 
@@ -201,7 +204,7 @@ namespace Krea.Infrastructure {
 
             string normalizedMinioEndpoint = NormalizeMinioEndpoint(minioEndpoint);
 
-            string minioBaseUrl =
+            string? minioBaseUrl =
                 ReadFirstNonEmptyEnvironmentVariable("MINIO_BASE_URL")
                 ?? configuration["Minio:BaseUrl"];
 
@@ -284,7 +287,7 @@ namespace Krea.Infrastructure {
                     ReadFirstNonEmptyEnvironmentVariable("MINIO_SECRET_KEY", "MINIO_ROOT_PASSWORD")
                     ?? configuration["Minio:SecretKey"]
                     ?? "minioadmin",
-                ["Minio:BaseUrl"] = minioBaseUrl,
+                ["Minio:BaseUrl"] = minioBaseUrl!,
                 ["Minio:UseSsl"] = minioUseSsl ? "true" : "false",
                 ["Minio:Bucket"] =
                     ReadFirstNonEmptyEnvironmentVariable("MINIO_BUCKET")

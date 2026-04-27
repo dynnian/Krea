@@ -1,5 +1,4 @@
-namespace Krea.API.Controllers
-{
+namespace Krea.API.Controllers {
     using Application.Features.Donations.CreateDonation;
     using Domain.Abstractions;
     using Microsoft.AspNetCore.Authorization;
@@ -11,18 +10,14 @@ namespace Krea.API.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class DonationsController : ControllerBase
-    {
+    public class DonationsController : ControllerBase {
         private readonly ISender _sender;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DonationsController"/> class.
         /// </summary>
         /// <param name="sender">The mediator sender for dispatching commands and queries.</param>
-        public DonationsController(ISender sender)
-        {
-            _sender = sender;
-        }
+        public DonationsController(ISender sender) => _sender = sender;
 
         /// <summary>
         /// Creates a new donation and initiates a Stripe Checkout session.
@@ -36,8 +31,7 @@ namespace Krea.API.Controllers
         [ProducesResponseType(typeof(CreateDonationResponse), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
-        public async Task<ActionResult<CreateDonationResponse>> CreateDonation(CreateDonationRequest request)
-        {
+        public async Task<ActionResult<CreateDonationResponse>> CreateDonation(CreateDonationRequest request) {
             var command = new CreateDonationCommand(
                 request.RecipientId,
                 request.Amount,
@@ -47,7 +41,7 @@ namespace Krea.API.Controllers
                 request.CancelUrl
             );
 
-            var result = await _sender.Send(command);
+            CreateDonationResponse result = await _sender.Send(command);
             return Ok(result);
         }
     }

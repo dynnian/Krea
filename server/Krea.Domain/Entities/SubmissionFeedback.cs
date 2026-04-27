@@ -1,7 +1,5 @@
-namespace Krea.Domain.Entities
-{
-    public sealed class SubmissionFeedback
-    {
+namespace Krea.Domain.Entities {
+    public sealed class SubmissionFeedback {
         public Guid Id { get; private set; }
         public Guid SubmissionId { get; private set; }
         public Submission Submission { get; private set; } = null!;
@@ -12,11 +10,10 @@ namespace Krea.Domain.Entities
         public DateTime UpdatedAt { get; private set; }
 
         #pragma warning disable CS8618
-        private SubmissionFeedback() { } 
+        private SubmissionFeedback() { }
         #pragma warning restore CS8618
 
-        public SubmissionFeedback(Submission submission, User author, string content)
-        {
+        public SubmissionFeedback(Submission submission, User author, string content) {
             ArgumentNullException.ThrowIfNull(submission);
             ArgumentNullException.ThrowIfNull(author);
             if (string.IsNullOrWhiteSpace(content))
@@ -32,8 +29,7 @@ namespace Krea.Domain.Entities
             UpdatedAt = CreatedAt;
         }
 
-        public void Edit(string newContent)
-        {
+        public void Edit(string newContent) {
             if (string.IsNullOrWhiteSpace(newContent))
                 throw new ArgumentException("Content cannot be empty.");
 

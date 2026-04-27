@@ -1,8 +1,7 @@
 namespace Krea.Application.Abstractions.Payments {
     using Features.Payments.Dtos;
 
-    public interface IPaymentReadService
-    {
+    public interface IPaymentReadService {
         Task<PagedResult<PaymentSummaryDto>> GetSentPaymentsAsync(
             Guid userId,
             PaymentFilter filter,

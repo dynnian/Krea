@@ -19,13 +19,15 @@ namespace Krea.API.Tests.TestSupport {
 
     public sealed class IntegrationTestHost : IAsyncDisposable {
         private const string DefaultAdminDatabase = "postgres";
+
         private const string FallbackAdminConnectionString =
             "Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=1234";
 
         private readonly string _adminConnectionString;
         private readonly string _databaseName;
 
-        private IntegrationTestHost(WebApplication app, HttpClient client, string databaseName, string adminConnectionString) {
+        private IntegrationTestHost(WebApplication app, HttpClient client, string databaseName,
+                                    string adminConnectionString) {
             App = app;
             Client = client;
             _databaseName = databaseName;
@@ -160,9 +162,7 @@ namespace Krea.API.Tests.TestSupport {
         }
 
         private static string BuildDatabaseConnectionString(string adminConnectionString, string databaseName) {
-            var builder = new NpgsqlConnectionStringBuilder(adminConnectionString) {
-                Database = databaseName
-            };
+            var builder = new NpgsqlConnectionStringBuilder(adminConnectionString) { Database = databaseName };
 
             return builder.ConnectionString;
         }
