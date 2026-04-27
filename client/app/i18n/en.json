@@ -119,7 +119,7 @@
     "reposted": "Reposted",
     "repost_removed": "Repost removed",
     "reposted_by": "Reposted by",
-    "reposted_by_user": "Reposted by {{user}}",
+    "reposted_by_user": "{{user}} has reposted",
     "reply_in_thread": "Reply in thread",
     "someone": "someone",
     "report": "Report",

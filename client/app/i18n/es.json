@@ -137,7 +137,7 @@
     "reposted_by": "Republicado de",
     "reposted": "Republicado",
     "repost_removed": "Se quitó la republicación",
-    "reposted_by_user": "Republicado por {{user}}",
+    "reposted_by_user": "{{user}} ha republicado",
     "reply_in_thread": "Respuesta en hilo",
     "someone": "alguien"
   },

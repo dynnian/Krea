@@ -56,6 +56,7 @@ export default function PostCard({ post, onLike, onRepost, onComment, onBookmark
   const originalPost = post.repostOf ?? post;
   const isRepost = !!post.repostOf;
   const repostAuthorName = isRepost ? (post.authorName ?? post.author?.displayName ?? post.author?.username ?? '') : null;
+  const reposterAvatar = isRepost ? getAuthorAvatar(post) : null;
   const repliedToId = post.repliedToId ?? (post as any).replyToPostId ?? (post as any).postRepliedTo ?? null;
   const isReply = !!repliedToId;
   const isOwnPost = user?.id === originalPost.authorPostId;
@@ -252,7 +253,15 @@ const bookCoverUrl =
           {isRepost && (
             <div className="inline-flex items-center gap-1.5 rounded-full border !border-[#95ACCC] bg-transparent px-3 py-1 !text-[12px] font-medium !text-[#1351AA] leading-none h-[26px]">
               <Repeat2 size={13} className="!text-[#1351AA]" />
-              <span className="leading-none mt-[1px]">{t('post.reposted_by_user', { user: repostAuthorName || t('post.someone') })}</span>
+              <Avatar
+                src={reposterAvatar ?? undefined}
+                icon={!reposterAvatar && <User size={10} />}
+                size={16}
+                className="bg-white border border-[#95ACCC] flex items-center justify-center -ml-0.5"
+              />
+              <span className="leading-none mt-[1px]">
+                {t('post.reposted_by_user', { user: repostAuthorName || t('post.someone') })}
+              </span>
             </div>
           )}
           {isReply && (
