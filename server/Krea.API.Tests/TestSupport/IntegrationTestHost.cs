@@ -68,7 +68,7 @@ namespace Krea.API.Tests.TestSupport {
             builder.Configuration.AddInMemoryCollection(settings);
 
             builder.Services.AddApplication();
-            builder.Services.AddInfrastructure(builder.Configuration);
+            builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
             builder.Services.RemoveAll<Application.Abstractions.FileStorage.IFileStorage>();
             builder.Services.RemoveAll<Application.Abstractions.IFileMetadataReader>();
             builder.Services.RemoveAll<Application.Abstractions.Files.IFileCoverExtractor>();

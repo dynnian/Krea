@@ -8,7 +8,7 @@ import EpubReader from "./EpubReader.tsx";
 import PdfReader from "./PdfReader.tsx";
 
 const API_ASSET_BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:5101/api").replace(
+  (import.meta.env.VITE_API_BASE_URL || "/api").replace(
     /\/api\/?$/,
     ""
   );

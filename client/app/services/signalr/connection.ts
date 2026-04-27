@@ -3,7 +3,7 @@ import { storage } from "../../lib/storage.ts";
 
 let connection: signalR.HubConnection | null = null;
 
-const hubUrl = import.meta.env.VITE_HUB_BASE_URL;
+const hubUrl = import.meta.env.VITE_HUB_BASE_URL || "/hubs/directmessage";
 
 export const getConnection = () => {
   if (!connection) {

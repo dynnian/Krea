@@ -2,7 +2,7 @@ import { type Timestamp } from "./common.ts";
 import { PostType, LikeTargetType } from "./common";
 import { type User } from "./user.ts";
 import { type Media } from "./media.ts";
-import type { AuthUser } from "~/contexts/AuthContext.tsx";
+import type { AuthUser } from "../contexts/AuthContext.tsx";
 
 export interface Post {
   id: string; // UUID

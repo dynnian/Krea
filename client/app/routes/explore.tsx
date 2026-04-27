@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 
 import ExploreImages from "../components/Explore/ExploreImages.tsx";
 import ExploreMusic from "../components/Explore/ExploreMusic.tsx";

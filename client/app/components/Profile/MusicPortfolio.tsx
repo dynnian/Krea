@@ -1,6 +1,6 @@
 // deno-lint-ignore-file
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Dropdown, message } from "antd";
 import type { MenuProps } from "antd";
 import { Bookmark, Heart, Play, Pause, MoreHorizontal, ChevronLeft } from "lucide-react";

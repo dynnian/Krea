@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useRef, useMemo } from "react";
-import { useAuth } from "@/contexts/AuthContext.tsx";
-import { useChatStore, type ChatState } from "@/store/chatStore.ts";
-import type { UIConversation } from "@/types/chat.ts";
+import { useAuth } from "../../contexts/AuthContext.tsx";
+import { useChatStore, type ChatState } from "../../store/chatStore.ts";
+import type { UIConversation } from "../../types/chat.ts";
 
 export function useChat() {
   const { user } = useAuth();

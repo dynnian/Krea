@@ -1,7 +1,7 @@
 // components/Explore/ExploreSongCard.tsx
 import React, { useRef, useState } from "react";
 import { Play, Pause } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import AudioWaveform from "../WaveSurfer/AudioWaveform";
 import type { ExplorePostDto } from "../../types/api.ts";
 

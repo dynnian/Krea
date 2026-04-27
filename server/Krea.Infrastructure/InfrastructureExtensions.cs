@@ -9,7 +9,7 @@ namespace Krea.Infrastructure {
 
             LoggingSetup.ConfigureNLog(builder);
 
-            builder.Services.AddInfrastructure(builder.Configuration);
+            builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 
             return builder;
         }

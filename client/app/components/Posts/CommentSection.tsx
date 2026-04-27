@@ -11,7 +11,7 @@ import type { ReplyDto } from '../../services/comments.ts';
 import type { UserProfileResponse } from '../../types/api';
 
 const { TextArea } = Input;
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5101';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
 const toAbsoluteUrl = (url?: string | null): string | undefined => {
   if (!url) return undefined;

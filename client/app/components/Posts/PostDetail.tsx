@@ -14,7 +14,7 @@ import type { PostDto } from '../../types/api.ts';
 import ReportModal from "../Reports/ReportModal.tsx";
 import PostLinkDetail from './PostLinkDetail.tsx';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5101';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const getMediaType = (mimeType?: string): 'image' | 'audio' | 'book' | 'text' => {
   if (!mimeType) return 'text';
   if (mimeType.startsWith('image/')) return 'image';

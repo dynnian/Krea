@@ -1,28 +1,32 @@
-using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Mail;
 
 namespace Krea.Infrastructure.Services {
     using Application.Abstractions.Email;
+    using Configuration;
+    using Microsoft.Extensions.Options;
 
     public class EmailService : IEmailService {
-        private readonly IConfiguration _configuration;
+        private readonly EmailOptions _options;
 
-        public EmailService(IConfiguration configuration) => _configuration = configuration;
+        public EmailService(IOptions<EmailOptions> options) => _options = options.Value;
 
         public async Task SendConfirmationEmailAsync(string email, string userName, string confirmationLink) {
-            string? smtpHost = _configuration["Email:SmtpHost"];
-            int smtpPort = int.Parse(_configuration["Email:SmtpPort"]!);
-            string? smtpUser = _configuration["Email:SmtpUser"];
-            string? smtpPass = _configuration["Email:SmtpPassword"];
-            string? fromAddress = _configuration["Email:FromAddress"];
+            string smtpHost = GetRequiredOptionValue(_options.SmtpHost, "Email:SmtpHost");
+            string smtpUser = GetRequiredOptionValue(_options.SmtpUser, "Email:SmtpUser");
+            string smtpPass = GetRequiredOptionValue(_options.SmtpPassword, "Email:SmtpPassword");
+            string fromAddress = GetRequiredOptionValue(_options.FromAddress, "Email:FromAddress");
 
-            using var client = new SmtpClient(smtpHost, smtpPort);
+            if (_options.SmtpPort <= 0) {
+                throw new InvalidOperationException("Email:SmtpPort must be greater than zero.");
+            }
+
+            using var client = new SmtpClient(smtpHost, _options.SmtpPort);
             client.Credentials = new NetworkCredential(smtpUser, smtpPass);
-            client.EnableSsl = true;
+            client.EnableSsl = _options.UseSsl;
 
             var mailMessage = new MailMessage {
-                From = new MailAddress(fromAddress ?? throw new InvalidOperationException()),
+                From = new MailAddress(fromAddress),
                 Subject = "Confirm your email",
                 Body = $@"
                 <h1>Welcome, {userName}!</h1>
@@ -34,6 +38,14 @@ namespace Krea.Infrastructure.Services {
             mailMessage.To.Add(email);
 
             await client.SendMailAsync(mailMessage);
+        }
+
+        private static string GetRequiredOptionValue(string? value, string key) {
+            if (string.IsNullOrWhiteSpace(value)) {
+                throw new InvalidOperationException($"Missing required configuration value: {key}");
+            }
+
+            return value;
         }
     }
 }

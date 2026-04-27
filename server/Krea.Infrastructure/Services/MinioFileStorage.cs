@@ -26,18 +26,16 @@ namespace Krea.Infrastructure.Services {
             string? folder = null) {
             try {
                 string objectName;
+                string extension = Path.GetExtension(fileName);
+                string uniqueId = Guid.NewGuid().ToString();
 
                 if (!string.IsNullOrWhiteSpace(folder)) {
                     string normalizedFolder = folder.Trim().Trim('/');
-                    string safeFileName = Path.GetFileName(fileName);
-                    objectName = $"{normalizedFolder}/{safeFileName}";
+                    objectName = $"{normalizedFolder}/{uniqueId}{extension}";
                 }
                 else {
-                    objectName = fileName.Replace("\\", "/").TrimStart('/');
+                    objectName = $"{uniqueId}{extension}";
                 }
-
-                if (string.IsNullOrWhiteSpace(objectName))
-                    throw new InvalidOperationException("Invalid object name for storage.");
 
                 await EnsureBucketExists(cancellationToken);
 
@@ -50,15 +48,9 @@ namespace Krea.Infrastructure.Services {
                         .WithContentType(contentType),
                     cancellationToken);
 
-                string cleanBaseUrl = _baseUrl.Trim('\"', ' ').TrimEnd('/');
-                if (!cleanBaseUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && 
-                    !cleanBaseUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase) &&
-                    !cleanBaseUrl.StartsWith("//", StringComparison.OrdinalIgnoreCase)) {
-                    cleanBaseUrl = "https://" + cleanBaseUrl;
-                }
-                string url = $"{cleanBaseUrl}/{_bucketName}/{objectName}";
+                string url = BuildUrl(objectName);
 
-                Logger.Info("File uploaded: {ObjectName}", objectName);
+                Logger.Info("File uploaded: {ObjectName} -> {Url}", objectName, url);
 
                 return new FileStorageResult {
                     Url = url, FileName = objectName, ContentType = contentType, Size = size
@@ -68,6 +60,25 @@ namespace Krea.Infrastructure.Services {
                 Logger.Error(ex, "Error uploading file: {FileName}", fileName);
                 throw;
             }
+        }
+
+        private string BuildUrl(string objectName) {
+            string cleanBaseUrl = _baseUrl.Trim('\"', ' ').TrimEnd('/');
+
+            // If it's a relative path (like /uploads), we assume it's already mapped to the bucket
+            if (cleanBaseUrl.StartsWith("/")) {
+                return $"{cleanBaseUrl}/{objectName}";
+            }
+
+            // If it starts with http, it's an absolute URL
+            if (cleanBaseUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase)) {
+                // Check if we should include the bucket in the path
+                // If the base URL is the public URL, we route through /uploads proxy
+                return $"{cleanBaseUrl}/uploads/{objectName}";
+            }
+
+            // Fallback: assume it's a hostname and use https
+            return $"https://{cleanBaseUrl}/{_bucketName}/{objectName}";
         }
 
         public async Task DeleteAsync(string fileName, CancellationToken cancellationToken) {

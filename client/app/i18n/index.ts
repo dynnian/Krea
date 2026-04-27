@@ -1,17 +1,23 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import es from "./es.json" with { type: "json" };
-import en from "./en.json" with { type: "json" };
+import es from "./es.json";
+import en from "./en.json";
 
-const savedLang =
-  typeof window !== "undefined" ? window.localStorage.getItem("lang") || "es" : "es";
+const getSavedLang = () => {
+  if (typeof window === "undefined") return "es";
+  try {
+    return window.localStorage.getItem("lang") || "es";
+  } catch (e) {
+    return "es";
+  }
+};
 
 i18n.use(initReactI18next).init({
   resources: {
     es: { translation: es },
     en: { translation: en },
   },
-  lng: savedLang,
+  lng: getSavedLang(),
   fallbackLng: "es",
   interpolation: { escapeValue: false },
 });

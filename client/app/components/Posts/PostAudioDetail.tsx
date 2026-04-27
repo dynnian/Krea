@@ -1,6 +1,6 @@
 // deno-lint-ignore-file
 import { useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Play, Pause } from 'lucide-react';
 import AudioWaveform from '../WaveSurfer/AudioWaveform.tsx'
 import type { PostDto } from '../../types/api.ts';

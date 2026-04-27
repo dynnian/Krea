@@ -3,7 +3,8 @@ namespace Krea.Infrastructure.Services {
     using System.Security.Claims;
     using System.Security.Cryptography;
     using System.Text;
-    using Microsoft.Extensions.Configuration;
+    using Configuration;
+    using Microsoft.Extensions.Options;
     using Microsoft.IdentityModel.Tokens;
     using Application.Abstractions.Auth;
     using Application.Abstractions.Identity;
@@ -12,12 +13,14 @@ namespace Krea.Infrastructure.Services {
     using Domain.Abstractions;
 
     public class TokenService(
-        IConfiguration configuration,
+        IOptions<JwtOptions> jwtOptions,
         IRefreshTokenRepository refreshTokenRepository,
         IUnitOfWork unitOfWork,
         IUserRepository userRepository,
         IIdentityService identityService)
         : ITokenService {
+        private readonly JwtOptions _jwtOptions = jwtOptions.Value;
+
         private string GenerateAccessToken(UserIdentity userIdentity, User domainUser, out DateTime expires) {
             var claims = new List<Claim> {
                 new(JwtRegisteredClaimNames.Sub, userIdentity.Id.ToString()),
@@ -29,13 +32,18 @@ namespace Krea.Infrastructure.Services {
             // Agregar roles
             claims.AddRange(userIdentity.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!));
+            string signingKey = GetRequiredOptionValue(_jwtOptions.Key, "Jwt:Key");
+            string issuer = GetRequiredOptionValue(_jwtOptions.Issuer, "Jwt:Issuer");
+            string audience = GetRequiredOptionValue(_jwtOptions.Audience, "Jwt:Audience");
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            expires = DateTime.UtcNow.AddHours(2);
+            int accessTokenHours = _jwtOptions.AccessTokenHours <= 0 ? 2 : _jwtOptions.AccessTokenHours;
+            expires = DateTime.UtcNow.AddHours(accessTokenHours);
 
             var token = new JwtSecurityToken(
-                configuration["Jwt:Issuer"],
-                configuration["Jwt:Audience"],
+                issuer,
+                audience,
                 claims,
                 expires: expires,
                 signingCredentials: creds);
@@ -55,7 +63,8 @@ namespace Krea.Infrastructure.Services {
             string accessToken = GenerateAccessToken(userIdentity, domainUser, out DateTime accessTokenExpires);
 
             string refreshTokenString = GenerateRefreshToken();
-            DateTime refreshTokenExpires = DateTime.UtcNow.AddDays(7);
+            int refreshTokenDays = _jwtOptions.RefreshTokenDays <= 0 ? 7 : _jwtOptions.RefreshTokenDays;
+            DateTime refreshTokenExpires = DateTime.UtcNow.AddDays(refreshTokenDays);
 
             // Persistir Refresh Token
             var refreshTokenEntity = new RefreshToken(refreshTokenString, userIdentity.Id, refreshTokenExpires);
@@ -82,7 +91,8 @@ namespace Krea.Infrastructure.Services {
 
             // Generate new access token
             string newAccessToken = GenerateAccessToken(userIdentity, domainUser, out DateTime newAccessTokenExpires);
-            DateTime newRefreshTokenExpires = DateTime.UtcNow.AddDays(7);
+            int refreshTokenDays = _jwtOptions.RefreshTokenDays <= 0 ? 7 : _jwtOptions.RefreshTokenDays;
+            DateTime newRefreshTokenExpires = DateTime.UtcNow.AddDays(refreshTokenDays);
 
             // Generate new refresh token
             var newRefreshTokenEntity =
@@ -103,6 +113,14 @@ namespace Krea.Infrastructure.Services {
                 refreshTokenRepository.Update(storedToken);
                 await unitOfWork.SaveChangesAsync();
             }
+        }
+
+        private static string GetRequiredOptionValue(string? value, string key) {
+            if (string.IsNullOrWhiteSpace(value)) {
+                throw new InvalidOperationException($"Missing required configuration value: {key}");
+            }
+
+            return value;
         }
     }
 }

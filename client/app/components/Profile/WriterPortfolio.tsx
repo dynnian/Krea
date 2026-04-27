@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { Bookmark, Heart } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Dropdown, Modal, message } from "antd";
 import type { MenuProps } from "antd";
 import { useAuth } from "../../contexts/AuthContext.tsx";

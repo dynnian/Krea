@@ -1,7 +1,7 @@
 // deno-lint-ignore-file
 import { useEffect, useRef, useState } from "react";
 import { message, Spin } from "antd";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 import {
   ChevronLeft,
   SkipBack,

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { Navigate } from 'react-router';
+import { useAuth } from '../contexts/AuthContext';
 import { useChat } from '../lib/hooks/useChat';
 import ConversationList from '../components/Chat/ConversationList';
 import MessageList from '../components/Chat/MessageList';

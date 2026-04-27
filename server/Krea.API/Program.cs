@@ -1,4 +1,5 @@
 namespace Krea.API {
+    using System.Security.Cryptography;
     using Microsoft.AspNetCore.Authentication.JwtBearer;
     using Microsoft.AspNetCore.HttpOverrides;
     using Microsoft.IdentityModel.Tokens;
@@ -10,7 +11,6 @@ namespace Krea.API {
     using Application.Abstractions.Payments;
     using Application.Abstractions.Url;
     using Hubs;
-    using Infrastructure.Configuration;
     using Infrastructure.Services;
     using Infrastructure.Setup;
     using Microsoft.Extensions.Primitives;
@@ -25,7 +25,10 @@ namespace Krea.API {
             ["http://localhost:5173", "http://127.0.0.1:5173"];
 
         public static async Task Main(string[] args) {
-            WebApplicationBuilder builder = WebApplication.CreateBuilder(args).AddInfrastructure();
+            WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+            ApplyApiConfigurationOverrides(builder.Configuration, builder.Environment.IsDevelopment());
+            builder.AddInfrastructure();
 
             builder.Services.AddApplication();
             builder.Services.AddControllers();
@@ -44,12 +47,9 @@ namespace Krea.API {
         
             // API Services
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddHttpClient();
             builder.Services.AddScoped<IConfirmationUrlBuilder, ConfirmationUrlBuilder>();
             builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
-            
-            // Seeding configs
-            builder.Services.Configure<AdminUserOptions>(builder.Configuration.GetSection("AdminUser"));
-            builder.Services.Configure<SeedingOptions>(builder.Configuration.GetSection("Seeding"));
 
             WebApplication app = builder.Build();
             bool enforceHttpsRedirection =
@@ -93,8 +93,221 @@ namespace Krea.API {
             app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
             app.MapHub<DirectMessageHub>("/hubs/directmessage");
+            MapUploadsProxy(app);
+            MapSpaFallback(app);
 
             await app.RunAsync();
+        }
+
+        private static void ApplyApiConfigurationOverrides(
+            ConfigurationManager configuration,
+            bool isDevelopment) {
+            string jwtIssuer =
+                configuration["Jwt:Issuer"]
+                ?? "KreaAPI";
+
+            string jwtAudience =
+                configuration["Jwt:Audience"]
+                ?? "KreaClient";
+
+            string? configuredJwtKey = configuration["Jwt:Key"];
+            bool jwtKeyIsInvalid = string.IsNullOrWhiteSpace(configuredJwtKey)
+                                 || (!isDevelopment && configuredJwtKey.Equals(InsecureDevelopmentJwtKey, StringComparison.Ordinal));
+            
+            string jwtSigningKey;
+            if (jwtKeyIsInvalid) {
+                // If it's missing or insecure, check if we've already generated one in this process group/env
+                string? envGeneratedKey = Environment.GetEnvironmentVariable("KREA_GENERATED_JWT_KEY");
+                if (!string.IsNullOrWhiteSpace(envGeneratedKey)) {
+                    jwtSigningKey = envGeneratedKey;
+                } else {
+                    jwtSigningKey = GenerateJwtSigningKey();
+                    // Optional: we could persist it to .env if we were allowed, but at least consistent for current process
+                }
+            } else {
+                jwtSigningKey = configuredJwtKey!;
+            }
+
+            string publicUrl =
+                ReadFirstNonEmptyEnvironmentVariable("PUBLIC_URL")
+                ?? configuration["PublicUrl"]
+                ?? (isDevelopment ? "http://localhost:5173" : "http://localhost:3000");
+
+            string enforceHttpsRedirection = ResolveBooleanConfiguration(
+                ReadFirstNonEmptyEnvironmentVariable("ENFORCE_HTTPS_REDIRECTION"),
+                configuration.GetValue<bool?>("Security:EnforceHttpsRedirection") ?? false);
+
+            string seedingEnabled = ResolveBooleanConfiguration(
+                ReadFirstNonEmptyEnvironmentVariable("SEEDING_ENABLED"),
+                configuration.GetValue<bool?>("Seeding:Enabled") ?? false);
+
+            var overrides = new Dictionary<string, string?> {
+                ["Jwt:Issuer"] = jwtIssuer,
+                ["Jwt:Audience"] = jwtAudience,
+                ["Jwt:Key"] = jwtSigningKey,
+                ["PublicUrl"] = publicUrl,
+                ["Security:EnforceHttpsRedirection"] = enforceHttpsRedirection,
+                ["Seeding:Enabled"] = seedingEnabled,
+                ["AdminUser:Email"] =
+                    ReadFirstNonEmptyEnvironmentVariable("ADMIN_EMAIL")
+                    ?? configuration["AdminUser:Email"]
+                    ?? "admin@krea.local",
+                ["AdminUser:Username"] =
+                    ReadFirstNonEmptyEnvironmentVariable("ADMIN_USERNAME")
+                    ?? configuration["AdminUser:Username"]
+                    ?? "admin",
+                ["AdminUser:Password"] =
+                    ReadFirstNonEmptyEnvironmentVariable("ADMIN_PASSWORD")
+                    ?? configuration["AdminUser:Password"],
+                ["AdminUser:DisplayName"] =
+                    ReadFirstNonEmptyEnvironmentVariable("ADMIN_DISPLAY_NAME")
+                    ?? configuration["AdminUser:DisplayName"]
+                    ?? "Administrator",
+                ["InstanceSettings:PlatformName"] =
+                    ReadFirstNonEmptyEnvironmentVariable("INSTANCE_PLATFORM_NAME")
+                    ?? configuration["InstanceSettings:PlatformName"]
+                    ?? "Krea",
+                ["InstanceSettings:Description"] =
+                    ReadFirstNonEmptyEnvironmentVariable("INSTANCE_DESCRIPTION")
+                    ?? configuration["InstanceSettings:Description"]
+                    ?? "A federated platform for artists and creators",
+                ["InstanceSettings:AdministratorEmail"] =
+                    ReadFirstNonEmptyEnvironmentVariable("INSTANCE_ADMIN_EMAIL")
+                    ?? configuration["InstanceSettings:AdministratorEmail"]
+                    ?? "admin@krea.local",
+                ["Stripe:ApiKey"] =
+                    ReadFirstNonEmptyEnvironmentVariable("STRIPE_API_KEY")
+                    ?? configuration["Stripe:ApiKey"],
+                ["Stripe:WebhookSecret"] =
+                    ReadFirstNonEmptyEnvironmentVariable("STRIPE_WEBHOOK_SECRET")
+                    ?? configuration["Stripe:WebhookSecret"]
+            };
+
+            var normalizedOverrides = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+            foreach ((string key, string? value) in overrides) {
+                if (string.IsNullOrWhiteSpace(value)) {
+                    continue;
+                }
+
+                normalizedOverrides[key] = value;
+            }
+
+            configuration.AddInMemoryCollection(normalizedOverrides);
+        }
+
+        private static void MapSpaFallback(WebApplication app) {
+            app.MapFallback(async context => {
+                PathString requestPath = context.Request.Path;
+
+                if (requestPath.StartsWithSegments("/api") ||
+                    requestPath.StartsWithSegments("/hubs") ||
+                    requestPath.StartsWithSegments("/health") ||
+                    requestPath.StartsWithSegments("/uploads") ||
+                    Path.HasExtension(requestPath.Value))
+                {
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    return;
+                }
+
+                string webRootPath =
+                    app.Environment.WebRootPath
+                    ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+
+                string indexFilePath = Path.Combine(webRootPath, "index.html");
+                if (!File.Exists(indexFilePath)) {
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    return;
+                }
+
+                context.Response.ContentType = "text/html; charset=utf-8";
+                await context.Response.SendFileAsync(indexFilePath);
+            });
+        }
+
+        private static void MapUploadsProxy(WebApplication app) {
+            app.MapMethods("/uploads/{**objectPath}", ["GET", "HEAD"], async context => {
+                string? objectPath = context.Request.RouteValues["objectPath"]?.ToString();
+                if (string.IsNullOrWhiteSpace(objectPath)) {
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    return;
+                }
+
+                string endpoint = GetRequiredConfiguration(app.Configuration, "Minio:Endpoint");
+                string bucket = app.Configuration["Minio:Bucket"] ?? "uploads";
+                bool useSsl = app.Configuration.GetValue<bool>("Minio:UseSsl");
+
+                string scheme = useSsl ? "https" : "http";
+                string sanitizedObjectPath = objectPath.TrimStart('/');
+                string targetUrl = $"{scheme}://{endpoint}/{bucket}/{sanitizedObjectPath}";
+
+                var clientFactory = context.RequestServices.GetRequiredService<IHttpClientFactory>();
+                HttpClient client = clientFactory.CreateClient();
+
+                using var upstreamRequest = new HttpRequestMessage(
+                    new HttpMethod(context.Request.Method),
+                    targetUrl);
+
+                CopyProxyRequestHeaders(context.Request, upstreamRequest);
+
+                using HttpResponseMessage upstreamResponse = await client.SendAsync(
+                    upstreamRequest,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    context.RequestAborted);
+
+                context.Response.StatusCode = (int)upstreamResponse.StatusCode;
+                CopyProxyResponseHeaders(upstreamResponse, context.Response);
+
+                if (HttpMethods.IsHead(context.Request.Method)) {
+                    return;
+                }
+
+                await using Stream upstreamStream = await upstreamResponse.Content.ReadAsStreamAsync(context.RequestAborted);
+                await upstreamStream.CopyToAsync(context.Response.Body, context.RequestAborted);
+            });
+        }
+
+        private static void CopyProxyRequestHeaders(HttpRequest source, HttpRequestMessage target) {
+            foreach ((string key, StringValues value) in source.Headers) {
+                if (string.Equals(key, "Host", StringComparison.OrdinalIgnoreCase)) {
+                    continue;
+                }
+
+                if (!target.Headers.TryAddWithoutValidation(key, value.ToArray())) {
+                    target.Content ??= new ByteArrayContent([]);
+                    target.Content.Headers.TryAddWithoutValidation(key, value.ToArray());
+                }
+            }
+        }
+
+        private static void CopyProxyResponseHeaders(HttpResponseMessage source, HttpResponse target) {
+            foreach ((string key, IEnumerable<string> value) in source.Headers) {
+                if (ShouldSkipProxyResponseHeader(key)) {
+                    continue;
+                }
+
+                target.Headers[key] = new StringValues(value.ToArray());
+            }
+
+            foreach ((string key, IEnumerable<string> value) in source.Content.Headers) {
+                if (ShouldSkipProxyResponseHeader(key)) {
+                    continue;
+                }
+
+                target.Headers[key] = new StringValues(value.ToArray());
+            }
+
+            target.Headers.Remove("transfer-encoding");
+        }
+
+        private static bool ShouldSkipProxyResponseHeader(string headerName) {
+            return string.Equals(headerName, "Connection", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(headerName, "Keep-Alive", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(headerName, "Proxy-Authenticate", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(headerName, "Proxy-Authorization", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(headerName, "TE", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(headerName, "Trailer", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(headerName, "Transfer-Encoding", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(headerName, "Upgrade", StringComparison.OrdinalIgnoreCase);
         }
 
         private static void ConfigureCors(
@@ -216,6 +429,39 @@ namespace Krea.API {
             }
 
             return value;
+        }
+
+        private static string? ReadFirstNonEmptyEnvironmentVariable(params string[] variableNames) {
+            foreach (string variableName in variableNames) {
+                string? value = Environment.GetEnvironmentVariable(variableName);
+                if (!string.IsNullOrWhiteSpace(value)) {
+                    return value;
+                }
+            }
+
+            return null;
+        }
+
+        private static string ResolveBooleanConfiguration(string? rawValue, bool fallback) {
+            if (string.IsNullOrWhiteSpace(rawValue)) {
+                return fallback ? "true" : "false";
+            }
+
+            if (rawValue == "1") {
+                return "true";
+            }
+
+            if (rawValue == "0") {
+                return "false";
+            }
+
+            return bool.TryParse(rawValue, out bool parsed)
+                ? (parsed ? "true" : "false")
+                : (fallback ? "true" : "false");
+        }
+
+        private static string GenerateJwtSigningKey() {
+            return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
         }
     }
 }

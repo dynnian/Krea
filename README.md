@@ -68,7 +68,7 @@ This is the recommended way to self host Krea.
 ### 1. Self-host prerequisites
 
 - Docker Engine and Docker Compose plugin
-- Open ports you plan to expose (default: 3000, 5101, 5432, 9000, 9001)
+- Open ports you plan to expose (default: 3000)
 
 ### 2. Configure environment variables
 
@@ -80,10 +80,8 @@ cp .env.example .env
 
 Edit `.env` and set secure values at minimum for:
 
-- `JWT_KEY` (must be at least 32 characters)
-- `POSTGRES_PASSWORD`
-- `MINIO_ROOT_PASSWORD`
-- `CORS_ALLOWED_ORIGINS`
+- `DB_PASSWORD`
+- `MINIO_SECRET_KEY`
 
 Set `ENFORCE_HTTPS_REDIRECTION=true` only when TLS is terminated in front of the API (for example, behind a reverse proxy with HTTPS).
 
@@ -99,11 +97,10 @@ docker compose up -d --build
 
 ### 4. Access services
 
-- Frontend: `http://localhost:${WEB_PORT}`
-- API: `http://localhost:${API_PORT}`
-- API health endpoint: `http://localhost:${API_PORT}/health`
-- MinIO API: `http://localhost:${MINIO_PORT}`
-- MinIO Console: `http://localhost:${MINIO_CONSOLE_PORT}`
+- App (Frontend + API): `http://localhost:${WEB_PORT}`
+- API health endpoint: `http://localhost:${WEB_PORT}/health`
+
+PostgreSQL and MinIO run on an internal Docker network and are not exposed to the host by default.
 
 ### 5. Stop or upgrade
 
@@ -134,7 +131,7 @@ Use this mode when you want fast local iteration with debugger support.
 From repository root:
 
 ```bash
-docker compose up -d postgres minio minio-setup
+docker compose up -d postgres minio minio_setup
 ```
 
 ### 3. Run backend (development)
@@ -156,13 +153,7 @@ npm ci
 npm run dev
 ```
 
-Optional: create `client/.env.development.local` to override endpoints:
-
-```env
-VITE_API_BASE_URL=http://127.0.0.1:5101/api
-VITE_API_URL=http://127.0.0.1:5101
-VITE_HUB_BASE_URL=http://127.0.0.1:5101/hubs/directmessage
-```
+No `VITE_API_*` variables are required for default local or dockerized runtime.
 
 ### 5. Run tests
 
@@ -174,15 +165,20 @@ dotnet test Krea.API.Tests/Krea.API.Tests.csproj
 
 ## Configuration Model
 
-Krea is fully environment-variable friendly for self hosting. The production compose file maps environment variables directly to ASP.NET Core configuration keys.
+Krea is fully environment-variable friendly for self hosting.
+Runtime configuration is resolved in startup/DI code:
+
+- `server/Krea.API/Program.cs` maps API-level all-caps environment variables (public URL, security, seeding/admin defaults, stripe) and generates JWT key defaults at runtime.
+- `server/Krea.Infrastructure/DependencyInjection.cs` maps infrastructure all-caps variables (database, MinIO, email, fake-email toggle) and injects typed options into services.
+
+This keeps compose simple and avoids exposing `appsettings` key paths in deployment files.
 
 Examples:
 
-- `ConnectionStrings__DefaultConnection`
-- `Jwt__Issuer`, `Jwt__Audience`, `Jwt__Key`
-- `Cors__AllowedOriginsCsv`
-- `Minio__Endpoint`, `Minio__BaseUrl`, `Minio__UseSsl`
-- `UseFakeEmail`, `Seeding__Enabled`
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
+- `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BASE_URL`, `MINIO_BUCKET`
+- `USE_FAKE_EMAIL`, `EMAIL_SMTP_HOST`, `EMAIL_SMTP_PORT`, `EMAIL_SMTP_USER`, `EMAIL_SMTP_PASSWORD`, `EMAIL_FROM_ADDRESS`
+- `SEEDING_ENABLED`, `ADMIN_EMAIL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`
 
 This makes deployment predictable across local servers, VPS hosts, and orchestration platforms.
 

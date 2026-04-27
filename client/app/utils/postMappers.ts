@@ -13,7 +13,7 @@ import type { FeedItem } from "../types/feed.ts";
 const API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL ||
     import.meta.env.VITE_API_URL ||
-    "http://127.0.0.1:5101/api").replace(/\/api\/?$/, "");
+    "/api").replace(/\/api\/?$/, "");
 
 const normalizeAssetUrl = (url?: string | null) => {
   if (!url) return undefined;

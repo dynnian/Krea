@@ -26,6 +26,7 @@ namespace Krea.API.Controllers {
     using Domain.Entities;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
+    using System.ComponentModel.DataAnnotations;
     using System.Security.Claims;
 
 
@@ -341,9 +342,23 @@ namespace Krea.API.Controllers {
                 request.Cover?.Length
             );
 
-            CreatePostUploadResponse result = await _sender.Send(command, cancellationToken);
-
-            return Ok(result);
+            try {
+                CreatePostUploadResponse result = await _sender.Send(command, cancellationToken);
+                return Ok(result);
+            }
+            catch (ValidationException ex) {
+                return BadRequest(new { error = ex.Message, detail = "Validation failed" });
+            }
+            catch (ArgumentException ex) {
+                return BadRequest(new { error = ex.Message, detail = "Invalid argument" });
+            }
+            catch (KeyNotFoundException ex) {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex) {
+                return StatusCode(StatusCodes.Status500InternalServerError, 
+                    new { error = ex.Message, type = ex.GetType().Name, detail = "Internal processing error" });
+            }
         }
 
         /// <summary>

@@ -8,7 +8,7 @@ import type { DirectMessageDto, ConversationDto } from "../types/chat";
 let initialized = false;
 let messageHandler: (message: DirectMessageDto) => void;
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL; // e.g., http://127.0.0.1:5101/api
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "/api";
 
 export const initSignalR = (userId: string) => {
   if (initialized) return;

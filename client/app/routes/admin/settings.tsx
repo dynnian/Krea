@@ -3,10 +3,10 @@ import { useState, useEffect } from 'react';
 import { Card, Input, Button, Form, Spin, Alert, message } from 'antd';
 import { SettingOutlined, SafetyOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '@/contexts/AuthContext';
-import { getConfiguration, updateConfiguration } from '@/services/admin/configurationService';
-import { changePassword } from '@/services/admin/authService';
-import type { AdminInstanceConfigurationDto } from '@/types/admin';
+import { useAuth } from '../../contexts/AuthContext';
+import { getConfiguration, updateConfiguration } from '../../services/admin/configurationService';
+import { changePassword } from '../../services/admin/authService';
+import type { AdminInstanceConfigurationDto } from '../../types/admin';
 
 const { TextArea } = Input;
 

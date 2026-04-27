@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
-import { createDonation } from "@/services/donationsService.ts";
-import type { PublicUserProfile } from "@/services/userService.ts";
-import { userService } from "@/services/userService.ts";
-import { useAuth } from "@/contexts/AuthContext.tsx";
+import { createDonation } from "../services/donationsService.ts";
+import type { PublicUserProfile } from "../services/userService.ts";
+import { userService } from "../services/userService.ts";
+import { useAuth } from "../contexts/AuthContext.tsx";
 
-import DonationSummaryCard from "@/components/Donations/DonationSummaryCard.tsx";
-import DonationAmountModal from "@/components/Donations/DonationAmountModal.tsx";
-import DonationDetailModal from "@/components/Donations/DonationDetailModal.tsx";
+import DonationSummaryCard from "../components/Donations/DonationSummaryCard.tsx";
+import DonationAmountModal from "../components/Donations/DonationAmountModal.tsx";
+import DonationDetailModal from "../components/Donations/DonationDetailModal.tsx";
 
 export default function DonationRoute() {
   const navigate = useNavigate();

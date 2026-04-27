@@ -1,8 +1,8 @@
 import { Input, Badge, Avatar, Dropdown, Button, Select } from "antd"
 import { SearchOutlined, BellOutlined, GlobalOutlined } from "@ant-design/icons"
 import { useTranslation } from "react-i18next"
-import { useI18n } from "@/contexts/I18nContext.tsx"
-import { useAuth } from "@/contexts/AuthContext.tsx"
+import { useI18n } from "../../contexts/I18nContext.tsx"
+import { useAuth } from "../../contexts/AuthContext.tsx"
 import { useNavigate } from "react-router"
 import type { MenuProps } from "antd"
 

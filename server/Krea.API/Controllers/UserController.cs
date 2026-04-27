@@ -138,11 +138,17 @@ namespace Krea.API.Controllers {
 
                 return Ok(profile);
             }
+            catch (ValidationException ex) {
+                return BadRequest(new { error = ex.Message, detail = "Validation failed" });
+            }
             catch (ArgumentException ex) {
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(new { error = ex.Message, detail = "Invalid argument" });
             }
             catch (KeyNotFoundException ex) {
                 return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex) {
+                return BadRequest(new { error = ex.Message, type = ex.GetType().Name });
             }
         }
 
@@ -378,13 +384,16 @@ namespace Krea.API.Controllers {
                 return Ok(result);
             }
             catch (ValidationException ex) {
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(new { error = ex.Message, detail = "Validation failed" });
             }
             catch (ArgumentException ex) {
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(new { error = ex.Message, detail = "Invalid argument" });
             }
             catch (KeyNotFoundException ex) {
                 return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex) {
+                return BadRequest(new { error = ex.Message, type = ex.GetType().Name, detail = "Internal processing error" });
             }
         }
 

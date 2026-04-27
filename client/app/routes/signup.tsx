@@ -9,16 +9,15 @@ import {
   Grid,
   Avatar,
 } from "antd";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, Navigate } from "react-router";
 import { useState, useEffect, type ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useI18n } from "../contexts/I18nContext";
-import { useAuth, type RegisterDTO } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { useAuth, type RegisterDTO } from "../contexts/AuthContext";
 import axiosClient from "../lib/axios";
 import "../components/styles/signUpRouteFieldoverride.css";
 import backgroundImage from "../../assets/landscapeB.jpg";
-import BrandLogo from "../components/BrandLogo";
+import { BrandLogo } from "../components/BrandLogo";
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
@@ -38,6 +37,7 @@ const IMAGE_MIME_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
 export default function SignUpRoute() {
+  console.log("SignUpRoute rendering...");
   const { isAuthenticated, register, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -71,23 +71,23 @@ export default function SignUpRoute() {
     };
   }, [profilePictureFile]);
 
-const {
-  control,
-  handleSubmit,
-  watch,
-  setError,
-  formState: { errors, isSubmitting },
-} = useForm<SignUpDTO>({
-  mode: "onBlur",
-  defaultValues: {
-    username: "",
-    displayName: "",
-    biography: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  },
-});
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<SignUpDTO>({
+    mode: "onBlur",
+    defaultValues: {
+      username: "",
+      displayName: "",
+      biography: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
   const password = watch("password");
 
@@ -281,6 +281,7 @@ const {
       setAuthError(rawMessage || t("errors.registration_failed"));
     }
   }
+  };
 
   if (authLoading || !isMounted) {
     return (
@@ -573,5 +574,4 @@ const {
       </Content>
     </Layout>
   );
-  }
 }

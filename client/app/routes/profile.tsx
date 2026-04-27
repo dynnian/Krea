@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { postsApi } from "../services/postsService.ts";
 import PostCard from "../components/Posts/PostCard.tsx";
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Tabs, Typography, Grid, message, Spin, Dropdown } from 'antd';
 import { useAuth } from '../contexts/AuthContext.tsx';

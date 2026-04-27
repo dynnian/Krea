@@ -9,12 +9,18 @@ interface I18nContextType {
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
 export const I18nProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguageState] = useState(i18n.language);
+  const [language, setLanguageState] = useState(i18n.language || 'es');
 
   const setLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-    localStorage.setItem('lang', lang);
-    setLanguageState(lang);
+    try {
+      i18n.changeLanguage(lang);
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('lang', lang);
+      }
+      setLanguageState(lang);
+    } catch (error) {
+      console.error('Failed to change language or save to localStorage:', error);
+    }
   };
 
   return (

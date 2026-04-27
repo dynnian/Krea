@@ -10,7 +10,7 @@ export function createNotificationsEventSource(
 ) {
   const token = storage.getToken();
   const baseUrl =
-    import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5101/api';
+    import.meta.env.VITE_API_BASE_URL || '/api';
 
   if (!token) {
     throw new Error('No auth token available for notifications stream.');
