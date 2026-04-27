@@ -641,13 +641,15 @@ const handleSave = () => {
   };
 
   return (
-    <div className="w-full">
-      <EditCollectionHeader
-        onBack={handleCancel}
-        title={config.pageTitle}
-      />
+    <div className="w-full relative z-0">
+      <div className="relative z-0 pointer-events-none">
+        <EditCollectionHeader
+          onBack={handleCancel}
+          title={config.pageTitle}
+        />
+      </div>
 
-      <div className="px-[24px] md:px-[34px] pb-[24px]">
+      <div className="px-[24px] md:px-[34px] pb-[24px] relative z-10 pointer-events-auto">
         <div className="flex flex-col xl:flex-row gap-[28px] xl:gap-[34px]">
           <div className="w-full xl:w-[210px] shrink-0">
             <label className="block text-[18px] font-medium text-[#1B1C1E] mb-[8px]">

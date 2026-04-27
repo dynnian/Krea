@@ -2,6 +2,31 @@ import { message } from "antd";
 import { collectionsApi } from "../services/collectionsService.ts";
 import type { MockImageCollection } from "../data/mockImageCollections.ts";
 
+const getErrorStatus = (error: unknown) => {
+  return (error as any)?.response?.status;
+};
+
+const removePostFromCollectionForMove = async (
+  collectionId: string,
+  postId: string
+) => {
+  try {
+    await collectionsApi.removePostFromCollection(collectionId, postId);
+  } catch (error) {
+    const status = getErrorStatus(error);
+
+    if (status === 500) {
+      console.warn(
+        "DELETE returned 500 during move, but move will continue because backend appears to apply the removal.",
+        { collectionId, postId, error }
+      );
+      return;
+    }
+
+    throw error;
+  }
+};
+
 export async function saveEditedCollectionChanges({
   originalCollection,
   updatedCollection,
@@ -49,7 +74,7 @@ export async function saveEditedCollectionChanges({
   for (const [targetCollectionId, items] of Object.entries(stagedMoves)) {
     for (const item of items) {
       await collectionsApi.addPostToCollection(targetCollectionId, item.id);
-      await collectionsApi.removePostFromCollection(sourceCollectionId, item.id);
+      await removePostFromCollectionForMove(sourceCollectionId, item.id);
     }
   }
 

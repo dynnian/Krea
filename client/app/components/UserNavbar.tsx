@@ -88,9 +88,9 @@ export default function UserNavbar() {
     return <div className="h-16 bg-[#1351AA] w-full" />;
   }
 
-  return (
-    <nav className="bg-[#1351AA] border-b-2 border-[#8F8E8A] sticky top-0 z-[1000] w-full ">
-      <div className="max-w-screen-2xl mx-auto">
+  return ( 
+    <nav className="bg-[#1351AA] flex flex-row items-center border-b-2 border-[#8F8E8A] sticky top-0 z-[1000] w-full ">
+      <div className="w-screen mr-40 w-full">
         {isMobile ? (
           /* MOBILE LAYOUT */
           <div className="flex items-center justify-between px-4 py-2">
@@ -138,11 +138,11 @@ export default function UserNavbar() {
             )}
           </div>
         ) : (
-          /* 💻 DESKTOP LAYOUT */
+          /* DESKTOP LAYOUT */
           <div className="flex items-center justify-between px-6 py-2">
             {/* Left: Logo & Nav */}
             <div className="flex items-center gap-8">
-              <Link className="xl:absolute left-[30px] top-[8px] lg:static" to="/">
+              <Link className="lg:pr-20" to="/">
                 <BrandLogoC ariaLabel="Logo" color="#F3F3F1" height={40} className="block" />
               </Link>
 

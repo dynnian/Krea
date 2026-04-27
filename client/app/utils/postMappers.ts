@@ -179,6 +179,12 @@ export function feedItemToPostDto(item: FeedItem): PostDto {
     coverMediaId: item.coverMediaId ?? null,
     coverUrl: item.coverUrl ?? null,
     coverMimeType: item.coverMimeType ?? null,
+    genres:
+      (item as any).genres ??
+      (item as any).Genres ??
+      (item as any).genreNames ??
+      (item as any).GenreNames ??
+      [],
   }] : [];
 
   const repostMedia = item.repostOf?.mediaPreviewUrl ? [{
@@ -227,13 +233,25 @@ export function feedItemToPostDto(item: FeedItem): PostDto {
       id: item.authorId,
       username: item.authorUsername,
       displayName: item.authorUsername,
+      genres:
+        (item as any).genres ??
+        (item as any).Genres ??
+        (item as any).genreNames ??
+        (item as any).GenreNames ??
+        (item as any).post?.genres ??
+        (item as any).post?.Genres ??
+        (item as any).post?.genreNames ??
+        (item as any).post?.GenreNames ??
+        [],
       avatar: normalizeAssetUrl(
         (item as any).authorProfilePictureUrl ??
-          (item as any).AuthorProfilePictureUrl ??
-          (item as any).profilePictureUrl ??
-          (item as any).ProfilePictureUrl ??
-          (item as any).avatarUrl ??
-          (item as any).AvatarUrl
+        (item as any).AuthorProfilePictureUrl ??
+        (item as any).profilePictureUrl ??
+        (item as any).ProfilePictureUrl ??
+        (item as any).avatarUrl ??
+        (item as any).AvatarUrl
+
+      
       ),
     },
     title: item.title,

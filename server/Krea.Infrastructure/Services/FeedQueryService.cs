@@ -45,12 +45,26 @@ namespace Krea.Infrastructure.Services {
                                      .FirstOrDefault()
                                   : p.RepostOf!.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.Path : null)
                                      .FirstOrDefault(),
-                              CoverMimeType = p.RepostOfId == null
-                                  ? p.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.MimeType : null)
+                                  CoverMimeType = p.RepostOfId == null
+                                      ? p.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.MimeType : null)
                                      .FirstOrDefault()
-                                  : p.RepostOf!.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.MimeType : null)
-                                     .FirstOrDefault(),
-                              LikeCount = p.Likes.Count(),
+                                      : p.RepostOf!.Uploads.Select(u => u.CoverMedia != null ? u.CoverMedia.MimeType : null)
+             .FirstOrDefault(),
+                              Genres = p.RepostOfId == null
+                            ? p.Uploads
+                                .Where(u => u.Metadata != null)
+                                .SelectMany(u => u.Metadata!.Genres)
+                                .Select(g => g.Name)
+                                .Distinct()
+                                .ToList()
+                            : p.RepostOf!.Uploads
+                                .Where(u => u.Metadata != null)
+                                .SelectMany(u => u.Metadata!.Genres)
+                                .Select(g => g.Name)
+                                .Distinct()
+                                .ToList(),
+                            
+                        LikeCount = p.Likes.Count(),
                               IsLikedByCurrentUser = currentUserId != null &&
                                                      p.Likes.Any(l => l.UserId == currentUserId),
                               IsRetweetedByCurrentUser = currentUserId != null &&
@@ -210,10 +224,25 @@ namespace Krea.Infrastructure.Services {
                                      MediaPreviewUrl = x.Post.RepostOfId == null
                                          ? x.Post.Uploads.Select(u => u.Media.Path).FirstOrDefault()
                                          : x.Post.RepostOf!.Uploads.Select(u => u.Media.Path).FirstOrDefault(),
-                                     MediaMimeType = x.Post.RepostOfId == null
-                                         ? x.Post.Uploads.Select(u => u.Media.MimeType).FirstOrDefault()
-                                         : x.Post.RepostOf!.Uploads.Select(u => u.Media.MimeType).FirstOrDefault(),
-                                     LikeCount = x.Post.Likes.Count(),
+                                    MediaMimeType = x.Post.RepostOfId == null
+                                        ? x.Post.Uploads.Select(u => u.Media.MimeType).FirstOrDefault()
+                                        : x.Post.RepostOf!.Uploads.Select(u => u.Media.MimeType).FirstOrDefault(),
+
+                                    Genres = x.Post.RepostOfId == null
+                                        ? x.Post.Uploads
+                                            .Where(u => u.Metadata != null)
+                                            .SelectMany(u => u.Metadata!.Genres)
+                                            .Select(g => g.Name)
+                                            .Distinct()
+                                            .ToList()
+                                        : x.Post.RepostOf!.Uploads
+                                            .Where(u => u.Metadata != null)
+                                            .SelectMany(u => u.Metadata!.Genres)
+                                            .Select(g => g.Name)
+                                            .Distinct()
+                                            .ToList(),
+
+                                    LikeCount = x.Post.Likes.Count(),
                                      IsLikedByCurrentUser = currentUserId.HasValue &&
                                                             x.Post.Likes.Any(l => l.UserId == currentUserId.Value),
                                      IsRetweetedByCurrentUser = currentUserId.HasValue &&

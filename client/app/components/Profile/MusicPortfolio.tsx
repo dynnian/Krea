@@ -44,6 +44,7 @@ type MusicPortfolioProps = {
   albums?: MusicAlbum[];
   error?: string | null;
   onEditAlbum?: (album: MusicAlbum) => void;
+  readOnly?: boolean;
 };
 
 const SongCard: React.FC<{ song: MusicSong }> = ({ song }) => {
@@ -298,10 +299,12 @@ function AlbumCard({
   album,
   onEdit,
   onDelete,
+  readOnly = false,
 }: {
   album: MusicAlbum;
   onEdit: (album: MusicAlbum) => void;
   onDelete: (album: MusicAlbum) => void;
+  readOnly?: boolean;
 }) {
   const navigate = useNavigate();
 
@@ -355,18 +358,20 @@ function AlbumCard({
           </p>
         </div>
 
-        <Dropdown
-          menu={{ items: albumMenuItems, onClick: handleAlbumMenuClick }}
-          trigger={["click"]}
-          placement="bottomRight"
-        >
-          <button
-            type="button"
-            className="h-[20px] w-[20px] flex items-center justify-center rounded-full cursor-pointer shrink-0"
+        {!readOnly && (
+          <Dropdown
+            menu={{ items: albumMenuItems, onClick: handleAlbumMenuClick }}
+            trigger={["click"]}
+            placement="bottomRight"
           >
-            <MoreHorizontal size={16} className="text-[#1B1C1E]" />
-          </button>
-        </Dropdown>
+            <button
+              type="button"
+              className="h-[20px] w-[20px] flex items-center justify-center rounded-full cursor-pointer shrink-0"
+            >
+              <MoreHorizontal size={16} className="text-[#1B1C1E]" />
+            </button>
+          </Dropdown>
+        )}
       </div>
     </div>
   );
@@ -378,12 +383,14 @@ function AlbumsGrid({
   onOpenGeneralPortfolio,
   onEditAlbum,
   onDeleteAlbum,
+  readOnly = false,
 }: {
   songs: MusicSong[];
   albums: MusicAlbum[];
   onOpenGeneralPortfolio: () => void;
   onEditAlbum: (album: MusicAlbum) => void;
   onDeleteAlbum: (album: MusicAlbum) => void;
+  readOnly?: boolean;
 }) {
   return (
     <div className="w-full px-[20px] m:px-[140px] l:px-[240px] xl:px-[340px] pb-[30px]">
@@ -399,6 +406,7 @@ function AlbumsGrid({
             album={album}
             onEdit={onEditAlbum}
             onDelete={onDeleteAlbum}
+            readOnly={readOnly}
           />
         ))}
       </div>
@@ -412,6 +420,7 @@ export default function MusicPortfolio({
   albums = [],
   error = null,
   onEditAlbum,
+  readOnly = false,
 }: MusicPortfolioProps) {
   const [activeMusicTab, setActiveMusicTab] = useState<"songs" | "albums">(initialTab);
   const [showGeneralPortfolio, setShowGeneralPortfolio] = useState(false);
@@ -501,6 +510,7 @@ return (
     onOpenGeneralPortfolio={handleOpenGeneralPortfolio}
     onEditAlbum={handleEditAlbum}
     onDeleteAlbum={handleDeleteAlbum}
+    readOnly={readOnly}
   />
 );
 }

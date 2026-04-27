@@ -1,7 +1,7 @@
 // app/types/api.ts
 
 import type { ReplyDto } from "../services/comments.ts";
-import type { PostType } from "./common";
+import type { PostType } from "./common.ts";
 
 // Respuesta de login/register (ya existente)
 export interface AuthResponse {
@@ -166,7 +166,6 @@ export interface PostDto {
   id: string;
   authorPostId: string;
   authorName?: string;
-  authorProfilePictureUrl?: string | null;
   author?: {
     id: string;
     username: string;
@@ -182,13 +181,14 @@ export interface PostDto {
   repostCount?: number;
   uploadedAt: string;
   media: MediaDto[];
+  genres?: string[];
   isLikedByCurrentUser: boolean;
   isRetweetedByCurrentUser: boolean;
   isFavoritedByCurrentUser?: boolean;
   repliedToId?: string | null;
   replies?: PostDto[];
-  repostOfId?: string;         // ID del post original si es repost
-  repostOf?: PostDto;          // Post original (solo si es repost)
+  repostOfId?: string;
+  repostOf?: PostDto;
 }
 
 export interface PaginatedReplies {

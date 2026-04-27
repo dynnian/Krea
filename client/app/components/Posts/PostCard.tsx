@@ -228,10 +228,26 @@ const bookCoverUrl =
   imageMedia?.url ||
   null;
 
+const postGenres =
+  originalPost.genres ??
+  (originalPost as any).Genres ??
+  (post as any).genres ??
+  (post as any).Genres ??
+  (originalPost as any).genreNames ??
+  (originalPost as any).GenreNames ??
+  (post as any).genreNames ??
+  (post as any).GenreNames ??
+  [];
+
+const genreLabel =
+  Array.isArray(postGenres) && postGenres.length > 0
+    ? postGenres.join(", ")
+    : "Sin género";
+
   const formattedDate = originalPost.uploadedAt
     ? new Date(originalPost.uploadedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
     : '';
-
+console.log("PostCard genres:", originalPost.title, originalPost.genres, postGenres);
   const authorName = originalPost.authorName || `Usuario ${originalPost.authorPostId.slice(0, 8)}`;
   const authorHandle = originalPost.authorName ? `@${originalPost.authorName}` : originalPost.authorPostId.slice(0, 8);
   const authorAvatar = getAuthorAvatar(originalPost);
@@ -409,9 +425,9 @@ const bookCoverUrl =
                         {originalPost.title || 'Título de la obra'}
                       </h3>
 
-                      <span className="text-[14px] text-[#1B1C1E] whitespace-nowrap">
-                        Sin género
-                      </span>
+                    <span className="text-[14px] text-[#1B1C1E] whitespace-nowrap">
+                      {genreLabel}
+                    </span>
                     </div>
 
                     {/* SINOPSIS */}

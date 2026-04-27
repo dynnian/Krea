@@ -56,7 +56,7 @@ export default function PostLinkDetail({ post }: PostLinkDetailProps) {
             <button
               type="button"
               onClick={() => navigate(`/read/${post.id}`)}
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#0B5107] text-white text-[16px] hover:bg-[#083d05] transition cursor-pointer"
+              className="krea-save-button inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#0B5107] text-white text-[16px] hover:bg-[#083d05] transition cursor-pointer"
             >
               Leer
             </button>
