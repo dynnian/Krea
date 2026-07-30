@@ -1,16 +1,16 @@
 namespace Krea.Infrastructure.Services {
+    using Application.Abstractions.Auth;
+    using Application.Abstractions.Identity;
+    using Configuration;
+    using Domain.Abstractions;
+    using Domain.Entities;
+    using Domain.Repositories;
+    using Microsoft.Extensions.Options;
+    using Microsoft.IdentityModel.Tokens;
     using System.IdentityModel.Tokens.Jwt;
     using System.Security.Claims;
     using System.Security.Cryptography;
     using System.Text;
-    using Configuration;
-    using Microsoft.Extensions.Options;
-    using Microsoft.IdentityModel.Tokens;
-    using Application.Abstractions.Auth;
-    using Application.Abstractions.Identity;
-    using Domain.Entities;
-    using Domain.Repositories;
-    using Domain.Abstractions;
 
     public class TokenService(
         IOptions<JwtOptions> jwtOptions,
@@ -84,10 +84,12 @@ namespace Krea.Infrastructure.Services {
             storedToken.MarkAsUsed(newRefreshTokenString);
 
             UserIdentity? userIdentity = await identityService.FindByIdAsync(storedToken.UserId);
-            if (userIdentity == null) return null;
+            if (userIdentity == null)
+                return null;
 
             User? domainUser = await userRepository.GetByIdAsync(storedToken.UserId);
-            if (domainUser == null) return null;
+            if (domainUser == null)
+                return null;
 
             // Generate new access token
             string newAccessToken = GenerateAccessToken(userIdentity, domainUser, out DateTime newAccessTokenExpires);

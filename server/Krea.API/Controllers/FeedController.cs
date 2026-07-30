@@ -1,8 +1,8 @@
 namespace Krea.API.Controllers {
-    using Microsoft.AspNetCore.Mvc;
     using Application.Features.Feed;
     using Application.Features.Posts.Dto;
     using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
     using System.Security.Claims;
 
     [ApiController]

@@ -15,9 +15,9 @@ namespace Krea.Domain.Entities {
         public DateTime? PaidAt { get; private set; }
         public DateTime CreatedAt { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private Payment() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         private Payment(
             User payer,
@@ -70,9 +70,12 @@ namespace Krea.Domain.Entities {
         // Indica el tipo de pago
         public PaymentType Type {
             get {
-                if (Subscription != null) return PaymentType.Subscription;
-                if (Donation != null) return PaymentType.Donation;
-                if (CommissionRequest != null) return PaymentType.Commission;
+                if (Subscription != null)
+                    return PaymentType.Subscription;
+                if (Donation != null)
+                    return PaymentType.Donation;
+                if (CommissionRequest != null)
+                    return PaymentType.Commission;
                 throw new InvalidOperationException("Payment is not associated with any entity.");
             }
         }

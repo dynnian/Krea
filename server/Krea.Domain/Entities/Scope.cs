@@ -7,9 +7,9 @@ namespace Krea.Domain.Entities {
         private readonly List<Permission> _permissions = new();
         public IReadOnlyCollection<Permission> Permissions => _permissions.AsReadOnly();
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private Scope() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public Scope(string name) {
             Validate(name);

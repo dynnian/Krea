@@ -38,7 +38,8 @@ namespace Krea.API.Services {
         /// </remarks>
         public string BuildEmailConfirmationLink(Guid userId, string token) {
             HttpContext? httpContext = _httpContextAccessor.HttpContext;
-            if (httpContext == null) throw new NullReferenceException("HttpContext is null");
+            if (httpContext == null)
+                throw new NullReferenceException("HttpContext is null");
             string? link = _linkGenerator.GetUriByAction(
                 httpContext,
                 "ConfirmEmail",

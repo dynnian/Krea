@@ -4,7 +4,6 @@ namespace Krea.Application.Features.Commissions.GetOfferings {
     using Domain.Entities;
     using Domain.Repositories;
     using Dtos;
-    using Microsoft.Extensions.Logging;
 
     public class GetOfferingsQueryHandler(
         ICurrentUserService currentUserService,

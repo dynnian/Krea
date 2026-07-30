@@ -1,26 +1,20 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Krea.Infrastructure.Data.Migrations
-{
+namespace Krea.Infrastructure.Data.Migrations {
     /// <inheritdoc />
-    public partial class AddSubmission : Migration
-    {
+    public partial class AddSubmission : Migration {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.CreateTable(
                 name: "submissions",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     RequestId = table.Column<Guid>(type: "uuid", nullable: false),
                     MediaId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_submissions", x => x.Id);
                     table.ForeignKey(
                         name: "FK_submissions_commission_requests_RequestId",
@@ -38,8 +32,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "submission_feedback",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     SubmissionId = table.Column<Guid>(type: "uuid", nullable: false),
                     AuthorId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -47,8 +40,7 @@ namespace Krea.Infrastructure.Data.Migrations
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_submission_feedback", x => x.Id);
                     table.ForeignKey(
                         name: "FK_submission_feedback_submissions_SubmissionId",
@@ -92,8 +84,7 @@ namespace Krea.Infrastructure.Data.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "submission_feedback");
 

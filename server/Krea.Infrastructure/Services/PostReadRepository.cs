@@ -69,7 +69,8 @@ namespace Krea.Infrastructure.Services {
             IQueryable<Post> orderedQuery = request.SortBy?.Trim().ToLower() switch {
                 "popular" or "trending" => baseQuery
                                            .Select(p => new {
-                                               Post = p, WeeklyLikes = p.Likes.Count(l => l.CreatedAt >= startOfWeek)
+                                               Post = p,
+                                               WeeklyLikes = p.Likes.Count(l => l.CreatedAt >= startOfWeek)
                                            })
                                            .OrderByDescending(x => x.WeeklyLikes)
                                            .ThenByDescending(x => x.Post.UploadedAt)

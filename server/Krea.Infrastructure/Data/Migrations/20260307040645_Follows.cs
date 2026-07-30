@@ -2,14 +2,11 @@
 
 #nullable disable
 
-namespace Krea.Infrastructure.Data.Migrations
-{
+namespace Krea.Infrastructure.Data.Migrations {
     /// <inheritdoc />
-    public partial class Follows : Migration
-    {
+    public partial class Follows : Migration {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.AlterColumn<string>(
                 name: "Description",
                 table: "collections",
@@ -22,15 +19,13 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "follows",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     SourceId = table.Column<Guid>(type: "uuid", nullable: false),
                     TargetId = table.Column<Guid>(type: "uuid", nullable: false),
                     FollowedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_follows", x => x.Id);
                     table.ForeignKey(
                         name: "FK_follows_users_SourceId",
@@ -59,8 +54,7 @@ namespace Krea.Infrastructure.Data.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "follows");
 

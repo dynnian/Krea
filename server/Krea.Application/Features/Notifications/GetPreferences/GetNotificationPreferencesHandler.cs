@@ -39,7 +39,8 @@ namespace Krea.Application.Features.Notifications.GetPreferences {
             }).ToList();
 
             return new NotificationPreferencesDto {
-                AllNotificationsPaused = global?.AllNotificationsPaused ?? false, Preferences = completed
+                AllNotificationsPaused = global?.AllNotificationsPaused ?? false,
+                Preferences = completed
             };
         }
     }

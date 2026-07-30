@@ -1,17 +1,17 @@
 namespace Krea.API.Tests.Admin {
-    using System.Net;
-    using System.Net.Http.Json;
     using Controllers;
-    using TestSupport;
+    using Domain.Abstractions;
     using Krea.Application.Features.Admin.Configuration;
     using Krea.Application.Features.Admin.Dashboard;
     using Krea.Application.Features.Admin.Reports;
     using Krea.Application.Features.Admin.Users;
-    using Domain.Abstractions;
     using Microsoft.AspNetCore.Authentication;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.TestHost;
     using Microsoft.Extensions.DependencyInjection;
+    using System.Net;
+    using System.Net.Http.Json;
+    using TestSupport;
     using Xunit;
 
     public sealed class AdminControllerHttpTests {

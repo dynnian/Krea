@@ -2,14 +2,11 @@
 
 #nullable disable
 
-namespace Krea.Infrastructure.Data.Migrations
-{
+namespace Krea.Infrastructure.Data.Migrations {
     /// <inheritdoc />
-    public partial class CollectionType : Migration
-    {
+    public partial class CollectionType : Migration {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.AddColumn<int>(
                 name: "Type",
                 table: "collections",
@@ -19,8 +16,7 @@ namespace Krea.Infrastructure.Data.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropColumn(
                 name: "Type",
                 table: "collections");

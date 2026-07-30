@@ -3,7 +3,6 @@ namespace Krea.Application.Features.Commissions.GetFeedback {
     using Domain.Entities;
     using Domain.Repositories;
     using Dtos;
-    using Microsoft.Extensions.Logging;
 
     public class GetFeedbackQueryHandler(
         ICommissionRequestRepository requestRepository)

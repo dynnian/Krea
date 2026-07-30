@@ -1,12 +1,12 @@
 namespace Krea.Infrastructure.Services {
     using Application.Abstractions;
     using Application.Features.PostUploads;
-    using SixLabors.ImageSharp;
+    using SkiaSharp;
     using System.Text;
-    using VersOne.Epub;
-    using UglyToad.PdfPig;
     using TagLib;
+    using UglyToad.PdfPig;
     using UglyToad.PdfPig.Content;
+    using VersOne.Epub;
 
     public sealed class FileMetadataReader : IFileMetadataReader {
         public async Task<ParsedUploadMetadata> ReadAsync(
@@ -32,19 +32,25 @@ namespace Krea.Infrastructure.Services {
             };
         }
 
-        private static async Task<ParsedUploadMetadata> ReadImageAsync(
+        private static Task<ParsedUploadMetadata> ReadImageAsync(
             Stream stream,
             string fileName,
             CancellationToken cancellationToken) {
+            cancellationToken.ThrowIfCancellationRequested();
             stream.Position = 0;
 
-            using Image image = await Image.LoadAsync(stream, cancellationToken);
-
+            // SKCodec reads only the image header metadata without decoding pixel data
+            using var codec = SKCodec.Create(stream) ?? throw new InvalidOperationException("Failed to decode image metadata or unsupported format.");
             string extension = Path.GetExtension(fileName).ToLowerInvariant();
 
-            return new ParsedUploadMetadata {
-                Width = image.Width, Height = image.Height, FileSize = stream.Length, Format = extension
+            var metadata = new ParsedUploadMetadata {
+                Width = codec.Info.Width,
+                Height = codec.Info.Height,
+                FileSize = stream.Length,
+                Format = extension
             };
+
+            return Task.FromResult(metadata);
         }
 
         private static async Task<ParsedUploadMetadata> ReadMusicAsync(

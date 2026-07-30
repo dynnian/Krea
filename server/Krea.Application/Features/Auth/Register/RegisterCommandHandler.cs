@@ -1,12 +1,12 @@
 namespace Krea.Application.Features.Auth.Register {
-    using Abstractions.Email;
-    using Abstractions.Url;
-    using Abstractions.Identity;
     using Abstractions.Auth;
-    using static Common.RoleHelper;
-    using User;
-    using Krea.Domain.Abstractions;
+    using Abstractions.Email;
+    using Abstractions.Identity;
+    using Abstractions.Url;
     using Domain.Repositories;
+    using Krea.Domain.Abstractions;
+    using User;
+    using static Common.RoleHelper;
 
 
     internal class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResponse> {

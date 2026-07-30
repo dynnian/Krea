@@ -2,9 +2,9 @@ namespace Krea.API.Hubs {
     using Application.Features.DirectMessages.Dto;
     using Application.Features.DirectMessages.SendDirectMessage;
     using Domain.Abstractions;
-    using System.Security.Claims;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.SignalR;
+    using System.Security.Claims;
 
     /// <summary>
     /// SignalR hub for real-time direct messaging between users.

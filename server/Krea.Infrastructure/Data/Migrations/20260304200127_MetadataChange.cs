@@ -2,14 +2,11 @@
 
 #nullable disable
 
-namespace Krea.Infrastructure.Data.Migrations
-{
+namespace Krea.Infrastructure.Data.Migrations {
     /// <inheritdoc />
-    public partial class MetadataChange : Migration
-    {
+    public partial class MetadataChange : Migration {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.Sql(
                 @"ALTER TABLE metadata 
                 ALTER COLUMN ""Width"" 
@@ -33,8 +30,7 @@ namespace Krea.Infrastructure.Data.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.AlterColumn<string>(
                 name: "Width",
                 table: "metadata",

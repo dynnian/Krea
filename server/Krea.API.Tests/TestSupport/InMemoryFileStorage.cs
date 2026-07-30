@@ -17,7 +17,10 @@ namespace Krea.API.Tests.TestSupport {
             string relativePath = $"{cleanFolder}/{fileName}";
 
             return new FileStorageResult {
-                Url = $"https://tests.local/{relativePath}", FileName = fileName, Size = size, ContentType = contentType
+                Url = $"https://tests.local/{relativePath}",
+                FileName = fileName,
+                Size = size,
+                ContentType = contentType
             };
         }
 

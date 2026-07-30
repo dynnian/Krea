@@ -14,7 +14,10 @@ namespace Krea.API.Tests.TestSupport {
 
             if (normalizedType == "image") {
                 return new ParsedUploadMetadata {
-                    Width = 1920, Height = 1080, FileSize = stream.Length, Format = "png"
+                    Width = 1920,
+                    Height = 1080,
+                    FileSize = stream.Length,
+                    Format = "png"
                 };
             }
 

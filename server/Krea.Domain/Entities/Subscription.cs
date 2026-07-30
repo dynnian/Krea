@@ -16,9 +16,9 @@ namespace Krea.Domain.Entities {
         public DateTime SubscribedAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private Subscription() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public Subscription(User subscriber, MembershipPlan plan, DateTime start, DateTime end) {
             Validate(subscriber, plan, start, end);
@@ -93,7 +93,8 @@ namespace Krea.Domain.Entities {
         }
 
         public void Cancel() {
-            if (!IsActive) return;
+            if (!IsActive)
+                return;
 
             IsActive = false;
             CanceledAt = DateTime.UtcNow;

@@ -8,9 +8,9 @@ namespace Krea.Domain.Entities {
 
         public string Format { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private ImageMetadata() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public ImageMetadata(
             Guid uploadId,

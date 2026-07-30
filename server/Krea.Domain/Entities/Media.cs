@@ -9,9 +9,9 @@ namespace Krea.Domain.Entities {
         public string Path { get; private set; } = null!;
         public DateTime UploadedAt { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private Media() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public Media(
             string originalFileName,

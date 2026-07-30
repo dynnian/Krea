@@ -12,9 +12,9 @@ namespace Krea.Domain.Entities {
 
         public DateTime FollowedAt { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private Follow() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public Follow(Guid sourceId, Guid targetId) {
             if (sourceId == targetId)

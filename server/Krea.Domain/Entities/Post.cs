@@ -1,5 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using Krea.Domain.ValueObjects;
+using System.ComponentModel.DataAnnotations;
 
 namespace Krea.Domain.Entities {
     public sealed class Post {
@@ -47,9 +47,9 @@ namespace Krea.Domain.Entities {
 
         public ICollection<PostFavorite> Favorites { get; set; } = new List<PostFavorite>();
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private Post() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public Post(
             Guid authorPostId,
@@ -140,7 +140,8 @@ namespace Krea.Domain.Entities {
         }
 
         public void Delete() {
-            if (IsDeleted) return;
+            if (IsDeleted)
+                return;
 
             IsDeleted = true;
             DeletedAt = DateTime.UtcNow;
@@ -191,7 +192,8 @@ namespace Krea.Domain.Entities {
 
         public void RemoveHashtag(Guid hashtagId) {
             Hashtag? tag = _hashtags.FirstOrDefault(h => h.Id == hashtagId);
-            if (tag is null) return;
+            if (tag is null)
+                return;
 
             _hashtags.Remove(tag);
             UpdatedAt = DateTime.UtcNow;

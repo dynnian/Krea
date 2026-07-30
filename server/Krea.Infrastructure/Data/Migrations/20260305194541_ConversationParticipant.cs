@@ -2,14 +2,11 @@
 
 #nullable disable
 
-namespace Krea.Infrastructure.Data.Migrations
-{
+namespace Krea.Infrastructure.Data.Migrations {
     /// <inheritdoc />
-    public partial class ConversationParticipant : Migration
-    {
+    public partial class ConversationParticipant : Migration {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropForeignKey(
                 name: "FK_conversations_media_IconId",
                 table: "conversations");
@@ -83,8 +80,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "conversation_participants",
-                columns: table => new
-                {
+                columns: table => new {
                     user_id = table.Column<Guid>(type: "uuid", nullable: false),
                     conversation_id = table.Column<Guid>(type: "uuid", nullable: false),
                     role = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
@@ -94,8 +90,7 @@ namespace Krea.Infrastructure.Data.Migrations
                     last_read_message_id = table.Column<Guid>(type: "uuid", nullable: true),
                     unread_count = table.Column<int>(type: "integer", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_conversation_participants", x => new { x.user_id, x.conversation_id });
                     table.ForeignKey(
                         name: "FK_conversation_participants_conversations_conversation_id",
@@ -156,8 +151,7 @@ namespace Krea.Infrastructure.Data.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropForeignKey(
                 name: "FK_conversations_media_icon_id1",
                 table: "conversations");

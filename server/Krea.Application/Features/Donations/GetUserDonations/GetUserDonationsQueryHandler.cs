@@ -1,6 +1,5 @@
 using Krea.Domain.Abstractions;
 using Krea.Domain.Repositories;
-using Microsoft.Extensions.Logging;
 
 namespace Krea.Application.Features.Donations.GetUserDonations {
     using Abstractions.Payments;

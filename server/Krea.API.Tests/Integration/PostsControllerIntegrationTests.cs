@@ -1,11 +1,10 @@
 namespace Krea.API.Tests.Integration {
+    using Infrastructure.Data;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.DependencyInjection;
     using System.Net;
     using System.Text.Json;
     using TestSupport;
-    using Infrastructure.Data;
-    using Infrastructure.Identity;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.Extensions.DependencyInjection;
     using Xunit;
 
     public sealed class PostsControllerIntegrationTests {

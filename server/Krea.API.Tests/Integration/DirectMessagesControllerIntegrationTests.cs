@@ -21,7 +21,9 @@ namespace Krea.API.Tests.Integration {
                 seeded.AdminId,
                 "Artist",
                 new {
-                    senderId = seeded.AdminId, receiverId = seeded.ArtistId, content = "Hello from integration test"
+                    senderId = seeded.AdminId,
+                    receiverId = seeded.ArtistId,
+                    content = "Hello from integration test"
                 });
 
             Assert.Equal(HttpStatusCode.Created, sendResponse.StatusCode);

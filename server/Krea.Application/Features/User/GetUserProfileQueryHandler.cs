@@ -1,8 +1,8 @@
 namespace Krea.Application.Features.User {
     using Abstractions.Identity;
-    using static Common.RoleHelper;
     using Domain.Abstractions;
     using Domain.Repositories;
+    using static Common.RoleHelper;
 
     public sealed class GetUserProfileQueryHandler
         : IRequestHandler<GetUserProfileQuery, UserProfileDto?> {

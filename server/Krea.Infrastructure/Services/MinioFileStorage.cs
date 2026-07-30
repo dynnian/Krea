@@ -57,7 +57,10 @@ namespace Krea.Infrastructure.Services {
                 _logger.LogInformation("File uploaded: {ObjectName} -> {Url}", objectName, url);
 
                 return new FileStorageResult {
-                    Url = url, FileName = objectName, ContentType = contentType, Size = size
+                    Url = url,
+                    FileName = objectName,
+                    ContentType = contentType,
+                    Size = size
                 };
             }
             catch (Exception ex) {

@@ -1,10 +1,10 @@
 namespace Krea.Application.Features.Auth.Login {
     using Abstractions.Identity;
     using Application.Abstractions.Auth;
-    using static Common.RoleHelper;
-    using User;
     using Domain.Abstractions;
     using Domain.Repositories;
+    using User;
+    using static Common.RoleHelper;
     using User = Domain.Entities.User;
 
     internal class LoginQueryHandler : IRequestHandler<LoginQuery, AuthResponse> {

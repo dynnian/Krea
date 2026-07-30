@@ -11,9 +11,9 @@ namespace Krea.Domain.Entities {
         public ICollection<UserRole> UserRoles { get; private set; } = new List<UserRole>();
         public DateTime CreatedAt { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private Role() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public Role(
             string name,

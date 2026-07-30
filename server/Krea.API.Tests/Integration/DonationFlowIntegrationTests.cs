@@ -1,5 +1,3 @@
-using System.Net;
-using System.Net.Http.Json;
 using Krea.API.Controllers;
 using Krea.API.Tests.TestSupport;
 using Krea.Application.Abstractions.Payments;
@@ -7,6 +5,8 @@ using Krea.Application.Features.Donations.CreateDonation;
 using Krea.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Net;
+using System.Net.Http.Json;
 using Xunit;
 
 namespace Krea.API.Tests.Integration {

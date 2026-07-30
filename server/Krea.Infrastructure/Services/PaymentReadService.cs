@@ -1,5 +1,5 @@
-using Krea.Application.Features.Payments.Dtos;
 using Krea.Application.Abstractions.Payments;
+using Krea.Application.Features.Payments.Dtos;
 using Krea.Domain.Entities;
 using Krea.Domain.ValueObjects;
 using Krea.Infrastructure.Data;
@@ -111,7 +111,8 @@ namespace Krea.Infrastructure.Services {
                                              .ThenInclude(plan => plan!.Artist)
                                              .FirstOrDefaultAsync(p => p.Id == paymentId, cancellationToken);
 
-            if (payment == null) return null;
+            if (payment == null)
+                return null;
 
             string payerName = payment.Payer.DisplayName;
             string recipientName;
@@ -178,9 +179,12 @@ namespace Krea.Infrastructure.Services {
 
         private static string GetCounterpartyName(PaymentEntity p, bool isSent) {
             if (isSent) {
-                if (p.Donation != null) return p.Donation.Recipient.DisplayName;
-                if (p.CommissionRequest != null) return p.CommissionRequest.Offering.Artist.DisplayName;
-                if (p.Subscription != null) return p.Subscription.Plan.Artist.DisplayName;
+                if (p.Donation != null)
+                    return p.Donation.Recipient.DisplayName;
+                if (p.CommissionRequest != null)
+                    return p.CommissionRequest.Offering.Artist.DisplayName;
+                if (p.Subscription != null)
+                    return p.Subscription.Plan.Artist.DisplayName;
             }
             else {
                 return p.Payer.DisplayName;
@@ -190,16 +194,22 @@ namespace Krea.Infrastructure.Services {
         }
 
         private static string? GetReference(PaymentEntity p) {
-            if (p.Donation != null) return p.Donation.Message;
-            if (p.CommissionRequest != null) return p.CommissionRequest.Offering.Title;
-            if (p.Subscription != null) return p.Subscription.Plan.Name;
+            if (p.Donation != null)
+                return p.Donation.Message;
+            if (p.CommissionRequest != null)
+                return p.CommissionRequest.Offering.Title;
+            if (p.Subscription != null)
+                return p.Subscription.Plan.Name;
             return null;
         }
 
         private static string? GetEntityId(PaymentEntity p) {
-            if (p.Donation != null) return p.Donation.Id.ToString();
-            if (p.CommissionRequest != null) return p.CommissionRequest.Id.ToString();
-            if (p.Subscription != null) return p.Subscription.Id.ToString();
+            if (p.Donation != null)
+                return p.Donation.Id.ToString();
+            if (p.CommissionRequest != null)
+                return p.CommissionRequest.Id.ToString();
+            if (p.Subscription != null)
+                return p.Subscription.Id.ToString();
             return null;
         }
     }

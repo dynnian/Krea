@@ -1,5 +1,5 @@
-using System.Security.Claims;
 using Krea.Application.Abstractions.Auth;
+using System.Security.Claims;
 
 namespace Krea.API.Services {
     /// <summary>

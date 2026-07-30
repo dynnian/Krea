@@ -15,9 +15,9 @@ namespace Krea.Domain.Entities {
 
         public string? Description { get; protected set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         protected Metadata() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         protected Metadata(
             Guid uploadId,

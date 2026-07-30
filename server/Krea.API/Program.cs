@@ -1,23 +1,23 @@
 namespace Krea.API {
-    using System.Security.Cryptography;
-    using Microsoft.AspNetCore.Authentication.JwtBearer;
-    using Microsoft.AspNetCore.DataProtection;
-    using Microsoft.AspNetCore.HttpOverrides;
-    using Microsoft.IdentityModel.Tokens;
-    using Scalar.AspNetCore;
-    using System.Text;
-    using Infrastructure;
     using Application;
     using Application.Abstractions.Auth;
     using Application.Abstractions.Payments;
     using Application.Abstractions.Url;
     using Hubs;
+    using Infrastructure;
     using Infrastructure.Configuration;
     using Infrastructure.Services;
     using Infrastructure.Setup;
-    using Microsoft.Extensions.Primitives;
+    using Microsoft.AspNetCore.Authentication.JwtBearer;
+    using Microsoft.AspNetCore.DataProtection;
+    using Microsoft.AspNetCore.HttpOverrides;
     using Microsoft.Extensions.Options;
+    using Microsoft.Extensions.Primitives;
+    using Microsoft.IdentityModel.Tokens;
+    using Scalar.AspNetCore;
     using Services;
+    using System.Security.Cryptography;
+    using System.Text;
 
     internal static class Program {
         private const string CorsPolicyName = "AllowFrontend";

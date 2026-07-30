@@ -1,6 +1,6 @@
 namespace Krea.Application.Features.Favorites.Dto {
-    using System.Text.Json.Serialization;
     using Domain.Entities;
+    using System.Text.Json.Serialization;
 
     public sealed class FavoritePostDto {
         [JsonPropertyName("id")] public Guid Id { get; init; }

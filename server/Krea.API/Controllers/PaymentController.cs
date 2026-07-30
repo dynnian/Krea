@@ -36,7 +36,8 @@ namespace Krea.API.Controllers {
             [FromQuery] DateTime? to = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20) {
-            if (pageSize > 100) pageSize = 100;
+            if (pageSize > 100)
+                pageSize = 100;
             var query = new GetSentPaymentsQuery(paymentType, status, from, to, page, pageSize);
             PagedResult<PaymentSummaryDto> result = await _sender.Send(query);
             return Ok(result);
@@ -63,7 +64,8 @@ namespace Krea.API.Controllers {
             [FromQuery] DateTime? to = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20) {
-            if (pageSize > 100) pageSize = 100;
+            if (pageSize > 100)
+                pageSize = 100;
             var query = new GetReceivedPaymentsQuery(paymentType, status, from, to, page, pageSize);
             PagedResult<PaymentSummaryDto> result = await _sender.Send(query);
             return Ok(result);

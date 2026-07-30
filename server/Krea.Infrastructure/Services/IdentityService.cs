@@ -161,9 +161,10 @@ namespace Krea.Infrastructure.Services {
 
         public async Task<bool> CheckPasswordAsync(UserIdentity user, string password) {
             AppUser? appUser = await _userManager.FindByIdAsync(user.Id.ToString());
-            if (appUser == null) return false;
+            if (appUser == null)
+                return false;
             SignInResult result = await _signInManager.CheckPasswordSignInAsync(appUser, password, false);
-            
+
             if (!result.Succeeded) {
                 _logger.LogWarning("Failed login attempt for user {UserId}. Reason: {Reason}", user.Id, result.ToString());
             }
@@ -173,12 +174,14 @@ namespace Krea.Infrastructure.Services {
 
         public async Task<bool> ChangePasswordAsync(UserIdentity user, string currentPassword, string newPassword) {
             AppUser? appUser = await _userManager.FindByIdAsync(user.Id.ToString());
-            if (appUser == null) return false;
+            if (appUser == null)
+                return false;
             IdentityResult result = await _userManager.ChangePasswordAsync(appUser, currentPassword, newPassword);
-            
+
             if (result.Succeeded) {
                 _logger.LogInformation("User {UserId} changed their password.", user.Id);
-            } else {
+            }
+            else {
                 _logger.LogWarning("Failed password change for user {UserId}. Errors: {Errors}", user.Id, string.Join(", ", result.Errors.Select(e => e.Description)));
             }
 
@@ -225,7 +228,8 @@ namespace Krea.Infrastructure.Services {
 
         public async Task<IList<string>> GetRolesAsync(UserIdentity user) {
             AppUser? appUser = await _userManager.FindByIdAsync(user.Id.ToString());
-            if (appUser == null) return new List<string>();
+            if (appUser == null)
+                return new List<string>();
             return await _userManager.GetRolesAsync(appUser);
         }
 
@@ -242,18 +246,21 @@ namespace Krea.Infrastructure.Services {
 
         public async Task<string> GenerateEmailConfirmationTokenAsync(UserIdentity user) {
             AppUser? appUser = await _userManager.FindByIdAsync(user.Id.ToString());
-            if (appUser == null) throw new Exception("User not found");
+            if (appUser == null)
+                throw new Exception("User not found");
             return await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
         }
 
         public async Task<bool> ConfirmEmailAsync(UserIdentity user, string token) {
             AppUser? appUser = await _userManager.FindByIdAsync(user.Id.ToString());
-            if (appUser == null) return false;
+            if (appUser == null)
+                return false;
             IdentityResult result = await _userManager.ConfirmEmailAsync(appUser, token);
-            
+
             if (result.Succeeded) {
                 _logger.LogInformation("User {UserId} email confirmed.", user.Id);
-            } else {
+            }
+            else {
                 _logger.LogWarning("Failed email confirmation for user {UserId}.", user.Id);
             }
 

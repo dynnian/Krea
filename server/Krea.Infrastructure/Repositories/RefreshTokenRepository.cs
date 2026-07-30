@@ -1,7 +1,7 @@
 namespace Krea.Infrastructure.Repositories {
+    using Data;
     using Domain.Entities;
     using Domain.Repositories;
-    using Data;
     using Microsoft.EntityFrameworkCore;
 
     public class RefreshTokenRepository(AppDbContext context) : IRefreshTokenRepository {

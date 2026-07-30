@@ -11,9 +11,9 @@ namespace Krea.Domain.Entities {
         private readonly List<SubmissionFeedback> _feedback = new();
         public IReadOnlyCollection<SubmissionFeedback> Feedback => _feedback;
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private Submission() { }
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
 
         public Submission(CommissionRequest request, Media media) {
             ArgumentNullException.ThrowIfNull(request);
@@ -28,7 +28,8 @@ namespace Krea.Domain.Entities {
 
         public void AddFeedback(User author, string content) {
             ArgumentNullException.ThrowIfNull(author);
-            if (string.IsNullOrWhiteSpace(content)) throw new ArgumentException("Feedback content is required.");
+            if (string.IsNullOrWhiteSpace(content))
+                throw new ArgumentException("Feedback content is required.");
 
             var feedback = new SubmissionFeedback(this, author, content);
             _feedback.Add(feedback);

@@ -13,9 +13,9 @@ namespace Krea.Domain.Entities {
         public string Message { get; private set; }
         public DateTime DonatedAt { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private Donation() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public Donation(User donor, User recipient, Money amount, string? message) {
             Validate(donor, recipient, amount);

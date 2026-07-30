@@ -20,9 +20,9 @@ namespace Krea.Domain.Entities {
         public User User { get; private set; } = default!;
         public User? ActorUser { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private Notification() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public Notification(
             Guid userId,

@@ -1,7 +1,7 @@
 namespace Krea.Application.Features.DirectMessages.Mappings {
     using AutoMapper;
-    using Dto;
     using Domain.Entities;
+    using Dto;
 
     public class DirectMessageProfile : Profile {
         public DirectMessageProfile() {

@@ -6,9 +6,9 @@ namespace Krea.Domain.Entities {
 
         public string Name { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private Hashtag() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public Hashtag(string name) {
             if (string.IsNullOrWhiteSpace(name))

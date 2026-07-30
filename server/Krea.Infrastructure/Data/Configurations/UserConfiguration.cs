@@ -1,6 +1,6 @@
+using Krea.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Krea.Domain.Entities;
 
 namespace Krea.Infrastructure.Data.Configurations {
     public class UserConfiguration : IEntityTypeConfiguration<User> {

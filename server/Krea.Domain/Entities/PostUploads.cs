@@ -17,9 +17,9 @@ namespace Krea.Domain.Entities {
 
         public Metadata? Metadata { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private PostUpload() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public PostUpload(Guid postId, Guid mediaId, bool isWorkMedia) {
             Id = Guid.NewGuid();

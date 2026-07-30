@@ -10,9 +10,9 @@ namespace Krea.Domain.Entities {
 
         public int WordCount { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private TextMetadata() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public TextMetadata(
             Guid uploadId,

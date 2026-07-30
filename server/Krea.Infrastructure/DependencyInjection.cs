@@ -1,12 +1,4 @@
 namespace Krea.Infrastructure {
-    using System;
-    using System.Globalization;
-    using Data;
-    using Identity;
-    using Repositories;
-    using Services;
-    using Domain.Abstractions;
-    using Domain.Repositories;
     using Application.Abstractions;
     using Application.Abstractions.Admin;
     using Application.Abstractions.Auth;
@@ -20,6 +12,10 @@ namespace Krea.Infrastructure {
     using Application.Abstractions.Notification;
     using Application.Abstractions.Payments;
     using Configuration;
+    using Data;
+    using Domain.Abstractions;
+    using Domain.Repositories;
+    using Identity;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
@@ -27,6 +23,10 @@ namespace Krea.Infrastructure {
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     using Minio;
+    using Repositories;
+    using Services;
+    using System;
+    using System.Globalization;
 
     public static class DependencyInjection {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services,
@@ -80,14 +80,14 @@ namespace Krea.Infrastructure {
 
             // Identity
             services.AddIdentity<AppUser, IdentityRole<Guid>>(options => {
-                        options.Password.RequireDigit = true;
-                        options.Password.RequiredLength = 6;
-                        options.Password.RequireNonAlphanumeric = false;
-                        options.Password.RequireUppercase = true;
-                        options.Password.RequireLowercase = true;
-                        options.User.RequireUniqueEmail = true;
-                        options.SignIn.RequireConfirmedEmail = false;
-                    })
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 6;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
+                options.User.RequireUniqueEmail = true;
+                options.SignIn.RequireConfirmedEmail = false;
+            })
                     .AddRoles<IdentityRole<Guid>>()
                     .AddEntityFrameworkStores<AppDbContext>()
                     .AddDefaultTokenProviders();

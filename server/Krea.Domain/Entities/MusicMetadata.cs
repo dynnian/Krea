@@ -4,9 +4,9 @@ namespace Krea.Domain.Entities {
 
         public int DurationSec { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private MusicMetadata() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public MusicMetadata(
             Guid uploadId,

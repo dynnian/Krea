@@ -37,7 +37,8 @@ namespace Krea.Application.Features.DirectMessages.GetUserConversations {
 
         private LastMessagePreviewDto? MapLastMessage(Message lastMessage, ConversationParticipant currentParticipant) {
             var dto = mapper.Map<LastMessagePreviewDto>(lastMessage);
-            if (dto == null) return null;
+            if (dto == null)
+                return null;
 
             dto.IsRead = currentParticipant.IsMessageRead(lastMessage);
             return dto;

@@ -1,14 +1,14 @@
 namespace Krea.API.Controllers {
-    using Domain.Abstractions;
     using Application.Features.Auth;
-    using Application.Features.Auth.Login;
-    using Application.Features.Auth.Register;
+    using Application.Features.Auth.ChangePassword;
     using Application.Features.Auth.ConfirmEmail;
+    using Application.Features.Auth.Login;
     using Application.Features.Auth.Refresh;
+    using Application.Features.Auth.Register;
     using Application.Features.Auth.RevokeToken;
+    using Domain.Abstractions;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
-    using Application.Features.Auth.ChangePassword;
     using System.Security.Claims;
 
     /// <summary>

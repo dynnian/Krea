@@ -1,8 +1,8 @@
 namespace Krea.API.Tests.TestSupport {
-    using Controllers;
-    using Services;
     using Application;
+    using Application.Abstractions.Auth;
     using Application.Abstractions.Url;
+    using Controllers;
     using Infrastructure;
     using Infrastructure.Data;
     using Microsoft.AspNetCore.Authentication;
@@ -12,10 +12,9 @@ namespace Krea.API.Tests.TestSupport {
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
-    using Npgsql;
-    using Application.Abstractions.Auth;
-    using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Logging;
+    using Npgsql;
+    using Services;
 
     public sealed class IntegrationTestHost : IAsyncDisposable {
         private const string DefaultAdminDatabase = "postgres";
@@ -82,9 +81,9 @@ namespace Krea.API.Tests.TestSupport {
             builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
             builder.Services.AddControllers().AddApplicationPart(typeof(AdminController).Assembly);
             builder.Services.AddAuthentication(options => {
-                       options.DefaultAuthenticateScheme = "Test";
-                       options.DefaultChallengeScheme = "Test";
-                   })
+                options.DefaultAuthenticateScheme = "Test";
+                options.DefaultChallengeScheme = "Test";
+            })
                    .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", _ => { });
             builder.Services.AddAuthorization();
 

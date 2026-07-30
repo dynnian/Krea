@@ -27,9 +27,9 @@ namespace Krea.Domain.Entities {
 
         public DateTime UpdatedAt { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private Collection() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public Collection(
             Guid ownerId,

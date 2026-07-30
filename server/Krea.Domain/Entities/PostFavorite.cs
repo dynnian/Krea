@@ -12,9 +12,9 @@ namespace Krea.Domain.Entities {
 
         public DateTime CreatedAt { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private PostFavorite() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public PostFavorite(Guid userId, Guid postId) {
             Id = Guid.NewGuid();

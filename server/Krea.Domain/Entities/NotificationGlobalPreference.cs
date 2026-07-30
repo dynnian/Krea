@@ -10,9 +10,9 @@ namespace Krea.Domain.Entities {
 
         public User User { get; private set; } = default!;
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private NotificationGlobalPreference() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public NotificationGlobalPreference(Guid userId, bool allNotificationsPaused = false) {
             Id = Guid.NewGuid();

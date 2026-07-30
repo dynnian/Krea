@@ -19,9 +19,9 @@ namespace Krea.Domain.Entities {
 
         public bool IsActive => LeftAt is null;
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private ConversationParticipant() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         internal ConversationParticipant(User user, Conversation conversation, ConversationRole role) {
             if (user is null || conversation is null)

@@ -1,6 +1,5 @@
 namespace Krea.Infrastructure.Setup {
     using Microsoft.AspNetCore.Builder;
-    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     using NLog;
@@ -51,7 +50,8 @@ namespace Krea.Infrastructure.Setup {
             if (minLevel <= NLog.LogLevel.Trace) {
                 config.AddRule(NLog.LogLevel.Info, NLog.LogLevel.Fatal, console, "Microsoft.EntityFrameworkCore.Database.Command", true);
                 config.AddRule(NLog.LogLevel.Info, NLog.LogLevel.Fatal, file, "Microsoft.EntityFrameworkCore.Database.Command", true);
-            } else {
+            }
+            else {
                 var nullTarget = new NullTarget("null");
                 config.AddTarget(nullTarget);
                 config.AddRule(NLog.LogLevel.Trace, NLog.LogLevel.Fatal, nullTarget, "Microsoft.EntityFrameworkCore.Database.Command", true);
@@ -64,9 +64,9 @@ namespace Krea.Infrastructure.Setup {
             // apply
             LogManager.Configuration = config;
             builder.Host.UseNLog();
-            }
+        }
 
-            private static NLog.LogLevel MapLogLevel(string level) {
+        private static NLog.LogLevel MapLogLevel(string level) {
             return level.ToLowerInvariant() switch {
                 "trace" => NLog.LogLevel.Trace,
                 "debug" => NLog.LogLevel.Debug,

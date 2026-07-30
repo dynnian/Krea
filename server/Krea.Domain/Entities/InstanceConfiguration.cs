@@ -12,9 +12,9 @@ namespace Krea.Domain.Entities {
 
         public DateTime UpdatedAt { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private InstanceConfiguration() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public InstanceConfiguration(string platformName, string description, string administratorEmail) {
             Validate(platformName, description, administratorEmail);

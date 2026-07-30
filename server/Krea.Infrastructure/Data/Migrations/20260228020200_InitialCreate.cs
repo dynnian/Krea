@@ -3,32 +3,26 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Krea.Infrastructure.Data.Migrations
-{
+namespace Krea.Infrastructure.Data.Migrations {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
-    {
+    public partial class InitialCreate : Migration {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_AspNetRoles", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "AspNetUsers",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -45,40 +39,34 @@ namespace Krea.Infrastructure.Data.Migrations
                     LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
                     AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "genres",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     Type = table.Column<int>(type: "integer", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_genres", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "hashtags",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_hashtags", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "media",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     OriginalFileName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     FileName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
@@ -86,49 +74,42 @@ namespace Krea.Infrastructure.Data.Migrations
                     Path = table.Column<string>(type: "character varying(254)", maxLength: 254, nullable: false),
                     UploadedAt = table.Column<DateTime>(type: "timestamp with time zone", rowVersion: true, nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_media", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "roles",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     Description = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_roles", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "scopes",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_scopes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     RoleId = table.Column<Guid>(type: "uuid", nullable: false),
                     ClaimType = table.Column<string>(type: "text", nullable: true),
                     ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
                     table.ForeignKey(
                         name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
@@ -140,16 +121,14 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserClaims",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     ClaimType = table.Column<string>(type: "text", nullable: true),
                     ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_AspNetUserClaims", x => x.Id);
                     table.ForeignKey(
                         name: "FK_AspNetUserClaims_AspNetUsers_UserId",
@@ -161,15 +140,13 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserLogins",
-                columns: table => new
-                {
+                columns: table => new {
                     LoginProvider = table.Column<string>(type: "text", nullable: false),
                     ProviderKey = table.Column<string>(type: "text", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_AspNetUserLogins", x => new { x.LoginProvider, x.ProviderKey });
                     table.ForeignKey(
                         name: "FK_AspNetUserLogins_AspNetUsers_UserId",
@@ -181,13 +158,11 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserRoles",
-                columns: table => new
-                {
+                columns: table => new {
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     RoleId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_AspNetUserRoles", x => new { x.UserId, x.RoleId });
                     table.ForeignKey(
                         name: "FK_AspNetUserRoles_AspNetRoles_RoleId",
@@ -205,15 +180,13 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserTokens",
-                columns: table => new
-                {
+                columns: table => new {
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     LoginProvider = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Value = table.Column<string>(type: "text", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_AspNetUserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
                     table.ForeignKey(
                         name: "FK_AspNetUserTokens_AspNetUsers_UserId",
@@ -225,8 +198,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "conversations",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Title = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     Description = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
@@ -234,8 +206,7 @@ namespace Krea.Infrastructure.Data.Migrations
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_conversations", x => x.Id);
                     table.ForeignKey(
                         name: "FK_conversations_media_IconId",
@@ -247,8 +218,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "users",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     DisplayName = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     Biography = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
@@ -265,8 +235,7 @@ namespace Krea.Infrastructure.Data.Migrations
                     EmailConfirmedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     LastPasswordResetAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_users", x => x.Id);
                     table.ForeignKey(
                         name: "FK_users_AspNetUsers_Id",
@@ -290,8 +259,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "permissions",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     Description = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
@@ -299,8 +267,7 @@ namespace Krea.Infrastructure.Data.Migrations
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     RoleId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_permissions", x => x.Id);
                     table.ForeignKey(
                         name: "FK_permissions_roles_RoleId",
@@ -317,8 +284,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "collections",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Title = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     MediaId = table.Column<Guid>(type: "uuid", nullable: true),
@@ -328,8 +294,7 @@ namespace Krea.Infrastructure.Data.Migrations
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_collections", x => x.Id);
                     table.ForeignKey(
                         name: "FK_collections_media_MediaId",
@@ -347,8 +312,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "commission_offerings",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     ArtistId = table.Column<Guid>(type: "uuid", nullable: false),
                     Title = table.Column<string>(type: "character varying(25)", maxLength: 25, nullable: false),
@@ -358,8 +322,7 @@ namespace Krea.Infrastructure.Data.Migrations
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_commission_offerings", x => x.Id);
                     table.ForeignKey(
                         name: "FK_commission_offerings_users_ArtistId",
@@ -371,8 +334,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "donations",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     DonorId = table.Column<Guid>(type: "uuid", nullable: false),
                     RecipientId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -380,8 +342,7 @@ namespace Krea.Infrastructure.Data.Migrations
                     Message = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     DonatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_donations", x => x.Id);
                     table.ForeignKey(
                         name: "FK_donations_users_DonorId",
@@ -399,8 +360,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "membership_plans",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     ArtistId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
@@ -412,8 +372,7 @@ namespace Krea.Infrastructure.Data.Migrations
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_membership_plans", x => x.Id);
                     table.ForeignKey(
                         name: "FK_membership_plans_media_ImageId",
@@ -431,8 +390,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "messages",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     ConversationId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -441,8 +399,7 @@ namespace Krea.Infrastructure.Data.Migrations
                     sent_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_messages", x => x.Id);
                     table.ForeignKey(
                         name: "FK_messages_conversations_ConversationId",
@@ -460,8 +417,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "posts",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     AuthorPostId = table.Column<Guid>(type: "uuid", nullable: false),
                     Type = table.Column<int>(type: "integer", nullable: false),
@@ -476,8 +432,7 @@ namespace Krea.Infrastructure.Data.Migrations
                     UploadedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_posts", x => x.Id);
                     table.ForeignKey(
                         name: "FK_posts_posts_RepliedToId",
@@ -501,15 +456,13 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "user_roles",
-                columns: table => new
-                {
+                columns: table => new {
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     RoleId = table.Column<Guid>(type: "uuid", nullable: false),
                     AssignedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     AssignedBy = table.Column<Guid>(type: "uuid", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_user_roles", x => new { x.UserId, x.RoleId });
                     table.ForeignKey(
                         name: "FK_user_roles_roles_RoleId",
@@ -527,8 +480,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "commission_requests",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     BidderId = table.Column<Guid>(type: "uuid", nullable: false),
                     OfferingId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -537,8 +489,7 @@ namespace Krea.Infrastructure.Data.Migrations
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_commission_requests", x => x.Id);
                     table.ForeignKey(
                         name: "FK_commission_requests_commission_offerings_OfferingId",
@@ -556,8 +507,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "subscriptions",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     SubscriberId = table.Column<Guid>(type: "uuid", nullable: false),
                     PlanId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -568,8 +518,7 @@ namespace Krea.Infrastructure.Data.Migrations
                     SubscribedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_subscriptions", x => x.Id);
                     table.ForeignKey(
                         name: "FK_subscriptions_membership_plans_PlanId",
@@ -587,13 +536,11 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "message_media",
-                columns: table => new
-                {
+                columns: table => new {
                     message_id = table.Column<Guid>(type: "uuid", nullable: false),
                     media_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_message_media", x => new { x.message_id, x.media_id });
                     table.ForeignKey(
                         name: "FK_message_media_media_media_id",
@@ -611,13 +558,11 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "collection_post",
-                columns: table => new
-                {
+                columns: table => new {
                     collection_id = table.Column<Guid>(type: "uuid", nullable: false),
                     post_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_collection_post", x => new { x.collection_id, x.post_id });
                     table.ForeignKey(
                         name: "FK_collection_post_collections_collection_id",
@@ -635,15 +580,13 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "likes",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     PostId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_likes", x => x.Id);
                     table.ForeignKey(
                         name: "FK_likes_posts_PostId",
@@ -661,13 +604,11 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "post_hashtag",
-                columns: table => new
-                {
+                columns: table => new {
                     post_id = table.Column<Guid>(type: "uuid", nullable: false),
                     hashtag_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_post_hashtag", x => new { x.post_id, x.hashtag_id });
                     table.ForeignKey(
                         name: "FK_post_hashtag_hashtags_hashtag_id",
@@ -685,15 +626,13 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "post_uploads",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     PostId = table.Column<Guid>(type: "uuid", nullable: false),
                     MediaId = table.Column<Guid>(type: "uuid", nullable: false),
                     IsWorkMedia = table.Column<bool>(type: "boolean", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_post_uploads", x => x.Id);
                     table.ForeignKey(
                         name: "FK_post_uploads_media_MediaId",
@@ -711,8 +650,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "payments",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     PayerId = table.Column<Guid>(type: "uuid", nullable: false),
                     SubscriptionId = table.Column<Guid>(type: "uuid", nullable: true),
@@ -723,8 +661,7 @@ namespace Krea.Infrastructure.Data.Migrations
                     external_ref = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     PaidAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_payments", x => x.Id);
                     table.CheckConstraint("CK_Payment_SingleTarget", "\r\n            (CASE WHEN \"SubscriptionId\" IS NOT NULL THEN 1 ELSE 0 END +\r\n             CASE WHEN \"DonationId\" IS NOT NULL THEN 1 ELSE 0 END +\r\n             CASE WHEN \"CommissionRequestId\" IS NOT NULL THEN 1 ELSE 0 END) = 1\r\n        ");
                     table.ForeignKey(
@@ -755,8 +692,7 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "metadata",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UploadId = table.Column<Guid>(type: "uuid", nullable: false),
                     Title = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
@@ -773,8 +709,7 @@ namespace Krea.Infrastructure.Data.Migrations
                     LanguageCode = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     WordCount = table.Column<int>(type: "integer", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_metadata", x => x.Id);
                     table.ForeignKey(
                         name: "FK_metadata_post_uploads_UploadId",
@@ -786,13 +721,11 @@ namespace Krea.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "metadata_genre",
-                columns: table => new
-                {
+                columns: table => new {
                     MetadataId = table.Column<Guid>(type: "uuid", nullable: false),
                     GenreId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_metadata_genre", x => new { x.MetadataId, x.GenreId });
                     table.ForeignKey(
                         name: "FK_metadata_genre_genres_GenreId",
@@ -1102,8 +1035,7 @@ namespace Krea.Infrastructure.Data.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 

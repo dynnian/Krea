@@ -1,6 +1,5 @@
 namespace Krea.Application.Features.Commissions.DeactivateOffering {
     using Abstractions.Auth;
-    using ActivateOffering;
     using Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;

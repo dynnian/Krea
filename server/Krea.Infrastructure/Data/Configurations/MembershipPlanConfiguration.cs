@@ -1,5 +1,4 @@
 using Krea.Domain.Entities;
-using Krea.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

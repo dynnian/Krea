@@ -1,6 +1,6 @@
 namespace Krea.Application.Features.Admin.Reports {
-    using Dashboard;
     using Abstractions.Identity;
+    using Dashboard;
     using Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;

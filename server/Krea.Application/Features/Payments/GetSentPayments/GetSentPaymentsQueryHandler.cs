@@ -1,7 +1,6 @@
 using Krea.Application.Abstractions.Auth;
 using Krea.Application.Abstractions.Payments;
 using Krea.Domain.Abstractions;
-using Microsoft.Extensions.Logging;
 
 namespace Krea.Application.Features.Payments.GetSentPayments {
     using Dtos;

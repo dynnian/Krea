@@ -1,6 +1,6 @@
 namespace Krea.API.Controllers {
-    using Application.Features.User;
     using Application.Features.Follows;
+    using Application.Features.User;
     using Application.Features.User.SearchUser;
     using Application.Features.User.UploadUserProfilePicture;
     using Contracts;
@@ -393,7 +393,9 @@ namespace Krea.API.Controllers {
             }
             catch (Exception ex) {
                 return BadRequest(new {
-                    error = ex.Message, type = ex.GetType().Name, detail = "Internal processing error"
+                    error = ex.Message,
+                    type = ex.GetType().Name,
+                    detail = "Internal processing error"
                 });
             }
         }

@@ -18,9 +18,9 @@ namespace Krea.Domain.Entities {
         public DateTime CreatedAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private Conversation() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         private Conversation(
             ConversationType type,
@@ -109,7 +109,8 @@ namespace Krea.Domain.Entities {
                     throw new ArgumentException("Description max 256 characters.");
             }
 
-            if (type != ConversationType.DirectMessage) return;
+            if (type != ConversationType.DirectMessage)
+                return;
             if (title != null || description != null)
                 throw new ArgumentException("DM cannot have title or description.");
         }

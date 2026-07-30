@@ -36,7 +36,8 @@ namespace Krea.API.Controllers {
             try {
                 StripeWebhookEvent webhookEvent = paymentGateway.ConstructStripeEvent(json, stripeSignature);
 
-                if (webhookEvent.Type != "checkout.session.completed" || webhookEvent.SessionId == null) return Ok();
+                if (webhookEvent.Type != "checkout.session.completed" || webhookEvent.SessionId == null)
+                    return Ok();
                 var command = new ConfirmPaymentCommand("stripe", webhookEvent.SessionId);
                 await sender.Send(command);
 

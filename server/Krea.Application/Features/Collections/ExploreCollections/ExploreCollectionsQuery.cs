@@ -1,5 +1,4 @@
 namespace Krea.Application.Features.Collections.ExploreCollections {
-    using Abstractions.Payments;
     using Domain.Abstractions;
     using Dto;
 

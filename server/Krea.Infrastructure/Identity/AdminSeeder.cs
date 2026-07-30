@@ -31,7 +31,10 @@ namespace Krea.Infrastructure.Identity {
             }
 
             var appUser = new AppUser {
-                Id = Guid.NewGuid(), Email = options.Email, UserName = options.Username, EmailConfirmed = true
+                Id = Guid.NewGuid(),
+                Email = options.Email,
+                UserName = options.Username,
+                EmailConfirmed = true
             };
 
             IdentityResult createResult = await userManager.CreateAsync(appUser, options.Password);

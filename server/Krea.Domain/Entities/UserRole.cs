@@ -9,9 +9,9 @@ namespace Krea.Domain.Entities {
         public DateTime AssignedAt { get; private set; }
         public Guid? AssignedBy { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private UserRole() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public UserRole(Guid userId, Guid roleId, Guid? assignedBy) {
             UserId = userId;

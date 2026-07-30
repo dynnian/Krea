@@ -4,7 +4,6 @@ namespace Krea.Application.Features.Commissions.GetCommissionRequests {
     using Domain.Entities;
     using Domain.Repositories;
     using Dtos;
-    using Microsoft.Extensions.Logging;
 
     public class GetCommissionRequestsQueryHandler(
         ICurrentUserService currentUserService,

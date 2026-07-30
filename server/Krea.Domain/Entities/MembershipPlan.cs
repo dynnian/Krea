@@ -17,9 +17,9 @@ namespace Krea.Domain.Entities {
         public DateTime CreatedAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private MembershipPlan() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public MembershipPlan(
             User artist,

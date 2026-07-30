@@ -1,11 +1,11 @@
 namespace Krea.Application.Features.DirectMessages.SendDirectMessage {
     using Abstractions.Identity;
     using AutoMapper;
-    using Krea.Domain.Abstractions;
     using Domain.Entities;
     using Domain.Repositories;
     using Domain.ValueObjects;
     using Dto;
+    using Krea.Domain.Abstractions;
 
     internal class SendDirectMessageCommandHandler(
         IIdentityService identityService,

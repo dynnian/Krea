@@ -1,11 +1,11 @@
 namespace Krea.API.Tests.Integration {
+    using Infrastructure.Data;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.DependencyInjection;
     using System.Net;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Text.Json;
-    using Infrastructure.Data;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.Extensions.DependencyInjection;
     using TestSupport;
     using Xunit;
 
@@ -275,7 +275,8 @@ namespace Krea.API.Tests.Integration {
             request.Headers.Add(TestAuthHandler.HeaderName,
                 role.Equals("Admin", StringComparison.OrdinalIgnoreCase) ? "admin" : "user");
             request.Headers.Add(TestAuthHandler.UserIdHeaderName, userId.ToString());
-            if (content != null) request.Content = content;
+            if (content != null)
+                request.Content = content;
             return request;
         }
     }

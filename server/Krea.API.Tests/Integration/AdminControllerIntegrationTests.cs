@@ -1,13 +1,13 @@
 namespace Krea.API.Tests.Integration {
-    using System.Net;
-    using System.Text.Json;
-    using TestSupport;
     using Domain.Entities;
     using Domain.ValueObjects;
     using Infrastructure.Data;
     using Infrastructure.Identity;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.DependencyInjection;
+    using System.Net;
+    using System.Text.Json;
+    using TestSupport;
     using Xunit;
 
     [Collection(IntegrationTestCollection.Name)]

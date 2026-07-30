@@ -1,5 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using Krea.Domain.ValueObjects;
+using System.ComponentModel.DataAnnotations;
 
 namespace Krea.Domain.Entities {
     public sealed class Genre {
@@ -9,9 +9,9 @@ namespace Krea.Domain.Entities {
 
         public GenreType Type { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private Genre() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public Genre(
             string name,

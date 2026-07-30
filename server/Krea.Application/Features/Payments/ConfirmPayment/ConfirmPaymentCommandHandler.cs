@@ -32,21 +32,24 @@ namespace Krea.Application.Features.Payments.ConfirmPayment {
                 case PaymentParentType.CommissionRequest:
                     CommissionRequest? commission =
                         await commissionRepo.GetByIdWithPaymentsAsync(parentInfo.ParentId, cancellationToken);
-                    if (commission is null) throw new InvalidOperationException("Commission request not found.");
+                    if (commission is null)
+                        throw new InvalidOperationException("Commission request not found.");
                     commission.ConfirmPayment(parentInfo.PaymentId);
                     break;
 
                 case PaymentParentType.Donation:
                     Donation? donation =
                         await donationRepo.GetByIdWithPaymentsAsync(parentInfo.ParentId, cancellationToken);
-                    if (donation is null) throw new InvalidOperationException("Donation not found.");
+                    if (donation is null)
+                        throw new InvalidOperationException("Donation not found.");
                     donation.ConfirmPayment(parentInfo.PaymentId);
                     break;
 
                 case PaymentParentType.Subscription:
                     Subscription? subscription =
                         await subscriptionRepo.GetByIdWithPaymentsAsync(parentInfo.ParentId, cancellationToken);
-                    if (subscription is null) throw new InvalidOperationException("Subscription not found.");
+                    if (subscription is null)
+                        throw new InvalidOperationException("Subscription not found.");
                     subscription.ConfirmPayment(parentInfo.PaymentId);
                     break;
 

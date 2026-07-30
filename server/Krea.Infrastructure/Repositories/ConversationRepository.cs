@@ -1,8 +1,8 @@
 namespace Krea.Infrastructure.Repositories {
-    using Domain.ValueObjects;
+    using Data;
     using Domain.Entities;
     using Domain.Repositories;
-    using Data;
+    using Domain.ValueObjects;
     using Microsoft.EntityFrameworkCore;
 
     public class ConversationRepository(AppDbContext context) : IConversationRepository {

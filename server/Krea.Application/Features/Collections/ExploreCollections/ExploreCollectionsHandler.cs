@@ -3,7 +3,6 @@ namespace Krea.Application.Features.Collections.ExploreCollections {
     using Domain.Entities;
     using Domain.Repositories;
     using Dto;
-    using Posts.Explore;
 
     public sealed class ExploreCollectionsHandler
         : IRequestHandler<ExploreCollectionsQuery, PaginatedList<CollectionExploreDto>> {

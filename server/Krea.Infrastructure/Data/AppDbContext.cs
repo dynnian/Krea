@@ -1,8 +1,8 @@
-using Microsoft.EntityFrameworkCore;
 using Krea.Domain.Entities;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Krea.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace Krea.Infrastructure.Data {
     public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid> {

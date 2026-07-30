@@ -19,9 +19,9 @@ namespace Krea.Domain.Entities {
         public DateTime SentAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private Message() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         private Message(User user, Conversation conversation, MessageContentType contentType) {
             Id = Guid.NewGuid();

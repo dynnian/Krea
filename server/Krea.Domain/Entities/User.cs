@@ -1,5 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using Krea.Domain.Validators;
+using System.ComponentModel.DataAnnotations;
 
 namespace Krea.Domain.Entities {
     public sealed class User {
@@ -51,9 +51,9 @@ namespace Krea.Domain.Entities {
 
         public ICollection<PostFavorite> Favorites { get; set; } = new List<PostFavorite>();
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private User() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public User(
             string displayName,

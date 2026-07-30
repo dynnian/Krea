@@ -1,5 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using Krea.Domain.ValueObjects;
+using System.ComponentModel.DataAnnotations;
 
 namespace Krea.Domain.Entities {
     public sealed class PostModerationReport {
@@ -26,9 +26,9 @@ namespace Krea.Domain.Entities {
         public DateTime CreatedAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
 
-        #pragma warning disable CS8618
+#pragma warning disable CS8618
         private PostModerationReport() { }
-        #pragma warning restore CS8618
+#pragma warning restore CS8618
 
         public PostModerationReport(Guid postId, Guid reporterUserId, string reason, string? details = null) {
             if (postId == Guid.Empty)
