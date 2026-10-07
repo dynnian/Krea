@@ -1,6 +1,9 @@
 // deno-lint-ignore-file
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ReactReader, ReactReaderStyle } from "react-reader";
+import { ReactReader } from "react-reader";
+// react-reader 0.20.4 exposes its default style object at runtime but omits it from its declarations.
+// @ts-expect-error The package's runtime export is present but not declared.
+import ReactReaderStyle from "react-reader/lib/ReactReader/style";
 
 interface EpubReaderProps {
   url: string;
@@ -122,7 +125,7 @@ export default function EpubReader({ url, title }: EpubReaderProps) {
           title={title}
           location={location}
           locationChanged={(epubcfi: string) => setLocation(epubcfi)}
-          readerStyles={readerStyles}
+          styles={readerStyles}
           getRendition={(rendition: any) => {
             renditionRef.current = rendition;
 
